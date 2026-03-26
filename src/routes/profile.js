@@ -462,7 +462,7 @@ router.get("/u/:username", async (req, res) => {
 
           radial-gradient(circle at 50% 30%, rgba(77,169,255,.12), transparent 35%),
 
-          rgba(2,6,14,.88);
+          rgba(0,0,0,.92);
 
         backdrop-filter:blur(10px);
 
@@ -510,7 +510,7 @@ router.get("/u/:username", async (req, res) => {
 
           radial-gradient(circle at 50% 0%, rgba(140,220,255,.14), transparent 48%),
 
-          linear-gradient(180deg, rgba(8,12,22,.96), rgba(4,8,16,.99));
+          linear-gradient(180deg, rgba(0,0,0,.96), rgba(0,0,0,.99));
 
         box-shadow:
 
@@ -652,7 +652,7 @@ router.get("/u/:username", async (req, res) => {
 
           radial-gradient(circle at 50% 0%, rgba(120,210,255,.10), transparent 55%),
 
-          linear-gradient(180deg, rgba(12,17,28,.95), rgba(7,10,18,.98));
+          linear-gradient(180deg, rgba(0,0,0,.95), rgba(0,0,0,.98));
 
         box-shadow:
 
@@ -748,7 +748,7 @@ router.get("/u/:username", async (req, res) => {
 
       .tapzy-contact-btn-dark{
 
-        background:linear-gradient(180deg, rgba(32,35,45,.94), rgba(14,16,23,.98));
+        background:linear-gradient(180deg, rgba(18,18,18,.94), rgba(8,8,8,.98));
 
         box-shadow:
 
@@ -804,17 +804,17 @@ router.get("/u/:username", async (req, res) => {
 
         background:
 
-          radial-gradient(900px 420px at 50% 0%, rgba(20,38,74,.18), transparent 42%),
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.025), transparent 42%),
 
-          linear-gradient(180deg, rgba(4,6,12,.985), rgba(2,3,8,1));
+          linear-gradient(180deg, rgba(0,0,0,.995), rgba(0,0,0,1));
 
         box-shadow:
 
-          0 24px 70px rgba(0,0,0,.56),
+          0 24px 70px rgba(0,0,0,.72),
 
           inset 0 1px 0 rgba(255,255,255,.03),
 
-          inset 0 0 0 1px rgba(120,200,255,.015);
+          inset 0 0 0 1px rgba(255,255,255,.015);
 
       }
 
@@ -832,15 +832,15 @@ router.get("/u/:username", async (req, res) => {
 
         background-image:
 
-          radial-gradient(circle at 14% 22%, rgba(170,220,255,.12) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 14% 22%, rgba(255,255,255,.10) 0 1px, transparent 1.5px),
 
-          radial-gradient(circle at 78% 16%, rgba(170,220,255,.07) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 78% 16%, rgba(255,255,255,.06) 0 1px, transparent 1.5px),
 
-          radial-gradient(circle at 62% 46%, rgba(170,220,255,.05) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 62% 46%, rgba(255,255,255,.04) 0 1px, transparent 1.5px),
 
-          radial-gradient(circle at 24% 72%, rgba(170,220,255,.04) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 24% 72%, rgba(255,255,255,.03) 0 1px, transparent 1.5px),
 
-          radial-gradient(circle at 88% 82%, rgba(170,220,255,.04) 0 1px, transparent 1.5px);
+          radial-gradient(circle at 88% 82%, rgba(255,255,255,.03) 0 1px, transparent 1.5px);
 
       }
 
@@ -870,7 +870,7 @@ router.get("/u/:username", async (req, res) => {
 
         top:-36px;
 
-        background:radial-gradient(circle, rgba(120,170,255,.06) 0%, rgba(120,170,255,.02) 38%, transparent 72%);
+        background:radial-gradient(circle, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 38%, transparent 72%);
 
       }
 
@@ -886,7 +886,7 @@ router.get("/u/:username", async (req, res) => {
 
         bottom:-48px;
 
-        background:radial-gradient(circle, rgba(80,140,255,.05) 0%, rgba(80,140,255,.02) 40%, transparent 75%);
+        background:radial-gradient(circle, rgba(255,255,255,.02) 0%, rgba(255,255,255,.006) 40%, transparent 75%);
 
       }
 
@@ -908,7 +908,7 @@ router.get("/u/:username", async (req, res) => {
 
         pointer-events:none;
 
-        background:radial-gradient(circle at 100% 0%, rgba(120,170,255,.08) 0%, rgba(120,170,255,.025) 22%, transparent 60%);
+        background:radial-gradient(circle at 100% 0%, rgba(255,255,255,.05) 0%, rgba(255,255,255,.015) 22%, transparent 60%);
 
         opacity:.5;
 
@@ -962,23 +962,23 @@ router.get("/u/:username", async (req, res) => {
 
         font-weight:900;
 
-        color:#d9e7ff;
+        color:#f6f7fb;
 
         border:1px solid rgba(255,255,255,.07);
 
         background:
 
-          radial-gradient(circle at 30% 24%, rgba(100,150,255,.04), transparent 28%),
+          radial-gradient(circle at 30% 24%, rgba(255,255,255,.03), transparent 28%),
 
-          linear-gradient(180deg, rgba(7,10,18,.99), rgba(3,5,10,1));
+          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
 
         box-shadow:
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-          0 0 0 1px rgba(95,180,255,.03),
+          0 0 0 1px rgba(255,255,255,.02),
 
-          0 0 16px rgba(62,138,255,.06);
+          0 0 16px rgba(255,255,255,.02);
 
       }
 
@@ -1016,7 +1016,7 @@ router.get("/u/:username", async (req, res) => {
 
         color:#ffffff;
 
-        text-shadow:0 0 18px rgba(120,205,255,.02);
+        text-shadow:0 0 18px rgba(255,255,255,.02);
 
         white-space:nowrap;
 
@@ -1032,7 +1032,7 @@ router.get("/u/:username", async (req, res) => {
 
         margin-top:10px;
 
-        color:#c8d3e5;
+        color:#d7dbe3;
 
         font-size:18px;
 
@@ -1080,7 +1080,7 @@ router.get("/u/:username", async (req, res) => {
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(18,21,32,.96), rgba(10,12,20,.99));
+        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
 
         color:#ffffff;
 
@@ -1102,7 +1102,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-pill-btn-dark{
 
-        background:linear-gradient(180deg, rgba(18,21,32,.96), rgba(10,12,20,.99));
+        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
 
       }
 
@@ -1154,7 +1154,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-actions form .btn.btnDark{
 
-        background:linear-gradient(180deg, rgba(18,21,32,.96), rgba(10,12,20,.99));
+        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
 
         color:#fff;
 
@@ -1190,7 +1190,7 @@ router.get("/u/:username", async (req, res) => {
 
         margin-top:12px !important;
 
-        color:#c4cede;
+        color:#d1d4db;
 
         font-size:14px;
 
@@ -1232,15 +1232,15 @@ router.get("/u/:username", async (req, res) => {
 
         background:
 
-          radial-gradient(220px 140px at 50% 0%, rgba(55,95,180,.08), transparent 60%),
+          radial-gradient(220px 140px at 50% 0%, rgba(255,255,255,.03), transparent 60%),
 
-          linear-gradient(180deg, rgba(8,11,20,.96), rgba(4,6,12,.99));
+          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
 
         box-shadow:
 
           inset 0 1px 0 rgba(255,255,255,.03),
 
-          0 10px 24px rgba(0,0,0,.14);
+          0 10px 24px rgba(0,0,0,.18);
 
         text-align:center;
 
@@ -1264,7 +1264,7 @@ router.get("/u/:username", async (req, res) => {
 
         height:36px;
 
-        background:radial-gradient(circle, rgba(100,160,255,.10) 0%, rgba(100,160,255,.03) 40%, transparent 75%);
+        background:radial-gradient(circle, rgba(255,255,255,.06) 0%, rgba(255,255,255,.018) 40%, transparent 75%);
 
         filter:blur(8px);
 
@@ -1294,7 +1294,7 @@ router.get("/u/:username", async (req, res) => {
 
         margin-top:8px;
 
-        color:#c6d0df;
+        color:#d4d7dd;
 
         font-size:14px;
 
@@ -1310,9 +1310,9 @@ router.get("/u/:username", async (req, res) => {
 
         background:
 
-          radial-gradient(520px 220px at 70% 18%, rgba(70,110,190,.10), transparent 42%),
+          radial-gradient(520px 220px at 70% 18%, rgba(255,255,255,.03), transparent 42%),
 
-          linear-gradient(180deg, rgba(8,11,20,.96), rgba(4,6,12,.99));
+          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
 
         border:1px solid rgba(255,255,255,.06);
 
@@ -1320,7 +1320,7 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.03),
 
-          0 16px 34px rgba(0,0,0,.20);
+          0 16px 34px rgba(0,0,0,.22);
 
       }
 
@@ -1340,7 +1340,7 @@ router.get("/u/:username", async (req, res) => {
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(100,160,255,.10) 0%, rgba(100,160,255,.03) 45%, transparent 75%);
+        background:radial-gradient(circle, rgba(255,255,255,.06) 0%, rgba(255,255,255,.018) 45%, transparent 75%);
 
         filter:blur(10px);
 
@@ -1382,9 +1382,9 @@ router.get("/u/:username", async (req, res) => {
 
         background:
 
-          radial-gradient(420px 180px at 68% 20%, rgba(70,110,190,.10), transparent 42%),
+          radial-gradient(420px 180px at 68% 20%, rgba(255,255,255,.03), transparent 42%),
 
-          linear-gradient(180deg, rgba(8,11,20,.96), rgba(4,6,12,.99));
+          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
 
         border:1px solid rgba(255,255,255,.06);
 
@@ -1392,7 +1392,7 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.03),
 
-          0 14px 28px rgba(0,0,0,.18);
+          0 14px 28px rgba(0,0,0,.22);
 
         color:#ffffff;
 
@@ -1422,7 +1422,7 @@ router.get("/u/:username", async (req, res) => {
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(100,160,255,.10) 0%, rgba(100,160,255,.03) 42%, transparent 74%);
+        background:radial-gradient(circle, rgba(255,255,255,.05) 0%, rgba(255,255,255,.015) 42%, transparent 74%);
 
         filter:blur(8px);
 
@@ -1442,9 +1442,9 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-          0 16px 34px rgba(0,0,0,.22),
+          0 16px 34px rgba(0,0,0,.26),
 
-          0 0 24px rgba(70,140,255,.05);
+          0 0 24px rgba(255,255,255,.02);
 
       }
 
@@ -1452,7 +1452,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-simple-arrow{
 
-        color:#9db0cb;
+        color:#b8bec7;
 
         font-size:24px;
 
@@ -2258,21 +2258,21 @@ router.get("/edit/:username", async (req, res) => {
 
         padding:24px;
 
-        border:1px solid rgba(140,198,255,.10);
+        border:1px solid rgba(255,255,255,.07);
 
         background:
 
-          radial-gradient(900px 420px at 50% 0%, rgba(24,59,93,.30), transparent 45%),
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.03), transparent 45%),
 
-          linear-gradient(180deg, rgba(10,13,20,.98), rgba(6,8,12,1));
+          linear-gradient(180deg, rgba(0,0,0,.995), rgba(0,0,0,1));
 
         box-shadow:
 
-          0 24px 70px rgba(0,0,0,.56),
+          0 24px 70px rgba(0,0,0,.68),
 
           inset 0 1px 0 rgba(255,255,255,.03),
 
-          inset 0 0 0 1px rgba(120,200,255,.02);
+          inset 0 0 0 1px rgba(255,255,255,.015);
 
       }
 
@@ -2302,7 +2302,7 @@ router.get("/edit/:username", async (req, res) => {
 
         top:-40px;
 
-        background:radial-gradient(circle, rgba(170,242,255,.09) 0%, rgba(170,242,255,.03) 40%, transparent 72%);
+        background:radial-gradient(circle, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 40%, transparent 72%);
 
       }
 
@@ -2318,7 +2318,7 @@ router.get("/edit/:username", async (req, res) => {
 
         bottom:-56px;
 
-        background:radial-gradient(circle, rgba(64,136,255,.09) 0%, rgba(64,136,255,.03) 40%, transparent 75%);
+        background:radial-gradient(circle, rgba(255,255,255,.02) 0%, rgba(255,255,255,.007) 40%, transparent 75%);
 
       }
 
@@ -2366,7 +2366,7 @@ router.get("/edit/:username", async (req, res) => {
 
         margin-top:10px;
 
-        color:#a7b0c0;
+        color:#d1d5dd;
 
         font-size:17px;
 
@@ -2406,9 +2406,9 @@ router.get("/edit/:username", async (req, res) => {
 
         text-decoration:none;
 
-        border:1px solid rgba(145,203,255,.12);
+        border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(32,35,45,.94), rgba(14,16,23,.98));
+        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
 
         color:#fff;
 
@@ -2444,19 +2444,19 @@ router.get("/edit/:username", async (req, res) => {
 
         padding:18px;
 
-        border:1px solid rgba(140,198,255,.08);
+        border:1px solid rgba(255,255,255,.06);
 
         background:
 
-          radial-gradient(520px 220px at 70% 12%, rgba(95,182,255,.10), transparent 40%),
+          radial-gradient(520px 220px at 70% 12%, rgba(255,255,255,.025), transparent 40%),
 
-          linear-gradient(180deg, rgba(16,21,32,.96), rgba(10,13,20,.99));
+          linear-gradient(180deg, rgba(0,0,0,.99), rgba(0,0,0,1));
 
         box-shadow:
 
           inset 0 1px 0 rgba(255,255,255,.03),
 
-          0 16px 34px rgba(0,0,0,.20);
+          0 16px 34px rgba(0,0,0,.24);
 
       }
 
@@ -2490,7 +2490,7 @@ router.get("/edit/:username", async (req, res) => {
 
         margin:6px 0 0;
 
-        color:#94a1b6;
+        color:#c8ced7;
 
         font-size:13px;
 
@@ -2544,7 +2544,7 @@ router.get("/edit/:username", async (req, res) => {
 
         margin:0;
 
-        color:#b7c3d6;
+        color:#e2e4e8;
 
         font-size:13px;
 
@@ -2566,9 +2566,9 @@ router.get("/edit/:username", async (req, res) => {
 
         border-radius:20px;
 
-        border:1px solid rgba(145,203,255,.10);
+        border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(4,6,10,1));
+        background:linear-gradient(180deg, rgba(5,5,5,.99), rgba(0,0,0,1));
 
         color:#fff;
 
@@ -2586,9 +2586,9 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-field textarea:focus{
 
-        border-color:rgba(127,210,255,.28);
+        border-color:rgba(140,220,255,.22);
 
-        box-shadow:0 0 0 3px rgba(127,210,255,.07);
+        box-shadow:0 0 0 3px rgba(140,220,255,.06);
 
       }
 
@@ -2658,7 +2658,7 @@ router.get("/edit/:username", async (req, res) => {
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg,#141824,#0b0f17);
+        background:linear-gradient(180deg, rgba(10,10,10,1), rgba(0,0,0,1));
 
         display:flex;
 
@@ -2666,7 +2666,7 @@ router.get("/edit/:username", async (req, res) => {
 
         justify-content:center;
 
-        color:#9db1cb;
+        color:#d6d9de;
 
         font-weight:800;
 
@@ -2702,7 +2702,7 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-photo-sub{
 
-        color:#8f9bb0;
+        color:#c2c8d0;
 
         font-size:13px;
 
@@ -2720,9 +2720,9 @@ router.get("/edit/:username", async (req, res) => {
 
         border-radius:18px;
 
-        border:1px solid rgba(145,203,255,.10);
+        border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(4,6,10,1));
+        background:linear-gradient(180deg, rgba(5,5,5,.99), rgba(0,0,0,1));
 
         color:#fff;
 
@@ -2768,7 +2768,7 @@ router.get("/edit/:username", async (req, res) => {
 
         margin-top:4px;
 
-        color:#8f9bb0;
+        color:#c2c8d0;
 
         font-size:13px;
 
@@ -2878,15 +2878,15 @@ router.get("/edit/:username", async (req, res) => {
 
         background:
 
-          radial-gradient(circle at 50% 0%, rgba(150,230,255,.22), transparent 55%),
+          radial-gradient(circle at 50% 0%, rgba(150,230,255,.20), transparent 55%),
 
-          linear-gradient(180deg, rgba(40,92,210,.92), rgba(18,41,92,.98));
+          linear-gradient(180deg, rgba(32,86,210,.92), rgba(14,34,90,.98));
 
         box-shadow:
 
           0 12px 28px rgba(0,0,0,.24),
 
-          0 0 16px rgba(80,150,255,.16),
+          0 0 16px rgba(80,150,255,.14),
 
           inset 0 1px 0 rgba(255,255,255,.14);
 
