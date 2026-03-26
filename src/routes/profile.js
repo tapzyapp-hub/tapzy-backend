@@ -110,9 +110,9 @@ router.get("/u/:username", async (req, res) => {
 
     const photoHtml = profile.photo
 
-      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(profile.name || profile.username || "Tapzy User")}" />`
+      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" />`
 
-      : escapeHtml((profile.name || profile.username || "T").slice(0, 1).toUpperCase());
+      : escapeHtml((displayName || "T").slice(0, 1).toUpperCase());
 
 
 
@@ -186,13 +186,7 @@ router.get("/u/:username", async (req, res) => {
 
       <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
 
-        <div class="profile-showcase-stars"></div>
-
-        <div class="profile-showcase-glow profile-showcase-glow-a"></div>
-
-        <div class="profile-showcase-glow profile-showcase-glow-b"></div>
-
-        <div class="profile-showcase-edge"></div>
+        <div class="profile-showcase-bg"></div>
 
 
 
@@ -208,7 +202,7 @@ router.get("/u/:username", async (req, res) => {
 
           <div class="profile-showcase-main">
 
-            <div class="profile-showcase-name">${escapeHtml(profile.name || profile.username || "Tapzy User")}</div>
+            <div class="profile-showcase-name">${escapeHtml(displayName)}</div>
 
             <div class="profile-showcase-handle">@${escapeHtml(profile.username || "user")}</div>
 
@@ -310,11 +304,11 @@ router.get("/u/:username", async (req, res) => {
 
           ? `
 
-            <section class="card" style="margin-top:18px;">
+            <section class="profile-panel" style="margin-top:18px;">
 
-              ${profile.title ? `<div style="font-size:18px;font-weight:800;">${escapeHtml(profile.title)}</div>` : ""}
+              ${profile.title ? `<div class="profile-section-title">${escapeHtml(profile.title)}</div>` : ""}
 
-              ${profile.bio ? `<div class="muted" style="margin-top:${profile.title ? "10px" : "0"};max-width:760px;line-height:1.75;">${escapeHtml(profile.bio)}</div>` : ""}
+              ${profile.bio ? `<div class="profile-section-text" style="margin-top:${profile.title ? "10px" : "0"};">${escapeHtml(profile.bio)}</div>` : ""}
 
             </section>
 
@@ -332,13 +326,13 @@ router.get("/u/:username", async (req, res) => {
 
           ? `
 
-            <section class="panel profile-preview-panel" style="margin-top:18px;">
+            <section class="profile-panel" style="margin-top:18px;">
 
-              <h3 style="margin-top:0;">Quick Share Preview</h3>
+              <h3 class="profile-panel-heading">Quick Share Preview</h3>
 
-              <div class="muted">Fields currently enabled for Tapzy quick sharing.</div>
+              <div class="profile-panel-subheading">Fields currently enabled for Tapzy quick sharing.</div>
 
-              <div style="margin-top:10px;">
+              <div class="profile-preview-tags">
 
                 ${quickPreview.map((item) => `<span class="miniTag">${escapeHtml(item)}</span>`).join("")}
 
@@ -394,7 +388,7 @@ router.get("/u/:username", async (req, res) => {
 
             <div class="row" style="margin-top:18px;">
 
-              <a class="btn" href="/edit/${escapeHtml(profile.username || "")}">Edit Profile</a>
+              <a class="profile-edit-btn" href="/edit/${escapeHtml(profile.username || "")}">Edit Profile</a>
 
             </div>
 
@@ -510,7 +504,7 @@ router.get("/u/:username", async (req, res) => {
 
           radial-gradient(circle at 50% 0%, rgba(140,220,255,.14), transparent 48%),
 
-          linear-gradient(180deg, rgba(0,0,0,.96), rgba(0,0,0,.99));
+          linear-gradient(180deg, rgba(6,10,18,.98), rgba(0,0,0,1));
 
         box-shadow:
 
@@ -526,7 +520,7 @@ router.get("/u/:username", async (req, res) => {
 
       .tapzy-tap-badge{
 
-        color:#bfe7ff;
+        color:#dff0ff;
 
         font-size:12px;
 
@@ -616,7 +610,7 @@ router.get("/u/:username", async (req, res) => {
 
         margin-top:8px;
 
-        color:#9fc0de;
+        color:#dbe6f3;
 
         font-size:15px;
 
@@ -652,7 +646,7 @@ router.get("/u/:username", async (req, res) => {
 
           radial-gradient(circle at 50% 0%, rgba(120,210,255,.10), transparent 55%),
 
-          linear-gradient(180deg, rgba(0,0,0,.95), rgba(0,0,0,.98));
+          linear-gradient(180deg, rgba(8,12,20,.98), rgba(0,0,0,1));
 
         box-shadow:
 
@@ -680,7 +674,7 @@ router.get("/u/:username", async (req, res) => {
 
         margin-top:6px;
 
-        color:#8fb6d7;
+        color:#b9d7f0;
 
         font-size:13px;
 
@@ -748,7 +742,7 @@ router.get("/u/:username", async (req, res) => {
 
       .tapzy-contact-btn-dark{
 
-        background:linear-gradient(180deg, rgba(18,18,18,.94), rgba(8,8,8,.98));
+        background:linear-gradient(180deg, rgba(14,16,22,.96), rgba(0,0,0,1));
 
         box-shadow:
 
@@ -798,29 +792,25 @@ router.get("/u/:username", async (req, res) => {
 
         border-radius:34px;
 
-        padding:26px 26px 22px;
+        padding:28px;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
         background:
 
-          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.025), transparent 42%),
-
-          linear-gradient(180deg, rgba(0,0,0,.995), rgba(0,0,0,1));
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          0 24px 70px rgba(0,0,0,.72),
+          0 24px 70px rgba(0,0,0,.66),
 
-          inset 0 1px 0 rgba(255,255,255,.03),
-
-          inset 0 0 0 1px rgba(255,255,255,.015);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
 
 
-      .profile-showcase-stars{
+      .profile-showcase-bg{
 
         position:absolute;
 
@@ -828,89 +818,15 @@ router.get("/u/:username", async (req, res) => {
 
         pointer-events:none;
 
-        opacity:.10;
+        border-radius:34px;
 
-        background-image:
+        background:
 
-          radial-gradient(circle at 14% 22%, rgba(255,255,255,.10) 0 1px, transparent 1.5px),
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
 
-          radial-gradient(circle at 78% 16%, rgba(255,255,255,.06) 0 1px, transparent 1.5px),
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
 
-          radial-gradient(circle at 62% 46%, rgba(255,255,255,.04) 0 1px, transparent 1.5px),
-
-          radial-gradient(circle at 24% 72%, rgba(255,255,255,.03) 0 1px, transparent 1.5px),
-
-          radial-gradient(circle at 88% 82%, rgba(255,255,255,.03) 0 1px, transparent 1.5px);
-
-      }
-
-
-
-      .profile-showcase-glow{
-
-        position:absolute;
-
-        border-radius:999px;
-
-        pointer-events:none;
-
-        filter:blur(26px);
-
-      }
-
-
-
-      .profile-showcase-glow-a{
-
-        width:220px;
-
-        height:220px;
-
-        right:-30px;
-
-        top:-36px;
-
-        background:radial-gradient(circle, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 38%, transparent 72%);
-
-      }
-
-
-
-      .profile-showcase-glow-b{
-
-        width:170px;
-
-        height:170px;
-
-        left:70px;
-
-        bottom:-48px;
-
-        background:radial-gradient(circle, rgba(255,255,255,.02) 0%, rgba(255,255,255,.006) 40%, transparent 75%);
-
-      }
-
-
-
-      .profile-showcase-edge{
-
-        position:absolute;
-
-        top:0;
-
-        right:0;
-
-        width:150px;
-
-        height:150px;
-
-        border-top-right-radius:34px;
-
-        pointer-events:none;
-
-        background:radial-gradient(circle at 100% 0%, rgba(255,255,255,.05) 0%, rgba(255,255,255,.015) 22%, transparent 60%);
-
-        opacity:.5;
+        opacity:.95;
 
       }
 
@@ -924,11 +840,11 @@ router.get("/u/:username", async (req, res) => {
 
         display:grid;
 
-        grid-template-columns:146px minmax(0, 1fr);
+        grid-template-columns:140px minmax(0, 1fr);
 
-        gap:22px;
+        gap:24px;
 
-        align-items:center;
+        align-items:start;
 
       }
 
@@ -944,11 +860,11 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-avatar{
 
-        width:146px;
+        width:140px;
 
-        height:146px;
+        height:140px;
 
-        border-radius:28px;
+        border-radius:30px;
 
         overflow:hidden;
 
@@ -962,15 +878,15 @@ router.get("/u/:username", async (req, res) => {
 
         font-weight:900;
 
-        color:#f6f7fb;
+        color:#ffffff;
 
-        border:1px solid rgba(255,255,255,.07);
+        border:1px solid rgba(255,255,255,.08);
 
         background:
 
           radial-gradient(circle at 30% 24%, rgba(255,255,255,.03), transparent 28%),
 
-          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
+          linear-gradient(180deg, rgba(5,8,14,.98), rgba(0,0,0,1));
 
         box-shadow:
 
@@ -978,7 +894,7 @@ router.get("/u/:username", async (req, res) => {
 
           0 0 0 1px rgba(255,255,255,.02),
 
-          0 0 16px rgba(255,255,255,.02);
+          0 12px 30px rgba(0,0,0,.28);
 
       }
 
@@ -1000,23 +916,23 @@ router.get("/u/:username", async (req, res) => {
 
         min-width:0;
 
+        padding-top:2px;
+
       }
 
 
 
       .profile-showcase-name{
 
-        font-size:40px;
+        font-size:52px;
 
-        line-height:1;
+        line-height:.98;
 
         font-weight:900;
 
-        letter-spacing:-1.2px;
+        letter-spacing:-1.8px;
 
-        color:#ffffff;
-
-        text-shadow:0 0 18px rgba(255,255,255,.02);
+        color:#fff;
 
         white-space:nowrap;
 
@@ -1030,11 +946,15 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-handle{
 
-        margin-top:10px;
+        margin-top:12px;
 
-        color:#d7dbe3;
+        color:#ffffff;
 
-        font-size:18px;
+        font-size:22px;
+
+        font-weight:500;
+
+        line-height:1.1;
 
         white-space:nowrap;
 
@@ -1050,13 +970,13 @@ router.get("/u/:username", async (req, res) => {
 
         display:flex;
 
-        gap:10px;
+        gap:12px;
 
         flex-wrap:wrap;
 
         align-items:center;
 
-        margin-top:16px;
+        margin-top:22px;
 
       }
 
@@ -1070,21 +990,23 @@ router.get("/u/:username", async (req, res) => {
 
         justify-content:center;
 
-        min-height:42px;
+        min-height:54px;
 
-        padding:0 18px;
+        padding:0 22px;
 
-        border-radius:15px;
+        border-radius:22px;
 
         text-decoration:none;
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
+        background:
 
-        color:#ffffff;
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
-        font-size:14px;
+        color:#fff;
+
+        font-size:15px;
 
         font-weight:800;
 
@@ -1094,7 +1016,7 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-          0 8px 16px rgba(0,0,0,.16);
+          0 8px 18px rgba(0,0,0,.18);
 
       }
 
@@ -1102,7 +1024,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-pill-btn-dark{
 
-        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
       }
 
@@ -1120,13 +1042,13 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-actions .btn{
 
-        min-height:42px;
+        min-height:54px;
 
-        padding:0 18px;
+        padding:0 22px;
 
-        border-radius:15px;
+        border-radius:22px;
 
-        font-size:14px;
+        font-size:15px;
 
         font-weight:800;
 
@@ -1136,7 +1058,7 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-          0 8px 16px rgba(0,0,0,.16);
+          0 8px 18px rgba(0,0,0,.18);
 
       }
 
@@ -1154,7 +1076,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-actions form .btn.btnDark{
 
-        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
         color:#fff;
 
@@ -1174,7 +1096,7 @@ router.get("/u/:username", async (req, res) => {
 
         color:#fff;
 
-        border-color:rgba(140,220,255,.14);
+        border-color:rgba(140,220,255,.16);
 
         box-shadow:
 
@@ -1188,11 +1110,13 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-signed .mini{
 
-        margin-top:12px !important;
+        margin-top:18px !important;
 
-        color:#d1d4db;
+        color:#ffffff;
 
-        font-size:14px;
+        font-size:18px;
+
+        line-height:1.3;
 
       }
 
@@ -1210,7 +1134,7 @@ router.get("/u/:username", async (req, res) => {
 
         gap:14px;
 
-        margin-top:20px;
+        margin-top:26px;
 
       }
 
@@ -1218,29 +1142,25 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-stat-chip{
 
-        position:relative;
+        min-height:116px;
 
-        overflow:hidden;
+        border-radius:26px;
 
-        min-height:94px;
+        padding:16px 14px;
 
-        border-radius:22px;
-
-        padding:16px 18px;
-
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
         background:
 
-          radial-gradient(220px 140px at 50% 0%, rgba(255,255,255,.03), transparent 60%),
+          radial-gradient(280px 140px at 50% 0%, rgba(28,53,102,.20), transparent 62%),
 
-          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
+          linear-gradient(180deg, rgba(6,10,18,.98), rgba(0,0,0,1));
 
         box-shadow:
 
           inset 0 1px 0 rgba(255,255,255,.03),
 
-          0 10px 24px rgba(0,0,0,.18);
+          0 12px 24px rgba(0,0,0,.20);
 
         text-align:center;
 
@@ -1248,35 +1168,9 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-stat-chip::after{
-
-        content:"";
-
-        position:absolute;
-
-        left:50%;
-
-        bottom:-20px;
-
-        transform:translateX(-50%);
-
-        width:72px;
-
-        height:36px;
-
-        background:radial-gradient(circle, rgba(255,255,255,.06) 0%, rgba(255,255,255,.018) 40%, transparent 75%);
-
-        filter:blur(8px);
-
-        pointer-events:none;
-
-      }
-
-
-
       .profile-stat-chip-num{
 
-        font-size:28px;
+        font-size:44px;
 
         line-height:1;
 
@@ -1284,7 +1178,7 @@ router.get("/u/:username", async (req, res) => {
 
         color:#fff;
 
-        letter-spacing:-.6px;
+        letter-spacing:-1px;
 
       }
 
@@ -1292,59 +1186,123 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-stat-chip-label{
 
-        margin-top:8px;
+        margin-top:10px;
 
-        color:#d4d7dd;
+        color:#ffffff;
 
         font-size:14px;
+
+        font-weight:500;
+
+        line-height:1.2;
 
       }
 
 
 
-      .profile-preview-panel{
+      .profile-panel{
 
         position:relative;
 
         overflow:hidden;
 
+        border-radius:34px;
+
+        padding:26px;
+
+        border:1px solid rgba(255,255,255,.08);
+
         background:
 
-          radial-gradient(520px 220px at 70% 18%, rgba(255,255,255,.03), transparent 42%),
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
 
-          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
-
-        border:1px solid rgba(255,255,255,.06);
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.03),
+          0 18px 40px rgba(0,0,0,.28),
 
-          0 16px 34px rgba(0,0,0,.22);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
 
 
-      .profile-preview-panel::before{
+      .profile-panel-heading{
 
-        content:"";
+        margin:0;
 
-        position:absolute;
+        color:#fff;
 
-        inset:auto auto -40px 22%;
+        font-size:28px;
 
-        width:120px;
+        font-weight:900;
 
-        height:70px;
+        letter-spacing:-.6px;
+
+      }
+
+
+
+      .profile-panel-subheading,
+
+      .profile-section-text{
+
+        color:#ffffff;
+
+        font-size:18px;
+
+        line-height:1.7;
+
+        max-width:760px;
+
+      }
+
+
+
+      .profile-section-title{
+
+        color:#fff;
+
+        font-size:24px;
+
+        font-weight:900;
+
+      }
+
+
+
+      .profile-preview-tags{
+
+        margin-top:14px;
+
+      }
+
+
+
+      .miniTag{
+
+        display:inline-flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        padding:9px 14px;
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(255,255,255,.06) 0%, rgba(255,255,255,.018) 45%, transparent 75%);
+        margin:0 10px 10px 0;
 
-        filter:blur(10px);
+        border:1px solid rgba(255,255,255,.08);
 
-        pointer-events:none;
+        background:rgba(255,255,255,.04);
+
+        color:#fff;
+
+        font-size:13px;
+
+        font-weight:700;
 
       }
 
@@ -1354,7 +1312,7 @@ router.get("/u/:username", async (req, res) => {
 
         display:grid;
 
-        gap:12px;
+        gap:14px;
 
       }
 
@@ -1376,17 +1334,17 @@ router.get("/u/:username", async (req, res) => {
 
         text-decoration:none;
 
-        padding:18px 20px;
+        padding:20px 22px;
 
-        border-radius:22px;
+        border-radius:28px;
 
         background:
 
-          radial-gradient(420px 180px at 68% 20%, rgba(255,255,255,.03), transparent 42%),
+          radial-gradient(420px 180px at 68% 20%, rgba(36,80,125,.22), transparent 48%),
 
-          linear-gradient(180deg, rgba(0,0,0,.985), rgba(0,0,0,1));
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
         box-shadow:
 
@@ -1394,9 +1352,9 @@ router.get("/u/:username", async (req, res) => {
 
           0 14px 28px rgba(0,0,0,.22);
 
-        color:#ffffff;
+        color:#fff;
 
-        font-size:18px;
+        font-size:20px;
 
         font-weight:700;
 
@@ -1406,45 +1364,17 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-simple-link::before{
-
-        content:"";
-
-        position:absolute;
-
-        width:110px;
-
-        height:56px;
-
-        left:20%;
-
-        bottom:-24px;
-
-        border-radius:999px;
-
-        background:radial-gradient(circle, rgba(255,255,255,.05) 0%, rgba(255,255,255,.015) 42%, transparent 74%);
-
-        filter:blur(8px);
-
-        pointer-events:none;
-
-      }
-
-
-
       .profile-simple-link:hover{
 
         transform:translateY(-1px);
 
-        border-color:rgba(255,255,255,.10);
+        border-color:rgba(255,255,255,.12);
 
         box-shadow:
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-          0 16px 34px rgba(0,0,0,.26),
-
-          0 0 24px rgba(255,255,255,.02);
+          0 16px 34px rgba(0,0,0,.26);
 
       }
 
@@ -1452,13 +1382,51 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-simple-arrow{
 
-        color:#b8bec7;
+        color:#ffffff;
 
         font-size:24px;
 
         line-height:1;
 
         flex:0 0 auto;
+
+      }
+
+
+
+      .profile-edit-btn{
+
+        display:inline-flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        min-height:56px;
+
+        padding:0 24px;
+
+        border-radius:22px;
+
+        text-decoration:none;
+
+        border:1px solid rgba(255,255,255,.08);
+
+        background:
+
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+
+        color:#fff;
+
+        font-size:15px;
+
+        font-weight:800;
+
+        box-shadow:
+
+          inset 0 1px 0 rgba(255,255,255,.04),
+
+          0 8px 18px rgba(0,0,0,.18);
 
       }
 
@@ -1512,7 +1480,15 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase{
 
-          padding:22px 18px 20px;
+          padding:20px;
+
+          border-radius:28px;
+
+        }
+
+
+
+        .profile-showcase-bg{
 
           border-radius:28px;
 
@@ -1522,7 +1498,7 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-top{
 
-          grid-template-columns:86px minmax(0, 1fr);
+          grid-template-columns:92px minmax(0, 1fr);
 
           gap:14px;
 
@@ -1534,11 +1510,11 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-avatar{
 
-          width:86px;
+          width:92px;
 
-          height:86px;
+          height:92px;
 
-          border-radius:22px;
+          border-radius:24px;
 
           font-size:34px;
 
@@ -1548,7 +1524,11 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-name{
 
-          font-size:28px;
+          font-size:34px;
+
+          letter-spacing:-1.1px;
+
+          white-space:normal;
 
         }
 
@@ -1556,9 +1536,11 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-handle{
 
-          font-size:15px;
+          font-size:18px;
 
           margin-top:8px;
+
+          white-space:normal;
 
         }
 
@@ -1580,13 +1562,13 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-pill-btn{
 
-          min-height:40px;
+          min-height:46px;
 
-          padding:0 14px;
+          padding:0 16px;
 
-          border-radius:14px;
+          border-radius:18px;
 
-          font-size:13px;
+          font-size:14px;
 
         }
 
@@ -1594,7 +1576,9 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-signed .mini{
 
-          font-size:13px;
+          font-size:16px;
+
+          margin-top:14px !important;
 
         }
 
@@ -1606,7 +1590,7 @@ router.get("/u/:username", async (req, res) => {
 
           gap:10px;
 
-          margin-top:18px;
+          margin-top:20px;
 
         }
 
@@ -1614,21 +1598,11 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-stat-chip{
 
-          min-height:84px;
+          min-height:98px;
 
-          text-align:center;
+          padding:14px 8px;
 
-          padding:14px 10px;
-
-          border-radius:18px;
-
-        }
-
-
-
-        .profile-stat-chip::after{
-
-          left:50%;
+          border-radius:20px;
 
         }
 
@@ -1636,7 +1610,7 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-stat-chip-num{
 
-          font-size:30px;
+          font-size:34px;
 
         }
 
@@ -1644,11 +1618,45 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-stat-chip-label{
 
-          font-size:13px;
+          font-size:12px;
 
           margin-top:8px;
 
-          line-height:1.2;
+        }
+
+
+
+        .profile-panel{
+
+          padding:20px;
+
+          border-radius:28px;
+
+        }
+
+
+
+        .profile-panel-heading{
+
+          font-size:24px;
+
+        }
+
+
+
+        .profile-panel-subheading,
+
+        .profile-section-text{
+
+          font-size:16px;
+
+        }
+
+
+
+        .profile-section-title{
+
+          font-size:22px;
 
         }
 
@@ -1656,11 +1664,11 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-simple-link{
 
-          font-size:16px;
+          font-size:17px;
 
-          padding:16px 18px;
+          padding:18px;
 
-          border-radius:18px;
+          border-radius:22px;
 
         }
 
@@ -1842,15 +1850,15 @@ router.get("/edit/:username", async (req, res) => {
 
         <section class="tz-edit-hero">
 
-          <div class="tz-edit-hero-glow tz-edit-hero-glow-a"></div>
-
-          <div class="tz-edit-hero-glow tz-edit-hero-glow-b"></div>
+          <div class="tz-edit-hero-bg"></div>
 
 
 
           <div class="tz-edit-hero-top">
 
             <div>
+
+              <div class="tz-edit-kicker">TAPZY PROFILE</div>
 
               <h1 class="tz-edit-title">Edit Profile</h1>
 
@@ -2254,71 +2262,39 @@ router.get("/edit/:username", async (req, res) => {
 
         overflow:hidden;
 
-        border-radius:32px;
+        border-radius:34px;
 
-        padding:24px;
+        padding:28px;
 
-        border:1px solid rgba(255,255,255,.07);
+        border:1px solid rgba(255,255,255,.08);
 
-        background:
-
-          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.03), transparent 45%),
-
-          linear-gradient(180deg, rgba(0,0,0,.995), rgba(0,0,0,1));
+        background:linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          0 24px 70px rgba(0,0,0,.68),
+          0 24px 70px rgba(0,0,0,.66),
 
-          inset 0 1px 0 rgba(255,255,255,.03),
-
-          inset 0 0 0 1px rgba(255,255,255,.015);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
 
 
-      .tz-edit-hero-glow{
+      .tz-edit-hero-bg{
 
         position:absolute;
 
-        border-radius:999px;
+        inset:0;
 
         pointer-events:none;
 
-        filter:blur(28px);
+        border-radius:34px;
 
-      }
+        background:
 
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
 
-
-      .tz-edit-hero-glow-a{
-
-        width:220px;
-
-        height:220px;
-
-        right:-30px;
-
-        top:-40px;
-
-        background:radial-gradient(circle, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 40%, transparent 72%);
-
-      }
-
-
-
-      .tz-edit-hero-glow-b{
-
-        width:190px;
-
-        height:190px;
-
-        left:60px;
-
-        bottom:-56px;
-
-        background:radial-gradient(circle, rgba(255,255,255,.02) 0%, rgba(255,255,255,.007) 40%, transparent 75%);
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
 
       }
 
@@ -2344,15 +2320,31 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
+      .tz-edit-kicker{
+
+        color:#d7deeb;
+
+        font-size:12px;
+
+        letter-spacing:6px;
+
+        text-transform:uppercase;
+
+        margin-bottom:12px;
+
+      }
+
+
+
       .tz-edit-title{
 
         margin:0;
 
-        font-size:48px;
+        font-size:52px;
 
-        line-height:1;
+        line-height:.98;
 
-        letter-spacing:-1.4px;
+        letter-spacing:-1.8px;
 
         font-weight:900;
 
@@ -2364,13 +2356,13 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-subtitle{
 
-        margin-top:10px;
+        margin-top:12px;
 
-        color:#d1d5dd;
+        color:#ffffff;
 
-        font-size:17px;
+        font-size:18px;
 
-        line-height:1.65;
+        line-height:1.7;
 
         max-width:720px;
 
@@ -2398,17 +2390,17 @@ router.get("/edit/:username", async (req, res) => {
 
         justify-content:center;
 
-        min-height:46px;
+        min-height:52px;
 
-        padding:0 18px;
+        padding:0 20px;
 
-        border-radius:16px;
+        border-radius:20px;
 
         text-decoration:none;
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(16,16,16,.96), rgba(6,6,6,.99));
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
         color:#fff;
 
@@ -2440,23 +2432,23 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-section{
 
-        border-radius:28px;
+        border-radius:34px;
 
-        padding:18px;
+        padding:24px;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
         background:
 
-          radial-gradient(520px 220px at 70% 12%, rgba(255,255,255,.025), transparent 40%),
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
 
-          linear-gradient(180deg, rgba(0,0,0,.99), rgba(0,0,0,1));
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.03),
+          0 18px 40px rgba(0,0,0,.28),
 
-          0 16px 34px rgba(0,0,0,.24);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
@@ -2464,7 +2456,7 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-section-head{
 
-        margin-bottom:14px;
+        margin-bottom:16px;
 
       }
 
@@ -2476,11 +2468,11 @@ router.get("/edit/:username", async (req, res) => {
 
         color:#fff;
 
-        font-size:22px;
+        font-size:28px;
 
         font-weight:900;
 
-        letter-spacing:-.4px;
+        letter-spacing:-.6px;
 
       }
 
@@ -2488,13 +2480,13 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-section-head p{
 
-        margin:6px 0 0;
+        margin:8px 0 0;
 
-        color:#c8ced7;
+        color:#ffffff;
 
-        font-size:13px;
+        font-size:16px;
 
-        line-height:1.6;
+        line-height:1.7;
 
       }
 
@@ -2544,11 +2536,11 @@ router.get("/edit/:username", async (req, res) => {
 
         margin:0;
 
-        color:#e2e4e8;
+        color:#fff;
 
-        font-size:13px;
+        font-size:14px;
 
-        font-weight:700;
+        font-weight:800;
 
         letter-spacing:.1px;
 
@@ -2562,13 +2554,13 @@ router.get("/edit/:username", async (req, res) => {
 
         width:100%;
 
-        padding:15px 16px;
+        padding:17px 18px;
 
-        border-radius:20px;
+        border-radius:22px;
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(5,5,5,.99), rgba(0,0,0,1));
+        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(0,0,0,1));
 
         color:#fff;
 
@@ -2577,6 +2569,18 @@ router.get("/edit/:username", async (req, res) => {
         box-sizing:border-box;
 
         box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+
+        font-size:16px;
+
+      }
+
+
+
+      .tz-field input::placeholder,
+
+      .tz-field textarea::placeholder{
+
+        color:#bfc7d4;
 
       }
 
@@ -2620,11 +2624,11 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-upload-box{
 
-        border-radius:22px;
+        border-radius:28px;
 
-        padding:16px;
+        padding:18px;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
         background:rgba(255,255,255,.02);
 
@@ -2648,9 +2652,9 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-photo-preview{
 
-        width:108px;
+        width:110px;
 
-        height:108px;
+        height:110px;
 
         border-radius:24px;
 
@@ -2658,7 +2662,7 @@ router.get("/edit/:username", async (req, res) => {
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(10,10,10,1), rgba(0,0,0,1));
+        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(0,0,0,1));
 
         display:flex;
 
@@ -2666,7 +2670,7 @@ router.get("/edit/:username", async (req, res) => {
 
         justify-content:center;
 
-        color:#d6d9de;
+        color:#fff;
 
         font-weight:800;
 
@@ -2692,7 +2696,7 @@ router.get("/edit/:username", async (req, res) => {
 
         color:#fff;
 
-        font-size:16px;
+        font-size:18px;
 
         font-weight:800;
 
@@ -2702,11 +2706,13 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-photo-sub{
 
-        color:#c2c8d0;
+        color:#ffffff;
 
-        font-size:13px;
+        font-size:15px;
 
-        margin-top:5px;
+        margin-top:6px;
+
+        line-height:1.6;
 
       }
 
@@ -2718,11 +2724,11 @@ router.get("/edit/:username", async (req, res) => {
 
         padding:14px;
 
-        border-radius:18px;
+        border-radius:20px;
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(5,5,5,.99), rgba(0,0,0,1));
+        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(0,0,0,1));
 
         color:#fff;
 
@@ -2756,7 +2762,7 @@ router.get("/edit/:username", async (req, res) => {
 
         color:#fff;
 
-        font-size:15px;
+        font-size:16px;
 
       }
 
@@ -2768,11 +2774,11 @@ router.get("/edit/:username", async (req, res) => {
 
         margin-top:4px;
 
-        color:#c2c8d0;
+        color:#ffffff;
 
-        font-size:13px;
+        font-size:14px;
 
-        line-height:1.55;
+        line-height:1.6;
 
         max-width:620px;
 
@@ -2820,19 +2826,19 @@ router.get("/edit/:username", async (req, res) => {
 
         gap:14px;
 
-        padding:14px 16px;
+        padding:16px 18px;
 
-        border-radius:18px;
+        border-radius:22px;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
         background:rgba(255,255,255,.02);
 
         color:#fff;
 
-        font-size:14px;
+        font-size:15px;
 
-        font-weight:700;
+        font-weight:800;
 
       }
 
@@ -2862,33 +2868,27 @@ router.get("/edit/:username", async (req, res) => {
 
         width:100%;
 
-        min-height:56px;
+        min-height:60px;
 
         border:none;
 
-        border-radius:20px;
+        border-radius:24px;
 
         cursor:pointer;
 
-        font-size:16px;
+        font-size:18px;
 
         font-weight:900;
 
-        color:#fff;
+        color:#000;
 
-        background:
-
-          radial-gradient(circle at 50% 0%, rgba(150,230,255,.20), transparent 55%),
-
-          linear-gradient(180deg, rgba(32,86,210,.92), rgba(14,34,90,.98));
+        background:linear-gradient(180deg, #eef4fb, #dfe9f5);
 
         box-shadow:
 
           0 12px 28px rgba(0,0,0,.24),
 
-          0 0 16px rgba(80,150,255,.14),
-
-          inset 0 1px 0 rgba(255,255,255,.14);
+          inset 0 1px 0 rgba(255,255,255,.7);
 
       }
 
@@ -2898,9 +2898,17 @@ router.get("/edit/:username", async (req, res) => {
 
         .tz-edit-hero{
 
-          padding:20px 16px;
+          padding:20px;
 
-          border-radius:26px;
+          border-radius:28px;
+
+        }
+
+
+
+        .tz-edit-hero-bg{
+
+          border-radius:28px;
 
         }
 
@@ -2908,7 +2916,9 @@ router.get("/edit/:username", async (req, res) => {
 
         .tz-edit-title{
 
-          font-size:34px;
+          font-size:36px;
+
+          letter-spacing:-1.2px;
 
         }
 
@@ -2916,7 +2926,7 @@ router.get("/edit/:username", async (req, res) => {
 
         .tz-edit-subtitle{
 
-          font-size:15px;
+          font-size:16px;
 
           line-height:1.6;
 
@@ -2924,11 +2934,21 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
+        .tz-edit-kicker{
+
+          font-size:11px;
+
+          letter-spacing:5px;
+
+        }
+
+
+
         .tz-edit-section{
 
-          padding:16px;
+          padding:20px;
 
-          border-radius:22px;
+          border-radius:28px;
 
         }
 
@@ -2950,11 +2970,23 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
-        .tz-edit-savebtn{
+        .tz-edit-btn{
 
-          min-height:54px;
+          min-height:46px;
 
           border-radius:18px;
+
+          padding:0 16px;
+
+        }
+
+
+
+        .tz-edit-savebtn{
+
+          min-height:56px;
+
+          border-radius:20px;
 
         }
 
