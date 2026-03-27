@@ -6,6 +6,8 @@ const helmet = require("helmet");
 
 const cookieParser = require("cookie-parser");
 
+const path = require("path");
+
 
 
 const { WEB_BASE } = require("./config");
@@ -136,7 +138,7 @@ app.use(express.urlencoded({ extended: true, limit: "12mb" }));
 
 
 
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/uploads", express.static(uploadsDir));
 
@@ -173,7 +175,3 @@ app.use("/", eventsRoutes);
 
 
 module.exports = app;
-
-The only important new line is:
-
-app.use(express.static("public"));
