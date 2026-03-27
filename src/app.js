@@ -18,6 +18,10 @@ const { sessionMiddleware } = require("./middleware");
 
 
 
+// ROUTES
+
+const homeRoutes = require("./routes/home"); // ✅ IMPORTANT
+
 const authRoutes = require("./routes/auth");
 
 const activateRoutes = require("./routes/activate");
@@ -50,6 +54,8 @@ app.set("trust proxy", 1);
 
 
 
+// ✅ CORS
+
 const ALLOWED_ORIGINS = new Set(
 
   [
@@ -63,10 +69,6 @@ const ALLOWED_ORIGINS = new Set(
     "http://127.0.0.1:3001",
 
     "http://localhost:3001",
-
-    "https://127.0.0.1:3001",
-
-    "https://localhost:3001",
 
   ]
 
@@ -98,27 +100,11 @@ app.use(
 
     origin(origin, cb) {
 
-      if (!origin || origin === "null") {
+      if (!origin) return cb(null, true);
 
-        return cb(null, true);
+      const normalized = String(origin).replace(/\/+$/, "");
 
-      }
-
-
-
-      const normalizedOrigin = String(origin).replace(/\/+$/, "");
-
-
-
-      if (ALLOWED_ORIGINS.has(normalizedOrigin)) {
-
-        return cb(null, true);
-
-      }
-
-
-
-      console.error("Blocked CORS origin:", origin);
+      if (ALLOWED_ORIGINS.has(normalized)) return cb(null, true);
 
       return cb(new Error("Not allowed by CORS"));
 
@@ -132,25 +118,43 @@ app.use(
 
 app.use(cookieParser());
 
-app.use(express.json({ limit: "12mb" }));
+app.use(express.json());
 
-app.use(express.urlencoded({ extended: true, limit: "12mb" }));
+app.use(express.urlencoded({ extended: true }));
 
 
+
+// ✅ STATIC FILES (LOGO FIX)
 
 app.use(express.static(path.join(__dirname, "..", "public")));
+
+
+
+// uploads
 
 app.use("/uploads", express.static(uploadsDir));
 
 
 
+// session
+
 app.use(sessionMiddleware);
 
 
 
+// assistant
+
 app.use("/api/assistant", assistantRoutes);
 
 
+
+// ✅ HOME FIRST
+
+app.use("/", homeRoutes);
+
+
+
+// other routes
 
 app.use("/", authRoutes);
 
@@ -175,3 +179,6 @@ app.use("/", eventsRoutes);
 
 
 module.exports = app;
+
+
+

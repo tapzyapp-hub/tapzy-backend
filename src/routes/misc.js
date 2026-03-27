@@ -32,6 +32,7 @@ router.get("/", async (req, res) => {
 
     const body = `
 
+<<<<<<< HEAD
     <div class="wrap home-wrap">
 
       <section class="home-hero-card">
@@ -101,11 +102,27 @@ router.get("/", async (req, res) => {
         </div>
 
       </section>
+=======
+<div class="wrap" style="max-width:1100px;">
+
+  <section class="home-hero-card">
+
+
+
+    <div class="home-kicker">Luxury Digital Identity</div>
+
+
+
+    <div class="home-logo-wrap">
+
+      <img src="/images/tapzy-logo-white.png" class="home-logo-img" />
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
     </div>
 
 
 
+<<<<<<< HEAD
 <style>
 
   .home-wrap{
@@ -155,10 +172,58 @@ router.get("/", async (req, res) => {
     z-index:3;
 
     padding:78px 28px 110px;
+=======
+    <div class="home-actions">
+
+      <a class="home-btn home-btn-light" href="${primaryHref}">
+
+        ${escapeHtml(primaryLabel)}
+
+      </a>
+
+
+
+      <a class="home-btn home-btn-dark" href="/search">
+
+        Search Users
+
+      </a>
+
+
+
+      <a class="home-btn home-btn-dark home-btn-center" href="${signedIn ? "/messages" : "/auth"}">
+
+        Messages
+
+      </a>
+
+    </div>
+
+
+
+  </section>
+
+</div>
+
+
+
+<style>
+
+.home-hero-card{
+
+  margin-top:28px;
+
+  min-height:620px;
+
+  border-radius:34px;
+
+  border:1px solid rgba(255,255,255,.08);
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
   }
 
 
+<<<<<<< HEAD
 
   .home-ambient{
 
@@ -167,9 +232,20 @@ router.get("/", async (req, res) => {
     border-radius:999px;
 
     filter:blur(48px);
+=======
+  background:
+
+    radial-gradient(600px 200px at 50% 55%, rgba(80,160,255,.25), transparent 70%),
+
+    radial-gradient(900px 420px at 50% -10%, rgba(125,214,255,.06), transparent 45%),
+
+    linear-gradient(180deg, #05070d, #02030a);
+
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
     pointer-events:none;
 
+<<<<<<< HEAD
     opacity:.95;
 
   }
@@ -185,9 +261,26 @@ router.get("/", async (req, res) => {
     top:-70px;
 
     left:50%;
+=======
+  box-shadow:
+
+    inset 0 1px 0 rgba(255,255,255,.04),
+
+    0 40px 120px rgba(0,0,0,.6);
+
+
+
+  padding:80px 28px 120px;
+
+  text-align:center;
+
+}
+
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
     transform:translateX(-50%);
 
+<<<<<<< HEAD
     background:
 
       radial-gradient(circle, rgba(55,106,255,.20) 0%, rgba(55,106,255,.09) 38%, transparent 72%);
@@ -221,9 +314,45 @@ router.get("/", async (req, res) => {
   .home-ambient-c{
 
     width:360px;
+=======
+.home-kicker{
+
+  color:#8f93a3;
+
+  text-transform:uppercase;
+
+  letter-spacing:5px;
+
+  font-size:16px;
+
+  margin-bottom:40px;
+
+}
+
+
+
+.home-logo-wrap{
+
+  display:flex;
+
+  justify-content:center;
+
+  margin-bottom:50px;
+
+}
+
+
+
+.home-logo-img{
+
+  max-width:320px;
+
+  width:100%;
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
     height:220px;
 
+<<<<<<< HEAD
     top:190px;
 
     right:18%;
@@ -261,9 +390,48 @@ router.get("/", async (req, res) => {
       radial-gradient(circle at 86% 78%, rgba(255,255,255,.08) 0 1px, transparent 1.5px);
 
   }
+=======
+
+  filter:
+
+    drop-shadow(0 0 12px rgba(255,255,255,.25))
+
+    drop-shadow(0 0 40px rgba(80,160,255,.35));
+
+}
 
 
 
+.home-actions{
+
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
+
+  gap:18px;
+
+  justify-content:center;
+
+}
+
+
+
+.home-btn{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  min-height:70px;
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
+
+  border-radius:30px;
+
+  font-weight:700;
+
+<<<<<<< HEAD
   .home-kicker{
 
     color:#9ca4b7;
@@ -299,9 +467,46 @@ router.get("/", async (req, res) => {
   .home-logo-img{
 
     display:block;
+=======
+  font-size:16px;
+
+  text-decoration:none;
+
+}
+
+
+
+/* WHITE BUTTON */
+
+.home-btn-light{
+
+  background:linear-gradient(180deg, #ffffff, #e8eefc);
+
+  color:#000;
+
+}
+
+
+
+/* DARK BUTTONS */
+
+.home-btn-dark{
+
+  background:rgba(20,22,32,.85);
+
+  color:#fff;
+
+  border:1px solid rgba(255,255,255,.08);
+
+  backdrop-filter:blur(10px);
+
+}
+
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
     width:min(100%, 520px);
 
+<<<<<<< HEAD
     max-width:520px;
 
     height:auto;
@@ -315,29 +520,65 @@ router.get("/", async (req, res) => {
       drop-shadow(0 0 50px rgba(80,140,255,.35));
 
     animation:homeLogoIn 1s ease;
+=======
+/* CENTER BUTTON */
+
+.home-btn-center{
+
+  grid-column:1 / -1;
+
+  max-width:260px;
+
+  margin:0 auto;
+
+}
+
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
   }
 
+/* MOBILE */
 
+<<<<<<< HEAD
 
   .home-galaxy-arc{
 
     position:relative;
 
     width:min(100%, 760px);
+=======
+@media (max-width:640px){
+
+  .home-logo-img{
+
+    max-width:240px;
+
+  }
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
     height:170px;
 
     margin:2px auto 34px;
 
+<<<<<<< HEAD
     pointer-events:none;
 
     overflow:visible;
 
   }
+=======
+  .home-btn{
 
+    font-size:14px;
 
+    min-height:60px;
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 
+  }
+
+}
+
+<<<<<<< HEAD
   .home-galaxy-core{
 
     position:absolute;
@@ -864,6 +1105,20 @@ ${renderTapzyAssistant({
 
 })}
 
+=======
+</style>
+
+
+
+${renderTapzyAssistant({
+
+  username: currentProfile?.username || "User",
+
+  pageType: "home",
+
+})}
+
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
 `;
 
 
@@ -892,3 +1147,12 @@ ${renderTapzyAssistant({
 
 });
 
+<<<<<<< HEAD
+=======
+
+
+module.exports = router;
+
+
+
+>>>>>>> c83ff29 (Fix homepage + galaxy glow)
