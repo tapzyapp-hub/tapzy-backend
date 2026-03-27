@@ -32,49 +32,71 @@ router.get("/", async (req, res) => {
 
     const body = `
 
-    <div class="wrap" style="max-width:1100px;">
+    <div class="wrap home-wrap">
 
       <section class="home-hero-card">
 
-        <div class="home-kicker">Luxury Digital Identity</div>
+        <div class="home-ambient home-ambient-a"></div>
+
+        <div class="home-ambient home-ambient-b"></div>
+
+        <div class="home-ambient home-ambient-c"></div>
+
+        <div class="home-noise"></div>
 
 
 
-        <div class="home-logo-wrap">
+        <div class="home-hero-inner">
 
-          <img src="/images/tapzy-logo-white.png" alt="Tapzy" class="home-logo-img" />
-
-        </div>
+          <div class="home-kicker">Luxury Digital Identity</div>
 
 
 
-        <p class="home-subtitle"></p>
+          <div class="home-logo-wrap">
+
+            <img src="/images/tapzy-logo-white.png" alt="Tapzy" class="home-logo-img" />
+
+          </div>
 
 
 
-        <div class="home-actions">
+          <div class="home-galaxy-arc">
 
-          <a class="home-btn home-btn-light" href="${primaryHref}">
+            <div class="home-galaxy-core"></div>
 
-            ${escapeHtml(primaryLabel)}
+            <div class="home-galaxy-stars home-galaxy-stars-a"></div>
 
-          </a>
+            <div class="home-galaxy-stars home-galaxy-stars-b"></div>
 
-
-
-          <a class="home-btn home-btn-dark" href="/search">
-
-            Search Users
-
-          </a>
+          </div>
 
 
 
-          <a class="home-btn home-btn-dark home-btn-center" href="${signedIn ? "/messages" : "/auth"}">
+          <div class="home-actions">
 
-            Messages
+            <a class="home-btn home-btn-light" href="${primaryHref}">
 
-          </a>
+              ${escapeHtml(primaryLabel)}
+
+            </a>
+
+
+
+            <a class="home-btn home-btn-dark" href="/search">
+
+              Search Users
+
+            </a>
+
+
+
+            <a class="home-btn home-btn-dark home-btn-center" href="${signedIn ? "/messages" : "/auth"}">
+
+              Messages
+
+            </a>
+
+          </div>
 
         </div>
 
@@ -84,377 +106,765 @@ router.get("/", async (req, res) => {
 
 
 
-   <style>
+<style>
 
-      .home-hero-card{
+  .home-wrap{
 
-        margin-top:28px;
+    max-width:1100px;
 
-        min-height:620px;
+  }
 
-        border-radius:34px;
 
-        border:1px solid rgba(255,255,255,.08);
 
-        background:
+  .home-hero-card{
 
-          radial-gradient(900px 420px at 50% -10%, rgba(125,214,255,.06), transparent 45%),
+    position:relative;
 
-          linear-gradient(180deg, rgba(9,10,15,.98), rgba(4,4,7,1));
+    overflow:hidden;
 
-        box-shadow:
+    margin-top:28px;
 
-          inset 0 1px 0 rgba(255,255,255,.03),
+    min-height:700px;
 
-          0 30px 80px rgba(0,0,0,.42);
+    border-radius:38px;
 
-        padding:72px 28px 180px;
+    border:1px solid rgba(255,255,255,.07);
 
-        text-align:center;
+    background:
 
-        position:relative;
+      linear-gradient(180deg, rgba(7,9,14,.985), rgba(2,3,7,1));
 
-        overflow:hidden;
+    box-shadow:
 
-      }
+      0 40px 110px rgba(0,0,0,.62),
 
+      inset 0 1px 0 rgba(255,255,255,.04),
 
+      inset 0 0 0 1px rgba(255,255,255,.015);
 
-      .home-kicker{
+    text-align:center;
 
-        color:#8f93a3;
+  }
 
-        text-transform:uppercase;
 
-        letter-spacing:5px;
 
-        font-size:20px;
+  .home-hero-inner{
 
-        margin-bottom:26px;
+    position:relative;
 
-      }
+    z-index:3;
 
+    padding:78px 28px 110px;
 
+  }
 
-      .home-logo-wrap{
 
-        display:flex;
 
-        justify-content:center;
+  .home-ambient{
 
-        align-items:center;
+    position:absolute;
 
-        margin:0 auto;
+    border-radius:999px;
 
-      }
+    filter:blur(48px);
 
+    pointer-events:none;
 
+    opacity:.95;
 
-      .home-logo-img{
+  }
 
-        display:block;
 
-        width:min(100%, 420px);
 
-        max-width:420px;
+  .home-ambient-a{
 
-        height:auto;
+    width:620px;
 
-        object-fit:contain;
+    height:320px;
 
-        filter:drop-shadow(0 6px 20px rgba(255,255,255,.08));
+    top:-70px;
 
-      }
+    left:50%;
 
+    transform:translateX(-50%);
 
+    background:
 
-      .home-subtitle{
+      radial-gradient(circle, rgba(55,106,255,.20) 0%, rgba(55,106,255,.09) 38%, transparent 72%);
 
-        margin:26px auto 0;
+    animation:homeFloatA 10s ease-in-out infinite;
 
-        max-width:760px;
+  }
 
-        color:#8f93a3;
 
-        font-size:14px;
 
-        line-height:1.35;
+  .home-ambient-b{
 
-        min-height:1px;
+    width:360px;
 
-      }
+    height:220px;
 
+    top:140px;
 
+    left:24%;
 
-      .home-actions{
+    background:
 
-        margin-top:44px;
+      radial-gradient(circle, rgba(163,82,255,.08) 0%, rgba(163,82,255,.04) 42%, transparent 76%);
 
-        display:grid;
+    animation:homeFloatB 12s ease-in-out infinite;
 
-        grid-template-columns:repeat(2, minmax(250px, 340px));
+  }
 
-        justify-content:center;
 
-        gap:18px 22px;
 
-      }
+  .home-ambient-c{
 
+    width:360px;
 
+    height:220px;
 
-      .home-btn{
+    top:190px;
 
-        display:flex;
+    right:18%;
 
-        align-items:center;
+    background:
 
-        justify-content:center;
+      radial-gradient(circle, rgba(94,211,255,.10) 0%, rgba(94,211,255,.05) 42%, transparent 76%);
 
-        min-height:88px;
+    animation:homeFloatC 11s ease-in-out infinite;
 
-        padding:20px 28px;
+  }
 
-        border-radius:30px;
 
-        text-decoration:none;
 
-        font-size:24px;
+  .home-noise{
 
-        font-weight:800;
+    position:absolute;
 
-        letter-spacing:.2px;
+    inset:0;
 
-        transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    pointer-events:none;
 
-        text-align:center;
+    opacity:.05;
 
-        white-space:nowrap;
+    background-image:
 
-      }
+      radial-gradient(circle at 16% 18%, rgba(255,255,255,.18) 0 1px, transparent 1.5px),
 
+      radial-gradient(circle at 78% 14%, rgba(255,255,255,.14) 0 1px, transparent 1.5px),
 
+      radial-gradient(circle at 63% 39%, rgba(255,255,255,.08) 0 1px, transparent 1.5px),
 
-      .home-btn:hover{
+      radial-gradient(circle at 22% 74%, rgba(255,255,255,.10) 0 1px, transparent 1.5px),
 
-        transform:translateY(-1px);
+      radial-gradient(circle at 86% 78%, rgba(255,255,255,.08) 0 1px, transparent 1.5px);
 
-      }
+  }
 
 
 
-      .home-btn-light{
+  .home-kicker{
 
-        color:#000;
+    color:#9ca4b7;
 
-        background:linear-gradient(180deg, #f7fbff, #deeffb);
+    text-transform:uppercase;
 
-        box-shadow:0 18px 36px rgba(0,0,0,.24);
+    letter-spacing:6px;
 
-      }
+    font-size:17px;
 
+    margin-bottom:50px;
 
+    text-shadow:0 0 18px rgba(255,255,255,.04);
 
-      .home-btn-dark{
+  }
 
-        color:#fff;
 
-        background:linear-gradient(180deg, rgba(22,23,31,.98), rgba(14,15,22,.98));
 
-        border:1px solid rgba(255,255,255,.08);
+  .home-logo-wrap{
 
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    display:flex;
 
-      }
+    justify-content:center;
 
+    align-items:center;
 
+    margin-bottom:8px;
 
-      .home-btn-center{
+  }
 
-        grid-column:1 / -1;
 
-        justify-self:center;
 
-        width:min(340px, 100%);
+  .home-logo-img{
 
-      }
+    display:block;
 
+    width:min(100%, 520px);
 
+    max-width:520px;
 
-      @media (max-width: 900px){
+    height:auto;
 
-        .home-hero-card{
+    object-fit:contain;
 
-          min-height:560px;
+    filter:
 
-          padding:56px 22px 170px;
+      drop-shadow(0 10px 30px rgba(255,255,255,.08))
 
-          border-radius:28px;
+      drop-shadow(0 0 50px rgba(80,140,255,.35));
 
-        }
+    animation:homeLogoIn 1s ease;
 
+  }
 
 
-        .home-logo-img{
 
-          width:min(100%, 340px);
+  .home-galaxy-arc{
 
-          max-width:340px;
+    position:relative;
 
-        }
+    width:min(100%, 760px);
 
+    height:170px;
 
+    margin:2px auto 34px;
 
-        .home-subtitle{
+    pointer-events:none;
 
-          font-size:26px;
+    overflow:visible;
 
-        }
+  }
 
 
 
-        .home-kicker{
+  .home-galaxy-core{
 
-          font-size:15px;
+    position:absolute;
 
-          letter-spacing:4px;
+    inset:0;
 
-        }
+    border-radius:999px;
 
+    background:
 
+      radial-gradient(circle at 14% 58%, rgba(178,90,255,.42) 0%, transparent 18%),
 
-        .home-actions{
+      radial-gradient(circle at 28% 70%, rgba(118,123,255,.38) 0%, transparent 20%),
 
-          grid-template-columns:1fr 1fr;
+      radial-gradient(circle at 44% 78%, rgba(157,202,255,.30) 0%, transparent 18%),
 
-        }
+      radial-gradient(circle at 56% 78%, rgba(138,208,255,.32) 0%, transparent 18%),
 
+      radial-gradient(circle at 72% 70%, rgba(98,162,255,.34) 0%, transparent 20%),
 
+      radial-gradient(circle at 86% 58%, rgba(109,223,255,.40) 0%, transparent 18%),
 
-        .home-btn{
+      radial-gradient(ellipse at 50% 78%, rgba(166,220,255,.55) 0%, rgba(128,175,255,.18) 24%, transparent 52%);
 
-          min-height:76px;
+    filter:blur(24px);
 
-          font-size:21px;
+    opacity:.95;
 
-          border-radius:26px;
+    mask-image: radial-gradient(ellipse at 50% 78%, #000 0 48%, transparent 68%);
 
-          white-space:nowrap;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 78%, #000 0 48%, transparent 68%);
 
-        }
+    animation:homeNebulaPulse 8s ease-in-out infinite;
 
-      }
+  }
 
 
 
-      @media (max-width: 640px){
+  .home-galaxy-stars{
 
-        .wrap{
+    position:absolute;
 
-          padding-top:18px;
+    inset:0;
 
-        }
+    border-radius:999px;
 
+    opacity:.75;
 
+    mask-image: radial-gradient(ellipse at 50% 78%, #000 0 50%, transparent 70%);
 
-        .home-hero-card{
+    -webkit-mask-image: radial-gradient(ellipse at 50% 78%, #000 0 50%, transparent 70%);
 
-          margin-top:18px;
+  }
 
-          min-height:calc(100vh - 220px);
 
-          padding:44px 18px 170px;
 
-          border-radius:24px;
+  .home-galaxy-stars-a{
 
-        }
+    background-image:
 
+      radial-gradient(circle at 18% 61%, rgba(255,255,255,.95) 0 1.2px, transparent 2px),
 
+      radial-gradient(circle at 22% 66%, rgba(255,255,255,.8) 0 1px, transparent 1.8px),
 
-        .home-kicker{
+      radial-gradient(circle at 26% 71%, rgba(173,212,255,.85) 0 1px, transparent 1.8px),
 
-          font-size:12px;
+      radial-gradient(circle at 34% 75%, rgba(255,255,255,.75) 0 1px, transparent 1.8px),
 
-          letter-spacing:4px;
+      radial-gradient(circle at 41% 78%, rgba(188,224,255,.75) 0 1px, transparent 1.8px),
 
-          margin-bottom:22px;
+      radial-gradient(circle at 49% 79%, rgba(255,255,255,.8) 0 1.1px, transparent 2px),
 
-        }
+      radial-gradient(circle at 57% 78%, rgba(183,220,255,.8) 0 1px, transparent 1.8px),
 
+      radial-gradient(circle at 65% 75%, rgba(255,255,255,.75) 0 1px, transparent 1.8px),
 
+      radial-gradient(circle at 73% 70%, rgba(166,213,255,.85) 0 1px, transparent 1.8px),
 
-        .home-logo-img{
+      radial-gradient(circle at 81% 63%, rgba(255,255,255,.9) 0 1.2px, transparent 2px);
 
-          width:min(100%, 260px);
+    filter:blur(.25px);
 
-          max-width:260px;
+  }
 
-        }
 
 
+  .home-galaxy-stars-b{
 
-        .home-subtitle{
+    background-image:
 
-          margin-top:22px;
+      radial-gradient(circle at 16% 63%, rgba(144,106,255,.45) 0 2px, transparent 5px),
 
-          font-size:18px;
+      radial-gradient(circle at 31% 74%, rgba(120,170,255,.40) 0 2px, transparent 5px),
 
-          line-height:1.45;
+      radial-gradient(circle at 46% 79%, rgba(157,212,255,.38) 0 2px, transparent 5px),
 
-          max-width:320px;
+      radial-gradient(circle at 62% 77%, rgba(116,173,255,.40) 0 2px, transparent 5px),
 
-        }
+      radial-gradient(circle at 84% 61%, rgba(96,209,255,.42) 0 2px, transparent 5px);
 
+    filter:blur(8px);
 
+    opacity:.9;
 
-        .home-actions{
+  }
 
-          margin-top:34px;
 
-          grid-template-columns:1fr 1fr;
 
-          gap:14px;
+  .home-actions{
 
-        }
+    display:grid;
 
+    grid-template-columns:repeat(2, minmax(230px, 290px));
 
+    justify-content:center;
 
-        .home-btn{
+    gap:16px 18px;
 
-          min-height:64px;
+  }
 
-          font-size:14px;
 
-          padding:14px 12px;
 
-          border-radius:22px;
+  .home-btn{
 
-          white-space:nowrap;
+    display:flex;
 
-        }
+    align-items:center;
 
+    justify-content:center;
 
+    min-height:74px;
 
-        .home-btn-center{
+    padding:16px 22px;
 
-          width:min(240px, 100%);
+    border-radius:26px;
 
-        }
+    text-decoration:none;
 
-      }
+    font-size:18px;
 
-    </style>
+    font-weight:800;
 
+    letter-spacing:.15px;
 
+    transition:
 
-    ${renderTapzyAssistant({
+      transform .22s ease,
 
-      username: currentProfile?.username || "User",
+      box-shadow .22s ease,
 
-      pageType: "home",
+      border-color .22s ease,
 
-    })}
+      background .22s ease;
 
-    `;
+    backdrop-filter:blur(10px);
+
+    -webkit-backdrop-filter:blur(10px);
+
+  }
+
+
+
+  .home-btn:hover{
+
+    transform:translateY(-3px);
+
+  }
+
+
+
+  .home-btn-light{
+
+    color:#05070b;
+
+    background:
+
+      linear-gradient(180deg, rgba(248,252,255,.99), rgba(227,238,248,.98));
+
+    box-shadow:
+
+      0 18px 36px rgba(0,0,0,.28),
+
+      inset 0 1px 0 rgba(255,255,255,.92);
+
+  }
+
+
+
+  .home-btn-dark{
+
+    color:#fff;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    background:
+
+      linear-gradient(180deg, rgba(20,24,36,.82), rgba(10,12,20,.90));
+
+    box-shadow:
+
+      inset 0 1px 0 rgba(255,255,255,.05),
+
+      0 12px 24px rgba(0,0,0,.20);
+
+  }
+
+
+
+  .home-btn-dark:hover{
+
+    border-color:rgba(255,255,255,.12);
+
+    background:
+
+      linear-gradient(180deg, rgba(24,29,43,.88), rgba(12,15,24,.94));
+
+    box-shadow:
+
+      inset 0 1px 0 rgba(255,255,255,.06),
+
+      0 16px 30px rgba(0,0,0,.26),
+
+      0 0 26px rgba(87,169,255,.06);
+
+  }
+
+
+
+  .home-btn-center{
+
+    grid-column:1 / -1;
+
+    width:min(290px, 100%);
+
+    justify-self:center;
+
+  }
+
+
+
+  @keyframes homeLogoIn{
+
+    0%{
+
+      opacity:0;
+
+      transform:translateY(14px) scale(.97);
+
+    }
+
+    100%{
+
+      opacity:1;
+
+      transform:none;
+
+    }
+
+  }
+
+
+
+  @keyframes homeFloatA{
+
+    0%,100%{
+
+      transform:translateX(-50%) translateY(0);
+
+    }
+
+    50%{
+
+      transform:translateX(-50%) translateY(10px);
+
+    }
+
+  }
+
+
+
+  @keyframes homeFloatB{
+
+    0%,100%{
+
+      transform:translateY(0);
+
+    }
+
+    50%{
+
+      transform:translateY(-8px);
+
+    }
+
+  }
+
+
+
+  @keyframes homeFloatC{
+
+    0%,100%{
+
+      transform:translateY(0);
+
+    }
+
+    50%{
+
+      transform:translateY(10px);
+
+    }
+
+  }
+
+
+
+  @keyframes homeNebulaPulse{
+
+    0%,100%{
+
+      opacity:.82;
+
+      transform:scale(1);
+
+    }
+
+    50%{
+
+      opacity:1;
+
+      transform:scale(1.03);
+
+    }
+
+  }
+
+
+
+  @media (max-width: 900px){
+
+    .home-hero-card{
+
+      min-height:620px;
+
+      border-radius:30px;
+
+    }
+
+
+
+    .home-hero-inner{
+
+      padding:68px 22px 105px;
+
+    }
+
+
+
+    .home-kicker{
+
+      font-size:14px;
+
+      letter-spacing:5px;
+
+      margin-bottom:42px;
+
+    }
+
+
+
+    .home-logo-img{
+
+      max-width:420px;
+
+    }
+
+
+
+    .home-galaxy-arc{
+
+      height:138px;
+
+      margin-bottom:32px;
+
+      width:min(100%, 580px);
+
+    }
+
+
+
+    .home-actions{
+
+      grid-template-columns:1fr 1fr;
+
+    }
+
+
+
+    .home-btn{
+
+      min-height:70px;
+
+      font-size:17px;
+
+      border-radius:24px;
+
+    }
+
+  }
+
+
+
+  @media (max-width: 640px){
+
+    .home-wrap{
+
+      padding-top:18px;
+
+    }
+
+
+
+    .home-hero-card{
+
+      margin-top:18px;
+
+      min-height:calc(100vh - 220px);
+
+      border-radius:26px;
+
+    }
+
+
+
+    .home-hero-inner{
+
+      padding:56px 18px 96px;
+
+    }
+
+
+
+    .home-kicker{
+
+      font-size:12px;
+
+      letter-spacing:4px;
+
+      margin-bottom:34px;
+
+    }
+
+
+
+    .home-logo-wrap{
+
+      margin-bottom:8px;
+
+    }
+
+
+
+    .home-logo-img{
+
+      max-width:280px;
+
+    }
+
+
+
+    .home-galaxy-arc{
+
+      height:96px;
+
+      margin-bottom:24px;
+
+      width:min(100%, 320px);
+
+    }
+
+
+
+    .home-actions{
+
+      grid-template-columns:1fr 1fr;
+
+      gap:14px;
+
+    }
+
+
+
+    .home-btn{
+
+      min-height:60px;
+
+      font-size:14px;
+
+      padding:14px 10px;
+
+      border-radius:22px;
+
+    }
+
+
+
+    .home-btn-center{
+
+      width:min(240px, 100%);
+
+    }
+
+  }
+
+</style>
+
+
+
+${renderTapzyAssistant({
+
+  username: currentProfile?.username || "User",
+
+  pageType: "home",
+
+})}
+
+`;
 
 
 
@@ -482,6 +892,3 @@ router.get("/", async (req, res) => {
 
 });
 
-
-
-module.exports = router;
