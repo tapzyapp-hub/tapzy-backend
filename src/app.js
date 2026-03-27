@@ -138,11 +138,7 @@ app.use(express.urlencoded({ extended: true, limit: "12mb" }));
 
 
 
-// ✅ THIS IS THE IMPORTANT FIX
-
-app.use(express.static(path.join(__dirname, "public")));
-
-
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.use("/uploads", express.static(uploadsDir));
 
