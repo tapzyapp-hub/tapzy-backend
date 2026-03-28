@@ -166,7 +166,7 @@ router.get("/", async (req, res) => {
 
     filter:drop-shadow(0 10px 30px rgba(255,255,255,.08));
 
-    animation:logoPulse 3.2s ease-in-out infinite;
+    animation:logoPulse 2.8s ease-in-out infinite;
 
     transform-origin:center center;
 
@@ -352,7 +352,7 @@ router.get("/", async (req, res) => {
 
       transform:scale(1.018);
 
-      filter:drop-shadow(0 12px 34px rgba(255,255,255,.12));
+      filter:drop-shadow(0 12px 40px rgba(255,255,255,.16));
 
     }
 
