@@ -158,7 +158,7 @@ router.get("/", async (req, res) => {
 
     width:100%;
 
-    max-width:320px;
+    max-width:300px;
 
     height:auto;
 
