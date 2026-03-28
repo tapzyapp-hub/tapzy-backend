@@ -17,7 +17,6 @@ router.get("/", async (req, res) => {
     const body = `
     <div class="wrap home-wrap">
       <section class="home-hero-card">
-
         <div class="home-kicker">Luxury Digital Identity</div>
 
         <div class="home-logo-wrap">
@@ -37,7 +36,6 @@ router.get("/", async (req, res) => {
             Messages
           </a>
         </div>
-
       </section>
     </div>
 
@@ -52,13 +50,12 @@ router.get("/", async (req, res) => {
     border-radius:34px;
     border:1px solid rgba(255,255,255,.08);
     background:
-      radial-gradient(500px 260px at 50% 35%, rgba(125,214,255,.08), transparent 60%),
       radial-gradient(900px 420px at 50% -10%, rgba(125,214,255,.06), transparent 45%),
       linear-gradient(180deg, rgba(9,10,15,.98), rgba(4,4,7,1));
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.03),
-      0 30px 80px rgba(0,0,0,.45);
-    padding:80px 28px 110px;
+      0 30px 80px rgba(0,0,0,.42);
+    padding:80px 28px 120px;
     text-align:center;
     position:relative;
     overflow:hidden;
@@ -69,29 +66,22 @@ router.get("/", async (req, res) => {
     text-transform:uppercase;
     letter-spacing:5px;
     font-size:18px;
-    margin-bottom:36px;
+    margin-bottom:40px;
   }
 
   .home-logo-wrap{
     display:flex;
     justify-content:center;
     align-items:center;
-    margin-bottom:30px;
+    margin-bottom:40px;
   }
 
   .home-logo-img{
-    display:block;
-    width:min(92vw, 380px);
+    width:100%;
+    max-width:340px;
     height:auto;
     object-fit:contain;
-    margin:0 auto;
-    filter:
-      brightness(1.3)
-      contrast(1.18);
-    box-shadow:
-      0 0 12px rgba(255,255,255,.10),
-      0 8px 22px rgba(255,255,255,.05);
-    animation:fadeIn 0.9s ease;
+    filter:drop-shadow(0 10px 30px rgba(255,255,255,.08));
   }
 
   .home-actions{
@@ -105,32 +95,29 @@ router.get("/", async (req, res) => {
     display:flex;
     align-items:center;
     justify-content:center;
-    min-height:72px;
+    min-height:70px;
     padding:16px 22px;
-    border-radius:28px;
+    border-radius:26px;
     text-decoration:none;
     font-size:18px;
     font-weight:800;
-    transition:all .25s ease;
+    transition:all .2s ease;
   }
 
   .home-btn:hover{
-    transform:translateY(-3px);
+    transform:translateY(-2px);
   }
 
   .home-btn-light{
     color:#000;
-    background:linear-gradient(180deg, #ffffff, #dfefff);
-    box-shadow:
-      0 18px 36px rgba(0,0,0,.25),
-      inset 0 1px 0 rgba(255,255,255,.6);
+    background:linear-gradient(180deg, #f7fbff, #deeffb);
+    box-shadow:0 18px 36px rgba(0,0,0,.25);
   }
 
   .home-btn-dark{
     color:#fff;
     background:linear-gradient(180deg, rgba(22,23,31,.98), rgba(14,15,22,.98));
     border:1px solid rgba(255,255,255,.08);
-    box-shadow:0 12px 30px rgba(0,0,0,.4);
   }
 
   .home-btn-center{
@@ -144,24 +131,22 @@ router.get("/", async (req, res) => {
     .home-hero-card{
       margin-top:18px;
       min-height:calc(100vh - 220px);
-      padding:50px 18px 90px;
+      padding:50px 18px 100px;
       border-radius:24px;
     }
 
     .home-kicker{
       font-size:12px;
       letter-spacing:4px;
-      margin-bottom:30px;
+      margin-bottom:34px;
+    }
+
+    .home-logo-wrap{
+      margin-bottom:42px;
     }
 
     .home-logo-img{
-      width:min(92vw, 360px);
-      filter:
-        brightness(1.34)
-        contrast(1.2);
-      box-shadow:
-        0 0 14px rgba(255,255,255,.12),
-        0 10px 26px rgba(255,255,255,.06);
+      max-width:350px;
     }
 
     .home-actions{
@@ -178,17 +163,6 @@ router.get("/", async (req, res) => {
 
     .home-btn-center{
       max-width:240px;
-    }
-  }
-
-  @keyframes fadeIn{
-    from{
-      opacity:0;
-      transform:translateY(10px);
-    }
-    to{
-      opacity:1;
-      transform:translateY(0);
     }
   }
 </style>
