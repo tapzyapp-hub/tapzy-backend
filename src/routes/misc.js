@@ -78,7 +78,7 @@ router.get("/", async (req, res) => {
 
   .home-logo-img{
     width:100%;
-    max-width:340px;
+    max-width:350px;
     height:auto;
     object-fit:contain;
     filter:drop-shadow(0 10px 30px rgba(255,255,255,.08));
@@ -146,7 +146,7 @@ router.get("/", async (req, res) => {
     }
 
     .home-logo-img{
-      max-width:340px;
+      max-width:350px;
     }
 
     .home-actions{
