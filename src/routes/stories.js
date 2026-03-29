@@ -1,4 +1,3 @@
-src/routes/stories.js
 
 const router = require("express").Router();
 const prisma = require("../prisma");
