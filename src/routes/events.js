@@ -10,196 +10,6 @@ const {
 } = require("../utils");
 const { syncRealEvents } = require("../services/eventSyncService");
 
-function sampleEvents() {
-  const now = Date.now();
-  const h = 3600000;
-  const d = 86400000;
-
-  return [
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-net-1",
-      title: "Founder Networking Night",
-      description: "Meet founders, builders, and startup operators in a premium social setting.",
-      imageUrl: "",
-      venueName: "Toronto Innovation Hub",
-      address: "Toronto, ON",
-      city: "Toronto",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Networking",
-      startAt: new Date(now + d),
-      endAt: new Date(now + d + 3 * h),
-      latitude: 43.6532,
-      longitude: -79.3832,
-      priceText: "Free",
-      rawPayload: { seeded: true },
-    },
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-night-1",
-      title: "Friday Night Lounge",
-      description: "Cocktails, DJ energy, and a polished nightlife atmosphere.",
-      imageUrl: "",
-      venueName: "Velvet Lounge",
-      address: "Toronto, ON",
-      city: "Toronto",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Nightlife",
-      startAt: new Date(now + d + 18 * h),
-      endAt: new Date(now + d + 23 * h),
-      latitude: 43.6532,
-      longitude: -79.3832,
-      priceText: "$20",
-      rawPayload: { seeded: true },
-    },
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-night-2",
-      title: "Barrie Social Night",
-      description: "Music, drinks, and premium local connections.",
-      imageUrl: "",
-      venueName: "Barrie Social Club",
-      address: "Barrie, ON",
-      city: "Barrie",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Nightlife",
-      startAt: new Date(now + 2 * d + 18 * h),
-      endAt: new Date(now + 2 * d + 22 * h),
-      latitude: 44.3894,
-      longitude: -79.6903,
-      priceText: "$10",
-      rawPayload: { seeded: true },
-    },
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-tech-1",
-      title: "AI Builders Meetup",
-      description: "Developers and founders discussing AI tools and startup ideas.",
-      imageUrl: "",
-      venueName: "Tech Collective",
-      address: "Toronto, ON",
-      city: "Toronto",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Tech",
-      startAt: new Date(now + 3 * d),
-      endAt: new Date(now + 3 * d + 3 * h),
-      latitude: 43.6532,
-      longitude: -79.3832,
-      priceText: "Free",
-      rawPayload: { seeded: true },
-    },
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-music-1",
-      title: "Live Music Night",
-      description: "An evening event with local artists and social energy.",
-      imageUrl: "",
-      venueName: "City Stage",
-      address: "Barrie, ON",
-      city: "Barrie",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Music",
-      startAt: new Date(now + 2 * d),
-      endAt: new Date(now + 2 * d + 4 * h),
-      latitude: 44.3894,
-      longitude: -79.6903,
-      priceText: "$15",
-      rawPayload: { seeded: true },
-    },
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-food-1",
-      title: "Food & Drink Festival",
-      description: "Local chefs, food trucks, and premium social atmosphere.",
-      imageUrl: "",
-      venueName: "Downtown Square",
-      address: "Toronto, ON",
-      city: "Toronto",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Food",
-      startAt: new Date(now + 4 * d),
-      endAt: new Date(now + 4 * d + 6 * h),
-      latitude: 43.6532,
-      longitude: -79.3832,
-      priceText: "Free",
-      rawPayload: { seeded: true },
-    },
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-cars-1",
-      title: "Exotic Car Meet",
-      description: "Supercars, enthusiasts, and premium visual culture.",
-      imageUrl: "",
-      venueName: "Vaughan Auto Plaza",
-      address: "Vaughan, ON",
-      city: "Vaughan",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Cars",
-      startAt: new Date(now + 5 * d),
-      endAt: new Date(now + 5 * d + 3 * h),
-      latitude: 43.8361,
-      longitude: -79.4983,
-      priceText: "Free",
-      rawPayload: { seeded: true },
-    },
-    {
-      source: "tapzy_seed",
-      sourceEventId: "seed-creator-1",
-      title: "Creator Networking Night",
-      description: "Creators, influencers, and brands connecting in person.",
-      imageUrl: "",
-      venueName: "Creator Studio",
-      address: "Toronto, ON",
-      city: "Toronto",
-      region: "Ontario",
-      country: "Canada",
-      eventUrl: "",
-      ticketUrl: "",
-      category: "Creator",
-      startAt: new Date(now + 4 * d),
-      endAt: new Date(now + 4 * d + 3 * h),
-      latitude: 43.6532,
-      longitude: -79.3832,
-      priceText: "Free",
-      rawPayload: { seeded: true },
-    },
-  ];
-}
-
-async function seedEventsIfEmpty() {
-  const count = await prisma.eventFinderItem.count();
-  if (count > 0) return;
-
-  for (const event of sampleEvents()) {
-    try {
-      await prisma.eventFinderItem.create({ data: event });
-    } catch (e) {
-      if (e?.code !== "P2002") throw e;
-    }
-  }
-}
-
 function pickImage(event) {
   if (event.imageUrl) return event.imageUrl;
 
@@ -233,6 +43,13 @@ function pickImage(event) {
   return "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80";
 }
 
+function shortText(text, max = 180) {
+  const clean = String(text || "").trim();
+  if (!clean) return "Premium event discovery inside Tapzy.";
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max).trim()}...`;
+}
+
 function eventSlide(event, currentProfile, savedSet, interestedSet, attendingSet, goingCountMap) {
   const image = pickImage(event);
   const when = event.startAt ? formatPrettyLocal(event.startAt) : "Date coming soon";
@@ -245,10 +62,8 @@ function eventSlide(event, currentProfile, savedSet, interestedSet, attendingSet
   return `
   <section class="event-slide" id="event-${escapeHtml(event.id)}">
     <div class="event-slide-media" style="background-image:
-      linear-gradient(180deg, rgba(3,5,10,.12), rgba(2,4,8,.42) 32%, rgba(2,4,8,.86) 72%, rgba(0,0,0,.96)),
+      linear-gradient(180deg, rgba(4,6,10,.08), rgba(4,6,10,.18) 22%, rgba(4,6,10,.52) 58%, rgba(0,0,0,.88)),
       url('${escapeHtml(image)}');"></div>
-
-    <div class="event-slide-overlay"></div>
 
     <div class="event-slide-inner">
       <div class="event-slide-top">
@@ -257,21 +72,20 @@ function eventSlide(event, currentProfile, savedSet, interestedSet, attendingSet
           ${event.priceText ? `<span class="event-badge event-badge-dark">${escapeHtml(event.priceText)}</span>` : ""}
         </div>
 
-        <div class="event-slide-city">${escapeHtml(event.city || "Tapzy Discovery")}</div>
+        ${event.city ? `<div class="event-slide-city">${escapeHtml(event.city)}</div>` : ""}
       </div>
 
       <div class="event-slide-bottom">
-        <div class="event-slide-copy">
+        <div class="event-copy-block">
           <h2 class="event-slide-title">${escapeHtml(event.title)}</h2>
 
           <div class="event-slide-meta">
             <div><b>When</b> ${escapeHtml(when)}</div>
             <div><b>Where</b> ${escapeHtml(location)}</div>
-            ${event.city ? `<div><b>City</b> ${escapeHtml(event.city)}</div>` : ""}
           </div>
 
           <div class="event-slide-desc">
-            ${escapeHtml(event.description || "Premium event discovery inside Tapzy.")}
+            ${escapeHtml(shortText(event.description, 165))}
           </div>
 
           <div class="event-social-line">
@@ -286,41 +100,45 @@ function eventSlide(event, currentProfile, savedSet, interestedSet, attendingSet
             currentProfile
               ? `
               <form method="POST" action="/events/${event.id}/attend" style="margin:0;">
-                <button class="event-side-btn ${isGoing ? "event-side-btn-active" : ""}" type="submit">
+                <button class="event-action-btn ${isGoing ? "event-action-btn-active" : ""}" type="submit">
                   ${isGoing ? "Going ✓" : "Attend"}
                 </button>
               </form>
 
               <form method="POST" action="/events/${event.id}/interest" style="margin:0;">
-                <button class="event-side-btn" type="submit">
+                <button class="event-action-btn" type="submit">
                   ${isInterested ? "Interested ✓" : "Interested"}
                 </button>
               </form>
 
               <form method="POST" action="/events/${event.id}/save" style="margin:0;">
-                <button class="event-side-btn" type="submit">
+                <button class="event-action-btn" type="submit">
                   ${isSaved ? "Saved ✓" : "Save"}
                 </button>
               </form>
               `
-              : `
-              <a class="event-side-btn" href="/auth">Sign in</a>
-              `
+              : `<a class="event-action-btn" href="/auth">Sign in</a>`
           }
 
           ${
             event.ticketUrl
-              ? `<a class="event-side-btn" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.ticketUrl)}">Tickets</a>`
+              ? `<a class="event-action-btn" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.ticketUrl)}">Tickets</a>`
               : ""
           }
 
           ${
             event.eventUrl
-              ? `<a class="event-side-btn" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.eventUrl)}">Open</a>`
+              ? `<a class="event-action-btn" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.eventUrl)}">Open</a>`
               : ""
           }
 
-          <button class="event-side-btn" type="button" onclick="tapzyShareEvent('${escapeHtml(event.title)}', '${escapeHtml(location)}', '${escapeHtml(when)}', '${escapeHtml(event.eventUrl || "")}')">Share</button>
+          <button
+            class="event-action-btn"
+            type="button"
+            onclick="tapzyShareEvent('${escapeHtml(event.title)}', '${escapeHtml(location)}', '${escapeHtml(when)}', '${escapeHtml(event.eventUrl || "")}')"
+          >
+            Share
+          </button>
         </div>
       </div>
     </div>
@@ -330,8 +148,6 @@ function eventSlide(event, currentProfile, savedSet, interestedSet, attendingSet
 
 router.get("/events", async (req, res) => {
   try {
-    await seedEventsIfEmpty();
-
     const currentProfile = req.currentProfile || null;
     const profileCity = String(currentProfile?.city || "").trim();
     const city = String(req.query.city || profileCity || "").trim();
@@ -401,111 +217,113 @@ router.get("/events", async (req, res) => {
 
     const body = `
     <div class="wrap events-wrap">
-      <section class="events-feed-shell">
-        <div class="events-topbar">
-          <div class="events-topbar-left">
-            <div class="events-kicker">Tapzy Discovery</div>
-            <h1 class="events-main-title">Events</h1>
-            <div class="events-subtitle">
-              Swipe-style discovery for nightlife, networking, music, creator, tech, food, and premium social experiences.
-            </div>
-            ${city ? `<div class="events-chip-line">Showing: <b>${escapeHtml(city)}</b></div>` : ""}
-            ${req.query.synced ? `<div class="events-chip-line">Real events synced: <b>${escapeHtml(req.query.synced)}</b></div>` : ""}
+      <section class="events-hero">
+        <div class="events-hero-inner">
+          <div class="events-kicker">Tapzy Discovery</div>
+
+          <h1 class="events-main-title">Explore Events</h1>
+
+          <div class="events-subtitle">
+            Discover nightlife, networking, music, tech, food, creators, and premium social experiences.
           </div>
 
-          <div class="events-topbar-right">
-            ${currentProfile ? `<a class="events-top-btn" href="/events/saved">Saved</a>` : `<a class="events-top-btn" href="/auth">Sign in</a>`}
+          ${city ? `<div class="events-chip-line">Showing: <b>${escapeHtml(city)}</b></div>` : ""}
+          ${req.query.synced ? `<div class="events-chip-line">Real events synced: <b>${escapeHtml(req.query.synced)}</b></div>` : ""}
+
+          <div class="events-hero-actions">
+            ${
+              currentProfile
+                ? `<a class="events-hero-btn events-hero-btn-dark" href="/events/saved">Saved</a>`
+                : `<a class="events-hero-btn events-hero-btn-dark" href="/auth">Sign in</a>`
+            }
+
             ${
               hasAdminKey
                 ? `
                 <form method="POST" action="/events/admin/sync?key=${encodeURIComponent(adminKey)}" style="margin:0;">
-                  <button class="events-top-btn events-top-btn-bright" type="submit">Refresh Feed</button>
+                  <button class="events-hero-btn events-hero-btn-light" type="submit">Refresh Feed</button>
                 </form>
                 `
                 : ""
             }
           </div>
+
+          <form method="GET" action="/events" class="events-filter-grid">
+            ${hasAdminKey ? `<input type="hidden" name="key" value="${escapeHtml(adminKey)}" />` : ""}
+            <input name="city" value="${escapeHtml(city)}" placeholder="City" />
+            <input name="category" value="${escapeHtml(category)}" placeholder="Category" />
+            <button type="submit">Search</button>
+          </form>
         </div>
-
-        <form method="GET" action="/events" class="events-filter-bar">
-          ${hasAdminKey ? `<input type="hidden" name="key" value="${escapeHtml(adminKey)}" />` : ""}
-          <input name="city" value="${escapeHtml(city)}" placeholder="City" />
-          <input name="category" value="${escapeHtml(category)}" placeholder="Category" />
-          <button type="submit">Apply</button>
-        </form>
-
-        ${
-          events.length
-            ? `
-            <div class="events-feed">
-              ${events
-                .map((event) =>
-                  eventSlide(
-                    event,
-                    currentProfile,
-                    savedSet,
-                    interestedSet,
-                    attendingSet,
-                    goingCountMap
-                  )
-                )
-                .join("")}
-            </div>
-            `
-            : `<div class="events-empty-card">No upcoming events found.</div>`
-        }
       </section>
+
+      ${
+        events.length
+          ? `
+          <div class="events-feed">
+            ${events
+              .map((event) =>
+                eventSlide(
+                  event,
+                  currentProfile,
+                  savedSet,
+                  interestedSet,
+                  attendingSet,
+                  goingCountMap
+                )
+              )
+              .join("")}
+          </div>
+          `
+          : `<div class="events-empty-card">No upcoming events found.</div>`
+      }
     </div>
 
     <style>
       .events-wrap{
-        max-width:1220px;
+        max-width:1180px;
       }
 
-      .events-feed-shell{
-        display:flex;
-        flex-direction:column;
-        gap:16px;
-      }
-
-      .events-topbar{
-        position:sticky;
-        top:12px;
-        z-index:20;
-        display:flex;
-        justify-content:space-between;
-        gap:18px;
-        align-items:flex-start;
-        flex-wrap:wrap;
-        padding:20px 22px;
-        border-radius:28px;
+      .events-hero{
+        margin-top:18px;
+        border-radius:34px;
         border:1px solid rgba(255,255,255,.08);
         background:
-          radial-gradient(700px 240px at 50% -10%, rgba(127,210,255,.10), transparent 48%),
-          linear-gradient(180deg, rgba(10,12,18,.96), rgba(6,6,8,.96));
-        backdrop-filter:blur(12px);
-        box-shadow:0 18px 48px rgba(0,0,0,.35);
+          radial-gradient(700px 300px at 72% 22%, rgba(36,80,125,.26), transparent 58%),
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
+        box-shadow:
+          0 24px 70px rgba(0,0,0,.40),
+          inset 0 1px 0 rgba(255,255,255,.03);
+        overflow:hidden;
+      }
+
+      .events-hero-inner{
+        padding:28px;
       }
 
       .events-kicker{
         color:#95a5bf;
         text-transform:uppercase;
-        letter-spacing:4px;
-        font-size:12px;
+        letter-spacing:5px;
+        font-size:13px;
+        margin-bottom:14px;
       }
 
       .events-main-title{
-        margin:8px 0 0 0;
-        font-size:44px;
-        line-height:1;
+        margin:0;
+        font-size:58px;
+        line-height:.95;
+        letter-spacing:-1.8px;
+        font-weight:900;
+        color:#fff;
       }
 
       .events-subtitle{
-        margin-top:10px;
-        max-width:640px;
-        color:#b8c5d7;
-        line-height:1.65;
-        font-size:15px;
+        margin-top:16px;
+        max-width:760px;
+        color:#c5cfdb;
+        font-size:18px;
+        line-height:1.7;
       }
 
       .events-chip-line{
@@ -514,85 +332,89 @@ router.get("/events", async (req, res) => {
         font-size:14px;
       }
 
-      .events-topbar-right{
+      .events-hero-actions{
         display:flex;
-        gap:10px;
+        gap:12px;
         flex-wrap:wrap;
+        margin-top:22px;
       }
 
-      .events-top-btn{
+      .events-hero-btn{
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        min-height:46px;
-        padding:0 18px;
-        border-radius:16px;
+        min-height:54px;
+        padding:0 22px;
+        border-radius:22px;
         text-decoration:none;
-        border:1px solid rgba(255,255,255,.08);
-        background:linear-gradient(180deg, rgba(18,21,31,.96), rgba(10,12,18,.98));
-        color:#fff;
-        font-size:14px;
+        font-size:15px;
         font-weight:800;
-        box-shadow:0 8px 20px rgba(0,0,0,.20);
-      }
-
-      .events-top-btn-bright{
-        cursor:pointer;
-        background:
-          radial-gradient(circle at 50% 0%, rgba(150,230,255,.18), transparent 55%),
-          linear-gradient(180deg, rgba(40,92,210,.92), rgba(18,41,92,.98));
         border:none;
+        cursor:pointer;
       }
 
-      .events-filter-bar{
+      .events-hero-btn-light{
+        color:#000;
+        background:linear-gradient(180deg, #f7fbff, #deeffb);
+        box-shadow:0 18px 36px rgba(0,0,0,.25);
+      }
+
+      .events-hero-btn-dark{
+        color:#fff;
+        background:linear-gradient(180deg, rgba(22,23,31,.98), rgba(14,15,22,.98));
+        border:1px solid rgba(255,255,255,.08);
+      }
+
+      .events-filter-grid{
         display:grid;
         grid-template-columns:1fr 1fr auto;
-        gap:12px;
-        padding:14px;
-        border-radius:22px;
-        border:1px solid rgba(255,255,255,.08);
-        background:linear-gradient(180deg, rgba(8,10,16,.98), rgba(0,0,0,1));
+        gap:14px;
+        margin-top:22px;
       }
 
-      .events-filter-bar input,
-      .events-filter-bar button{
-        min-height:52px;
-        border-radius:16px;
+      .events-filter-grid input{
+        width:100%;
+        min-height:64px;
+        padding:0 20px;
+        border-radius:22px;
         border:1px solid rgba(255,255,255,.08);
-        padding:0 16px;
-        font-size:15px;
+        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(0,0,0,1));
+        color:#fff;
+        font-size:16px;
         box-sizing:border-box;
       }
 
-      .events-filter-bar input{
-        background:linear-gradient(180deg, rgba(12,15,21,.98), rgba(4,6,10,1));
-        color:#fff;
+      .events-filter-grid input::placeholder{
+        color:#aeb7c5;
       }
 
-      .events-filter-bar button{
+      .events-filter-grid button{
+        min-height:64px;
+        padding:0 28px;
+        border-radius:22px;
+        border:none;
         cursor:pointer;
-        color:#fff;
-        font-weight:800;
-        background:
-          radial-gradient(circle at 50% 0%, rgba(150,230,255,.18), transparent 55%),
-          linear-gradient(180deg, rgba(40,92,210,.92), rgba(18,41,92,.98));
+        color:#000;
+        font-size:16px;
+        font-weight:900;
+        background:linear-gradient(180deg, #f7fbff, #deeffb);
+        box-shadow:0 18px 36px rgba(0,0,0,.25);
       }
 
       .events-feed{
         display:grid;
         gap:18px;
-        scroll-snap-type:y mandatory;
+        margin-top:18px;
       }
 
       .event-slide{
         position:relative;
-        min-height:calc(100vh - 150px);
+        min-height:760px;
         border-radius:34px;
         overflow:hidden;
         border:1px solid rgba(255,255,255,.08);
         background:#090b12;
         box-shadow:0 22px 56px rgba(0,0,0,.34);
-        scroll-snap-align:start;
       }
 
       .event-slide-media{
@@ -603,18 +425,10 @@ router.get("/events", async (req, res) => {
         transform:scale(1.02);
       }
 
-      .event-slide-overlay{
-        position:absolute;
-        inset:0;
-        background:
-          radial-gradient(700px 260px at 70% 10%, rgba(125,214,255,.10), transparent 40%),
-          linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.16) 28%, rgba(0,0,0,.58) 68%, rgba(0,0,0,.90));
-      }
-
       .event-slide-inner{
         position:relative;
         z-index:2;
-        min-height:calc(100vh - 150px);
+        min-height:760px;
         display:flex;
         flex-direction:column;
         justify-content:space-between;
@@ -662,18 +476,21 @@ router.get("/events", async (req, res) => {
 
       .event-slide-bottom{
         display:grid;
-        grid-template-columns:minmax(0, 1fr) 120px;
+        grid-template-columns:minmax(0, 1fr) 132px;
         gap:22px;
         align-items:end;
       }
 
+      .event-copy-block{
+        max-width:760px;
+      }
+
       .event-slide-title{
         margin:0;
-        font-size:54px;
+        font-size:52px;
         line-height:.96;
         font-weight:900;
         letter-spacing:-1.8px;
-        max-width:760px;
       }
 
       .event-slide-meta{
@@ -692,7 +509,6 @@ router.get("/events", async (req, res) => {
 
       .event-slide-desc{
         margin-top:16px;
-        max-width:760px;
         color:#d5deea;
         font-size:16px;
         line-height:1.7;
@@ -713,7 +529,7 @@ router.get("/events", async (req, res) => {
         gap:10px;
       }
 
-      .event-side-btn{
+      .event-action-btn{
         display:inline-flex;
         align-items:center;
         justify-content:center;
@@ -727,16 +543,14 @@ router.get("/events", async (req, res) => {
         color:#fff;
         font-size:13px;
         font-weight:800;
-        background:
-          linear-gradient(180deg, rgba(18,21,31,.94), rgba(8,10,16,.98));
+        background:linear-gradient(180deg, rgba(18,21,31,.94), rgba(8,10,16,.98));
         border:1px solid rgba(255,255,255,.08);
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.04),
           0 8px 16px rgba(0,0,0,.18);
-        backdrop-filter:blur(10px);
       }
 
-      .event-side-btn-active{
+      .event-action-btn-active{
         background:
           radial-gradient(circle at 50% 0%, rgba(150,230,255,.18), transparent 55%),
           linear-gradient(180deg, rgba(40,92,210,.92), rgba(18,41,92,.98));
@@ -744,6 +558,7 @@ router.get("/events", async (req, res) => {
       }
 
       .events-empty-card{
+        margin-top:18px;
         padding:28px;
         border-radius:24px;
         border:1px solid rgba(255,255,255,.08);
@@ -766,46 +581,104 @@ router.get("/events", async (req, res) => {
       }
 
       @media(max-width:700px){
-        .events-topbar{
-          top:8px;
-          border-radius:22px;
-          padding:18px;
+        .events-hero{
+          border-radius:24px;
+        }
+
+        .events-hero-inner{
+          padding:20px 18px;
+        }
+
+        .events-kicker{
+          font-size:12px;
+          letter-spacing:4px;
+          margin-bottom:12px;
         }
 
         .events-main-title{
-          font-size:34px;
+          font-size:36px;
+          letter-spacing:-1.2px;
         }
 
-        .events-filter-bar{
+        .events-subtitle{
+          font-size:16px;
+          line-height:1.6;
+          margin-top:12px;
+        }
+
+        .events-hero-actions{
+          margin-top:18px;
+          gap:10px;
+        }
+
+        .events-hero-btn{
+          min-height:46px;
+          padding:0 16px;
+          border-radius:18px;
+          font-size:14px;
+        }
+
+        .events-filter-grid{
           grid-template-columns:1fr;
+          gap:12px;
+          margin-top:18px;
+        }
+
+        .events-filter-grid input,
+        .events-filter-grid button{
+          min-height:58px;
+          border-radius:20px;
+          font-size:15px;
+        }
+
+        .events-feed{
+          gap:14px;
+          margin-top:14px;
         }
 
         .event-slide{
-          min-height:calc(100vh - 120px);
+          min-height:680px;
           border-radius:24px;
         }
 
         .event-slide-inner{
-          min-height:calc(100vh - 120px);
+          min-height:680px;
           padding:18px;
         }
 
         .event-slide-title{
           font-size:30px;
           line-height:1.02;
+          letter-spacing:-1px;
+        }
+
+        .event-slide-meta{
+          margin-top:14px;
+          gap:7px;
+          font-size:14px;
         }
 
         .event-slide-desc{
+          margin-top:14px;
           font-size:15px;
+          line-height:1.6;
+        }
+
+        .event-social-line{
+          margin-top:14px;
+          font-size:13px;
         }
 
         .event-slide-actions{
           grid-template-columns:1fr 1fr;
+          gap:10px;
         }
 
-        .event-side-btn{
+        .event-action-btn{
           min-height:44px;
           border-radius:16px;
+          font-size:13px;
+          padding:0 10px;
         }
       }
     </style>
@@ -995,7 +868,7 @@ router.get("/events/saved", async (req, res) => {
                       <div class="saved-content">
                         <div class="saved-pill">${escapeHtml(event.category || "Event")}</div>
                         <h3 class="saved-title">${escapeHtml(event.title)}</h3>
-                        <div class="saved-copy">${escapeHtml(event.description || "")}</div>
+                        <div class="saved-copy">${escapeHtml(shortText(event.description || "", 140))}</div>
                         <div class="saved-meta">
                           <div><b>When:</b> ${event.startAt ? escapeHtml(formatPrettyLocal(event.startAt)) : "Date coming soon"}</div>
                           <div><b>Where:</b> ${escapeHtml(event.venueName || event.city || event.address || "Location coming soon")}</div>
