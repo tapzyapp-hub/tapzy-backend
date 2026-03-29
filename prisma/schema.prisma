@@ -1,779 +1,507 @@
 generator client {
-
   provider = "prisma-client-js"
-
 }
-
-
 
 datasource db {
-
   provider = "postgresql"
-
   url      = env("DATABASE_URL")
-
 }
-
-
 
 model ActivationCode {
-
   id                 String       @id @default(cuid())
-
   code               String       @unique
-
   publicToken        String       @unique @default(cuid())
-
   claimedAt          DateTime?
-
   createdAt          DateTime     @default(now())
-
   isActive           Boolean      @default(true)
-
   deactivatedAt      DateTime?
-
   deactivationReason String?
-
   profileId          String?
-
   profile            UserProfile? @relation(fields: [profileId], references: [id])
 
-
-
   @@index([profileId], map: "activation_profileId_idx")
-
   @@index([isActive, createdAt], map: "activation_isActive_createdAt_idx")
-
   @@index([claimedAt], map: "activation_claimedAt_idx")
-
 }
 
-
-
 model UserProfile {
-
   id         String  @id @default(cuid())
-
   username   String? @unique
-
   editSecret String  @default(cuid())
 
-
-
   name  String?
-
   title String?
-
   bio   String?
-
   photo String?
 
-
-
   phone     String?
-
   email     String?
-
   website   String?
-
   instagram String?
-
   linkedin  String?
-
   tiktok    String?
-
   twitter   String?
-
   facebook  String?
-
   youtube   String?
-
   github    String?
-
   snapchat  String?
-
   whatsapp  String?
-
   telegram  String?
-
-
 
   connections Int @default(0)
 
-
-
   quickShareEnabled     Boolean @default(false)
-
   shareNameEnabled      Boolean @default(true)
-
   sharePhoneEnabled     Boolean @default(false)
-
   shareEmailEnabled     Boolean @default(false)
-
   shareWebsiteEnabled   Boolean @default(false)
-
   shareInstagramEnabled Boolean @default(false)
-
   shareLinkedinEnabled  Boolean @default(false)
-
   shareTiktokEnabled    Boolean @default(false)
-
   shareTwitterEnabled   Boolean @default(false)
-
   shareFacebookEnabled  Boolean @default(false)
-
   shareYoutubeEnabled   Boolean @default(false)
-
   shareGithubEnabled    Boolean @default(false)
-
   shareSnapchatEnabled  Boolean @default(false)
-
   shareWhatsappEnabled  Boolean @default(false)
-
   shareTelegramEnabled  Boolean @default(false)
 
-
-
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
-
-
 
   activation              ActivationCode[]
-
   sentConnections         Connection[]         @relation("ConnectionSender")
-
   receivedConnections     Connection[]         @relation("ConnectionReceiver")
-
   sentMoments             TapMoment[]          @relation("MomentSender")
-
   receivedMoments         TapMoment[]          @relation("MomentReceiver")
-
   likedMoments            TapMomentLike[]
-
   following               Follow[]             @relation("FollowFollower")
-
   followers               Follow[]             @relation("FollowFollowing")
-
   account                 UserAccount?
-
   conversationMemberships ConversationMember[]
-
   sentMessages            DirectMessage[]      @relation("DirectMessageSender")
-
   createdCallRooms        VideoCallRoom[]      @relation("VideoRoomCreator")
-
   createdPairRooms        PairRoom[]           @relation("PairRoomCreator")
-
   pairParticipations      PairParticipant[]    @relation("PairParticipantProfile")
-
   savedEvents             SavedEvent[]
-
   interestedEvents        InterestedEvent[]
 
-
+  eventAttendances EventAttendance[]
+  stories          Story[]
+  storyViews       StoryView[]
+  storyRepliesSent StoryReply[]      @relation("StoryReplySender")
+  posts            Post[]
+  postLikes        PostLike[]
 
   @@index([createdAt], map: "userprofile_createdAt_idx")
-
   @@index([connections], map: "userprofile_connections_idx")
-
 }
-
-
 
 model UserAccount {
-
   id            String      @id @default(cuid())
-
   email         String      @unique
-
   passwordHash  String?
-
   emailVerified Boolean     @default(false)
-
   profileId     String      @unique
-
   profile       UserProfile @relation(fields: [profileId], references: [id])
 
-
-
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 
-
-
   sessions   UserSession[]
-
   magicLinks MagicLinkToken[]
 
-
-
   @@index([createdAt], map: "useraccount_createdAt_idx")
-
   @@index([emailVerified], map: "useraccount_emailVerified_idx")
-
 }
-
-
 
 model UserSession {
-
   id            String      @id @default(cuid())
-
   token         String      @unique
-
   userAccountId String
-
   userAccount   UserAccount @relation(fields: [userAccountId], references: [id])
 
-
-
   expiresAt DateTime
-
   createdAt DateTime @default(now())
-
-
 
   @@index([userAccountId], map: "usersession_userAccountId_idx")
-
   @@index([expiresAt], map: "usersession_expiresAt_idx")
-
   @@index([userAccountId, expiresAt], map: "usersession_userAccountId_expiresAt_idx")
-
 }
-
-
 
 model MagicLinkToken {
-
   id            String       @id @default(cuid())
-
   token         String       @unique
-
   email         String
-
   userAccountId String?
-
   userAccount   UserAccount? @relation(fields: [userAccountId], references: [id])
 
-
-
   expiresAt DateTime
-
   usedAt    DateTime?
-
-  createdAt DateTime @default(now())
-
-
+  createdAt DateTime  @default(now())
 
   @@index([email], map: "magiclink_email_idx")
-
   @@index([userAccountId], map: "magiclink_userAccountId_idx")
-
   @@index([expiresAt], map: "magiclink_expiresAt_idx")
-
   @@index([usedAt], map: "magiclink_usedAt_idx")
-
 }
-
-
 
 model Connection {
-
   id String @id @default(cuid())
 
-
-
   senderProfileId   String
-
   receiverProfileId String
-
-
 
   senderProfile   UserProfile @relation("ConnectionSender", fields: [senderProfileId], references: [id])
-
   receiverProfile UserProfile @relation("ConnectionReceiver", fields: [receiverProfileId], references: [id])
 
-
-
   sharedName      String?
-
   sharedPhone     String?
-
   sharedEmail     String?
-
   sharedWebsite   String?
-
   sharedInstagram String?
-
   sharedLinkedin  String?
-
   sharedTiktok    String?
-
   sharedTwitter   String?
-
   sharedFacebook  String?
-
   sharedYoutube   String?
-
   sharedGithub    String?
-
   sharedSnapchat  String?
-
   sharedWhatsapp  String?
-
   sharedTelegram  String?
 
-
-
   createdAt DateTime @default(now())
-
-
 
   @@index([senderProfileId, createdAt], map: "connection_sender_createdAt_idx")
-
   @@index([receiverProfileId, createdAt], map: "connection_receiver_createdAt_idx")
-
   @@index([createdAt], map: "connection_createdAt_idx")
-
 }
 
-
-
 model TapMoment {
-
   id String @id @default(cuid())
 
-
-
   senderProfileId   String
-
   receiverProfileId String
 
-
-
   senderProfile   UserProfile @relation("MomentSender", fields: [senderProfileId], references: [id])
-
   receiverProfile UserProfile @relation("MomentReceiver", fields: [receiverProfileId], references: [id])
 
-
-
   eventName   String?
-
   location    String?
-
   note        String?
-
   snapshotUrl String?
-
   latitude    Float?
-
   longitude   Float?
 
-
-
   createdAt DateTime @default(now())
-
-
 
   likes TapMomentLike[]
 
-
-
   @@index([senderProfileId, createdAt], map: "tapmoment_sender_createdAt_idx")
-
   @@index([receiverProfileId, createdAt], map: "tapmoment_receiver_createdAt_idx")
-
   @@index([createdAt], map: "tapmoment_createdAt_idx")
-
 }
-
-
 
 model TapMomentLike {
-
   id        String   @id @default(cuid())
-
   profileId String
-
   momentId  String
-
   createdAt DateTime @default(now())
-
-
 
   profile UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
   moment  TapMoment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
 
-
-
   @@unique([profileId, momentId], map: "tapmomentlike_profileId_momentId_key")
-
   @@index([profileId], map: "tapmomentlike_profileId_idx")
-
   @@index([momentId], map: "tapmomentlike_momentId_idx")
-
   @@index([createdAt], map: "tapmomentlike_createdAt_idx")
-
   @@index([momentId, createdAt], map: "tapmomentlike_momentId_createdAt_idx")
-
 }
-
-
 
 model Follow {
-
   id String @id @default(cuid())
 
-
-
   followerProfileId  String
-
   followingProfileId String
 
-
-
   followerProfile  UserProfile @relation("FollowFollower", fields: [followerProfileId], references: [id])
-
   followingProfile UserProfile @relation("FollowFollowing", fields: [followingProfileId], references: [id])
 
-
-
   createdAt DateTime @default(now())
-
-
 
   @@unique([followerProfileId, followingProfileId])
-
   @@index([followerProfileId, createdAt], map: "follow_follower_createdAt_idx")
-
   @@index([followingProfileId, createdAt], map: "follow_following_createdAt_idx")
-
   @@index([createdAt], map: "follow_createdAt_idx")
-
 }
-
-
 
 model Conversation {
-
   id        String   @id @default(cuid())
-
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 
-
-
   members  ConversationMember[]
-
   messages DirectMessage[]
-
   rooms    VideoCallRoom[]
 
-
-
   @@index([createdAt], map: "conversation_createdAt_idx")
-
   @@index([updatedAt], map: "conversation_updatedAt_idx")
-
 }
-
-
 
 model ConversationMember {
-
-  id             String       @id @default(cuid())
-
-  conversationId String
-
-  profileId      String
-
-  joinedAt       DateTime     @default(now())
-
-
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  profile      UserProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-
-
-  @@unique([conversationId, profileId], map: "conversationmember_conversationId_profileId_key")
-
-  @@index([profileId], map: "conversationmember_profileId_idx")
-
-  @@index([conversationId], map: "conversationmember_conversationId_idx")
-
-}
-
-
-
-model DirectMessage {
-
-  id              String   @id @default(cuid())
-
-  conversationId  String
-
-  senderProfileId String
-
-  body            String?
-
-  imageUrl        String?
-
-  createdAt       DateTime @default(now())
-
-  readAt          DateTime?
-
-
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  sender       UserProfile  @relation("DirectMessageSender", fields: [senderProfileId], references: [id], onDelete: Cascade)
-
-
-
-  @@index([conversationId, createdAt], map: "directmessage_conversationId_createdAt_idx")
-
-  @@index([senderProfileId], map: "directmessage_senderProfileId_idx")
-
-  @@index([createdAt], map: "directmessage_createdAt_idx")
-
-}
-
-
-
-model VideoCallRoom {
-
-  id                 String   @id @default(cuid())
-
-  roomName           String   @unique
-
-  conversationId     String?
-
-  createdByProfileId String
-
-  createdAt          DateTime @default(now())
-
-  updatedAt          DateTime @updatedAt
-
-
-
-  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-
-  createdBy    UserProfile   @relation("VideoRoomCreator", fields: [createdByProfileId], references: [id], onDelete: Cascade)
-
-
-
-  @@index([conversationId], map: "videocallroom_conversationId_idx")
-
-  @@index([createdByProfileId], map: "videocallroom_createdByProfileId_idx")
-
-  @@index([createdAt], map: "videocallroom_createdAt_idx")
-
-}
-
-
-
-model PairRoom {
-
-  id                 String   @id @default(cuid())
-
-  code               String   @unique
-
-  createdByProfileId String
-
-  status             String   @default("waiting")
-
-  completedAt        DateTime?
-
-  expiresAt          DateTime
-
-  createdAt          DateTime @default(now())
-
-  updatedAt          DateTime @updatedAt
-
-
-
-  createdBy    UserProfile       @relation("PairRoomCreator", fields: [createdByProfileId], references: [id], onDelete: Cascade)
-
-  participants PairParticipant[]
-
-
-
-  @@index([createdByProfileId], map: "pairroom_createdByProfileId_idx")
-
-  @@index([status], map: "pairroom_status_idx")
-
-  @@index([expiresAt], map: "pairroom_expiresAt_idx")
-
-  @@index([createdAt], map: "pairroom_createdAt_idx")
-
-}
-
-
-
-model PairParticipant {
-
   id             String   @id @default(cuid())
-
-  roomId         String
-
+  conversationId String
   profileId      String
-
   joinedAt       DateTime @default(now())
 
-  isReady        Boolean  @default(false)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  profile      UserProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
+  @@unique([conversationId, profileId], map: "conversationmember_conversationId_profileId_key")
+  @@index([profileId], map: "conversationmember_profileId_idx")
+  @@index([conversationId], map: "conversationmember_conversationId_idx")
+}
+
+model DirectMessage {
+  id              String    @id @default(cuid())
+  conversationId  String
+  senderProfileId String
+  body            String?
+  imageUrl        String?
+  createdAt       DateTime  @default(now())
+  readAt          DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       UserProfile  @relation("DirectMessageSender", fields: [senderProfileId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt], map: "directmessage_conversationId_createdAt_idx")
+  @@index([senderProfileId], map: "directmessage_senderProfileId_idx")
+  @@index([createdAt], map: "directmessage_createdAt_idx")
+}
+
+model VideoCallRoom {
+  id                 String   @id @default(cuid())
+  roomName           String   @unique
+  conversationId     String?
+  createdByProfileId String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  createdBy    UserProfile   @relation("VideoRoomCreator", fields: [createdByProfileId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId], map: "videocallroom_conversationId_idx")
+  @@index([createdByProfileId], map: "videocallroom_createdByProfileId_idx")
+  @@index([createdAt], map: "videocallroom_createdAt_idx")
+}
+
+model PairRoom {
+  id                 String    @id @default(cuid())
+  code               String    @unique
+  createdByProfileId String
+  status             String    @default("waiting")
+  completedAt        DateTime?
+  expiresAt          DateTime
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  createdBy    UserProfile       @relation("PairRoomCreator", fields: [createdByProfileId], references: [id], onDelete: Cascade)
+  participants PairParticipant[]
+
+  @@index([createdByProfileId], map: "pairroom_createdByProfileId_idx")
+  @@index([status], map: "pairroom_status_idx")
+  @@index([expiresAt], map: "pairroom_expiresAt_idx")
+  @@index([createdAt], map: "pairroom_createdAt_idx")
+}
+
+model PairParticipant {
+  id             String    @id @default(cuid())
+  roomId         String
+  profileId      String
+  joinedAt       DateTime  @default(now())
+  isReady        Boolean   @default(false)
   confirmedAt    DateTime?
-
   selectedFields Json?
 
-
-
   room    PairRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
   profile UserProfile @relation("PairParticipantProfile", fields: [profileId], references: [id], onDelete: Cascade)
 
-
-
   @@unique([roomId, profileId], map: "pairparticipant_roomId_profileId_key")
-
   @@index([roomId], map: "pairparticipant_roomId_idx")
-
   @@index([profileId], map: "pairparticipant_profileId_idx")
-
   @@index([joinedAt], map: "pairparticipant_joinedAt_idx")
-
 }
-
-
 
 model EventFinderItem {
-
-  id            String   @id @default(cuid())
-
+  id            String    @id @default(cuid())
   source        String
-
   sourceEventId String
-
   title         String
-
   description   String?
-
   imageUrl      String?
-
   venueName     String?
-
   address       String?
-
   city          String?
-
   region        String?
-
   country       String?
-
   eventUrl      String?
-
   ticketUrl     String?
-
   category      String?
-
   startAt       DateTime?
-
   endAt         DateTime?
-
   latitude      Float?
-
   longitude     Float?
-
   priceText     String?
-
   rawPayload    Json?
-
-  createdAt     DateTime @default(now())
-
-  updatedAt     DateTime @updatedAt
-
-
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   savedBy      SavedEvent[]
-
   interestedBy InterestedEvent[]
-
-
+  attendingBy  EventAttendance[]
+  stories      Story[]
+  posts        Post[]
 
   @@unique([source, sourceEventId], map: "eventfinderitem_source_sourceEventId_key")
-
   @@index([startAt], map: "eventfinderitem_startAt_idx")
-
   @@index([city], map: "eventfinderitem_city_idx")
-
   @@index([category], map: "eventfinderitem_category_idx")
-
   @@index([createdAt], map: "eventfinderitem_createdAt_idx")
-
 }
-
-
 
 model SavedEvent {
-
   id        String   @id @default(cuid())
-
   profileId String
-
   eventId   String
-
   createdAt DateTime @default(now())
 
-
-
   profile UserProfile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
   event   EventFinderItem @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-
 
   @@unique([profileId, eventId], map: "savedevent_profileId_eventId_key")
-
   @@index([profileId], map: "savedevent_profileId_idx")
-
   @@index([eventId], map: "savedevent_eventId_idx")
-
   @@index([createdAt], map: "savedevent_createdAt_idx")
-
 }
 
-
-
 model InterestedEvent {
-
   id        String   @id @default(cuid())
-
   profileId String
-
   eventId   String
-
   createdAt DateTime @default(now())
 
-
-
   profile UserProfile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
   event   EventFinderItem @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-
-
   @@unique([profileId, eventId], map: "interestedevent_profileId_eventId_key")
-
   @@index([profileId], map: "interestedevent_profileId_idx")
-
   @@index([eventId], map: "interestedevent_eventId_idx")
-
   @@index([createdAt], map: "interestedevent_createdAt_idx")
+}
 
+model EventAttendance {
+  id        String   @id @default(cuid())
+  profileId String
+  eventId   String
+  status    String   @default("going")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile UserProfile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  event   EventFinderItem @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, eventId], map: "eventattendance_profileId_eventId_key")
+  @@index([profileId], map: "eventattendance_profileId_idx")
+  @@index([eventId], map: "eventattendance_eventId_idx")
+  @@index([status], map: "eventattendance_status_idx")
+  @@index([createdAt], map: "eventattendance_createdAt_idx")
+}
+
+model Story {
+  id           String   @id @default(cuid())
+  profileId    String
+  eventId      String?
+  type         String   @default("image")
+  mediaUrl     String?
+  text         String?
+  thumbnailUrl String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  profile UserProfile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  event   EventFinderItem? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  views   StoryView[]
+  replies StoryReply[]
+
+  @@index([profileId], map: "story_profileId_idx")
+  @@index([eventId], map: "story_eventId_idx")
+  @@index([expiresAt], map: "story_expiresAt_idx")
+  @@index([createdAt], map: "story_createdAt_idx")
+  @@index([profileId, expiresAt], map: "story_profileId_expiresAt_idx")
+}
+
+model StoryView {
+  id        String   @id @default(cuid())
+  storyId   String
+  viewerId  String
+  createdAt DateTime @default(now())
+
+  story  Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  viewer UserProfile @relation(fields: [viewerId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, viewerId], map: "storyview_storyId_viewerId_key")
+  @@index([storyId], map: "storyview_storyId_idx")
+  @@index([viewerId], map: "storyview_viewerId_idx")
+  @@index([createdAt], map: "storyview_createdAt_idx")
+}
+
+model StoryReply {
+  id              String   @id @default(cuid())
+  storyId         String
+  senderProfileId String
+  body            String
+  createdAt       DateTime @default(now())
+
+  story         Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  senderProfile UserProfile @relation("StoryReplySender", fields: [senderProfileId], references: [id], onDelete: Cascade)
+
+  @@index([storyId], map: "storyreply_storyId_idx")
+  @@index([senderProfileId], map: "storyreply_senderProfileId_idx")
+  @@index([createdAt], map: "storyreply_createdAt_idx")
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  profileId    String
+  eventId      String?
+  type         String   @default("image")
+  caption      String?
+  mediaUrl     String?
+  thumbnailUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile UserProfile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  event   EventFinderItem? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  likes   PostLike[]
+
+  @@index([profileId], map: "post_profileId_idx")
+  @@index([eventId], map: "post_eventId_idx")
+  @@index([createdAt], map: "post_createdAt_idx")
+  @@index([profileId, createdAt], map: "post_profileId_createdAt_idx")
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  profileId String
+  createdAt DateTime @default(now())
+
+  post    Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, profileId], map: "postlike_postId_profileId_key")
+  @@index([postId], map: "postlike_postId_idx")
+  @@index([profileId], map: "postlike_profileId_idx")
+  @@index([createdAt], map: "postlike_createdAt_idx")
 }
