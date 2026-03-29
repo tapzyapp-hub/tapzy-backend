@@ -4,10 +4,6 @@ const router = require("express").Router();
 
 const prisma = require("../prisma");
 
-const { upload } = require("../upload");
-
-
-
 const {
 
   cleanUsername,
@@ -22,8 +18,6 @@ const {
 
   makeVcf,
 
-  buildQuickSharePreview,
-
   renderShell,
 
   renderTapzyAssistant,
@@ -31,12 +25,6 @@ const {
   renderFollowButton,
 
   getFollowState,
-
-  ownerKeyQuery,
-
-  requireOwnerAccess,
-
-  currentProfileNoticeHtml,
 
   backUrl,
 
@@ -82,9 +70,11 @@ router.get("/u/:username", async (req, res) => {
 
     const currentProfile = req.currentProfile || null;
 
-    const followState = await getFollowState(currentProfile?.id, profile.id);
+    const isOwner = currentProfile && currentProfile.id === profile.id;
 
-    const quickPreview = buildQuickSharePreview(profile);
+
+
+    const followState = await getFollowState(currentProfile?.id, profile.id);
 
 
 
@@ -92,7 +82,7 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-    const photoHtml = profile.photo
+    const avatar = profile.photo
 
       ? `<img src="${escapeHtml(profile.photo)}" />`
 
@@ -100,645 +90,407 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-    const showMessageButton =
-
-      currentProfile && currentProfile.id !== profile.id;
-
-    const showFollowButton =
-
-      currentProfile && currentProfile.id !== profile.id;
-
-
-
     const body = `
 
-<div class="wrap profile-wrap">
+    <div class="wrap profile-wrap">
 
 
 
-  <!-- HERO -->
+      <!-- HERO -->
 
-  <section class="elite-hero">
+      <div class="hero">
 
-    <div class="elite-glow"></div>
-
-
-
-    <div class="elite-top">
-
-      <div class="elite-avatar">${photoHtml}</div>
+        <div class="avatar">${avatar}</div>
 
 
 
-      <div class="elite-info">
+        <div class="hero-main">
 
-        <h1>${escapeHtml(displayName)}</h1>
+          <h1>${escapeHtml(displayName)}</h1>
 
-        <div class="elite-handle">@${escapeHtml(profile.username)}</div>
-
-
-
-        <div class="elite-actions">
-
-          ${
-
-            showFollowButton
-
-              ? renderFollowButton(
-
-                  currentProfile,
-
-                  profile,
-
-                  followState.isFollowing
-
-                )
-
-              : ""
-
-          }
+          <div class="handle">@${escapeHtml(profile.username)}</div>
 
 
 
-          ${
+          <div class="actions">
 
-            showMessageButton
+            ${
 
-              ? `
+              currentProfile && !isOwner
 
-              <form method="POST" action="/messages/start/${escapeHtml(
+                ? renderFollowButton(currentProfile, profile, followState.isFollowing)
 
-                profile.username
+                : ""
 
-              )}">
-
-                <button class="elite-btn">Message</button>
-
-              </form>
-
-            `
-
-              : ""
-
-          }
+            }
 
 
 
-          <a class="elite-btn" href="/qr/${escapeHtml(
+            ${
 
-            profile.username
+              currentProfile && !isOwner
 
-          )}">QR</a>
+                ? `<form method="POST" action="/messages/start/${profile.username}">
 
+                    <button class="btn">Message</button>
 
+                  </form>`
 
-          <a class="elite-btn" href="/vcard/${escapeHtml(
+                : ""
 
-            profile.username
-
-          )}">Save</a>
-
-        </div>
+            }
 
 
 
-        <div class="elite-signed">
+            <a class="btn" href="/qr/${profile.username}">QR</a>
 
-          ${currentProfileNoticeHtml(currentProfile)}
+            <a class="btn" href="/vcard/${profile.username}">Save</a>
+
+
+
+            ${
+
+              isOwner
+
+                ? `<a class="btn" href="/edit/${profile.username}">Edit</a>`
+
+                : ""
+
+            }
+
+          </div>
+
+
+
+          <div class="signed">
+
+            ${
+
+              currentProfile
+
+                ? `Signed in as @${escapeHtml(currentProfile.username)}`
+
+                : ""
+
+            }
+
+          </div>
 
         </div>
 
       </div>
 
-    </div>
+
+
+      <!-- STATS -->
+
+      <div class="stats">
+
+        <div><b>${profile.connections || 0}</b><span>Connections</span></div>
+
+        <div><b>${profile.followers.length}</b><span>Followers</span></div>
+
+        <div><b>${profile.following.length}</b><span>Following</span></div>
+
+      </div>
 
 
 
-    <!-- STATS -->
+      ${
 
-    <div class="elite-stats">
+        profile.title
 
-      <div><b>${profile.connections || 0}</b><span>Connections</span></div>
+          ? `<div class="card"><b>${escapeHtml(profile.title)}</b></div>`
 
-      <div><b>${profile.followers?.length || 0}</b><span>Followers</span></div>
+          : ""
 
-      <div><b>${profile.following?.length || 0}</b><span>Following</span></div>
-
-    </div>
-
-  </section>
+      }
 
 
 
-  <!-- STATUS -->
+      ${
 
-  <section class="elite-card">
+        profile.bio
 
-    <div class="elite-title">Status</div>
+          ? `<div class="card">${escapeHtml(profile.bio)}</div>`
 
-    <div class="elite-status">
+          : ""
 
-      <span class="dot"></span>
-
-      Open to networking
-
-    </div>
-
-  </section>
+      }
 
 
 
-  <!-- BIO -->
+      <!-- LINKS -->
 
-  ${
+      <div class="links">
 
-    profile.title || profile.bio
+        ${profile.phone ? linkRow("Phone", `tel:${profile.phone}`) : ""}
 
-      ? `
-
-      <section class="elite-card">
+        ${profile.email ? linkRow("Email", `mailto:${profile.email}`) : ""}
 
         ${
 
-          profile.title
+          profile.instagram
 
-            ? `<div class="elite-title">${escapeHtml(profile.title)}</div>`
+            ? linkRow("Instagram", `https://instagram.com/${stripAt(profile.instagram)}`)
 
             : ""
 
         }
 
-        ${
+        ${profile.website ? linkRow("Website", safeUrl(profile.website)) : ""}
 
-          profile.bio
+      </div>
 
-            ? `<div class="elite-text">${escapeHtml(profile.bio)}</div>`
 
-            : ""
 
-        }
+    </div>
 
-      </section>
 
-    `
 
-      : ""
+    <style>
 
-  }
 
 
+      .profile-wrap{
 
-  <!-- QUICK SHARE -->
+        max-width:820px;
 
-  ${
+        padding-bottom:80px;
 
-    quickPreview.length
+      }
 
-      ? `
 
-      <section class="elite-card">
 
-        <div class="elite-title">Quick Share</div>
+      .hero{
 
-        <div class="elite-tags">
+        display:flex;
 
-          ${quickPreview
+        gap:16px;
 
-            .map((x) => `<span>${escapeHtml(x)}</span>`)
+        padding:20px;
 
-            .join("")}
+        border-radius:24px;
 
-        </div>
+        background:linear-gradient(180deg,#0b0f16,#000);
 
-      </section>
+        border:1px solid rgba(255,255,255,.06);
 
-    `
+      }
 
-      : ""
 
-  }
 
+      .avatar{
 
+        width:90px;
 
-  <!-- LINKS -->
+        height:90px;
 
-  <section class="elite-links">
+        border-radius:20px;
 
-    ${profile.phone ? linkRow("Phone", `tel:${profile.phone}`) : ""}
+        display:flex;
 
-    ${profile.email ? linkRow("Email", `mailto:${profile.email}`) : ""}
+        align-items:center;
 
-    ${
+        justify-content:center;
 
-      profile.instagram
+        font-size:34px;
 
-        ? linkRow(
+        font-weight:900;
 
-            "Instagram",
+        background:#111;
 
-            `https://instagram.com/${stripAt(profile.instagram)}`
+      }
 
-          )
 
-        : ""
 
-    }
+      .avatar img{
 
-    ${
+        width:100%;
 
-      profile.website
+        height:100%;
 
-        ? linkRow("Website", safeUrl(profile.website))
+        object-fit:cover;
 
-        : ""
+      }
 
-    }
 
-    ${
 
-      profile.linkedin
+      .hero-main h1{
 
-        ? linkRow("LinkedIn", safeUrl(profile.linkedin))
+        margin:0;
 
-        : ""
+        font-size:28px;
 
-    }
+      }
 
-  </section>
 
 
+      .handle{
 
-  ${
+        color:#9aa6b2;
 
-    currentProfile && currentProfile.id === profile.id
+        margin-top:4px;
 
-      ? `<a class="elite-edit" href="/edit/${escapeHtml(
+      }
 
-          profile.username
 
-        )}">Edit Profile</a>`
 
-      : ""
+      .actions{
 
-  }
+        display:flex;
 
+        gap:10px;
 
+        flex-wrap:wrap;
 
-</div>
+        margin-top:10px;
 
+      }
 
 
-<style>
 
+      .btn{
 
+        padding:10px 14px;
 
-/* HERO */
+        border-radius:14px;
 
+        border:1px solid rgba(255,255,255,.08);
 
+        background:#111;
 
-.elite-hero{
+        color:#fff;
 
-  padding:22px;
+        font-weight:700;
 
-  border-radius:26px;
+      }
 
-  background:#07090d;
 
-  position:relative;
 
-  overflow:hidden;
+      .signed{
 
-}
+        margin-top:10px;
 
+        font-size:13px;
 
+        color:#aaa;
 
-.elite-glow{
+      }
 
-  position:absolute;
 
-  width:300px;
 
-  height:160px;
+      .stats{
 
-  top:-50px;
+        display:flex;
 
-  right:-50px;
+        justify-content:space-between;
 
-  background:radial-gradient(circle, rgba(0,140,255,.3), transparent);
+        margin-top:16px;
 
-  filter:blur(40px);
+        padding:14px;
 
-}
+        border-radius:20px;
 
+        background:#0b0f16;
 
+      }
 
-.elite-top{
 
-  display:flex;
 
-  gap:16px;
+      .stats div{
 
-}
+        text-align:center;
 
+      }
 
 
-.elite-avatar{
 
-  width:90px;
+      .stats b{
 
-  height:90px;
+        display:block;
 
-  border-radius:20px;
+        font-size:18px;
 
-  overflow:hidden;
+      }
 
-  background:#111;
 
-}
 
+      .stats span{
 
+        font-size:12px;
 
-.elite-avatar img{
+        color:#888;
 
-  width:100%;
+      }
 
-  height:100%;
 
-  object-fit:cover;
 
-}
+      .card{
 
+        margin-top:14px;
 
+        padding:16px;
 
-.elite-info h1{
+        border-radius:18px;
 
-  font-size:28px;
+        background:#0b0f16;
 
-  margin:0;
+      }
 
-}
 
 
+      .links{
 
-.elite-handle{
+        margin-top:14px;
 
-  color:#888;
+        display:flex;
 
-  margin-top:4px;
+        flex-direction:column;
 
-}
+        gap:10px;
 
+      }
 
 
-/* ACTIONS */
 
+      .link{
 
+        padding:16px;
 
-.elite-actions{
+        border-radius:18px;
 
-  margin-top:10px;
+        background:#0b0f16;
 
-  display:flex;
+        display:flex;
 
-  gap:8px;
+        justify-content:space-between;
 
-  flex-wrap:wrap;
+        text-decoration:none;
 
-}
+        color:#fff;
 
+      }
 
 
-.elite-btn{
 
-  padding:8px 14px;
+    </style>
 
-  border-radius:12px;
 
-  background:#11151d;
 
-  border:1px solid rgba(255,255,255,.06);
+    ${renderTapzyAssistant({
 
-  color:#fff;
+      username: profile.username,
 
-  font-weight:700;
+      pageType: "profile",
 
-}
+    })}
 
+    `;
 
 
-/* STATS */
 
-
-
-.elite-stats{
-
-  margin-top:16px;
-
-  display:flex;
-
-  justify-content:space-around;
-
-  text-align:center;
-
-}
-
-
-
-.elite-stats b{
-
-  font-size:18px;
-
-}
-
-
-
-.elite-stats span{
-
-  font-size:11px;
-
-  color:#888;
-
-}
-
-
-
-/* CARDS */
-
-
-
-.elite-card{
-
-  margin-top:14px;
-
-  padding:14px;
-
-  border-radius:18px;
-
-  background:#0c0f14;
-
-}
-
-
-
-.elite-title{
-
-  font-weight:800;
-
-  margin-bottom:8px;
-
-}
-
-
-
-.elite-text{
-
-  color:#bbb;
-
-}
-
-
-
-/* STATUS */
-
-
-
-.elite-status{
-
-  display:flex;
-
-  align-items:center;
-
-  gap:8px;
-
-}
-
-
-
-.dot{
-
-  width:8px;
-
-  height:8px;
-
-  background:#00ff88;
-
-  border-radius:50%;
-
-}
-
-
-
-/* TAGS */
-
-
-
-.elite-tags span{
-
-  display:inline-block;
-
-  margin:4px;
-
-  padding:5px 10px;
-
-  border-radius:999px;
-
-  background:#111;
-
-  font-size:12px;
-
-}
-
-
-
-/* LINKS */
-
-
-
-.elite-links{
-
-  margin-top:14px;
-
-  display:grid;
-
-  gap:10px;
-
-}
-
-
-
-.elite-link{
-
-  display:flex;
-
-  justify-content:space-between;
-
-  padding:14px;
-
-  border-radius:16px;
-
-  background:#0f131a;
-
-  text-decoration:none;
-
-  color:#fff;
-
-}
-
-
-
-/* EDIT */
-
-
-
-.elite-edit{
-
-  display:block;
-
-  margin-top:16px;
-
-  padding:14px;
-
-  text-align:center;
-
-  border-radius:16px;
-
-  background:#111;
-
-  text-decoration:none;
-
-  color:#fff;
-
-}
-
-
-
-</style>
-
-
-
-${renderTapzyAssistant({
-
-  username: profile.username,
-
-  pageType: "profile",
-
-})}
-
-`;
-
-
-
-    res.send(
-
-      renderShell(`@${profile.username}`, body, "", {
-
-        currentProfile,
-
-        pageType: "profile",
-
-      })
-
-    );
+    res.send(renderShell(profile.username, body, "", { currentProfile }));
 
   } catch (e) {
 
@@ -754,43 +506,19 @@ ${renderTapzyAssistant({
 
 /* =========================
 
-   HELPER
+   EDIT PAGE (RESTORED)
 
 ========================= */
 
 
 
-function linkRow(label, href) {
-
-  return `
-
-  <a class="elite-link" href="${href}" target="_blank">
-
-    <span>${label}</span>
-
-    <span>›</span>
-
-  </a>
-
-  `;
-
-}
-
-
-
-/* =========================
-
-   VCF
-
-========================= */
-
-
-
-router.get("/vcard/:username", async (req, res) => {
+router.get("/edit/:username", async (req, res) => {
 
   try {
 
     const username = cleanUsername(req.params.username);
+
+
 
     const profile = await prisma.userProfile.findUnique({
 
@@ -804,27 +532,63 @@ router.get("/vcard/:username", async (req, res) => {
 
 
 
-    const vcf = makeVcf(profile);
+    if (!req.currentProfile || req.currentProfile.id !== profile.id) {
+
+      return res.redirect(`/u/${username}`);
+
+    }
 
 
 
-    res.setHeader("Content-Type", "text/vcard");
+    const body = `
 
-    res.setHeader(
-
-      "Content-Disposition",
-
-      `attachment; filename="${profile.username}.vcf"`
-
-    );
+    <div class="wrap" style="max-width:700px;">
 
 
 
-    res.send(vcf);
+      <h1>Edit Profile</h1>
+
+
+
+      <form method="POST" action="/edit/${username}" enctype="multipart/form-data">
+
+
+
+        <input name="name" value="${escapeHtml(profile.name || "")}" placeholder="Name" />
+
+        <input name="title" value="${escapeHtml(profile.title || "")}" placeholder="Title" />
+
+        <textarea name="bio">${escapeHtml(profile.bio || "")}</textarea>
+
+
+
+        <input name="phone" value="${escapeHtml(profile.phone || "")}" />
+
+        <input name="email" value="${escapeHtml(profile.email || "")}" />
+
+        <input name="website" value="${escapeHtml(profile.website || "")}" />
+
+
+
+        <input type="file" name="photo" />
+
+
+
+        <button type="submit">Save</button>
+
+      </form>
+
+    </div>
+
+    `;
+
+
+
+    res.send(renderShell("Edit", body));
 
   } catch (e) {
 
-    res.status(500).send("VCF error");
+    res.status(500).send("Edit error");
 
   }
 
@@ -832,7 +596,27 @@ router.get("/vcard/:username", async (req, res) => {
 
 
 
+/* ========================= */
+
+
+
+function linkRow(label, href) {
+
+  return `
+
+    <a class="link" href="${escapeHtml(href)}" target="_blank">
+
+      <span>${label}</span>
+
+      <span>›</span>
+
+    </a>
+
+  `;
+
+}
+
+
+
 module.exports = router;
-
-
 
