@@ -1,45 +1,3 @@
-const router = require("express").Router();
-
-
-
-const prisma = require("../prisma");
-
-const {
-
-  cleanUsername,
-
-  escapeHtml,
-
-  safeUrl,
-
-  stripAt,
-
-  publicAbsoluteUrl,
-
-  makeVcf,
-
-  renderShell,
-
-  renderTapzyAssistant,
-
-  renderFollowButton,
-
-  getFollowState,
-
-  backUrl,
-
-} = require("../utils");
-
-
-
-/* =========================
-
-   PROFILE PAGE
-
-========================= */
-
-
-
 router.get("/u/:username", async (req, res) => {
 
   try {
@@ -70,23 +28,29 @@ router.get("/u/:username", async (req, res) => {
 
     const currentProfile = req.currentProfile || null;
 
+    const followState = await getFollowState(currentProfile?.id, profile.id);
+
+    const quickPreview = buildQuickSharePreview(profile);
+
+
+
+    const isTapOpen = String(req.query.tap || "") === "1";
+
+    const displayName = profile.name || profile.username || "Tapzy User";
+
+    const vcardUrl = `/vcard/${profile.username}`;
+
+
+
     const isOwner = currentProfile && currentProfile.id === profile.id;
 
 
 
-    const followState = await getFollowState(currentProfile?.id, profile.id);
-
-
-
-    const displayName = profile.name || profile.username || "Tapzy User";
-
-
-
-    const avatar = profile.photo
+    const photoHtml = profile.photo
 
       ? `<img src="${escapeHtml(profile.photo)}" />`
 
-      : escapeHtml(displayName[0].toUpperCase());
+      : `<span>${escapeHtml(displayName[0].toUpperCase())}</span>`;
 
 
 
@@ -96,111 +60,19 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      <!-- HERO -->
-
-      <div class="hero">
-
-        <div class="avatar">${avatar}</div>
-
-
-
-        <div class="hero-main">
-
-          <h1>${escapeHtml(displayName)}</h1>
-
-          <div class="handle">@${escapeHtml(profile.username)}</div>
-
-
-
-          <div class="actions">
-
-            ${
-
-              currentProfile && !isOwner
-
-                ? renderFollowButton(currentProfile, profile, followState.isFollowing)
-
-                : ""
-
-            }
-
-
-
-            ${
-
-              currentProfile && !isOwner
-
-                ? `<form method="POST" action="/messages/start/${profile.username}">
-
-                    <button class="btn">Message</button>
-
-                  </form>`
-
-                : ""
-
-            }
-
-
-
-            <a class="btn" href="/qr/${profile.username}">QR</a>
-
-            <a class="btn" href="/vcard/${profile.username}">Save</a>
-
-
-
-            ${
-
-              isOwner
-
-                ? `<a class="btn" href="/edit/${profile.username}">Edit</a>`
-
-                : ""
-
-            }
-
-          </div>
-
-
-
-          <div class="signed">
-
-            ${
-
-              currentProfile
-
-                ? `Signed in as @${escapeHtml(currentProfile.username)}`
-
-                : ""
-
-            }
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-
-      <!-- STATS -->
-
-      <div class="stats">
-
-        <div><b>${profile.connections || 0}</b><span>Connections</span></div>
-
-        <div><b>${profile.followers.length}</b><span>Followers</span></div>
-
-        <div><b>${profile.following.length}</b><span>Following</span></div>
-
-      </div>
-
-
-
       ${
 
-        profile.title
+        isTapOpen
 
-          ? `<div class="card"><b>${escapeHtml(profile.title)}</b></div>`
+          ? `
+
+          <div id="tapOverlay" class="tap-overlay">
+
+            <div class="tap-card">Tap detected</div>
+
+          </div>
+
+        `
 
           : ""
 
@@ -208,11 +80,135 @@ router.get("/u/:username", async (req, res) => {
 
 
 
+      <!-- PROFILE -->
+
+      <section class="profile">
+
+
+
+        <div class="profile-top">
+
+
+
+          <div class="avatar">
+
+            ${photoHtml}
+
+          </div>
+
+
+
+          <div class="info">
+
+            <div class="name">${escapeHtml(displayName)}</div>
+
+            <div class="handle">@${escapeHtml(profile.username)}</div>
+
+
+
+            <div class="actions">
+
+
+
+              ${
+
+                isOwner
+
+                  ? `<a class="btn" href="/edit/${profile.username}">Edit</a>`
+
+                  : renderFollowButton(currentProfile, profile, followState.isFollowing)
+
+              }
+
+
+
+              <a class="btn" href="/qr/${profile.username}">QR</a>
+
+              <a class="btn" href="${vcardUrl}">Save</a>
+
+
+
+            </div>
+
+
+
+            <div class="signed">
+
+              ${currentProfileNoticeHtml(currentProfile)}
+
+            </div>
+
+          </div>
+
+
+
+        </div>
+
+
+
+        <div class="stats">
+
+          <div><strong>${profile.connections || 0}</strong><span>Connections</span></div>
+
+          <div><strong>${profile.followers.length}</strong><span>Followers</span></div>
+
+          <div><strong>${profile.following.length}</strong><span>Following</span></div>
+
+        </div>
+
+
+
+      </section>
+
+
+
+      <!-- STATUS -->
+
       ${
 
         profile.bio
 
-          ? `<div class="card">${escapeHtml(profile.bio)}</div>`
+          ? `<div class="card"><span class="dot"></span>${escapeHtml(profile.bio)}</div>`
+
+          : ""
+
+      }
+
+
+
+      <!-- TITLE -->
+
+      ${
+
+        profile.title
+
+          ? `<div class="card">${escapeHtml(profile.title)}</div>`
+
+          : ""
+
+      }
+
+
+
+      <!-- QUICK SHARE -->
+
+      ${
+
+        quickPreview.length
+
+          ? `
+
+        <div class="card">
+
+          <div class="title">Quick Share</div>
+
+          <div class="tags">
+
+            ${quickPreview.map(t => `<span>${t}</span>`).join("")}
+
+          </div>
+
+        </div>`
 
           : ""
 
@@ -224,21 +220,35 @@ router.get("/u/:username", async (req, res) => {
 
       <div class="links">
 
-        ${profile.phone ? linkRow("Phone", `tel:${profile.phone}`) : ""}
 
-        ${profile.email ? linkRow("Email", `mailto:${profile.email}`) : ""}
 
-        ${
+        ${profile.phone ? profileLinkRow("Phone", `tel:${profile.phone}`) : ""}
 
-          profile.instagram
+        ${profile.email ? profileLinkRow("Email", `mailto:${profile.email}`) : ""}
 
-            ? linkRow("Instagram", `https://instagram.com/${stripAt(profile.instagram)}`)
+        ${profile.instagram ? profileLinkRow("Instagram", `https://instagram.com/${stripAt(profile.instagram)}`) : ""}
 
-            : ""
+        ${profile.tiktok ? profileLinkRow("TikTok", `https://tiktok.com/@${stripAt(profile.tiktok)}`) : ""}
 
-        }
+        ${profile.website ? profileLinkRow("Website", safeUrl(profile.website)) : ""}
 
-        ${profile.website ? linkRow("Website", safeUrl(profile.website)) : ""}
+        ${profile.linkedin ? profileLinkRow("LinkedIn", safeUrl(profile.linkedin)) : ""}
+
+        ${profile.twitter ? profileLinkRow("X", `https://x.com/${stripAt(profile.twitter)}`) : ""}
+
+        ${profile.facebook ? profileLinkRow("Facebook", `https://facebook.com/${stripAt(profile.facebook)}`) : ""}
+
+        ${profile.youtube ? profileLinkRow("YouTube", `https://youtube.com/@${stripAt(profile.youtube)}`) : ""}
+
+        ${profile.github ? profileLinkRow("GitHub", `https://github.com/${stripAt(profile.github)}`) : ""}
+
+        ${profile.snapchat ? profileLinkRow("Snapchat", `https://snapchat.com/add/${stripAt(profile.snapchat)}`) : ""}
+
+        ${profile.whatsapp ? profileLinkRow("WhatsApp", `https://wa.me/${profile.whatsapp}`) : ""}
+
+        ${profile.telegram ? profileLinkRow("Telegram", `https://t.me/${stripAt(profile.telegram)}`) : ""}
+
+
 
       </div>
 
@@ -252,229 +262,297 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-wrap{
+    body{
 
-        max-width:820px;
+      background:#000;
 
-        padding-bottom:80px;
+      color:#fff;
 
-      }
+    }
 
 
 
-      .hero{
+    .profile-wrap{
 
-        display:flex;
+      max-width:600px;
 
-        gap:16px;
+      margin:auto;
 
-        padding:20px;
+    }
 
-        border-radius:24px;
 
-        background:linear-gradient(180deg,#0b0f16,#000);
 
-        border:1px solid rgba(255,255,255,.06);
+    .profile{
 
-      }
+      padding:20px;
 
+      border-radius:24px;
 
+      background:#0b0f1a;
 
-      .avatar{
+      margin-bottom:16px;
 
-        width:90px;
+    }
 
-        height:90px;
 
-        border-radius:20px;
 
-        display:flex;
+    .profile-top{
 
-        align-items:center;
+      display:flex;
 
-        justify-content:center;
+      gap:16px;
 
-        font-size:34px;
+    }
 
-        font-weight:900;
 
-        background:#111;
 
-      }
+    .avatar{
 
+      width:90px;
 
+      height:90px;
 
-      .avatar img{
+      border-radius:20px;
 
-        width:100%;
+      background:#111;
 
-        height:100%;
+      display:flex;
 
-        object-fit:cover;
+      align-items:center;
 
-      }
+      justify-content:center;
 
+      overflow:hidden;
 
+      font-size:28px;
 
-      .hero-main h1{
+      font-weight:800;
 
-        margin:0;
+    }
 
-        font-size:28px;
 
-      }
 
+    .avatar img{
 
+      width:100%;
 
-      .handle{
+      height:100%;
 
-        color:#9aa6b2;
+      object-fit:cover;
 
-        margin-top:4px;
+    }
 
-      }
 
 
+    .name{
 
-      .actions{
+      font-size:24px;
 
-        display:flex;
+      font-weight:800;
 
-        gap:10px;
+    }
 
-        flex-wrap:wrap;
 
-        margin-top:10px;
 
-      }
+    .handle{
 
+      font-size:14px;
 
+      color:#888;
 
-      .btn{
+      margin-top:4px;
 
-        padding:10px 14px;
+    }
 
-        border-radius:14px;
 
-        border:1px solid rgba(255,255,255,.08);
 
-        background:#111;
+    .actions{
 
-        color:#fff;
+      display:flex;
 
-        font-weight:700;
+      gap:8px;
 
-      }
+      margin-top:10px;
 
+      flex-wrap:wrap;
 
+    }
 
-      .signed{
 
-        margin-top:10px;
 
-        font-size:13px;
+    .btn{
 
-        color:#aaa;
+      padding:8px 14px;
 
-      }
+      border-radius:12px;
 
+      background:#111;
 
+      text-decoration:none;
 
-      .stats{
+      color:#fff;
 
-        display:flex;
+      font-size:13px;
 
-        justify-content:space-between;
+    }
 
-        margin-top:16px;
 
-        padding:14px;
 
-        border-radius:20px;
+    .signed{
 
-        background:#0b0f16;
+      font-size:12px;
 
-      }
+      margin-top:8px;
 
+      color:#666;
 
+    }
 
-      .stats div{
 
-        text-align:center;
 
-      }
+    .stats{
 
+      display:flex;
 
+      justify-content:space-between;
 
-      .stats b{
+      margin-top:14px;
 
-        display:block;
+      color:#aaa;
 
-        font-size:18px;
+    }
 
-      }
 
 
+    .stats strong{
 
-      .stats span{
+      display:block;
 
-        font-size:12px;
+      color:#fff;
 
-        color:#888;
+    }
 
-      }
 
 
+    .card{
 
-      .card{
+      background:#0a0a0a;
 
-        margin-top:14px;
+      padding:16px;
 
-        padding:16px;
+      border-radius:16px;
 
-        border-radius:18px;
+      margin-bottom:12px;
 
-        background:#0b0f16;
+    }
 
-      }
 
 
+    .dot{
 
-      .links{
+      width:8px;
 
-        margin-top:14px;
+      height:8px;
 
-        display:flex;
+      background:#00ff88;
 
-        flex-direction:column;
+      border-radius:50%;
 
-        gap:10px;
+      display:inline-block;
 
-      }
+      margin-right:8px;
 
+    }
 
 
-      .link{
 
-        padding:16px;
+    .title{
 
-        border-radius:18px;
+      font-weight:700;
 
-        background:#0b0f16;
+      margin-bottom:8px;
 
-        display:flex;
+    }
 
-        justify-content:space-between;
 
-        text-decoration:none;
 
-        color:#fff;
+    .tags span{
 
-      }
+      background:#111;
+
+      padding:6px 10px;
+
+      border-radius:12px;
+
+      margin:4px;
+
+      display:inline-block;
+
+      font-size:12px;
+
+    }
+
+
+
+    .links{
+
+      display:flex;
+
+      flex-direction:column;
+
+      gap:10px;
+
+    }
+
+
+
+    .profile-simple-link{
+
+      padding:16px;
+
+      border-radius:16px;
+
+      background:#0a0a0a;
+
+      display:flex;
+
+      justify-content:space-between;
+
+      color:#fff;
+
+      text-decoration:none;
+
+    }
 
 
 
     </style>
+
+
+
+    ${
+
+      isTapOpen
+
+        ? `
+
+        <script>
+
+          setTimeout(()=>{
+
+            const overlay = document.getElementById("tapOverlay");
+
+            if(overlay) overlay.remove();
+
+          },1200);
+
+        </script>
+
+      `
+
+        : ""
+
+    }
 
 
 
@@ -490,7 +568,15 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-    res.send(renderShell(profile.username, body, "", { currentProfile }));
+    res.send(
+
+      renderShell(`@${profile.username}`, body, "", {
+
+        currentProfile,
+
+      })
+
+    );
 
   } catch (e) {
 
@@ -501,122 +587,3 @@ router.get("/u/:username", async (req, res) => {
   }
 
 });
-
-
-
-/* =========================
-
-   EDIT PAGE (RESTORED)
-
-========================= */
-
-
-
-router.get("/edit/:username", async (req, res) => {
-
-  try {
-
-    const username = cleanUsername(req.params.username);
-
-
-
-    const profile = await prisma.userProfile.findUnique({
-
-      where: { username },
-
-    });
-
-
-
-    if (!profile) return res.status(404).send("Not found");
-
-
-
-    if (!req.currentProfile || req.currentProfile.id !== profile.id) {
-
-      return res.redirect(`/u/${username}`);
-
-    }
-
-
-
-    const body = `
-
-    <div class="wrap" style="max-width:700px;">
-
-
-
-      <h1>Edit Profile</h1>
-
-
-
-      <form method="POST" action="/edit/${username}" enctype="multipart/form-data">
-
-
-
-        <input name="name" value="${escapeHtml(profile.name || "")}" placeholder="Name" />
-
-        <input name="title" value="${escapeHtml(profile.title || "")}" placeholder="Title" />
-
-        <textarea name="bio">${escapeHtml(profile.bio || "")}</textarea>
-
-
-
-        <input name="phone" value="${escapeHtml(profile.phone || "")}" />
-
-        <input name="email" value="${escapeHtml(profile.email || "")}" />
-
-        <input name="website" value="${escapeHtml(profile.website || "")}" />
-
-
-
-        <input type="file" name="photo" />
-
-
-
-        <button type="submit">Save</button>
-
-      </form>
-
-    </div>
-
-    `;
-
-
-
-    res.send(renderShell("Edit", body));
-
-  } catch (e) {
-
-    res.status(500).send("Edit error");
-
-  }
-
-});
-
-
-
-/* ========================= */
-
-
-
-function linkRow(label, href) {
-
-  return `
-
-    <a class="link" href="${escapeHtml(href)}" target="_blank">
-
-      <span>${label}</span>
-
-      <span>›</span>
-
-    </a>
-
-  `;
-
-}
-
-
-
-module.exports = router;
-
