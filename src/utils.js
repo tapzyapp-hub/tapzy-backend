@@ -380,6 +380,8 @@ function renderTopBar({ currentProfile = null, pageTitle = "Tapzy", pageType = "
     { key: "connections", label: "Connections", href: signedIn ? `/connections/${username}` : "/auth" },
     { key: "pair", label: "Pair", href: signedIn ? "/pair" : "/auth" },
     { key: "events", label: "Events", href: "/events" },
+    { key: "stories", label: "Stories", href: "/stories" },
+    { key: "posts", label: "Posts", href: "/posts" },
     { key: "admin", label: "Admin", href: "/admin" },
   ];
 
@@ -1883,7 +1885,7 @@ function renderTapzyAssistant({ username = "User", isAuthPage = false, pageType 
       </div>
 
       <div class="tz-ai-foot">
-        Try: open search, open messages, open pair, open profile, connections, open events, network. 
+        Try: open search, open messages, open pair, open profile, connections, open events, network.
       </div>
     </div>
   </div>
@@ -1992,7 +1994,7 @@ function renderTapzyAssistant({ username = "User", isAuthPage = false, pageType 
         return (
           voices.find(v => /samantha|ava|victoria|zira|allison|karen/i.test(v.name)) ||
           voices.find(v => /en[-_]/i.test(v.lang || "")) ||
-          voices.find(v => /english/i.test(v.name || "")) ||
+          voices.find(v => /english/i.test(v.name|| "")) ||
           voices[0] ||
           null
         );
@@ -2116,6 +2118,14 @@ function renderTapzyAssistant({ username = "User", isAuthPage = false, pageType 
 
         if (cmd.includes("open events") || cmd.includes("event finder") || cmd.includes("nearby events")) {
           return { type: "navigate", text: "Opening Event Finder.", href: "/events" };
+        }
+
+        if (cmd.includes("open stories") || cmd === "stories" || cmd.includes("story feed")) {
+          return { type: "navigate", text: "Opening stories.", href: "/stories" };
+        }
+
+        if (cmd.includes("open posts") || cmd === "posts" || cmd.includes("open feed")) {
+          return { type: "navigate", text: "Opening posts.", href: "/posts" };
         }
 
         if (cmd.includes("open pair") || cmd.includes("pairing") || cmd.includes("tapzy pair")) {
