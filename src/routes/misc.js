@@ -158,7 +158,7 @@ router.get("/", async (req, res) => {
 
     width:100%;
 
-    max-width:280px;
+    max-width:300px;
 
     height:auto;
 
@@ -298,7 +298,7 @@ router.get("/", async (req, res) => {
 
     .home-logo-img{
 
-      max-width:380px;
+      max-width:330px;
 
     }
 
