@@ -38,8 +38,8 @@ function postCard(post, currentProfile, likedSet) {
       </div>
 
       ${
-        post.text
-          ? `<div class="post-text">${escapeHtml(post.text)}</div>`
+        post.caption
+          ? `<div class="post-text">${escapeHtml(post.caption)}</div>`
           : ""
       }
 
@@ -113,7 +113,7 @@ router.get("/posts", async (req, res) => {
               <div class="posts-form-grid">
                 <div class="posts-field posts-field-full">
                   <label>Caption</label>
-                  <textarea name="text" placeholder="Share something..."></textarea>
+                  <textarea name="caption" placeholder="Share something..."></textarea>
                 </div>
 
                 <div class="posts-field posts-field-full">
@@ -448,7 +448,7 @@ router.post("/posts", upload.single("media"), async (req, res) => {
     await prisma.post.create({
       data: {
         profileId: currentProfile.id,
-        text: String(req.body.text || "").trim() || null,
+        caption: String(req.body.caption || "").trim() || null,
         mediaUrl,
       },
     });
