@@ -1,4 +1,3 @@
-
 const router = require("express").Router();
 const prisma = require("../prisma");
 const { upload } = require("../upload");
@@ -595,7 +594,7 @@ router.get("/stories/:username", async (req, res) => {
       .map((story, index) => {
         const media = story.mediaUrl
           ? isVideoUrl(story.mediaUrl)
-            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline ${index === 0 ? "" : "preload='none'"}></video>`
+            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline controls ${index === 0 ? "" : "preload='none'"}></video>`
             : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" />`
           : `<div class="story-view-text-only">${escapeHtml(story.text || "@"+(profile.username || "user"))}</div>`;
 
@@ -619,7 +618,19 @@ router.get("/stories/:username", async (req, res) => {
               <div class="story-header-handle">@${escapeHtml(profile.username || "user")}</div>
               <div class="story-header-time">${escapeHtml(formatPrettyLocal(story.createdAt))}</div>
             </div>
-            <a class="story-close-btn" href="/stories">Close</a>
+
+            <div class="story-header-actions">
+              ${
+                currentProfile && currentProfile.id === profile.id
+                  ? `
+                  <form method="POST" action="/stories/${story.id}/delete" onsubmit="return confirm('Delete this story?');" style="margin:0;">
+                    <button class="story-delete-btn" type="submit">Delete</button>
+                  </form>
+                  `
+                  : ""
+              }
+              <a class="story-close-btn" href="/stories">Close</a>
+            </div>
           </div>
 
           <div class="story-stage">
@@ -718,6 +729,17 @@ router.get("/stories/:username", async (req, res) => {
         align-items:center;
       }
 
+      .story-header-left{
+        min-width:0;
+      }
+
+      .story-header-actions{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+
       .story-header-handle{
         color:#fff;
         font-size:18px;
@@ -744,6 +766,22 @@ router.get("/stories/:username", async (req, res) => {
         backdrop-filter:blur(10px);
         font-size:13px;
         font-weight:800;
+      }
+
+      .story-delete-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:42px;
+        padding:0 14px;
+        border-radius:14px;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(10,12,18,.62);
+        color:#fff;
+        cursor:pointer;
+        font-size:13px;
+        font-weight:800;
+        backdrop-filter:blur(10px);
       }
 
       .story-stage{
@@ -877,6 +915,13 @@ router.get("/stories/:username", async (req, res) => {
           height:72vh;
         }
 
+        .story-header{
+          top:18px;
+          left:14px;
+          right:14px;
+          align-items:flex-start;
+        }
+
         .story-header-handle{
           font-size:16px;
         }
@@ -955,6 +1000,34 @@ router.get("/stories/:username", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).send("Story viewer error");
+  }
+});
+
+router.post("/stories/:id/delete", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.redirect("/auth");
+
+    const storyId = String(req.params.id || "").trim();
+
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+      select: { id: true, profileId: true },
+    });
+
+    if (!story) return res.redirect(backUrl(req, "/stories"));
+    if (story.profileId !== currentProfile.id) {
+      return res.status(403).send("Not allowed");
+    }
+
+    await prisma.story.delete({
+      where: { id: storyId },
+    });
+
+    res.redirect(backUrl(req, "/stories"));
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Delete story error");
   }
 });
 
