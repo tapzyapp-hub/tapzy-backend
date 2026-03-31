@@ -570,7 +570,7 @@ router.get("/u/:username", async (req, res) => {
 
       ${
 
-        currentProfile && currentProfile.id=== profile.id
+        currentProfile && currentProfile.id === profile.id
 
           ? `
 
@@ -1134,7 +1134,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-handle{
 
-        margin-top:12px;
+        margin-top:6px;
 
         color:#ffffff;
 
@@ -1164,7 +1164,17 @@ router.get("/u/:username", async (req, res) => {
 
         align-items:center;
 
-        margin-top:22px;
+        margin-top:18px;
+
+      }
+
+
+
+      .profile-showcase-actions form{
+
+        margin:0;
+
+        flex:0 0 auto;
 
       }
 
@@ -1206,6 +1216,14 @@ router.get("/u/:username", async (req, res) => {
 
           0 8px 18px rgba(0,0,0,.18);
 
+        width:auto;
+
+        flex:0 0 auto;
+
+        max-width:100%;
+
+        white-space:nowrap;
+
       }
 
 
@@ -1213,14 +1231,6 @@ router.get("/u/:username", async (req, res) => {
       .profile-pill-btn-dark{
 
         background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
-
-      }
-
-
-
-      .profile-showcase-actions form{
-
-        margin:0;
 
       }
 
@@ -1248,13 +1258,13 @@ router.get("/u/:username", async (req, res) => {
 
           0 8px 18px rgba(0,0,0,.18);
 
-      }
-
-
-
-      .profile-showcase-actions form .btn{
-
         width:auto;
+
+        flex:0 0 auto;
+
+        max-width:100%;
+
+        white-space:nowrap;
 
       }
 
@@ -1840,7 +1850,7 @@ router.get("/u/:username", async (req, res) => {
 
           font-size:18px;
 
-          margin-top:8px;
+          margin-top:4px;
 
           white-space:normal;
 
@@ -1850,9 +1860,25 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-actions{
 
-          margin-top:14px;
+          margin-top:12px;
 
           gap:8px;
+
+          display:flex;
+
+          flex-wrap:wrap;
+
+          align-items:stretch;
+
+        }
+
+
+
+        .profile-showcase-actions form{
+
+          margin:0;
+
+          flex:0 0 auto;
 
         }
 
@@ -1871,6 +1897,14 @@ router.get("/u/:username", async (req, res) => {
           border-radius:18px;
 
           font-size:14px;
+
+          width:auto;
+
+          flex:0 0 auto;
+
+          max-width:100%;
+
+          white-space:nowrap;
 
         }
 
