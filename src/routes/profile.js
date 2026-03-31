@@ -40,24 +40,6 @@ const {
 
 
 
-function profileLinkRow(label, href) {
-
-  return `
-
-    <a class="profile-simple-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">
-
-      <span>${escapeHtml(label)}</span>
-
-      <span class="profile-simple-arrow">›</span>
-
-    </a>
-
-  `;
-
-}
-
-
-
 function isVideoUrl(url) {
 
   const value = String(url || "").toLowerCase();
@@ -540,13 +522,39 @@ router.get("/u/:username", async (req, res) => {
 
             <section class="profile-panel" style="margin-top:18px;">
 
-              <h3 class="profile-panel-heading">Quick Share Preview</h3>
+              <h3 class="profile-panel-heading">Quick Share</h3>
 
-              <div class="profile-panel-subheading">Fields currently enabled for Tapzy quick sharing.</div>
+              <div class="profile-panel-subheading">Tap to connect instantly.</div>
 
-              <div class="profile-preview-tags">
 
-                ${quickPreview.map((item) => `<span class="miniTag">${escapeHtml(item)}</span>`).join("")}
+
+              <div class="profile-quick-actions">
+
+                ${profile.phone ? `<a class="profile-quick-btn" href="tel:${escapeHtml(profile.phone)}">Phone</a>` : ""}
+
+                ${profile.email ? `<a class="profile-quick-btn" href="mailto:${escapeHtml(profile.email)}">Email</a>` : ""}
+
+                ${profile.website ? `<a class="profile-quick-btn" href="${escapeHtml(safeUrl(profile.website))}" target="_blank" rel="noopener noreferrer">Website</a>` : ""}
+
+                ${profile.instagram ? `<a class="profile-quick-btn" href="https://instagram.com/${escapeHtml(stripAt(profile.instagram))}" target="_blank" rel="noopener noreferrer">Instagram</a>` : ""}
+
+                ${profile.tiktok ? `<a class="profile-quick-btn" href="https://www.tiktok.com/@${escapeHtml(stripAt(profile.tiktok))}" target="_blank" rel="noopener noreferrer">TikTok</a>` : ""}
+
+                ${profile.linkedin ? `<a class="profile-quick-btn" href="${escapeHtml(safeUrl(profile.linkedin))}" target="_blank" rel="noopener noreferrer">LinkedIn</a>` : ""}
+
+                ${profile.twitter ? `<a class="profile-quick-btn" href="https://x.com/${escapeHtml(stripAt(profile.twitter))}" target="_blank" rel="noopener noreferrer">X</a>` : ""}
+
+                ${profile.facebook ? `<a class="profile-quick-btn" href="https://facebook.com/${escapeHtml(stripAt(profile.facebook))}" target="_blank" rel="noopener noreferrer">Facebook</a>` : ""}
+
+                ${profile.youtube ? `<a class="profile-quick-btn" href="https://youtube.com/@${escapeHtml(stripAt(profile.youtube))}" target="_blank" rel="noopener noreferrer">YouTube</a>` : ""}
+
+                ${profile.github ? `<a class="profile-quick-btn" href="https://github.com/${escapeHtml(stripAt(profile.github))}" target="_blank" rel="noopener noreferrer">GitHub</a>` : ""}
+
+                ${profile.snapchat ? `<a class="profile-quick-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer">Snapchat</a>` : ""}
+
+                ${profile.whatsapp ? `<a class="profile-quick-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ""}
+
+                ${profile.telegram ? `<a class="profile-quick-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer">Telegram</a>` : ""}
 
               </div>
 
@@ -560,41 +568,9 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      <div class="profile-simple-links" style="margin-top:18px;">
-
-        ${profile.phone ? profileLinkRow("Phone", `tel:${profile.phone}`) : ""}
-
-        ${profile.email ? profileLinkRow("Email", `mailto:${profile.email}`) : ""}
-
-        ${profile.instagram ? profileLinkRow("Instagram", `https://instagram.com/${stripAt(profile.instagram)}`) : ""}
-
-        ${profile.tiktok ? profileLinkRow("TikTok", `https://www.tiktok.com/@${stripAt(profile.tiktok)}`) : ""}
-
-        ${profile.website ? profileLinkRow("Website", safeUrl(profile.website)) : ""}
-
-        ${profile.linkedin ? profileLinkRow("LinkedIn", safeUrl(profile.linkedin)) : ""}
-
-        ${profile.twitter ? profileLinkRow("X", `https://x.com/${stripAt(profile.twitter)}`) : ""}
-
-        ${profile.facebook ? profileLinkRow("Facebook", `https://facebook.com/${stripAt(profile.facebook)}`) : ""}
-
-        ${profile.youtube ? profileLinkRow("YouTube", `https://youtube.com/@${stripAt(profile.youtube)}`) : ""}
-
-        ${profile.github ? profileLinkRow("GitHub", `https://github.com/${stripAt(profile.github)}`) : ""}
-
-        ${profile.snapchat ? profileLinkRow("Snapchat", `https://www.snapchat.com/add/${stripAt(profile.snapchat)}`) : ""}
-
-        ${profile.whatsapp ? profileLinkRow("WhatsApp", `https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}`) : ""}
-
-        ${profile.telegram ? profileLinkRow("Telegram", `https://t.me/${stripAt(profile.telegram)}`) : ""}
-
-      </div>
-
-
-
       ${
 
-        currentProfile && currentProfile.id === profile.id
+        currentProfile && currentProfile.id=== profile.id
 
           ? `
 
@@ -1408,42 +1384,6 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-preview-tags{
-
-        margin-top:14px;
-
-      }
-
-
-
-      .miniTag{
-
-        display:inline-flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        padding:9px 14px;
-
-        border-radius:999px;
-
-        margin:0 10px 10px 0;
-
-        border:1px solid rgba(255,255,255,.08);
-
-        background:rgba(255,255,255,.04);
-
-        color:#fff;
-
-        font-size:13px;
-
-        font-weight:700;
-
-      }
-
-
-
       .profile-mini-action{
 
         display:inline-flex;
@@ -1686,55 +1626,53 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-simple-links{
+      .profile-quick-actions{
 
-        display:grid;
+        display:flex;
 
-        gap:14px;
+        flex-wrap:wrap;
+
+        gap:12px;
+
+        margin-top:16px;
 
       }
 
 
 
-      .profile-simple-link{
+      .profile-quick-btn{
 
-        position:relative;
-
-        overflow:hidden;
-
-        display:flex;
+        display:inline-flex;
 
         align-items:center;
 
-        justify-content:space-between;
+        justify-content:center;
 
-        gap:12px;
+        min-height:48px;
+
+        padding:0 18px;
+
+        border-radius:18px;
 
         text-decoration:none;
 
-        padding:20px 22px;
-
-        border-radius:28px;
+        border:1px solid rgba(255,255,255,.08);
 
         background:
 
-          radial-gradient(420px 180px at 68% 20%, rgba(36,80,125,.22), transparent 48%),
-
-          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
-
-        border:1px solid rgba(255,255,255,.08);
-
-        box-shadow:
-
-          inset 0 1px 0 rgba(255,255,255,.03),
-
-          0 14px 28px rgba(0,0,0,.22);
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
         color:#fff;
 
-        font-size:20px;
+        font-size:14px;
 
-        font-weight:700;
+        font-weight:800;
+
+        box-shadow:
+
+          inset 0 1px 0 rgba(255,255,255,.04),
+
+          0 8px 18px rgba(0,0,0,.18);
 
         transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 
@@ -1742,7 +1680,7 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-simple-link:hover{
+      .profile-quick-btn:hover{
 
         transform:translateY(-1px);
 
@@ -1750,23 +1688,9 @@ router.get("/u/:username", async (req, res) => {
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.04),
+          inset 0 1px 0 rgba(255,255,255,.05),
 
-          0 16px 34px rgba(0,0,0,.26);
-
-      }
-
-
-
-      .profile-simple-arrow{
-
-        color:#ffffff;
-
-        font-size:24px;
-
-        line-height:1;
-
-        flex:0 0 auto;
+          0 10px 22px rgba(0,0,0,.22);
 
       }
 
@@ -1988,13 +1912,15 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-        .profile-simple-link{
+        .profile-quick-btn{
 
-          font-size:17px;
+          min-height:44px;
 
-          padding:18px;
+          padding:0 16px;
 
-          border-radius:22px;
+          border-radius:16px;
+
+          font-size:13px;
 
         }
 
@@ -3646,7 +3572,7 @@ router.get("/qr/:username", async (req, res) => {
 
         display:flex;
 
-        flex-direction:colum;
+        flex-direction:column;
 
         gap:18px;
 
