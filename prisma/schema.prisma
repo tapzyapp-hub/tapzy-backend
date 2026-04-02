@@ -505,3 +505,4 @@ model PostLike {
   @@index([profileId], map: "postlike_profileId_idx")
   @@index([createdAt], map: "postlike_createdAt_idx")
 }
+
