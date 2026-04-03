@@ -1,4 +1,4 @@
-  const router = require("express").Router();
+const router = require("express").Router();
 
 
 
@@ -1248,7 +1248,7 @@ router.get("/stories/:username", async (req, res) => {
 
               ${
 
-                currentProfile && currentProfile.id=== profile.id
+                currentProfile && currentProfile.id === profile.id
 
                   ? `
 
@@ -1444,7 +1444,7 @@ router.get("/stories/:username", async (req, res) => {
 
         position:absolute;
 
-        top:22px;
+        top:34px;
 
         left:18px;
 
@@ -1470,7 +1470,9 @@ router.get("/stories/:username", async (req, res) => {
 
         flex:1;
 
-        padding-right:8px;
+        padding-right:10px;
+
+        padding-top:4px;
 
       }
 
@@ -1498,13 +1500,15 @@ router.get("/stories/:username", async (req, res) => {
 
         color:#fff;
 
-        font-size:18px;
+        font-size:17px;
 
         font-weight:900;
 
-        line-height:1.1;
+        line-height:1.05;
 
         word-break:break-word;
+
+        text-shadow:0 2px 10px rgba(0,0,0,.35);
 
       }
 
@@ -1818,7 +1822,7 @@ router.get("/stories/:username", async (req, res) => {
 
         .story-header{
 
-          top:14px;
+          top:26px;
 
           left:12px;
 
@@ -1832,7 +1836,9 @@ router.get("/stories/:username", async (req, res) => {
 
         .story-header-left{
 
-          padding-right:6px;
+          padding-right:8px;
+
+          padding-top:2px;
 
         }
 
@@ -1840,7 +1846,9 @@ router.get("/stories/:username", async (req, res) => {
 
         .story-header-handle{
 
-          font-size:15px;
+          font-size:14px;
+
+          line-height:1.05;
 
         }
 
@@ -1850,9 +1858,9 @@ router.get("/stories/:username", async (req, res) => {
 
         .story-delete-btn{
 
-          min-height:36px;
+          min-height:34px;
 
-          padding:0 12px;
+          padding:0 11px;
 
           border-radius:12px;
 
