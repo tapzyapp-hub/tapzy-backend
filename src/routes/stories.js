@@ -1,8 +1,14 @@
-const router = require("express").Router();
+  const router = require("express").Router();
+
+
 
 const prisma = require("../prisma");
 
+
+
 const { upload } = require("../upload");
+
+
 
 const {
 
@@ -1234,8 +1240,6 @@ router.get("/stories/:username", async (req, res) => {
 
               <div class="story-header-handle">@${escapeHtml(profile.username || "user")}</div>
 
-              <div class="story-header-time">${escapeHtml(formatPrettyLocal(story.createdAt))}</div>
-
             </div>
 
 
@@ -1244,7 +1248,7 @@ router.get("/stories/:username", async (req, res) => {
 
               ${
 
-                currentProfile && currentProfile.id === profile.id
+                currentProfile && currentProfile.id=== profile.id
 
                   ? `
 
@@ -1440,7 +1444,7 @@ router.get("/stories/:username", async (req, res) => {
 
         position:absolute;
 
-        top:30px;
+        top:22px;
 
         left:18px;
 
@@ -1452,9 +1456,9 @@ router.get("/stories/:username", async (req, res) => {
 
         justify-content:space-between;
 
-        gap:14px;
+        align-items:flex-start;
 
-        align-items:center;
+        gap:12px;
 
       }
 
@@ -1463,6 +1467,10 @@ router.get("/stories/:username", async (req, res) => {
       .story-header-left{
 
         min-width:0;
+
+        flex:1;
+
+        padding-right:8px;
 
       }
 
@@ -1474,9 +1482,13 @@ router.get("/stories/:username", async (req, res) => {
 
         align-items:center;
 
-        gap:10px;
+        justify-content:flex-end;
 
-        flex-wrap:wrap;
+        gap:8px;
+
+        flex-wrap:nowrap;
+
+        flex-shrink:0;
 
       }
 
@@ -1490,53 +1502,15 @@ router.get("/stories/:username", async (req, res) => {
 
         font-weight:900;
 
-      }
+        line-height:1.1;
 
-
-
-      .story-header-time{
-
-        margin-top:4px;
-
-        color:#d7e5f5;
-
-        font-size:13px;
+        word-break:break-word;
 
       }
 
 
 
-      .story-close-btn{
-
-        display:inline-flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        min-height:42px;
-
-        padding:0 14px;
-
-        border-radius:14px;
-
-        text-decoration:none;
-
-        color:#fff;
-
-        background:rgba(10,12,18,.62);
-
-        border:1px solid rgba(255,255,255,.10);
-
-        backdrop-filter:blur(10px);
-
-        font-size:13px;
-
-        font-weight:800;
-
-      }
-
-
+      .story-close-btn,
 
       .story-delete-btn{
 
@@ -1546,7 +1520,7 @@ router.get("/stories/:username", async (req, res) => {
 
         justify-content:center;
 
-        min-height:42px;
+        min-height:40px;
 
         padding:0 14px;
 
@@ -1554,9 +1528,11 @@ router.get("/stories/:username", async (req, res) => {
 
         border:1px solid rgba(255,255,255,.10);
 
-        background:rgba(10,12,18,.62);
+        background:rgba(10,12,18,.68);
 
         color:#fff;
+
+        text-decoration:none;
 
         cursor:pointer;
 
@@ -1565,6 +1541,8 @@ router.get("/stories/:username", async (req, res) => {
         font-weight:800;
 
         backdrop-filter:blur(10px);
+
+        white-space:nowrap;
 
       }
 
@@ -1840,13 +1818,21 @@ router.get("/stories/:username", async (req, res) => {
 
         .story-header{
 
-          top:18px;
+          top:14px;
 
-          left:14px;
+          left:12px;
 
-          right:14px;
+          right:12px;
 
-          align-items:flex-start;
+          gap:10px;
+
+        }
+
+
+
+        .story-header-left{
+
+          padding-right:6px;
 
         }
 
@@ -1854,7 +1840,23 @@ router.get("/stories/:username", async (req, res) => {
 
         .story-header-handle{
 
-          font-size:16px;
+          font-size:15px;
+
+        }
+
+
+
+        .story-close-btn,
+
+        .story-delete-btn{
+
+          min-height:36px;
+
+          padding:0 12px;
+
+          border-radius:12px;
+
+          font-size:12px;
 
         }
 
