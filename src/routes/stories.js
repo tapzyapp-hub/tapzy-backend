@@ -252,6 +252,30 @@ function profileStoryCard(profile, stories) {
 
 
 
+  const createdAtMs = firstStory?.createdAt ? new Date(firstStory.createdAt).getTime() : Date.now();
+
+  const diffMs = Math.max(0, Date.now() - createdAtMs);
+
+  const diffMinutes = Math.floor(diffMs / 60000);
+
+  const diffHours = Math.floor(diffMs / 3600000);
+
+
+
+  let ageLabel = "Just now";
+
+  if (diffHours >= 1) {
+
+    ageLabel = `${diffHours}h`;
+
+  } else if (diffMinutes >= 1) {
+
+    ageLabel = `${diffMinutes}m`;
+
+  }
+
+
+
   return `
 
   <a class="stories-profile-card" href="/stories/${escapeHtml(profile.username || "")}">
@@ -266,9 +290,9 @@ function profileStoryCard(profile, stories) {
 
     <div class="stories-profile-meta">
 
-      <div class="stories-profile-handle">@${escapeHtml(profile.username || "user")}</div>
+      <div class="stories-profile-age">${escapeHtml(ageLabel)}</div>
 
-      <div class="stories-profile-count">${stories.length} stor${stories.length === 1 ? "y" : "ies"}</div>
+      <div class="stories-profile-handle">${stories.length === 1 ? "Your Story" : `${stories.length} Stories`}</div>
 
     </div>
 
@@ -780,11 +804,11 @@ router.get("/stories", async (req, res) => {
 
 
 
-      .stories-profile-handle{
+      .stories-profile-age{
 
         color:#fff;
 
-        font-size:22px;
+        font-size:18px;
 
         font-weight:900;
 
@@ -794,13 +818,17 @@ router.get("/stories", async (req, res) => {
 
 
 
-      .stories-profile-count{
+      .stories-profile-handle{
 
         margin-top:8px;
 
         color:#dce7f6;
 
         font-size:14px;
+
+        font-weight:500;
+
+        line-height:1.2;
 
       }
 
@@ -2177,3 +2205,4 @@ router.post("/stories/:username/reply", async (req, res) => {
 
 
 module.exports = router;
+
