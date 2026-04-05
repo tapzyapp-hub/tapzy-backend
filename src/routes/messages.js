@@ -214,31 +214,37 @@ router.get("/messages", async (req, res) => {
 
     const body = `
 
-    <div class="wrap tz-page-wrap" style="max-width:980px;">
+    <div class="wrap tz-msg-wrap">
 
-      <section class="tz-premium-card tz-premium-hero">
+      <section class="tz-msg-hero">
 
-        <div class="tz-premium-glow tz-premium-glow-a"></div>
-
-        <div class="tz-premium-glow tz-premium-glow-b"></div>
+        <div class="tz-msg-hero-bg"></div>
 
 
 
-        <div class="tz-premium-kicker">TAPZY NETWORK™</div>
+        <div class="tz-msg-hero-top">
 
-        <h1 class="tz-premium-title">Messages</h1>
+          <div>
 
-        <div class="tz-premium-subtitle">
+            <div class="tz-msg-kicker">TAPZY NETWORK™</div>
 
-          Premium private conversations built directly into your Tapzy network.
+            <h1 class="tz-msg-title">Messages</h1>
 
-        </div>
+            <div class="tz-msg-subtitle">
+
+              Premium private conversations built directly into your Tapzy network.
+
+            </div>
+
+          </div>
 
 
 
-        <div class="tz-premium-actions">
+          <div class="tz-msg-hero-actions">
 
-          <a class="tz-premium-btn" href="/search">Start Conversation</a>
+            <a class="tz-msg-btn" href="/search">Start Conversation</a>
+
+          </div>
 
         </div>
 
@@ -246,9 +252,9 @@ router.get("/messages", async (req, res) => {
 
 
 
-      <section class="tz-premium-card tz-premium-section" style="margin-top:18px;">
+      <section class="tz-msg-panel" style="margin-top:18px;">
 
-        <div class="tz-premium-section-head">
+        <div class="tz-msg-panel-head">
 
           <h3>Inbox</h3>
 
@@ -268,7 +274,7 @@ router.get("/messages", async (req, res) => {
 
               : `
 
-                <div class="tz-premium-empty">
+                <div class="tz-msg-empty">
 
                   <h3>No conversations yet</h3>
 
@@ -276,7 +282,7 @@ router.get("/messages", async (req, res) => {
 
                   <div style="margin-top:16px;">
 
-                    <a class="tz-premium-btn" href="/search">Find People</a>
+                    <a class="tz-msg-btn" href="/search">Find People</a>
 
                   </div>
 
@@ -296,9 +302,9 @@ router.get("/messages", async (req, res) => {
 
     <style>
 
-      .tz-page-wrap{
+      .tz-msg-wrap{
 
-        padding-top:18px;
+        max-width:920px;
 
         padding-bottom:36px;
 
@@ -306,7 +312,7 @@ router.get("/messages", async (req, res) => {
 
 
 
-      .tz-premium-card{
+      .tz-msg-hero{
 
         position:relative;
 
@@ -314,173 +320,125 @@ router.get("/messages", async (req, res) => {
 
         border-radius:34px;
 
-        border:1px solid rgba(255,255,255,.06);
+        padding:28px;
 
-        background:
+        border:1px solid rgba(255,255,255,.08);
 
-          radial-gradient(720px 340px at 73% 17%, rgba(18,74,160,.34), transparent 40%),
-
-          radial-gradient(520px 240px at 20% 0%, rgba(0,58,160,.10), transparent 42%),
-
-          linear-gradient(180deg, rgba(5,7,12,.985), rgba(1,2,6,1));
+        background:linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.03),
+          0 24px 70px rgba(0,0,0,.66),
 
-          0 0 0 1px rgba(255,255,255,.015),
-
-          0 18px 48px rgba(0,0,0,.34);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
 
 
-      .tz-premium-hero{
-
-        padding:42px 40px 34px 40px;
-
-      }
-
-
-
-      .tz-premium-section{
-
-        padding:32px 28px 24px 28px;
-
-      }
-
-
-
-      .tz-premium-glow{
+      .tz-msg-hero-bg{
 
         position:absolute;
 
-        border-radius:999px;
+        inset:0;
 
         pointer-events:none;
 
-        filter:blur(24px);
+        border-radius:34px;
 
-        opacity:.65;
+        background:
 
-      }
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
 
-
-
-      .tz-premium-glow-a{
-
-        width:340px;
-
-        height:240px;
-
-        right:90px;
-
-        top:10px;
-
-        background:radial-gradient(circle, rgba(36,114,230,.26) 0%, rgba(36,114,230,0) 72%);
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
 
       }
 
 
 
-      .tz-premium-glow-b{
-
-        width:170px;
-
-        height:170px;
-
-        left:-34px;
-
-        top:-40px;
-
-        background:radial-gradient(circle, rgba(33,104,219,.12) 0%, rgba(33,104,219,0) 72%);
-
-      }
-
-
-
-      .tz-premium-kicker{
+      .tz-msg-hero-top{
 
         position:relative;
 
-        z-index:1;
+        z-index:2;
 
-        margin:0 0 16px 0;
+        display:flex;
 
-        color:#d9e8ff;
+        align-items:flex-start;
+
+        justify-content:space-between;
+
+        gap:18px;
+
+        flex-wrap:wrap;
+
+      }
+
+
+
+      .tz-msg-kicker{
+
+        color:#d7deeb;
+
+        font-size:12px;
+
+        letter-spacing:6px;
 
         text-transform:uppercase;
 
-        letter-spacing:.28em;
-
-        font-size:17px;
+        margin-bottom:12px;
 
       }
 
 
 
-      .tz-premium-title{
-
-        position:relative;
-
-        z-index:1;
+      .tz-msg-title{
 
         margin:0;
-
-        color:#fff;
-
-        font-weight:900;
 
         font-size:68px;
 
         line-height:.96;
 
-        letter-spacing:-.045em;
+        letter-spacing:-2px;
+
+        font-weight:900;
+
+        color:#fff;
 
       }
 
 
 
-      .tz-premium-subtitle{
+      .tz-msg-subtitle{
 
-        position:relative;
+        margin-top:14px;
 
-        z-index:1;
+        color:#ffffff;
 
-        margin-top:18px;
+        font-size:18px;
+
+        line-height:1.7;
 
         max-width:720px;
 
-        color:#edf4ff;
-
-        font-size:22px;
-
-        line-height:1.5;
-
       }
 
 
 
-      .tz-premium-actions{
-
-        position:relative;
-
-        z-index:1;
+      .tz-msg-hero-actions{
 
         display:flex;
 
-        gap:14px;
+        gap:10px;
 
         flex-wrap:wrap;
-
-        margin-top:28px;
 
       }
 
 
 
-      .tz-premium-btn{
+      .tz-msg-btn{
 
         display:inline-flex;
 
@@ -488,55 +446,65 @@ router.get("/messages", async (req, res) => {
 
         justify-content:center;
 
-        min-height:64px;
+        min-height:54px;
 
-        padding:0 28px;
+        padding:0 22px;
 
-        border-radius:24px;
+        border-radius:22px;
 
         text-decoration:none;
 
+        border:1px solid rgba(255,255,255,.08);
+
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+
         color:#fff;
+
+        font-size:15px;
 
         font-weight:800;
 
-        font-size:18px;
-
-        background:linear-gradient(180deg, rgba(8,10,16,.98), rgba(4,6,11,.98));
-
-        border:1px solid rgba(255,255,255,.07);
+        letter-spacing:.1px;
 
         box-shadow:
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-          0 10px 24px rgba(0,0,0,.28);
-
-        transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+          0 8px 18px rgba(0,0,0,.18);
 
       }
 
 
 
-      .tz-premium-btn:hover{
+      .tz-msg-panel{
 
-        transform:translateY(-1px);
+        position:relative;
 
-        border-color:rgba(111,190,255,.22);
+        overflow:hidden;
+
+        border-radius:34px;
+
+        padding:26px;
+
+        border:1px solid rgba(255,255,255,.08);
+
+        background:
+
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
+
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.05),
+          0 18px 40px rgba(0,0,0,.28),
 
-          0 16px 30px rgba(0,0,0,.30),
-
-          0 0 22px rgba(43,124,255,.08);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
 
 
-      .tz-premium-section-head h3{
+      .tz-msg-panel-head h3{
 
         margin:0;
 
@@ -544,63 +512,25 @@ router.get("/messages", async (req, res) => {
 
         font-size:28px;
 
-        font-weight:800;
+        font-weight:900;
+
+        letter-spacing:-.6px;
 
       }
 
 
 
-      .tz-premium-section-head p{
+      .tz-msg-panel-head p{
 
         margin:10px 0 0 0;
 
-        color:#cfd9ea;
+        color:#ffffff;
 
         font-size:18px;
 
-        line-height:1.55;
+        line-height:1.7;
 
-      }
-
-
-
-      .tz-premium-empty{
-
-        margin-top:20px;
-
-        border-radius:28px;
-
-        padding:26px;
-
-        border:1px solid rgba(255,255,255,.06);
-
-        background:linear-gradient(180deg, rgba(7,9,14,.96), rgba(2,3,8,.98));
-
-      }
-
-
-
-      .tz-premium-empty h3{
-
-        margin:0;
-
-        color:#fff;
-
-        font-size:24px;
-
-      }
-
-
-
-      .tz-premium-empty p{
-
-        margin:10px 0 0 0;
-
-        color:#c8d5ea;
-
-        font-size:16px;
-
-        line-height:1.6;
+        max-width:760px;
 
       }
 
@@ -612,7 +542,7 @@ router.get("/messages", async (req, res) => {
 
         gap:14px;
 
-        margin-top:22px;
+        margin-top:20px;
 
       }
 
@@ -622,51 +552,31 @@ router.get("/messages", async (req, res) => {
 
         display:grid;
 
-        grid-template-columns:auto 1fr auto;
+        grid-template-columns:120px minmax(0, 1fr) auto;
 
         align-items:center;
 
-        gap:16px;
+        gap:18px;
 
         padding:18px;
 
-        border-radius:26px;
+        border-radius:28px;
 
         text-decoration:none;
 
+        border:1px solid rgba(255,255,255,.08);
+
         background:
 
-          radial-gradient(420px 180px at 82% 18%, rgba(40,110,220,.10), transparent 42%),
+          radial-gradient(500px 260px at 72% 22%, rgba(36,80,125,.14), transparent 58%),
 
-          linear-gradient(180deg, rgba(8,10,16,.985), rgba(3,5,9,1));
-
-        border:1px solid rgba(255,255,255,.06);
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.03),
+          0 14px 28px rgba(0,0,0,.18),
 
-          0 10px 24px rgba(0,0,0,.22);
-
-        transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-
-      }
-
-
-
-      .tz-msg-row:hover{
-
-        transform:translateY(-1px);
-
-        border-color:rgba(111,190,255,.20);
-
-        box-shadow:
-
-          inset 0 1px 0 rgba(255,255,255,.04),
-
-          0 16px 30px rgba(0,0,0,.28),
-
-          0 0 20px rgba(45,120,240,.08);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
@@ -674,11 +584,11 @@ router.get("/messages", async (req, res) => {
 
       .tz-msg-row-avatar{
 
-        width:68px;
+        width:88px;
 
-        height:68px;
+        height:88px;
 
-        border-radius:22px;
+        border-radius:24px;
 
         overflow:hidden;
 
@@ -688,17 +598,27 @@ router.get("/messages", async (req, res) => {
 
         justify-content:center;
 
-        background:linear-gradient(180deg, #090c14, #02040a);
-
-        border:1px solid rgba(255,255,255,.07);
-
-        color:#fff;
-
-        font-size:26px;
+        font-size:38px;
 
         font-weight:900;
 
-        box-shadow:0 10px 20px rgba(0,0,0,.26);
+        color:#ffffff;
+
+        border:1px solid rgba(255,255,255,.08);
+
+        background:
+
+          radial-gradient(circle at 30% 24%, rgba(255,255,255,.03), transparent 28%),
+
+          linear-gradient(180deg, rgba(5,8,14,.98), rgba(0,0,0,1));
+
+        box-shadow:
+
+          inset 0 1px 0 rgba(255,255,255,.04),
+
+          0 0 0 1px rgba(255,255,255,.02),
+
+          0 12px 30px rgba(0,0,0,.28);
 
       }
 
@@ -732,7 +652,7 @@ router.get("/messages", async (req, res) => {
 
         align-items:flex-start;
 
-        gap:12px;
+        gap:14px;
 
       }
 
@@ -752,11 +672,13 @@ router.get("/messages", async (req, res) => {
 
         color:#fff;
 
-        font-size:22px;
+        font-size:24px;
 
-        font-weight:800;
+        line-height:1.08;
 
-        line-height:1.15;
+        font-weight:900;
+
+        letter-spacing:-.8px;
 
         white-space:nowrap;
 
@@ -770,11 +692,13 @@ router.get("/messages", async (req, res) => {
 
       .tz-msg-row-user{
 
-        margin-top:6px;
+        margin-top:8px;
 
-        color:#b9c8df;
+        color:#dfe7f2;
 
-        font-size:15px;
+        font-size:16px;
+
+        line-height:1.1;
 
         white-space:nowrap;
 
@@ -788,13 +712,15 @@ router.get("/messages", async (req, res) => {
 
       .tz-msg-row-time{
 
-        color:#8ea1bf;
+        color:#b7c4d8;
 
         font-size:12px;
 
+        font-weight:700;
+
         white-space:nowrap;
 
-        margin-left:8px;
+        margin-left:10px;
 
       }
 
@@ -802,13 +728,13 @@ router.get("/messages", async (req, res) => {
 
       .tz-msg-row-preview{
 
-        margin-top:12px;
+        margin-top:14px;
 
-        color:#edf4ff;
+        color:#ffffff;
 
         font-size:15px;
 
-        line-height:1.55;
+        line-height:1.6;
 
         white-space:nowrap;
 
@@ -822,7 +748,7 @@ router.get("/messages", async (req, res) => {
 
       .tz-msg-row-arrow{
 
-        color:#8da4c6;
+        color:#a7b6cb;
 
         font-size:28px;
 
@@ -832,37 +758,43 @@ router.get("/messages", async (req, res) => {
 
 
 
-      @media(max-width:900px){
+      .tz-msg-empty{
 
-        .tz-premium-hero{
+        border-radius:28px;
 
-          padding:34px 28px 28px 28px;
+        padding:24px;
 
-        }
+        border:1px solid rgba(255,255,255,.08);
 
+        background:rgba(255,255,255,.02);
 
-
-        .tz-premium-section{
-
-          padding:26px 22px 20px 22px;
-
-        }
+      }
 
 
 
-        .tz-premium-title{
+      .tz-msg-empty h3{
 
-          font-size:52px;
+        margin:0;
 
-        }
+        color:#fff;
+
+        font-size:24px;
+
+        font-weight:900;
+
+      }
 
 
 
-        .tz-premium-subtitle{
+      .tz-msg-empty p{
 
-          font-size:19px;
+        margin:10px 0 0 0;
 
-        }
+        color:#ffffff;
+
+        font-size:16px;
+
+        line-height:1.7;
 
       }
 
@@ -870,15 +802,9 @@ router.get("/messages", async (req, res) => {
 
       @media(max-width:700px){
 
-        .tz-page-wrap{
+        .tz-msg-hero{
 
-          padding-top:14px;
-
-        }
-
-
-
-        .tz-premium-card{
+          padding:20px;
 
           border-radius:28px;
 
@@ -886,35 +812,19 @@ router.get("/messages", async (req, res) => {
 
 
 
-        .tz-premium-hero{
+        .tz-msg-hero-bg{
 
-          padding:28px 20px 24px 20px;
-
-        }
-
-
-
-        .tz-premium-section{
-
-          padding:22px 16px 16px 16px;
+          border-radius:28px;
 
         }
 
 
 
-        .tz-premium-kicker{
-
-          font-size:13px;
-
-          letter-spacing:.24em;
-
-        }
-
-
-
-        .tz-premium-title{
+        .tz-msg-title{
 
           font-size:42px;
+
+          letter-spacing:-1.3px;
 
           line-height:1;
 
@@ -922,9 +832,7 @@ router.get("/messages", async (req, res) => {
 
 
 
-        .tz-premium-subtitle{
-
-          margin-top:14px;
+        .tz-msg-subtitle{
 
           font-size:16px;
 
@@ -934,21 +842,27 @@ router.get("/messages", async (req, res) => {
 
 
 
-        .tz-premium-btn{
+        .tz-msg-kicker{
 
-          min-height:56px;
+          font-size:11px;
 
-          padding:0 20px;
-
-          border-radius:20px;
-
-          font-size:16px;
+          letter-spacing:5px;
 
         }
 
 
 
-        .tz-premium-section-head h3{
+        .tz-msg-panel{
+
+          padding:20px;
+
+          border-radius:28px;
+
+        }
+
+
+
+        .tz-msg-panel-head h3{
 
           font-size:24px;
 
@@ -956,9 +870,9 @@ router.get("/messages", async (req, res) => {
 
 
 
-        .tz-premium-section-head p{
+        .tz-msg-panel-head p{
 
-          font-size:15px;
+          font-size:16px;
 
         }
 
@@ -966,13 +880,13 @@ router.get("/messages", async (req, res) => {
 
         .tz-msg-row{
 
-          grid-template-columns:auto 1fr;
+          grid-template-columns:74px minmax(0, 1fr);
 
           gap:14px;
 
           padding:15px;
 
-          border-radius:22px;
+          border-radius:24px;
 
         }
 
@@ -988,13 +902,13 @@ router.get("/messages", async (req, res) => {
 
         .tz-msg-row-avatar{
 
-          width:56px;
+          width:58px;
 
-          height:56px;
+          height:58px;
 
           border-radius:18px;
 
-          font-size:22px;
+          font-size:24px;
 
         }
 
@@ -1004,11 +918,15 @@ router.get("/messages", async (req, res) => {
 
           font-size:18px;
 
+          letter-spacing:-.4px;
+
         }
 
 
 
         .tz-msg-row-user{
+
+          margin-top:5px;
 
           font-size:13px;
 
@@ -1027,6 +945,20 @@ router.get("/messages", async (req, res) => {
         .tz-msg-row-preview{
 
           margin-top:10px;
+
+          font-size:14px;
+
+        }
+
+
+
+        .tz-msg-btn{
+
+          min-height:46px;
+
+          padding:0 16px;
+
+          border-radius:18px;
 
           font-size:14px;
 
@@ -1180,13 +1112,11 @@ router.get("/messages/:id", async (req, res) => {
 
     const body = `
 
-    <div class="wrap tz-page-wrap" style="max-width:980px;">
+    <div class="wrap tz-chat-wrap">
 
-      <section class="tz-premium-card tz-chat-hero">
+      <section class="tz-chat-hero">
 
-        <div class="tz-premium-glow tz-premium-glow-a"></div>
-
-        <div class="tz-premium-glow tz-premium-glow-b"></div>
+        <div class="tz-chat-hero-bg"></div>
 
 
 
@@ -1216,19 +1146,19 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-          <div class="tz-chat-header-actions">
+          <div class="tz-chat-hero-actions">
 
             ${
 
               other?.username
 
-                ? `<a class="tz-premium-btn tz-chat-btn-small" href="/u/${escapeHtml(other.username)}">View Profile</a>`
+                ? `<a class="tz-chat-btn" href="/u/${escapeHtml(other.username)}">View Profile</a>`
 
                 : ""
 
             }
 
-            <a class="tz-premium-btn tz-chat-btn-small" href="/messages">Back</a>
+            <a class="tz-chat-btn" href="/messages">Back</a>
 
           </div>
 
@@ -1238,7 +1168,7 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-      <section class="tz-premium-card tz-chat-main" style="margin-top:18px;">
+      <section class="tz-chat-panel" style="margin-top:18px;">
 
         <div class="tz-chat-window" id="chatWindow">
 
@@ -1246,7 +1176,7 @@ router.get("/messages/:id", async (req, res) => {
 
             messagesHtml ||
 
-            `<div class="tz-premium-empty"><h3>No messages yet</h3><p>Say hello and start the conversation.</p></div>`
+            `<div class="tz-chat-empty"><h3>No messages yet</h3><p>Say hello and start the conversation.</p></div>`
 
           }
 
@@ -1284,7 +1214,7 @@ router.get("/messages/:id", async (req, res) => {
 
             <div class="tz-chat-actions">
 
-              <button class="tz-premium-btn tz-chat-send-btn" id="tzSendBtn" type="submit">Send Message</button>
+              <button class="tz-chat-sendbtn" id="tzSendBtn" type="submit">Send Message</button>
 
             </div>
 
@@ -1300,9 +1230,9 @@ router.get("/messages/:id", async (req, res) => {
 
     <style>
 
-      .tz-page-wrap{
+      .tz-chat-wrap{
 
-        padding-top:18px;
+        max-width:920px;
 
         padding-bottom:36px;
 
@@ -1310,7 +1240,7 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-      .tz-premium-card{
+      .tz-chat-hero{
 
         position:relative;
 
@@ -1318,137 +1248,37 @@ router.get("/messages/:id", async (req, res) => {
 
         border-radius:34px;
 
-        border:1px solid rgba(255,255,255,.06);
+        padding:28px;
 
-        background:
+        border:1px solid rgba(255,255,255,.08);
 
-          radial-gradient(720px 340px at 73% 17%, rgba(18,74,160,.34), transparent 40%),
-
-          radial-gradient(520px 240px at 20% 0%, rgba(0,58,160,.10), transparent 42%),
-
-          linear-gradient(180deg, rgba(5,7,12,.985), rgba(1,2,6,1));
+        background:linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.03),
+          0 24px 70px rgba(0,0,0,.66),
 
-          0 0 0 1px rgba(255,255,255,.015),
-
-          0 18px 48px rgba(0,0,0,.34);
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
 
 
-      .tz-premium-glow{
+      .tz-chat-hero-bg{
 
         position:absolute;
 
-        border-radius:999px;
+        inset:0;
 
         pointer-events:none;
 
-        filter:blur(24px);
+        border-radius:34px;
 
-        opacity:.65;
+        background:
 
-      }
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
 
-
-
-      .tz-premium-glow-a{
-
-        width:340px;
-
-        height:240px;
-
-        right:90px;
-
-        top:10px;
-
-        background:radial-gradient(circle, rgba(36,114,230,.26) 0%, rgba(36,114,230,0) 72%);
-
-      }
-
-
-
-      .tz-premium-glow-b{
-
-        width:170px;
-
-        height:170px;
-
-        left:-34px;
-
-        top:-40px;
-
-        background:radial-gradient(circle, rgba(33,104,219,.12) 0%, rgba(33,104,219,0) 72%);
-
-      }
-
-
-
-      .tz-premium-btn{
-
-        display:inline-flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        min-height:64px;
-
-        padding:0 28px;
-
-        border-radius:24px;
-
-        text-decoration:none;
-
-        color:#fff;
-
-        font-weight:800;
-
-        font-size:18px;
-
-        background:linear-gradient(180deg, rgba(8,10,16,.98), rgba(4,6,11,.98));
-
-        border:1px solid rgba(255,255,255,.07);
-
-        box-shadow:
-
-          inset 0 1px 0 rgba(255,255,255,.04),
-
-          0 10px 24px rgba(0,0,0,.28);
-
-        transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-
-        cursor:pointer;
-
-      }
-
-
-
-      .tz-premium-btn:hover{
-
-        transform:translateY(-1px);
-
-        border-color:rgba(111,190,255,.22);
-
-        box-shadow:
-
-          inset 0 1px 0 rgba(255,255,255,.05),
-
-          0 16px 30px rgba(0,0,0,.30),
-
-          0 0 22px rgba(43,124,255,.08);
-
-      }
-
-
-
-      .tz-chat-hero{
-
-        padding:34px 30px 28px 30px;
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
 
       }
 
@@ -1458,15 +1288,15 @@ router.get("/messages/:id", async (req, res) => {
 
         position:relative;
 
-        z-index:1;
+        z-index:2;
 
         display:flex;
 
-        justify-content:space-between;
-
         align-items:flex-start;
 
-        gap:16px;
+        justify-content:space-between;
+
+        gap:18px;
 
         flex-wrap:wrap;
 
@@ -1492,11 +1322,11 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-avatar{
 
-        width:72px;
+        width:88px;
 
-        height:72px;
+        height:88px;
 
-        border-radius:22px;
+        border-radius:24px;
 
         overflow:hidden;
 
@@ -1506,17 +1336,27 @@ router.get("/messages/:id", async (req, res) => {
 
         justify-content:center;
 
-        background:linear-gradient(180deg, #090c14, #02040a);
-
-        border:1px solid rgba(255,255,255,.07);
-
-        color:#fff;
-
-        font-size:28px;
+        font-size:34px;
 
         font-weight:900;
 
-        box-shadow:0 10px 20px rgba(0,0,0,.26);
+        color:#ffffff;
+
+        border:1px solid rgba(255,255,255,.08);
+
+        background:
+
+          radial-gradient(circle at 30% 24%, rgba(255,255,255,.03), transparent 28%),
+
+          linear-gradient(180deg, rgba(5,8,14,.98), rgba(0,0,0,1));
+
+        box-shadow:
+
+          inset 0 1px 0 rgba(255,255,255,.04),
+
+          0 0 0 1px rgba(255,255,255,.02),
+
+          0 12px 30px rgba(0,0,0,.28);
 
         flex:0 0 auto;
 
@@ -1542,19 +1382,23 @@ router.get("/messages/:id", async (req, res) => {
 
         flex:1;
 
+        padding-top:2px;
+
       }
 
 
 
       .tz-chat-kicker{
 
-        color:#d9e8ff;
+        color:#d7deeb;
+
+        font-size:12px;
+
+        letter-spacing:6px;
 
         text-transform:uppercase;
 
-        letter-spacing:.26em;
-
-        font-size:15px;
+        margin-bottom:12px;
 
       }
 
@@ -1562,17 +1406,17 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-title{
 
-        margin:12px 0 0 0;
-
-        color:#fff;
-
-        font-weight:900;
+        margin:0;
 
         font-size:52px;
 
         line-height:.98;
 
-        letter-spacing:-.04em;
+        letter-spacing:-1.8px;
+
+        font-weight:900;
+
+        color:#fff;
 
         white-space:nowrap;
 
@@ -1588,9 +1432,13 @@ router.get("/messages/:id", async (req, res) => {
 
         margin-top:10px;
 
-        color:#c9d7ea;
+        color:#ffffff;
 
-        font-size:18px;
+        font-size:22px;
+
+        font-weight:500;
+
+        line-height:1.1;
 
         white-space:nowrap;
 
@@ -1602,11 +1450,11 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-      .tz-chat-header-actions{
+      .tz-chat-hero-actions{
 
         display:flex;
 
-        gap:12px;
+        gap:10px;
 
         flex-wrap:wrap;
 
@@ -1614,23 +1462,65 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-      .tz-chat-btn-small{
+      .tz-chat-btn{
 
-        min-height:56px;
+        display:inline-flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        min-height:52px;
 
         padding:0 20px;
 
-        border-radius:22px;
+        border-radius:20px;
 
-        font-size:16px;
+        text-decoration:none;
+
+        border:1px solid rgba(255,255,255,.08);
+
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+
+        color:#fff;
+
+        font-size:14px;
+
+        font-weight:800;
+
+        box-shadow:
+
+          inset 0 1px 0 rgba(255,255,255,.04),
+
+          0 8px 16px rgba(0,0,0,.16);
 
       }
 
 
 
-      .tz-chat-main{
+      .tz-chat-panel{
 
-        padding:20px;
+        position:relative;
+
+        overflow:hidden;
+
+        border-radius:34px;
+
+        padding:24px;
+
+        border:1px solid rgba(255,255,255,.08);
+
+        background:
+
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
+
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
+
+        box-shadow:
+
+          0 18px 40px rgba(0,0,0,.28),
+
+          inset 0 1px 0 rgba(255,255,255,.03);
 
       }
 
@@ -1648,15 +1538,11 @@ router.get("/messages/:id", async (req, res) => {
 
         border-radius:28px;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
-        background:
+        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(0,0,0,1));
 
-          radial-gradient(520px 200px at 74% 10%, rgba(35,100,220,.08), transparent 40%),
-
-          linear-gradient(180deg, rgba(7,9,14,.98), rgba(2,3,8,1));
-
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
 
         display:flex;
 
@@ -1698,7 +1584,7 @@ router.get("/messages/:id", async (req, res) => {
 
         word-break:break-word;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
       }
 
@@ -1706,7 +1592,7 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-bubble.other{
 
-        background:linear-gradient(180deg, rgba(13,16,24,.98), rgba(7,9,14,.98));
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
         color:#fff;
 
@@ -1718,13 +1604,17 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-bubble.mine{
 
-        background:linear-gradient(180deg, #f5fbff, #dff3ff);
+        background:linear-gradient(180deg, #eef4fb, #dfe9f5);
 
         color:#000;
 
-        border-color:rgba(255,255,255,.22);
+        border-color:rgba(255,255,255,.18);
 
-        box-shadow:0 8px 18px rgba(0,0,0,.16);
+        box-shadow:
+
+          0 12px 28px rgba(0,0,0,.18),
+
+          inset 0 1px 0 rgba(255,255,255,.7);
 
       }
 
@@ -1762,7 +1652,7 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-typing-indicator{
 
-        color:#c9d7eb;
+        color:#ffffff;
 
         font-size:13px;
 
@@ -1790,15 +1680,9 @@ router.get("/messages/:id", async (req, res) => {
 
         padding:18px;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
-        background:
-
-          radial-gradient(420px 170px at 82% 18%, rgba(34,100,220,.08), transparent 42%),
-
-          linear-gradient(180deg, rgba(7,9,14,.98), rgba(2,3,8,1));
-
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+        background:rgba(255,255,255,.02);
 
       }
 
@@ -1806,9 +1690,11 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-field{
 
-        display:grid;
+        display:flex;
 
-        gap:10px;
+        flex-direction:column;
+
+        gap:8px;
 
         margin-bottom:16px;
 
@@ -1818,11 +1704,15 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-field label{
 
+        margin:0;
+
         color:#fff;
 
-        font-size:15px;
+        font-size:14px;
 
         font-weight:800;
+
+        letter-spacing:.1px;
 
       }
 
@@ -1834,17 +1724,17 @@ router.get("/messages/:id", async (req, res) => {
 
         box-sizing:border-box;
 
-        border:none;
+        border:1px solid rgba(255,255,255,.08);
 
-        outline:none;
+        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(0,0,0,1));
 
         color:#fff;
 
-        background:linear-gradient(180deg, rgba(2,4,9,.99), rgba(1,2,6,1));
-
-        border:1px solid rgba(255,255,255,.055);
+        outline:none;
 
         box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+
+        font-size:16px;
 
       }
 
@@ -1852,17 +1742,15 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-textarea{
 
-        min-height:120px;
+        min-height:150px;
 
         resize:vertical;
 
-        padding:18px;
+        padding:17px 18px;
 
-        border-radius:24px;
+        border-radius:22px;
 
-        font-size:16px;
-
-        line-height:1.55;
+        line-height:1.6;
 
       }
 
@@ -1870,19 +1758,27 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-upload{
 
-        padding:16px;
+        padding:14px;
 
-        border-radius:22px;
-
-        font-size:15px;
+        border-radius:20px;
 
       }
 
 
 
-      .tz-chat-textarea::placeholder{
+      .tz-chat-input::placeholder{
 
-        color:#95a8c5;
+        color:#bfc7d4;
+
+      }
+
+
+
+      .tz-chat-input:focus{
+
+        border-color:rgba(140,220,255,.22);
+
+        box-shadow:0 0 0 3px rgba(140,220,255,.06);
 
       }
 
@@ -1900,15 +1796,31 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-      .tz-chat-send-btn{
+      .tz-chat-sendbtn{
 
         min-height:60px;
 
         padding:0 24px;
 
-        border-radius:22px;
+        border:none;
 
-        font-size:17px;
+        border-radius:24px;
+
+        cursor:pointer;
+
+        font-size:18px;
+
+        font-weight:900;
+
+        color:#000;
+
+        background:linear-gradient(180deg, #eef4fb, #dfe9f5);
+
+        box-shadow:
+
+          0 12px 28px rgba(0,0,0,.24),
+
+          inset 0 1px 0 rgba(255,255,255,.7);
 
       }
 
@@ -1924,21 +1836,21 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-      .tz-premium-empty{
+      .tz-chat-empty{
 
-        border-radius:24px;
+        border-radius:28px;
 
         padding:24px;
 
-        border:1px solid rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
 
-        background:linear-gradient(180deg, rgba(7,9,14,.96), rgba(2,3,8,.98));
+        background:rgba(255,255,255,.02);
 
       }
 
 
 
-      .tz-premium-empty h3{
+      .tz-chat-empty h3{
 
         margin:0;
 
@@ -1946,31 +1858,21 @@ router.get("/messages/:id", async (req, res) => {
 
         font-size:24px;
 
+        font-weight:900;
+
       }
 
 
 
-      .tz-premium-empty p{
+      .tz-chat-empty p{
 
         margin:10px 0 0 0;
 
-        color:#c8d5ea;
+        color:#ffffff;
 
         font-size:16px;
 
-        line-height:1.6;
-
-      }
-
-
-
-      @media(max-width:900px){
-
-        .tz-chat-title{
-
-          font-size:40px;
-
-        }
+        line-height:1.7;
 
       }
 
@@ -1978,15 +1880,9 @@ router.get("/messages/:id", async (req, res) => {
 
       @media(max-width:700px){
 
-        .tz-page-wrap{
+        .tz-chat-hero{
 
-          padding-top:14px;
-
-        }
-
-
-
-        .tz-premium-card{
+          padding:20px;
 
           border-radius:28px;
 
@@ -1994,17 +1890,9 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
-        .tz-chat-hero{
+        .tz-chat-hero-bg{
 
-          padding:24px 20px 22px 20px;
-
-        }
-
-
-
-        .tz-chat-main{
-
-          padding:16px;
+          border-radius:28px;
 
         }
 
@@ -2030,17 +1918,7 @@ router.get("/messages/:id", async (req, res) => {
 
           border-radius:18px;
 
-          font-size:22px;
-
-        }
-
-
-
-        .tz-chat-kicker{
-
-          font-size:13px;
-
-          letter-spacing:.22em;
+          font-size:24px;
 
         }
 
@@ -2050,9 +1928,9 @@ router.get("/messages/:id", async (req, res) => {
 
           font-size:34px;
 
-          line-height:1;
+          letter-spacing:-1.1px;
 
-          margin-top:10px;
+          line-height:1.02;
 
         }
 
@@ -2060,23 +1938,31 @@ router.get("/messages/:id", async (req, res) => {
 
         .tz-chat-handle{
 
+          font-size:18px;
+
           margin-top:8px;
 
-          font-size:15px;
+          line-height:1.1;
 
         }
 
 
 
-        .tz-chat-btn-small{
+        .tz-chat-kicker{
 
-          min-height:52px;
+          font-size:11px;
 
-          padding:0 18px;
+          letter-spacing:5px;
 
-          border-radius:20px;
+        }
 
-          font-size:15px;
+
+
+        .tz-chat-panel{
+
+          padding:20px;
+
+          border-radius:28px;
 
         }
 
@@ -2108,6 +1994,18 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
+        .tz-chat-btn{
+
+          min-height:46px;
+
+          border-radius:18px;
+
+          padding:0 16px;
+
+        }
+
+
+
         .tz-chat-composer{
 
           padding:16px;
@@ -2120,7 +2018,7 @@ router.get("/messages/:id", async (req, res) => {
 
         .tz-chat-textarea{
 
-          min-height:110px;
+          min-height:120px;
 
           padding:16px;
 
@@ -2134,19 +2032,17 @@ router.get("/messages/:id", async (req, res) => {
 
         .tz-chat-upload{
 
-          padding:14px;
-
           border-radius:18px;
+
+          padding:14px;
 
         }
 
 
 
-        .tz-chat-send-btn{
+        .tz-chat-sendbtn{
 
           min-height:56px;
-
-          padding:0 22px;
 
           border-radius:20px;
 
