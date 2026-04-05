@@ -24,6 +24,14 @@ const {
 
 
 
+function isAjax(req) {
+
+  return req.xhr || req.get("X-Requested-With") === "XMLHttpRequest";
+
+}
+
+
+
 router.post("/messages/start/:username", async (req, res) => {
 
   try {
@@ -162,49 +170,73 @@ router.get("/messages", async (req, res) => {
 
       return `
 
-      <a class="tz-msg-row" href="/messages/${c.id}">
+      <div class="tz-msg-item" data-conversation-id="${escapeHtml(c.id)}">
 
-        <div class="tz-msg-row-avatar">${avatarHtml}</div>
+        <a class="tz-msg-row" href="/messages/${escapeHtml(c.id)}">
+
+          <div class="tz-msg-row-avatar">${avatarHtml}</div>
 
 
 
-        <div class="tz-msg-row-main">
+          <div class="tz-msg-row-main">
 
-          <div class="tz-msg-row-top">
+            <div class="tz-msg-row-top">
 
-            <div class="tz-msg-row-copy">
+              <div class="tz-msg-row-copy">
 
-              <div class="tz-msg-row-name">${escapeHtml(other?.name || other?.username || "Unknown")}</div>
+                <div class="tz-msg-row-name">${escapeHtml(other?.name || other?.username || "Unknown")}</div>
 
-              <div class="tz-msg-row-user">@${escapeHtml(other?.username || "user")}</div>
+                <div class="tz-msg-row-user">@${escapeHtml(other?.username || "user")}</div>
+
+              </div>
+
+
+
+              ${
+
+                time
+
+                  ? `<div class="tz-msg-row-time">${escapeHtml(time)}</div>`
+
+                  : ""
+
+              }
 
             </div>
 
 
 
-            ${
-
-              time
-
-                ? `<div class="tz-msg-row-time">${escapeHtml(time)}</div>`
-
-                : ""
-
-            }
+            <div class="tz-msg-row-preview">${preview}</div>
 
           </div>
 
 
 
-          <div class="tz-msg-row-preview">${preview}</div>
+          <div class="tz-msg-row-arrow">›</div>
 
-        </div>
+        </a>
 
 
 
-        <div class="tz-msg-row-arrow">›</div>
+        <button
 
-      </a>
+          type="button"
+
+          class="tz-msg-delete-btn"
+
+          data-conversation-id="${escapeHtml(c.id)}"
+
+          aria-label="Delete conversation"
+
+          title="Delete conversation"
+
+        >
+
+          Delete
+
+        </button>
+
+      </div>
 
       `;
 
@@ -472,6 +504,26 @@ router.get("/messages", async (req, res) => {
 
           0 8px 18px rgba(0,0,0,.18);
 
+        transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+
+      }
+
+
+
+      .tz-msg-btn:hover{
+
+        transform:translateY(-1px);
+
+        border-color:rgba(140,220,255,.18);
+
+        box-shadow:
+
+          0 12px 24px rgba(0,0,0,.24),
+
+          0 0 18px rgba(80,150,255,.10),
+
+          inset 0 1px 0 rgba(255,255,255,.05);
+
       }
 
 
@@ -548,7 +600,23 @@ router.get("/messages", async (req, res) => {
 
 
 
+      .tz-msg-item{
+
+        position:relative;
+
+        overflow:hidden;
+
+        border-radius:28px;
+
+      }
+
+
+
       .tz-msg-row{
+
+        position:relative;
+
+        z-index:2;
 
         display:grid;
 
@@ -577,6 +645,42 @@ router.get("/messages", async (req, res) => {
           0 14px 28px rgba(0,0,0,.18),
 
           inset 0 1px 0 rgba(255,255,255,.03);
+
+        transition:
+
+          transform .18s ease,
+
+          box-shadow .18s ease,
+
+          border-color .18s ease,
+
+          opacity .18s ease;
+
+      }
+
+
+
+      .tz-msg-row:hover{
+
+        transform:translateY(-2px);
+
+        border-color:rgba(140,220,255,.18);
+
+        box-shadow:
+
+          0 18px 36px rgba(0,0,0,.28),
+
+          0 0 20px rgba(80,150,255,.12),
+
+          inset 0 1px 0 rgba(255,255,255,.05);
+
+      }
+
+
+
+      .tz-msg-item.swiped .tz-msg-row{
+
+        transform:translateX(-92px);
 
       }
 
@@ -664,6 +768,8 @@ router.get("/messages", async (req, res) => {
 
         flex:1;
 
+        padding-right:8px;
+
       }
 
 
@@ -674,17 +780,19 @@ router.get("/messages", async (req, res) => {
 
         font-size:24px;
 
-        line-height:1.08;
+        line-height:1.12;
 
         font-weight:900;
 
         letter-spacing:-.8px;
 
-        white-space:nowrap;
+        white-space:normal;
 
-        overflow:hidden;
+        overflow:visible;
 
-        text-overflow:ellipsis;
+        text-overflow:clip;
+
+        word-break:break-word;
 
       }
 
@@ -698,13 +806,15 @@ router.get("/messages", async (req, res) => {
 
         font-size:16px;
 
-        line-height:1.1;
+        line-height:1.2;
 
-        white-space:nowrap;
+        white-space:normal;
 
-        overflow:hidden;
+        overflow:visible;
 
-        text-overflow:ellipsis;
+        text-overflow:clip;
+
+        word-break:break-word;
 
       }
 
@@ -722,6 +832,8 @@ router.get("/messages", async (req, res) => {
 
         margin-left:10px;
 
+        flex:0 0 auto;
+
       }
 
 
@@ -736,11 +848,13 @@ router.get("/messages", async (req, res) => {
 
         line-height:1.6;
 
-        white-space:nowrap;
+        white-space:normal;
 
-        overflow:hidden;
+        overflow:visible;
 
-        text-overflow:ellipsis;
+        text-overflow:clip;
+
+        word-break:break-word;
 
       }
 
@@ -753,6 +867,64 @@ router.get("/messages", async (req, res) => {
         font-size:28px;
 
         line-height:1;
+
+        transition:transform .18s ease, opacity .18s ease;
+
+        opacity:.78;
+
+      }
+
+
+
+      .tz-msg-row:hover .tz-msg-row-arrow{
+
+        transform:translateX(4px);
+
+        opacity:1;
+
+      }
+
+
+
+      .tz-msg-delete-btn{
+
+        position:absolute;
+
+        top:0;
+
+        right:0;
+
+        width:92px;
+
+        height:100%;
+
+        border:none;
+
+        border-radius:0 28px 28px 0;
+
+        background:linear-gradient(180deg, #ff6b6b, #d92f2f);
+
+        color:#fff;
+
+        font-size:14px;
+
+        font-weight:900;
+
+        letter-spacing:.2px;
+
+        cursor:pointer;
+
+        z-index:1;
+
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+
+      }
+
+
+
+      .tz-msg-delete-btn:active{
+
+        filter:brightness(.95);
 
       }
 
@@ -900,6 +1072,26 @@ router.get("/messages", async (req, res) => {
 
 
 
+        .tz-msg-delete-btn{
+
+          width:84px;
+
+          border-radius:0 24px 24px 0;
+
+          font-size:13px;
+
+        }
+
+
+
+        .tz-msg-item.swiped .tz-msg-row{
+
+          transform:translateX(-84px);
+
+        }
+
+
+
         .tz-msg-row-avatar{
 
           width:58px;
@@ -920,6 +1112,8 @@ router.get("/messages", async (req, res) => {
 
           letter-spacing:-.4px;
 
+          line-height:1.15;
+
         }
 
 
@@ -929,6 +1123,8 @@ router.get("/messages", async (req, res) => {
           margin-top:5px;
 
           font-size:13px;
+
+          line-height:1.2;
 
         }
 
@@ -967,6 +1163,166 @@ router.get("/messages", async (req, res) => {
       }
 
     </style>
+
+
+
+    <script>
+
+      (function(){
+
+        const items = Array.from(document.querySelectorAll(".tz-msg-item"));
+
+        let startX = 0;
+
+        let activeItem = null;
+
+
+
+        function closeAllExcept(item){
+
+          items.forEach((el) => {
+
+            if (el !== item) el.classList.remove("swiped");
+
+          });
+
+        }
+
+
+
+        items.forEach((item) => {
+
+          const row = item.querySelector(".tz-msg-row");
+
+          const delBtn = item.querySelector(".tz-msg-delete-btn");
+
+
+
+          item.addEventListener("touchstart", (e) => {
+
+            startX = e.touches[0].clientX;
+
+            activeItem = item;
+
+          }, { passive: true });
+
+
+
+          item.addEventListener("touchmove", (e) => {
+
+            if (!activeItem) return;
+
+            const currentX = e.touches[0].clientX;
+
+            const diff = currentX - startX;
+
+
+
+            if (diff < -28) {
+
+              closeAllExcept(item);
+
+              item.classList.add("swiped");
+
+            } else if (diff > 20) {
+
+              item.classList.remove("swiped");
+
+            }
+
+          }, { passive: true });
+
+
+
+          item.addEventListener("touchend", () => {
+
+            activeItem = null;
+
+          });
+
+
+
+          row.addEventListener("click", () => {
+
+            closeAllExcept(null);
+
+          });
+
+
+
+          delBtn.addEventListener("click", async (e) => {
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+
+
+            const conversationId = delBtn.getAttribute("data-conversation-id");
+
+            const ok = window.confirm("Delete this conversation?");
+
+            if (!ok) return;
+
+
+
+            try {
+
+              const res = await fetch("/messages/" + encodeURIComponent(conversationId) + "/delete", {
+
+                method: "POST",
+
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+
+              });
+
+
+
+              const data = await res.json();
+
+
+
+              if (!res.ok || !data.ok) {
+
+                throw new Error(data.error || "Delete failed");
+
+              }
+
+
+
+              item.style.transition = "opacity .18s ease, transform .18s ease";
+
+              item.style.opacity = "0";
+
+              item.style.transform = "translateY(-10px)";
+
+              window.setTimeout(() => item.remove(), 180);
+
+            } catch (err) {
+
+              alert(err.message || "Could not delete conversation");
+
+            }
+
+          });
+
+        });
+
+
+
+        document.addEventListener("click", (e) => {
+
+          if (!e.target.closest(".tz-msg-item")) {
+
+            items.forEach((el) => el.classList.remove("swiped"));
+
+          }
+
+        });
+
+      })();
+
+    </script>
 
 
 
@@ -1082,9 +1438,21 @@ router.get("/messages/:id", async (req, res) => {
 
       return `
 
-      <div class="tz-chat-row ${isMine ? "mine" : "other"}">
+      <div class="tz-chat-row ${isMine ? "mine" : "other"}" data-message-id="${escapeHtml(m.id)}">
 
         <div class="tz-chat-bubble ${isMine ? "mine" : "other"}">
+
+          ${
+
+            isMine
+
+              ? `<button type="button" class="tz-chat-delete" data-message-id="${escapeHtml(m.id)}" aria-label="Delete message" title="Delete message">×</button>`
+
+              : ""
+
+          }
+
+
 
           ${m.body ? `<div>${escapeHtml(m.body)}</div>` : ""}
 
@@ -1494,6 +1862,26 @@ router.get("/messages/:id", async (req, res) => {
 
           0 8px 16px rgba(0,0,0,.16);
 
+        transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+
+      }
+
+
+
+      .tz-chat-btn:hover{
+
+        transform:translateY(-1px);
+
+        border-color:rgba(140,220,255,.18);
+
+        box-shadow:
+
+          0 12px 24px rgba(0,0,0,.24),
+
+          0 0 18px rgba(80,150,255,.10),
+
+          inset 0 1px 0 rgba(255,255,255,.05);
+
       }
 
 
@@ -1550,6 +1938,8 @@ router.get("/messages/:id", async (req, res) => {
 
         gap:12px;
 
+        scroll-behavior:smooth;
+
       }
 
 
@@ -1557,6 +1947,8 @@ router.get("/messages/:id", async (req, res) => {
       .tz-chat-row{
 
         display:flex;
+
+        transition:opacity .18s ease, transform .18s ease;
 
       }
 
@@ -1572,6 +1964,8 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-bubble{
 
+        position:relative;
+
         max-width:min(78%, 560px);
 
         padding:14px 16px;
@@ -1586,17 +1980,27 @@ router.get("/messages/:id", async (req, res) => {
 
         border:1px solid rgba(255,255,255,.08);
 
+        backdrop-filter:blur(6px);
+
       }
 
 
 
       .tz-chat-bubble.other{
 
-        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        background:
+
+          radial-gradient(240px 120px at 20% 0%, rgba(80,150,255,.05), transparent 40%),
+
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
         color:#fff;
 
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+        box-shadow:
+
+          inset 0 1px 0 rgba(255,255,255,.03),
+
+          0 8px 18px rgba(0,0,0,.18);
 
       }
 
@@ -1604,7 +2008,7 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-chat-bubble.mine{
 
-        background:linear-gradient(180deg, #eef4fb, #dfe9f5);
+        background:linear-gradient(180deg, #f3f8fd, #dfe9f5);
 
         color:#000;
 
@@ -1614,7 +2018,49 @@ router.get("/messages/:id", async (req, res) => {
 
           0 12px 28px rgba(0,0,0,.18),
 
-          inset 0 1px 0 rgba(255,255,255,.7);
+          inset 0 1px 0 rgba(255,255,255,.75);
+
+      }
+
+
+
+      .tz-chat-delete{
+
+        position:absolute;
+
+        top:-8px;
+
+        right:-8px;
+
+        width:24px;
+
+        height:24px;
+
+        border:none;
+
+        border-radius:999px;
+
+        cursor:pointer;
+
+        font-weight:900;
+
+        background:#ff4d4f;
+
+        color:#fff;
+
+        font-size:12px;
+
+        display:none;
+
+        box-shadow:0 6px 12px rgba(0,0,0,.18);
+
+      }
+
+
+
+      .tz-chat-bubble.mine:hover .tz-chat-delete{
+
+        display:block;
 
       }
 
@@ -1652,13 +2098,65 @@ router.get("/messages/:id", async (req, res) => {
 
       .tz-typing-indicator{
 
+        display:flex;
+
+        align-items:center;
+
+        gap:10px;
+
         color:#ffffff;
 
         font-size:13px;
 
-        min-height:18px;
+        min-height:22px;
 
         padding:10px 4px 0 6px;
+
+      }
+
+
+
+      .tz-typing-dots{
+
+        display:inline-flex;
+
+        align-items:center;
+
+        gap:5px;
+
+      }
+
+
+
+      .tz-typing-dots span{
+
+        width:6px;
+
+        height:6px;
+
+        border-radius:999px;
+
+        background:#9ed6ff;
+
+        box-shadow:0 0 10px rgba(120,200,255,.35);
+
+        animation:tzTypingBounce 1s infinite ease-in-out;
+
+      }
+
+
+
+      .tz-typing-dots span:nth-child(2){ animation-delay:.15s; }
+
+      .tz-typing-dots span:nth-child(3){ animation-delay:.3s; }
+
+
+
+      @keyframes tzTypingBounce{
+
+        0%, 80%, 100%{ transform:scale(.8); opacity:.5; }
+
+        40%{ transform:scale(1.15); opacity:1; }
 
       }
 
@@ -1821,6 +2319,32 @@ router.get("/messages/:id", async (req, res) => {
           0 12px 28px rgba(0,0,0,.24),
 
           inset 0 1px 0 rgba(255,255,255,.7);
+
+        transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+
+      }
+
+
+
+      .tz-chat-sendbtn:hover{
+
+        transform:translateY(-1px);
+
+        box-shadow:
+
+          0 16px 34px rgba(0,0,0,.28),
+
+          inset 0 1px 0 rgba(255,255,255,.78);
+
+        filter:brightness(1.01);
+
+      }
+
+
+
+      .tz-chat-sendbtn:active{
+
+        transform:translateY(0);
 
       }
 
@@ -2050,6 +2574,14 @@ router.get("/messages/:id", async (req, res) => {
 
         }
 
+
+
+        .tz-chat-delete{
+
+          display:block;
+
+        }
+
       }
 
     </style>
@@ -2160,11 +2692,15 @@ router.get("/messages/:id", async (req, res) => {
 
           row.className = "tz-chat-row " + (isMine ? "mine" : "other");
 
+          row.setAttribute("data-message-id", String(message.id || ""));
+
 
 
           row.innerHTML = \`
 
             <div class="tz-chat-bubble \${isMine ? "mine" : "other"}">
+
+              \${isMine ? \`<button type="button" class="tz-chat-delete" data-message-id="\${safeEscape(String(message.id || ""))}" aria-label="Delete message" title="Delete message">×</button>\` : ""}
 
               \${message.body ? \`<div>\${safeEscape(message.body)}</div>\` : ""}
 
@@ -2218,6 +2754,26 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
+        socket.on("delete_message", function(data){
+
+          if (!data || String(data.conversationId || "") !== String(conversationId)) return;
+
+          const row = document.querySelector('.tz-chat-row[data-message-id="' + CSS.escape(String(data.messageId || "")) + '"]');
+
+          if (row) {
+
+            row.style.opacity = "0";
+
+            row.style.transform = "translateY(-10px)";
+
+            window.setTimeout(() => row.remove(), 180);
+
+          }
+
+        });
+
+
+
         socket.on("typing", function(data){
 
           if (!typingIndicator) return;
@@ -2228,9 +2784,17 @@ router.get("/messages/:id", async (req, res) => {
 
           if (name === currentUsername) return;
 
-          typingIndicator.textContent = name + " is typing...";
 
-          typingIndicator.style.display = "block";
+
+          typingIndicator.innerHTML = \`
+
+            <span>\${safeEscape(name)} is typing</span>
+
+            <span class="tz-typing-dots"><span></span><span></span><span></span></span>
+
+          \`;
+
+          typingIndicator.style.display = "flex";
 
         });
 
@@ -2268,7 +2832,7 @@ router.get("/messages/:id", async (req, res) => {
 
               socket.emit("stop_typing", { conversationId });
 
-            }, 900);
+            }, 1200);
 
           });
 
@@ -2356,6 +2920,76 @@ router.get("/messages/:id", async (req, res) => {
 
 
 
+        document.addEventListener("click", async function(e){
+
+          const btn = e.target.closest(".tz-chat-delete");
+
+          if (!btn) return;
+
+
+
+          const messageId = String(btn.getAttribute("data-message-id") || "").trim();
+
+          if (!messageId) return;
+
+
+
+          const ok = window.confirm("Delete this message?");
+
+          if (!ok) return;
+
+
+
+          try {
+
+            const res = await fetch("/messages/" + encodeURIComponent(conversationId) + "/delete-message/" + encodeURIComponent(messageId), {
+
+              method: "POST",
+
+              headers: {
+
+                "X-Requested-With": "XMLHttpRequest"
+
+              }
+
+            });
+
+
+
+            const data = await res.json();
+
+
+
+            if (!res.ok || !data.ok) {
+
+              throw new Error(data.error || "Delete failed");
+
+            }
+
+
+
+            const row = document.querySelector('.tz-chat-row[data-message-id="' + CSS.escape(messageId) + '"]');
+
+            if (row) {
+
+              row.style.opacity = "0";
+
+              row.style.transform = "translateY(-10px)";
+
+              window.setTimeout(() => row.remove(), 180);
+
+            }
+
+          } catch (err) {
+
+            alert(err.message || "Could not delete message");
+
+          }
+
+        });
+
+
+
         window.addEventListener("beforeunload", function(){
 
           socket.emit("leave_conversation", conversationId);
@@ -2414,7 +3048,7 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
 
     if (!currentProfile) {
 
-      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+      if (isAjax(req)) {
 
         return res.status(401).json({ ok: false, error: "Please sign in first" });
 
@@ -2440,7 +3074,7 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
 
     if (!text && !imageUrl) {
 
-      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+      if (isAjax(req)) {
 
         return res.status(400).json({ ok: false, error: "Message is empty" });
 
@@ -2464,7 +3098,7 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
 
     if (!conversation) {
 
-      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+      if (isAjax(req)) {
 
         return res.status(404).json({ ok: false, error: "Conversation not found" });
 
@@ -2480,7 +3114,7 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
 
     if (!isMember) {
 
-      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+      if (isAjax(req)) {
 
         return res.status(403).json({ ok: false, error: "Forbidden" });
 
@@ -2564,7 +3198,7 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
 
 
 
-    if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+    if (isAjax(req)) {
 
       return res.json({ ok: true, message: payload });
 
@@ -2580,7 +3214,7 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
 
 
 
-    if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+    if (isAjax(req)) {
 
       return res.status(500).json({ ok: false, error: "Send message error" });
 
@@ -2589,6 +3223,260 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
 
 
     res.status(500).send("Send message error");
+
+  }
+
+});
+
+
+
+router.post("/messages/:id/delete-message/:messageId", async (req, res) => {
+
+  try {
+
+    const currentProfile = req.currentProfile;
+
+    if (!currentProfile) {
+
+      if (isAjax(req)) return res.status(401).json({ ok: false, error: "Please sign in first" });
+
+      return res.redirect("/auth");
+
+    }
+
+
+
+    const id = String(req.params.id || "").trim();
+
+    const messageId = String(req.params.messageId || "").trim();
+
+
+
+    const conversation = await prisma.conversation.findUnique({
+
+      where: { id },
+
+      include: { members: true },
+
+    });
+
+
+
+    if (!conversation) {
+
+      if (isAjax(req)) return res.status(404).json({ ok: false, error: "Conversation not found" });
+
+      return res.status(404).send("Conversation not found");
+
+    }
+
+
+
+    const isMember = conversation.members.some((m) => m.profileId === currentProfile.id);
+
+    if (!isMember) {
+
+      if (isAjax(req)) return res.status(403).json({ ok: false, error: "Forbidden" });
+
+      return res.status(403).send("Forbidden");
+
+    }
+
+
+
+    const message = await prisma.directMessage.findUnique({
+
+      where: { id: messageId },
+
+    });
+
+
+
+    if (!message || message.conversationId !== id) {
+
+      if (isAjax(req)) return res.status(404).json({ ok: false, error: "Message not found" });
+
+      return res.status(404).send("Message not found");
+
+    }
+
+
+
+    if (message.senderProfileId !== currentProfile.id) {
+
+      if (isAjax(req)) return res.status(403).json({ ok: false, error: "You can only delete your own messages" });
+
+      return res.status(403).send("You can only delete your own messages");
+
+    }
+
+
+
+    await prisma.directMessage.delete({
+
+      where: { id: messageId },
+
+    });
+
+
+
+    const io = req.app.get("io");
+
+    if (io) {
+
+      io.to(`conversation:${id}`).emit("delete_message", {
+
+        conversationId: id,
+
+        messageId,
+
+      });
+
+    }
+
+
+
+    if (isAjax(req)) {
+
+      return res.json({ ok: true, messageId });
+
+    }
+
+
+
+    res.redirect(`/messages/${id}`);
+
+  } catch (e) {
+
+    console.error(e);
+
+
+
+    if (isAjax(req)) {
+
+      return res.status(500).json({ ok: false, error: "Delete message error" });
+
+    }
+
+
+
+    res.status(500).send("Delete message error");
+
+  }
+
+});
+
+
+
+router.post("/messages/:id/delete", async (req, res) => {
+
+  try {
+
+    const currentProfile = req.currentProfile;
+
+    if (!currentProfile) {
+
+      if (isAjax(req)) return res.status(401).json({ ok: false, error: "Please sign in first" });
+
+      return res.redirect("/auth");
+
+    }
+
+
+
+    const id = String(req.params.id || "").trim();
+
+
+
+    const conversation = await prisma.conversation.findUnique({
+
+      where: { id },
+
+      include: { members: true },
+
+    });
+
+
+
+    if (!conversation) {
+
+      if (isAjax(req)) return res.status(404).json({ ok: false, error: "Conversation not found" });
+
+      return res.status(404).send("Conversation not found");
+
+    }
+
+
+
+    const isMember = conversation.members.some((m) => m.profileId === currentProfile.id);
+
+    if (!isMember) {
+
+      if (isAjax(req)) return res.status(403).json({ ok: false, error: "Forbidden" });
+
+      return res.status(403).send("Forbidden");
+
+    }
+
+
+
+    await prisma.$transaction(async (tx) => {
+
+      await tx.directMessage.deleteMany({
+
+        where: { conversationId: id },
+
+      });
+
+
+
+      if (tx.conversationMember?.deleteMany) {
+
+        await tx.conversationMember.deleteMany({
+
+          where: { conversationId: id },
+
+        });
+
+      }
+
+
+
+      await tx.conversation.delete({
+
+        where: { id },
+
+      });
+
+    });
+
+
+
+    if (isAjax(req)) {
+
+      return res.json({ ok: true, conversationId: id });
+
+    }
+
+
+
+    res.redirect("/messages");
+
+  } catch (e) {
+
+    console.error(e);
+
+
+
+    if (isAjax(req)) {
+
+      return res.status(500).json({ ok: false, error: "Delete conversation error" });
+
+    }
+
+
+
+    res.status(500).send("Delete conversation error");
 
   }
 
