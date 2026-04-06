@@ -406,7 +406,7 @@ async function fetchTicketmasterEvents(options = {}) {
 
         countryCode: "CA",
 
-        size: 50,
+        size: 150,
 
         ...windowParams,
 
@@ -450,7 +450,7 @@ async function fetchTicketmasterEvents(options = {}) {
 
           countryCode: "CA",
 
-          size: 25,
+          size: 100,
 
           ...windowParams,
 
