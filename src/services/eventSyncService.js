@@ -530,7 +530,7 @@ async function syncRealEvents() {
 
 
 
-  const allEvents = dedupeEvents([...ticketmasterRaw, ...eventbriteRaw]).slice(0, 100);
+  const allEvents = dedupeEvents([...ticketmasterRaw, ...eventbriteRaw]).slice(0, 300);
 
 
 
