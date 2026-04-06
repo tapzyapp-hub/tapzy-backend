@@ -40,7 +40,7 @@ function buildUrl(params = {}) {
 
   url.searchParams.set("countryCode", params.countryCode || "CA");
 
-  url.searchParams.set("size", String(params.size || 150));
+  url.searchParams.set("size", String(params.size || 180));
 
   url.searchParams.set("sort", "date,asc");
 
@@ -406,7 +406,7 @@ async function fetchTicketmasterEvents(options = {}) {
 
         countryCode: "CA",
 
-        size: 150,
+        size: 180,
 
         ...windowParams,
 
@@ -450,7 +450,7 @@ async function fetchTicketmasterEvents(options = {}) {
 
           countryCode: "CA",
 
-          size: 100,
+          size: 150,
 
           ...windowParams,
 
