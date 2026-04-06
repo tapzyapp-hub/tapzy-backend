@@ -66,9 +66,11 @@ router.get("/messages", async (req, res) => {
       const lastMessage = c.messages[0];
 
       const preview = lastMessage
-        ? (lastMessage.body
-            ? escapeHtml(lastMessage.body)
-            : (lastMessage.imageUrl ? "Sent an image" : "No messages yet"))
+        ? (
+            lastMessage.body
+              ? escapeHtml(lastMessage.body)
+              : (lastMessage.imageUrl ? "Sent an image" : "No messages yet")
+          )
         : "No messages yet";
 
       const time = lastMessage ? formatPrettyLocal(lastMessage.createdAt) : "";
@@ -78,110 +80,83 @@ router.get("/messages", async (req, res) => {
         : escapeHtml(((other?.name || other?.username || "T").slice(0, 1)).toUpperCase());
 
       return `
-      <a class="message-thread-card" href="/messages/${c.id}">
-        <div class="message-thread-avatar">${avatarHtml}</div>
+      <a class="tz-msg-thread" href="/messages/${c.id}">
+        <div class="tz-msg-thread-avatar">${avatarHtml}</div>
 
-        <div class="message-thread-main">
-          <div class="message-thread-top">
-            <div>
-              <div class="message-thread-name">${escapeHtml(other?.name || other?.username || "Unknown")}</div>
-              <div class="message-thread-user">@${escapeHtml(other?.username || "user")}</div>
+        <div class="tz-msg-thread-main">
+          <div class="tz-msg-thread-top">
+            <div class="tz-msg-thread-copy">
+              <div class="tz-msg-thread-name">${escapeHtml(other?.name || other?.username || "Unknown")}</div>
+              <div class="tz-msg-thread-user">@${escapeHtml(other?.username || "user")}</div>
             </div>
 
             ${
               time
-                ? `<div class="message-thread-time">${escapeHtml(time)}</div>`
+                ? `<div class="tz-msg-thread-time">${escapeHtml(time)}</div>`
                 : ""
             }
           </div>
 
-          <div class="message-thread-preview">${preview}</div>
+          <div class="tz-msg-thread-preview">${preview}</div>
         </div>
 
-        <div class="message-thread-arrow">›</div>
+        <div class="tz-msg-thread-arrow">›</div>
       </a>
       `;
     });
 
     const body = `
     <div class="wrap" style="max-width:980px;">
-      <section class="messages-hero">
-        <div class="messages-hero-glow"></div>
+      <section class="tz-core-hero">
+        <div class="tz-core-hero-glow tz-core-hero-glow-a"></div>
+        <div class="tz-core-hero-glow tz-core-hero-glow-b"></div>
 
-        <div class="row-between" style="position:relative;z-index:2;">
+        <div class="tz-core-hero-top">
           <div>
-            <div class="messages-kicker">Tapzy Connect</div>
-            <h1 class="messages-title">Messages</h1>
-            <div class="muted" style="margin-top:10px;max-width:620px;line-height:1.7;">
-              Premium private conversations inside Tapzy.
+            <div class="tz-core-kicker">Tapzy Connect</div>
+            <h1 class="tz-core-title">Messages</h1>
+            <div class="tz-core-subtitle">
+              Premium private conversations inside Tapzy. Clean, direct, and built for real connections.
             </div>
           </div>
 
-          <div class="row">
-            <a class="btn btnDark" href="/search">Start Conversation</a>
+          <div class="tz-core-actions">
+            <a class="tz-core-btn tz-core-btn-dark" href="/search">Start Conversation</a>
           </div>
         </div>
       </section>
 
-      <section class="card" style="margin-top:18px;">
-        <div class="row-between" style="margin-bottom:14px;">
-          <div>
-            <h2 style="margin:0;">Inbox</h2>
-            <div class="muted" style="margin-top:6px;">
-              ${conversations.length} conversation${conversations.length === 1 ? "" : "s"}
-            </div>
-          </div>
+      <section class="tz-core-section" style="margin-top:18px;">
+        <div class="tz-core-section-head">
+          <h3>Inbox</h3>
+          <p>${conversations.length} conversation${conversations.length === 1 ? "" : "s"} in your Tapzy network.</p>
         </div>
 
-        <div class="messages-list">
-          ${rows.length ? rows.join("") : `<div class="panel">No conversations yet.</div>`}
+        <div class="tz-msg-list">
+          ${
+            rows.length
+              ? rows.join("")
+              : `
+                <div class="tz-core-empty">
+                  <h3>No conversations yet</h3>
+                  <p>Start a private Tapzy conversation with someone from search, your profile connections, or your network.</p>
+                  <div style="margin-top:14px;">
+                    <a class="tz-core-btn" href="/search">Find People</a>
+                  </div>
+                </div>
+              `
+          }
         </div>
       </section>
     </div>
 
     <style>
-      .messages-hero{
-        position:relative;
-        overflow:hidden;
-        border-radius:30px;
-        border:1px solid rgba(255,255,255,.08);
-        background:
-          radial-gradient(850px 360px at 50% -5%, rgba(127,210,255,.10), transparent 48%),
-          linear-gradient(180deg, rgba(10,12,18,.98), rgba(6,6,8,1));
-        padding:28px;
-        box-shadow:0 24px 70px rgba(0,0,0,.40);
-      }
-
-      .messages-hero-glow{
-        position:absolute;
-        width:340px;
-        height:340px;
-        border-radius:999px;
-        background:radial-gradient(circle, rgba(111,210,255,.18) 0%, rgba(111,210,255,.06) 36%, transparent 70%);
-        right:-50px;
-        top:-70px;
-        filter:blur(12px);
-      }
-
-      .messages-kicker{
-        color:#95a5bf;
-        text-transform:uppercase;
-        letter-spacing:4px;
-        font-size:13px;
-      }
-
-      .messages-title{
-        margin:10px 0 0 0;
-        font-size:54px;
-        line-height:1;
-      }
-
-      .messages-list{
+      .tz-msg-list{
         display:grid;
         gap:14px;
       }
 
-      .message-thread-card{
+      .tz-msg-thread{
         display:grid;
         grid-template-columns:auto 1fr auto;
         gap:16px;
@@ -189,18 +164,26 @@ router.get("/messages", async (req, res) => {
         padding:18px;
         border-radius:24px;
         text-decoration:none;
-        background:linear-gradient(180deg, rgba(22,24,32,.94), rgba(12,14,20,.98));
+        background:
+          radial-gradient(420px 180px at 68% 20%, rgba(90,165,255,.08), transparent 42%),
+          linear-gradient(180deg, rgba(22,24,32,.92), rgba(12,14,20,.98));
         border:1px solid rgba(255,255,255,.07);
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.03),
+          0 14px 28px rgba(0,0,0,.18);
         transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
       }
 
-      .message-thread-card:hover{
+      .tz-msg-thread:hover{
         transform:translateY(-1px);
         border-color:rgba(127,210,255,.22);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 18px 34px rgba(0,0,0,.22),
+          0 0 22px rgba(70,140,255,.06);
       }
 
-      .message-thread-avatar{
+      .tz-msg-thread-avatar{
         width:62px;
         height:62px;
         border-radius:18px;
@@ -214,44 +197,59 @@ router.get("/messages", async (req, res) => {
         font-weight:800;
         font-size:22px;
         flex:0 0 auto;
+        box-shadow:0 10px 24px rgba(0,0,0,.24);
       }
 
-      .message-thread-avatar img{
+      .tz-msg-thread-avatar img{
         width:100%;
         height:100%;
         object-fit:cover;
       }
 
-      .message-thread-main{
+      .tz-msg-thread-main{
         min-width:0;
       }
 
-      .message-thread-top{
+      .tz-msg-thread-top{
         display:flex;
         justify-content:space-between;
         gap:12px;
         align-items:flex-start;
+        min-width:0;
       }
 
-      .message-thread-name{
+      .tz-msg-thread-copy{
+        min-width:0;
+        flex:1;
+      }
+
+      .tz-msg-thread-name{
         font-size:18px;
         font-weight:800;
         color:#fff;
+        line-height:1.15;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
       }
 
-      .message-thread-user{
+      .tz-msg-thread-user{
         margin-top:4px;
         color:#95a5bf;
         font-size:13px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
       }
 
-      .message-thread-time{
+      .tz-msg-thread-time{
         color:#8c96a8;
         font-size:12px;
         white-space:nowrap;
+        flex:0 0 auto;
       }
 
-      .message-thread-preview{
+      .tz-msg-thread-preview{
         margin-top:10px;
         color:#d7deea;
         font-size:14px;
@@ -261,166 +259,40 @@ router.get("/messages", async (req, res) => {
         white-space:nowrap;
       }
 
-      .message-thread-arrow{
+      .tz-msg-thread-arrow{
         color:#8ea1bd;
         font-size:28px;
         line-height:1;
       }
 
-      .chat-shell{
-        display:grid;
-        gap:16px;
-      }
-
-      .chat-topbar{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:12px;
-        flex-wrap:wrap;
-      }
-
-      .chat-partner{
-        display:flex;
-        align-items:center;
-        gap:14px;
-      }
-
-      .chat-partner-avatar{
-        width:58px;
-        height:58px;
-        border-radius:18px;
-        overflow:hidden;
-        background:linear-gradient(180deg,#141418,#0c0c0f);
-        border:1px solid rgba(255,255,255,.08);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        color:#dbefff;
-        font-weight:800;
-        font-size:22px;
-      }
-
-      .chat-partner-avatar img{
-        width:100%;
-        height:100%;
-        object-fit:cover;
-      }
-
-      .chat-window{
-        min-height:460px;
-        max-height:62vh;
-        overflow-y:auto;
-        padding:16px;
-        border-radius:26px;
-        border:1px solid rgba(255,255,255,.07);
-        background:
-          radial-gradient(700px 220px at 50% 0%, rgba(127,210,255,.06), transparent 42%),
-          linear-gradient(180deg, rgba(12,13,18,.98), rgba(9,10,14,1));
-        display:flex;
-        flex-direction:column;
-        gap:12px;
-      }
-
-      .chat-bubble-row{
-        display:flex;
-      }
-
-      .chat-bubble-row.mine{
-        justify-content:flex-end;
-      }
-
-      .chat-bubble{
-        max-width:min(78%, 560px);
-        padding:14px 16px;
-        border-radius:20px;
-        font-size:14px;
-        line-height:1.55;
-        word-break:break-word;
-        border:1px solid rgba(255,255,255,.06);
-      }
-
-      .chat-bubble.other{
-        background:linear-gradient(180deg, #171a21, #11141a);
-        color:#fff;
-      }
-
-      .chat-bubble.mine{
-        background:linear-gradient(180deg, #f4fbff, #dff4ff);
-        color:#000;
-        border-color:rgba(255,255,255,.24);
-      }
-
-      .chat-time{
-        margin-top:8px;
-        font-size:11px;
-        opacity:.72;
-      }
-
-      .chat-image{
-        max-width:240px;
-        width:100%;
-        border-radius:14px;
-        margin-top:10px;
-        border:1px solid rgba(255,255,255,.10);
-        display:block;
-      }
-
-      .chat-form{
-        display:grid;
-        gap:10px;
-      }
-
-      .chat-form textarea{
-        min-height:110px;
-      }
-
-      .chat-actions{
-        display:flex;
-        gap:10px;
-        flex-wrap:wrap;
-      }
-
-      @media(max-width:900px){
-        .messages-title{
-          font-size:42px;
-        }
-      }
-
       @media(max-width:700px){
-        .messages-hero{
-          padding:18px;
-          border-radius:24px;
-        }
-
-        .messages-title{
-          font-size:36px;
-        }
-
-        .message-thread-card{
+        .tz-msg-thread{
           grid-template-columns:auto 1fr;
+          padding:16px;
+          border-radius:20px;
         }
 
-        .message-thread-arrow{
+        .tz-msg-thread-arrow{
           display:none;
         }
 
-        .message-thread-avatar{
+        .tz-msg-thread-avatar{
           width:54px;
           height:54px;
           border-radius:16px;
           font-size:20px;
         }
 
-        .chat-window{
-          min-height:420px;
-          max-height:58vh;
-          padding:12px;
-          border-radius:22px;
+        .tz-msg-thread-name{
+          font-size:16px;
         }
 
-        .chat-bubble{
-          max-width:88%;
+        .tz-msg-thread-user{
+          font-size:12px;
+        }
+
+        .tz-msg-thread-time{
+          font-size:11px;
         }
       }
     </style>
@@ -481,15 +353,15 @@ router.get("/messages/:id", async (req, res) => {
       const isMine = m.senderProfileId === currentProfile.id;
 
       return `
-      <div class="chat-bubble-row ${isMine ? "mine" : "other"}">
-        <div class="chat-bubble ${isMine ? "mine" : "other"}">
+      <div class="tz-chat-row ${isMine ? "mine" : "other"}">
+        <div class="tz-chat-bubble ${isMine ? "mine" : "other"}">
           ${m.body ? `<div>${escapeHtml(m.body)}</div>` : ""}
           ${
             m.imageUrl
-              ? `<img class="chat-image" src="${escapeHtml(m.imageUrl)}" alt="Message image" />`
+              ? `<img class="tz-chat-image" src="${escapeHtml(m.imageUrl)}" alt="Message image" />`
               : ""
           }
-          <div class="chat-time">${escapeHtml(formatPrettyLocal(m.createdAt))}</div>
+          <div class="tz-chat-time">${escapeHtml(formatPrettyLocal(m.createdAt))}</div>
         </div>
       </div>
       `;
@@ -497,46 +369,60 @@ router.get("/messages/:id", async (req, res) => {
 
     const body = `
     <div class="wrap" style="max-width:980px;">
-      <section class="messages-hero">
-        <div class="messages-hero-glow"></div>
+      <section class="tz-core-hero">
+        <div class="tz-core-hero-glow tz-core-hero-glow-a"></div>
+        <div class="tz-core-hero-glow tz-core-hero-glow-b"></div>
 
-        <div class="chat-topbar" style="position:relative;z-index:2;">
-          <div class="chat-partner">
-            <div class="chat-partner-avatar">${otherAvatarHtml}</div>
+        <div class="tz-chat-hero-top">
+          <div class="tz-chat-partner">
+            <div class="tz-chat-partner-avatar">${otherAvatarHtml}</div>
 
-            <div>
-              <div class="messages-kicker">Tapzy Conversation</div>
-              <h1 class="messages-title" style="font-size:42px;margin-top:8px;">
+            <div class="tz-chat-partner-copy">
+              <div class="tz-core-kicker">Tapzy Conversation</div>
+              <h1 class="tz-chat-title">
                 ${escapeHtml(other?.name || other?.username || "Conversation")}
               </h1>
-              <div class="muted" style="margin-top:8px;">
+              <div class="tz-chat-handle">
                 ${other ? `@${escapeHtml(other.username || "user")}` : ""}
               </div>
             </div>
           </div>
 
-          <div class="row">
+          <div class="tz-core-actions">
             ${
               other?.username
-                ? `<a class="btn btnDark" href="/u/${escapeHtml(other.username)}">View Profile</a>`
+                ? `<a class="tz-core-btn tz-core-btn-dark" href="/u/${escapeHtml(other.username)}">View Profile</a>`
                 : ""
             }
-            <a class="btn btnDark" href="/messages">Back</a>
+            <a class="tz-core-btn tz-core-btn-dark" href="/messages">Back</a>
           </div>
         </div>
       </section>
 
-      <section class="card" style="margin-top:18px;">
-        <div class="chat-shell">
-          <div class="chat-window" id="chatWindow">
-            ${messagesHtml || `<div class="muted">No messages yet.</div>`}
+      <section class="tz-core-section" style="margin-top:18px;">
+        <div class="tz-chat-shell">
+          <div class="tz-chat-window" id="chatWindow">
+            ${
+              messagesHtml ||
+              `<div class="tz-core-empty"><h3>No messages yet</h3><p>Say hello and start the conversation.</p></div>`
+            }
           </div>
 
-          <form method="POST" action="/messages/${conversation.id}" enctype="multipart/form-data" class="chat-form">
-            <textarea name="text" placeholder="Type message..."></textarea>
-            <input type="file" name="image" accept="image/png,image/jpeg,image/webp" />
-            <div class="chat-actions">
-              <button class="btn" type="submit">Send Message</button>
+          <div id="tzTypingIndicator" class="tz-typing-indicator" style="display:none;"></div>
+
+          <form id="tzChatForm" method="POST" action="/messages/${conversation.id}" enctype="multipart/form-data" class="tz-chat-form">
+            <div class="tz-core-field">
+              <label>Message</label>
+              <textarea class="tz-core-textarea" id="tzMessageInput" name="text" placeholder="Type message..."></textarea>
+            </div>
+
+            <div class="tz-core-field">
+              <label>Optional image</label>
+              <input class="tz-core-upload" id="tzImageInput" type="file" name="image" accept="image/png,image/jpeg,image/webp" />
+            </div>
+
+            <div class="tz-chat-actions">
+              <button class="tz-core-btn" id="tzSendBtn" type="submit">Send Message</button>
             </div>
           </form>
         </div>
@@ -544,57 +430,30 @@ router.get("/messages/:id", async (req, res) => {
     </div>
 
     <style>
-      .messages-hero{
+      .tz-chat-hero-top{
         position:relative;
-        overflow:hidden;
-        border-radius:30px;
-        border:1px solid rgba(255,255,255,.08);
-        background:
-          radial-gradient(850px 360px at 50% -5%, rgba(127,210,255,.10), transparent 48%),
-          linear-gradient(180deg, rgba(10,12,18,.98), rgba(6,6,8,1));
-        padding:28px;
-        box-shadow:0 24px 70px rgba(0,0,0,.40);
-      }
-
-      .messages-hero-glow{
-        position:absolute;
-        width:340px;
-        height:340px;
-        border-radius:999px;
-        background:radial-gradient(circle, rgba(111,210,255,.18) 0%, rgba(111,210,255,.06) 36%, transparent 70%);
-        right:-50px;
-        top:-70px;
-        filter:blur(12px);
-      }
-
-      .messages-kicker{
-        color:#95a5bf;
-        text-transform:uppercase;
-        letter-spacing:4px;
-        font-size:13px;
-      }
-
-      .messages-title{
-        margin:10px 0 0 0;
-        font-size:54px;
-        line-height:1;
-      }
-
-      .chat-topbar{
+        z-index:2;
         display:flex;
         justify-content:space-between;
-        align-items:center;
-        gap:12px;
+        align-items:flex-start;
+        gap:16px;
         flex-wrap:wrap;
       }
 
-      .chat-partner{
+      .tz-chat-partner{
         display:flex;
-        align-items:center;
+        align-items:flex-start;
         gap:14px;
+        min-width:0;
+        flex:1;
       }
 
-      .chat-partner-avatar{
+      .tz-chat-partner-copy{
+        min-width:0;
+        flex:1;
+      }
+
+      .tz-chat-partner-avatar{
         width:58px;
         height:58px;
         border-radius:18px;
@@ -607,20 +466,38 @@ router.get("/messages/:id", async (req, res) => {
         color:#dbefff;
         font-weight:800;
         font-size:22px;
+        flex:0 0 auto;
       }
 
-      .chat-partner-avatar img{
+      .tz-chat-partner-avatar img{
         width:100%;
         height:100%;
         object-fit:cover;
       }
 
-      .chat-shell{
+      .tz-chat-title{
+        margin:10px 0 0 0;
+        font-size:38px;
+        line-height:1.08;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .tz-chat-handle{
+        margin-top:8px;
+        color:#9fb0c9;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .tz-chat-shell{
         display:grid;
         gap:16px;
       }
 
-      .chat-window{
+      .tz-chat-window{
         min-height:460px;
         max-height:62vh;
         overflow-y:auto;
@@ -635,15 +512,15 @@ router.get("/messages/:id", async (req, res) => {
         gap:12px;
       }
 
-      .chat-bubble-row{
+      .tz-chat-row{
         display:flex;
       }
 
-      .chat-bubble-row.mine{
+      .tz-chat-row.mine{
         justify-content:flex-end;
       }
 
-      .chat-bubble{
+      .tz-chat-bubble{
         max-width:min(78%, 560px);
         padding:14px 16px;
         border-radius:20px;
@@ -653,24 +530,24 @@ router.get("/messages/:id", async (req, res) => {
         border:1px solid rgba(255,255,255,.06);
       }
 
-      .chat-bubble.other{
+      .tz-chat-bubble.other{
         background:linear-gradient(180deg, #171a21, #11141a);
         color:#fff;
       }
 
-      .chat-bubble.mine{
+      .tz-chat-bubble.mine{
         background:linear-gradient(180deg, #f4fbff, #dff4ff);
         color:#000;
         border-color:rgba(255,255,255,.24);
       }
 
-      .chat-time{
+      .tz-chat-time{
         margin-top:8px;
         font-size:11px;
         opacity:.72;
       }
 
-      .chat-image{
+      .tz-chat-image{
         max-width:240px;
         width:100%;
         border-radius:14px;
@@ -679,54 +556,224 @@ router.get("/messages/:id", async (req, res) => {
         display:block;
       }
 
-      .chat-form{
+      .tz-chat-form{
         display:grid;
-        gap:10px;
+        gap:12px;
       }
 
-      .chat-form textarea{
-        min-height:110px;
-      }
-
-      .chat-actions{
+      .tz-chat-actions{
         display:flex;
         gap:10px;
         flex-wrap:wrap;
       }
 
+      .tz-typing-indicator{
+        color:#9fb0c9;
+        font-size:13px;
+        margin-top:-4px;
+        min-height:18px;
+      }
+
+      .tz-chat-sending{
+        opacity:.7;
+        pointer-events:none;
+      }
+
       @media(max-width:900px){
-        .messages-title{
-          font-size:42px;
+        .tz-chat-title{
+          font-size:32px;
         }
       }
 
       @media(max-width:700px){
-        .messages-hero{
-          padding:18px;
-          border-radius:24px;
+        .tz-chat-hero-top{
+          flex-direction:column;
+          align-items:stretch;
+          gap:14px;
         }
 
-        .messages-title{
-          font-size:32px !important;
+        .tz-chat-partner-avatar{
+          width:48px;
+          height:48px;
+          border-radius:14px;
+          font-size:18px;
         }
 
-        .chat-window{
+        .tz-chat-title{
+          font-size:26px !important;
+          line-height:1.08 !important;
+        }
+
+        .tz-chat-handle{
+          font-size:13px;
+        }
+
+        .tz-chat-window{
           min-height:420px;
           max-height:58vh;
           padding:12px;
-          border-radius:22px;
+          border-radius:20px;
         }
 
-        .chat-bubble{
+        .tz-chat-bubble{
           max-width:88%;
         }
       }
     </style>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script>
       (function(){
         const chat = document.getElementById("chatWindow");
-        if (chat) chat.scrollTop = chat.scrollHeight;
+        const form = document.getElementById("tzChatForm");
+        const textarea = document.getElementById("tzMessageInput");
+        const imageInput = document.getElementById("tzImageInput");
+        const sendBtn = document.getElementById("tzSendBtn");
+        const typingIndicator = document.getElementById("tzTypingIndicator");
+        const conversationId = ${JSON.stringify(conversation.id)};
+        const currentProfileId = ${JSON.stringify(currentProfile.id)};
+        const currentUsername = ${JSON.stringify(currentProfile.username || "user")};
+
+        if (chat) {
+          chat.scrollTop = chat.scrollHeight;
+        }
+
+        if (!conversationId || !chat || !form) return;
+
+        const socket = io();
+        let typingTimer = null;
+        let isSending = false;
+
+        socket.emit("join_conversation", conversationId);
+
+        function safeEscape(str) {
+          return String(str || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        function formatPrettyLocalClient(dt) {
+          const d = new Date(dt);
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth() + 1).padStart(2, "0");
+          const dd = String(d.getDate()).padStart(2, "0");
+          let hh = d.getHours();
+          const min = String(d.getMinutes()).padStart(2, "0");
+          const ampm = hh >= 12 ? "PM" : "AM";
+          hh = hh % 12;
+          if (hh === 0) hh = 12;
+          return \`\${yyyy}-\${mm}-\${dd} \${String(hh).padStart(2, "0")}:\${min} \${ampm}\`;
+        }
+
+        function appendMessage(message) {
+          const isMine = String(message.senderProfileId || "") === String(currentProfileId || "");
+
+          const row = document.createElement("div");
+          row.className = "tz-chat-row " + (isMine ? "mine" : "other");
+
+          row.innerHTML = \`
+            <div class="tz-chat-bubble \${isMine ? "mine" : "other"}">
+              \${message.body ? \`<div>\${safeEscape(message.body)}</div>\` : ""}
+              \${message.imageUrl ? \`<img class="tz-chat-image" src="\${safeEscape(message.imageUrl)}" alt="Message image" />\` : ""}
+              <div class="tz-chat-time">\${safeEscape(formatPrettyLocalClient(message.createdAt))}</div>
+            </div>
+          \`;
+
+          chat.appendChild(row);
+          chat.scrollTop = chat.scrollHeight;
+        }
+
+        function setSending(state) {
+          isSending = state;
+          if (state) {
+            form.classList.add("tz-chat-sending");
+            if (sendBtn) sendBtn.textContent = "Sending...";
+          } else {
+            form.classList.remove("tz-chat-sending");
+            if (sendBtn) sendBtn.textContent = "Send Message";
+          }
+        }
+
+        socket.on("receive_message", function(message){
+          appendMessage(message);
+          if (typingIndicator) typingIndicator.style.display = "none";
+        });
+
+        socket.on("typing", function(data){
+          if (!typingIndicator) return;
+          if (!data || String(data.conversationId || "") !== String(conversationId)) return;
+          const name = data.username || "Someone";
+          if (name === currentUsername) return;
+          typingIndicator.textContent = name + " is typing...";
+          typingIndicator.style.display = "block";
+        });
+
+        socket.on("stop_typing", function(data){
+          if (!typingIndicator) return;
+          if (!data || String(data.conversationId || "") !== String(conversationId)) return;
+          typingIndicator.style.display = "none";
+        });
+
+        if (textarea) {
+          textarea.addEventListener("input", function(){
+            socket.emit("typing", {
+              conversationId,
+              username: currentUsername,
+            });
+
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(function(){
+              socket.emit("stop_typing", { conversationId });
+            }, 900);
+          });
+        }
+
+        form.addEventListener("submit", async function(e){
+          e.preventDefault();
+          if (isSending) return;
+
+          const text = String(textarea?.value || "").trim();
+          const hasImage = !!(imageInput && imageInput.files && imageInput.files[0]);
+
+          if (!text && !hasImage) return;
+
+          setSending(true);
+
+          try {
+            const formData = new FormData(form);
+
+            const res = await fetch(form.action, {
+              method: "POST",
+              body: formData,
+              headers: {
+                "X-Requested-With": "XMLHttpRequest"
+              }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.ok) {
+              throw new Error(data.error || "Send failed");
+            }
+
+            if (textarea) textarea.value = "";
+            if (imageInput) imageInput.value = "";
+            if (typingIndicator) typingIndicator.style.display = "none";
+
+            socket.emit("stop_typing", { conversationId });
+          } catch (err) {
+            alert(err.message || "Could not send message");
+          } finally {
+            setSending(false);
+          }
+        });
+
+        window.addEventListener("beforeunload", function(){
+          socket.emit("leave_conversation", conversationId);
+        });
       })();
     </script>
 
@@ -752,7 +799,12 @@ router.get("/messages/:id", async (req, res) => {
 router.post("/messages/:id", upload.single("image"), async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
-    if (!currentProfile) return res.redirect("/auth");
+    if (!currentProfile) {
+      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+        return res.status(401).json({ ok: false, error: "Please sign in first" });
+      }
+      return res.redirect("/auth");
+    }
 
     const id = String(req.params.id || "").trim();
     const text = String(req.body.text || "").trim() || null;
@@ -760,24 +812,42 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
       ? publicAbsoluteUrl(req, `/uploads/${req.file.filename}`)
       : null;
 
-    if (!text && !imageUrl) return res.redirect(`/messages/${id}`);
+    if (!text && !imageUrl) {
+      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+        return res.status(400).json({ ok: false, error: "Message is empty" });
+      }
+      return res.redirect(`/messages/${id}`);
+    }
 
     const conversation = await prisma.conversation.findUnique({
       where: { id },
       include: { members: true },
     });
 
-    if (!conversation) return res.status(404).send("Conversation not found");
+    if (!conversation) {
+      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+        return res.status(404).json({ ok: false, error: "Conversation not found" });
+      }
+      return res.status(404).send("Conversation not found");
+    }
 
     const isMember = conversation.members.some((m) => m.profileId === currentProfile.id);
-    if (!isMember) return res.status(403).send("Forbidden");
+    if (!isMember) {
+      if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+        return res.status(403).json({ ok: false, error: "Forbidden" });
+      }
+      return res.status(403).send("Forbidden");
+    }
 
-    await prisma.directMessage.create({
+    const createdMessage = await prisma.directMessage.create({
       data: {
         conversationId: id,
         senderProfileId: currentProfile.id,
         body: text,
         imageUrl,
+      },
+      include: {
+        sender: true,
       },
     });
 
@@ -786,9 +856,37 @@ router.post("/messages/:id", upload.single("image"), async (req, res) => {
       data: { updatedAt: new Date() },
     });
 
+    const payload = {
+      id: createdMessage.id,
+      conversationId: createdMessage.conversationId,
+      body: createdMessage.body,
+      imageUrl: createdMessage.imageUrl,
+      createdAt: createdMessage.createdAt,
+      senderProfileId: createdMessage.senderProfileId,
+      senderName: createdMessage.sender?.name || createdMessage.sender?.username || "User",
+      senderUsername: createdMessage.sender?.username || "user",
+    };
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`conversation:${id}`).emit("receive_message", payload);
+      io.to(`conversation:${id}`).emit("stop_typing", {
+        conversationId: id,
+      });
+    }
+
+    if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+      return res.json({ ok: true, message: payload });
+    }
+
     res.redirect(`/messages/${id}`);
   } catch (e) {
     console.error(e);
+
+    if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+      return res.status(500).json({ ok: false, error: "Send message error" });
+    }
+
     res.status(500).send("Send message error");
   }
 });
