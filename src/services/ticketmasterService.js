@@ -40,7 +40,7 @@ function buildUrl(params = {}) {
 
   url.searchParams.set("countryCode", params.countryCode || "CA");
 
-  url.searchParams.set("size", String(params.size || 50));
+  url.searchParams.set("size", String(params.size || 150));
 
   url.searchParams.set("sort", "date,asc");
 
