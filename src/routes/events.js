@@ -22,6 +22,28 @@ const { syncRealEvents } = require("../services/eventSyncService");
 
 
 
+const TOP_CITY_ORDER = [
+
+  "Toronto",
+
+  "Montreal",
+
+  "Vancouver",
+
+  "Calgary",
+
+  "Edmonton",
+
+];
+
+
+
+const MAIN_QUERY_LIMIT = 600;
+
+const FEED_PAGE_SIZE = 12;
+
+
+
 function sampleEvents() {
 
   const now = Date.now();
@@ -38,15 +60,15 @@ function sampleEvents() {
 
       source: "tapzy_seed",
 
-      sourceEventId: "seed-net-1",
+      sourceEventId: "seed-sports-1",
 
-      title: "Founder Networking Night",
+      title: "Toronto Sports Night",
 
-      description: "Meet founders, builders, and startup operators in a premium social setting.",
+      description: "Big-game energy, premium crowd, and a live sports atmosphere.",
 
       imageUrl: "",
 
-      venueName: "Toronto Innovation Hub",
+      venueName: "Toronto Arena District",
 
       address: "Toronto, ON",
 
@@ -60,7 +82,7 @@ function sampleEvents() {
 
       ticketUrl: "",
 
-      category: "Networking",
+      category: "Sports",
 
       startAt: new Date(now + d),
 
@@ -70,7 +92,7 @@ function sampleEvents() {
 
       longitude: -79.3832,
 
-      priceText: "Free",
+      priceText: "$35",
 
       rawPayload: { seeded: true },
 
@@ -80,9 +102,51 @@ function sampleEvents() {
 
       source: "tapzy_seed",
 
-      sourceEventId: "seed-night-1",
+      sourceEventId: "seed-concert-1",
 
-      title: "Friday Night Lounge",
+      title: "Downtown Concert Experience",
+
+      description: "Live music, crowd energy, and a premium city-night atmosphere.",
+
+      imageUrl: "",
+
+      venueName: "City Stage",
+
+      address: "Montreal, QC",
+
+      city: "Montreal",
+
+      region: "Quebec",
+
+      country: "Canada",
+
+      eventUrl: "",
+
+      ticketUrl: "",
+
+      category: "Concerts",
+
+      startAt: new Date(now + 2 * d),
+
+      endAt: new Date(now + 2 * d + 4 * h),
+
+      latitude: 45.5017,
+
+      longitude: -73.5673,
+
+      priceText: "$49",
+
+      rawPayload: { seeded: true },
+
+    },
+
+    {
+
+      source: "tapzy_seed",
+
+      sourceEventId: "seed-nightlife-1",
+
+      title: "Friday Night Party",
 
       description: "Cocktails, DJ energy, and a polished nightlife atmosphere.",
 
@@ -90,11 +154,11 @@ function sampleEvents() {
 
       venueName: "Velvet Lounge",
 
-      address: "Toronto, ON",
+      address: "Vancouver, BC",
 
-      city: "Toronto",
+      city: "Vancouver",
 
-      region: "Ontario",
+      region: "British Columbia",
 
       country: "Canada",
 
@@ -104,13 +168,13 @@ function sampleEvents() {
 
       category: "Nightlife",
 
-      startAt: new Date(now + d + 18 * h),
+      startAt: new Date(now + 3 * d),
 
-      endAt: new Date(now + d + 23 * h),
+      endAt: new Date(now + 3 * d + 5 * h),
 
-      latitude: 43.6532,
+      latitude: 49.2827,
 
-      longitude: -79.3832,
+      longitude: -123.1207,
 
       priceText: "$20",
 
@@ -122,21 +186,21 @@ function sampleEvents() {
 
       source: "tapzy_seed",
 
-      sourceEventId: "seed-night-2",
+      sourceEventId: "seed-convention-1",
 
-      title: "Barrie Social Night",
+      title: "Creator & Fan Convention",
 
-      description: "Music, drinks, and premium local connections.",
+      description: "A premium convention space for fans, brands, creators, and community.",
 
       imageUrl: "",
 
-      venueName: "Barrie Social Club",
+      venueName: "Expo Hall",
 
-      address: "Barrie, ON",
+      address: "Calgary, AB",
 
-      city: "Barrie",
+      city: "Calgary",
 
-      region: "Ontario",
+      region: "Alberta",
 
       country: "Canada",
 
@@ -144,143 +208,17 @@ function sampleEvents() {
 
       ticketUrl: "",
 
-      category: "Nightlife",
-
-      startAt: new Date(now + 2 * d + 18 * h),
-
-      endAt: new Date(now + 2 * d + 22 * h),
-
-      latitude: 44.3894,
-
-      longitude: -79.6903,
-
-      priceText: "$10",
-
-      rawPayload: { seeded: true },
-
-    },
-
-    {
-
-      source: "tapzy_seed",
-
-      sourceEventId: "seed-tech-1",
-
-      title: "AI Builders Meetup",
-
-      description: "Developers and founders discussing AI tools and startup ideas.",
-
-      imageUrl: "",
-
-      venueName: "Tech Collective",
-
-      address: "Toronto, ON",
-
-      city: "Toronto",
-
-      region: "Ontario",
-
-      country: "Canada",
-
-      eventUrl: "",
-
-      ticketUrl: "",
-
-      category: "Tech",
-
-      startAt: new Date(now + 3 * d),
-
-      endAt: new Date(now + 3 * d + 3 * h),
-
-      latitude: 43.6532,
-
-      longitude: -79.3832,
-
-      priceText: "Free",
-
-      rawPayload: { seeded: true },
-
-    },
-
-    {
-
-      source: "tapzy_seed",
-
-      sourceEventId: "seed-music-1",
-
-      title: "Live Music Night",
-
-      description: "An evening event with local artists and social energy.",
-
-      imageUrl: "",
-
-      venueName: "City Stage",
-
-      address: "Barrie, ON",
-
-      city: "Barrie",
-
-      region: "Ontario",
-
-      country: "Canada",
-
-      eventUrl: "",
-
-      ticketUrl: "",
-
-      category: "Music",
-
-      startAt: new Date(now + 2 * d),
-
-      endAt: new Date(now + 2 * d + 4 * h),
-
-      latitude: 44.3894,
-
-      longitude: -79.6903,
-
-      priceText: "$15",
-
-      rawPayload: { seeded: true },
-
-    },
-
-    {
-
-      source: "tapzy_seed",
-
-      sourceEventId: "seed-food-1",
-
-      title: "Food & Drink Festival",
-
-      description: "Local chefs, food trucks, and premium social atmosphere.",
-
-      imageUrl: "",
-
-      venueName: "Downtown Square",
-
-      address: "Toronto, ON",
-
-      city: "Toronto",
-
-      region: "Ontario",
-
-      country: "Canada",
-
-      eventUrl: "",
-
-      ticketUrl: "",
-
-      category: "Food",
+      category: "Conventions",
 
       startAt: new Date(now + 4 * d),
 
       endAt: new Date(now + 4 * d + 6 * h),
 
-      latitude: 43.6532,
+      latitude: 51.0447,
 
-      longitude: -79.3832,
+      longitude: -114.0719,
 
-      priceText: "Free",
+      priceText: "$25",
 
       rawPayload: { seeded: true },
 
@@ -290,21 +228,21 @@ function sampleEvents() {
 
       source: "tapzy_seed",
 
-      sourceEventId: "seed-cars-1",
+      sourceEventId: "seed-sports-2",
 
-      title: "Exotic Car Meet",
+      title: "Edmonton Game Day Experience",
 
-      description: "Supercars, enthusiasts, and premium visual culture.",
+      description: "A packed sports crowd with big energy and premium event vibes.",
 
       imageUrl: "",
 
-      venueName: "Vaughan Auto Plaza",
+      venueName: "Edmonton Event Centre",
 
-      address: "Vaughan, ON",
+      address: "Edmonton, AB",
 
-      city: "Vaughan",
+      city: "Edmonton",
 
-      region: "Ontario",
+      region: "Alberta",
 
       country: "Canada",
 
@@ -312,59 +250,17 @@ function sampleEvents() {
 
       ticketUrl: "",
 
-      category: "Cars",
+      category: "Sports",
 
       startAt: new Date(now + 5 * d),
 
       endAt: new Date(now + 5 * d + 3 * h),
 
-      latitude: 43.8361,
+      latitude: 53.5461,
 
-      longitude: -79.4983,
+      longitude: -113.4938,
 
-      priceText: "Free",
-
-      rawPayload: { seeded: true },
-
-    },
-
-    {
-
-      source: "tapzy_seed",
-
-      sourceEventId: "seed-creator-1",
-
-      title: "Creator Networking Night",
-
-      description: "Creators, influencers, and brands connecting in person.",
-
-      imageUrl: "",
-
-      venueName: "Creator Studio",
-
-      address: "Toronto, ON",
-
-      city: "Toronto",
-
-      region: "Ontario",
-
-      country: "Canada",
-
-      eventUrl: "",
-
-      ticketUrl: "",
-
-      category: "Creator",
-
-      startAt: new Date(now + 4 * d),
-
-      endAt: new Date(now + 4 * d + 3 * h),
-
-      latitude: 43.6532,
-
-      longitude: -79.3832,
-
-      priceText: "Free",
+      priceText: "$30",
 
       rawPayload: { seeded: true },
 
@@ -448,49 +344,79 @@ function pickImage(event) {
 
 
 
-  if (category.includes("nightlife")) {
+  if (
+
+    category.includes("nightlife") ||
+
+    category.includes("party") ||
+
+    category.includes("club") ||
+
+    category.includes("dj")
+
+  ) {
 
     return "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1400&q=80";
 
   }
 
-  if (category.includes("music")) {
+
+
+  if (
+
+    category.includes("concert") ||
+
+    category.includes("music") ||
+
+    category.includes("festival")
+
+  ) {
 
     return "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80";
 
   }
 
+
+
   if (
 
-    category.includes("network") ||
+    category.includes("sport") ||
 
-    category.includes("business") ||
+    category.includes("hockey") ||
 
-    category.includes("tech") ||
+    category.includes("basketball") ||
 
-    category.includes("startup")
+    category.includes("football") ||
+
+    category.includes("soccer") ||
+
+    category.includes("baseball") ||
+
+    category.includes("mma") ||
+
+    category.includes("ufc")
+
+  ) {
+
+    return "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1400&q=80";
+
+  }
+
+
+
+  if (
+
+    category.includes("convention") ||
+
+    category.includes("expo") ||
+
+    category.includes("comic") ||
+
+    category.includes("fan")
 
   ) {
 
     return "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1400&q=80";
-
-  }
-
-  if (category.includes("food")) {
-
-    return "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&q=80";
-
-  }
-
-  if (category.includes("cars")) {
-
-    return "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80";
-
-  }
-
-  if (category.includes("fitness")) {
-
-    return "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=80";
 
   }
 
@@ -502,7 +428,265 @@ function pickImage(event) {
 
 
 
-function sectionCard(event, currentProfile, savedSet, interestedSet) {
+function eventMatchesCategoryGroup(event, group) {
+
+  const haystack = String(
+
+    [
+
+      event.category || "",
+
+      event.title || "",
+
+      event.description || "",
+
+      event.venueName || "",
+
+    ].join(" ")
+
+  ).toLowerCase();
+
+
+
+  if (group === "sports") {
+
+    return [
+
+      "sports",
+
+      "sport",
+
+      "hockey",
+
+      "basketball",
+
+      "football",
+
+      "soccer",
+
+      "baseball",
+
+      "mma",
+
+      "ufc",
+
+      "wrestling",
+
+      "tennis",
+
+      "lacrosse",
+
+      "volleyball",
+
+      "game",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  if (group === "concerts") {
+
+    return [
+
+      "concert",
+
+      "music",
+
+      "live music",
+
+      "festival",
+
+      "tour",
+
+      "show",
+
+      "artist",
+
+      "band",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  if (group === "nightlife") {
+
+    return [
+
+      "nightlife",
+
+      "party",
+
+      "club",
+
+      "dj",
+
+      "dance",
+
+      "rave",
+
+      "afterparty",
+
+      "lounge",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  if (group === "conventions") {
+
+    return [
+
+      "convention",
+
+      "expo",
+
+      "comic con",
+
+      "fan expo",
+
+      "conference",
+
+      "summit",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  return false;
+
+}
+
+
+
+function rankEvent(event) {
+
+  let score = 0;
+
+
+
+  if (event.imageUrl) score += 20;
+
+  if (event.ticketUrl) score += 16;
+
+  if (event.eventUrl) score += 12;
+
+  if (event.description) score += 10;
+
+  if (event.venueName) score += 8;
+
+  if (event.city) score += 6;
+
+  if (event.priceText) score += 2;
+
+
+
+  const city = String(event.city || "").toLowerCase();
+
+  if (city === "toronto") score += 14;
+
+  if (city === "montreal") score += 11;
+
+  if (city === "vancouver") score += 11;
+
+  if (city === "calgary") score += 9;
+
+  if (city === "edmonton") score += 9;
+
+
+
+  const haystack = String(
+
+    [event.category || "", event.title || "", event.description || ""].join(" ")
+
+  ).toLowerCase();
+
+
+
+  if (haystack.includes("concert")) score += 12;
+
+  if (haystack.includes("music")) score += 10;
+
+  if (haystack.includes("sports")) score += 12;
+
+  if (haystack.includes("hockey")) score += 10;
+
+  if (haystack.includes("nightlife")) score += 10;
+
+  if (haystack.includes("party")) score += 8;
+
+  if (haystack.includes("convention")) score += 10;
+
+  if (haystack.includes("expo")) score += 8;
+
+  if (haystack.includes("ufc")) score += 8;
+
+  if (haystack.includes("mma")) score += 8;
+
+
+
+  if (event.source === "ticketmaster") score += 10;
+
+  if (event.source === "seatgeek") score += 9;
+
+  if (event.source === "google_events") score += 8;
+
+  if (event.source === "eventbrite") score += 5;
+
+
+
+  if (event.startAt) {
+
+    const hoursAway = (new Date(event.startAt).getTime() - Date.now()) / 3600000;
+
+    if (hoursAway >= 0 && hoursAway <= 48) score += 18;
+
+    else if (hoursAway <= 120) score += 14;
+
+    else if (hoursAway <= 240) score += 10;
+
+    else if (hoursAway <= 480) score += 6;
+
+  }
+
+
+
+  return score;
+
+}
+
+
+
+function sortRanked(events) {
+
+  return [...events].sort((a, b) => {
+
+    const diff = rankEvent(b) - rankEvent(a);
+
+    if (diff !== 0) return diff;
+
+
+
+    const aTime = a.startAt ? new Date(a.startAt).getTime() : Number.MAX_SAFE_INTEGER;
+
+    const bTime = b.startAt ? new Date(b.startAt).getTime() : Number.MAX_SAFE_INTEGER;
+
+    return aTime - bTime;
+
+  });
+
+}
+
+
+
+function renderEventCard(event, currentProfile, savedSet, interestedSet) {
 
   const when = event.startAt ? formatPrettyLocal(event.startAt) : "Date coming soon";
 
@@ -622,7 +806,7 @@ function renderSection(title, items, currentProfile, savedSet, interestedSet) {
 
     <div class="events-grid">
 
-      ${items.map((event) => sectionCard(event, currentProfile, savedSet, interestedSet)).join("")}
+      ${items.map((event) => renderEventCard(event, currentProfile, savedSet, interestedSet)).join("")}
 
     </div>
 
@@ -631,6 +815,102 @@ function renderSection(title, items, currentProfile, savedSet, interestedSet) {
   `;
 
 }
+
+
+
+function buildWhere({ city, category, now }) {
+
+  const where = {
+
+    OR: [
+
+      { startAt: null },
+
+      { startAt: { gte: now } },
+
+    ],
+
+  };
+
+
+
+  if (city) where.city = { contains: city, mode: "insensitive" };
+
+  if (category) where.category = { contains: category, mode: "insensitive" };
+
+
+
+  return where;
+
+}
+
+
+
+router.get("/events/feed", async (req, res) => {
+
+  try {
+
+    const page = Math.max(1, Number(req.query.page || 1));
+
+    const limit = Math.min(24, Math.max(1, Number(req.query.limit || FEED_PAGE_SIZE)));
+
+    const skip = (page - 1) * limit;
+
+    const city = String(req.query.city || "").trim();
+
+    const category = String(req.query.category || "").trim();
+
+    const now = new Date();
+
+
+
+    const where = buildWhere({ city, category, now });
+
+
+
+    const rawItems = await prisma.eventFinderItem.findMany({
+
+      where,
+
+      orderBy: [{ startAt: "asc" }, { createdAt: "desc" }],
+
+      take: MAIN_QUERY_LIMIT,
+
+    });
+
+
+
+    const ranked = sortRanked(rawItems);
+
+    const items = ranked.slice(skip, skip + limit);
+
+
+
+    return res.json({
+
+      ok: true,
+
+      items,
+
+      page,
+
+      limit,
+
+      total: ranked.length,
+
+      hasMore: skip + items.length < ranked.length,
+
+    });
+
+  } catch (e) {
+
+    console.error(e);
+
+    return res.status(500).json({ ok: false, error: "Events feed error" });
+
+  }
+
+});
 
 
 
@@ -658,35 +938,23 @@ router.get("/events", async (req, res) => {
 
 
 
-    const where = {
-
-      OR: [
-
-        { startAt: null },
-
-        { startAt: { gte: now } },
-
-      ],
-
-    };
+    const where = buildWhere({ city, category, now });
 
 
 
-    if (city) where.city = { contains: city, mode: "insensitive" };
-
-    if (category) where.category = { contains: category, mode: "insensitive" };
-
-
-
-    const events = await prisma.eventFinderItem.findMany({
+    const rawEvents = await prisma.eventFinderItem.findMany({
 
       where,
 
       orderBy: [{ startAt: "asc" }, { createdAt: "desc" }],
 
-      take: 120,
+      take: MAIN_QUERY_LIMIT,
 
     });
+
+
+
+    const events = sortRanked(rawEvents);
 
 
 
@@ -744,21 +1012,55 @@ router.get("/events", async (req, res) => {
 
 
 
+    const mainFeedInitial = events.slice(0, FEED_PAGE_SIZE);
+
+    const mainFeedTotal = events.length;
+
+    const mainFeedHasMore = mainFeedTotal > FEED_PAGE_SIZE;
+
+
+
     const featured = events.slice(0, 6);
 
-    const tonight = events.filter((e) => isBetween(e.startAt, tonightMin, tonightMax)).slice(0, 8);
+    const tonight = sortRanked(events.filter((e) => isBetween(e.startAt, tonightMin, tonightMax))).slice(0, 8);
 
-    const week = events.filter((e) => isBetween(e.startAt, weekMin, weekMax)).slice(0, 12);
+    const week = sortRanked(events.filter((e) => isBetween(e.startAt, weekMin, weekMax))).slice(0, 12);
 
-    const nightlife = events.filter((e) => String(e.category || "").toLowerCase().includes("nightlife")).slice(0, 10);
 
-    const networking = events.filter((e) => {
 
-      const c = String(e.category || "").toLowerCase();
+    const sports = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "sports"))).slice(0, 10);
 
-      return c.includes("network") || c.includes("business") || c.includes("startup") || c.includes("tech") || c.includes("creator");
+    const concerts = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "concerts"))).slice(0, 10);
 
-    }).slice(0, 10);
+    const nightlife = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "nightlife"))).slice(0, 10);
+
+    const conventions = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "conventions"))).slice(0, 10);
+
+
+
+    const citySections = TOP_CITY_ORDER.map((cityName) => {
+
+      const cityEvents = sortRanked(
+
+        events.filter((e) => String(e.city || "").toLowerCase() === cityName.toLowerCase())
+
+      );
+
+
+
+      return {
+
+        cityName,
+
+        initialItems: cityEvents.slice(0, FEED_PAGE_SIZE),
+
+        total: cityEvents.length,
+
+        hasMore: cityEvents.length > FEED_PAGE_SIZE,
+
+      };
+
+    }).filter((section) => section.total > 0);
 
 
 
@@ -782,7 +1084,7 @@ router.get("/events", async (req, res) => {
 
             <div class="muted" style="margin-top:10px;max-width:620px;line-height:1.7;">
 
-              Premium discovery for networking, nightlife, music, business, tech, food, creators, and nearby social events.
+              Premium discovery for sports, concerts, nightlife, and conventions across Canada’s biggest cities.
 
             </div>
 
@@ -874,15 +1176,107 @@ router.get("/events", async (req, res) => {
 
 
 
+      <section class="events-section">
+
+        <div class="row-between" style="margin-bottom:14px;">
+
+          <h2 style="margin:0;">Live Event Feed</h2>
+
+          <div class="muted">${mainFeedTotal} total</div>
+
+        </div>
+
+
+
+        <div id="mainFeedGrid" class="events-grid">
+
+          ${mainFeedInitial.map((event) => renderEventCard(event, currentProfile, savedSet, interestedSet)).join("")}
+
+        </div>
+
+
+
+        <div id="mainFeedLoader" class="events-load-state" style="display:${mainFeedHasMore ? "block" : "none"};">
+
+          Loading more events...
+
+        </div>
+
+
+
+        <div id="mainFeedEnd" class="events-load-state" style="display:${mainFeedHasMore ? "none" : "block"};">
+
+          No more events
+
+        </div>
+
+
+
+        <div id="mainFeedSentinel" style="height:1px;"></div>
+
+      </section>
+
+
+
       ${renderSection("Featured Events", featured, currentProfile, savedSet, interestedSet)}
 
       ${renderSection("Tonight", tonight, currentProfile, savedSet, interestedSet)}
 
       ${renderSection("This Week", week, currentProfile, savedSet, interestedSet)}
 
+      ${renderSection("Sports", sports, currentProfile, savedSet, interestedSet)}
+
+      ${renderSection("Concerts", concerts, currentProfile, savedSet, interestedSet)}
+
       ${renderSection("Nightlife", nightlife, currentProfile, savedSet, interestedSet)}
 
-      ${renderSection("Networking & Business", networking, currentProfile, savedSet, interestedSet)}
+      ${renderSection("Conventions", conventions, currentProfile, savedSet, interestedSet)}
+
+
+
+      ${citySections.map((section) => `
+
+        <section class="events-section">
+
+          <div class="row-between" style="margin-bottom:14px;">
+
+            <h2 style="margin:0;">${escapeHtml(section.cityName)} Events</h2>
+
+            <div class="muted">${section.total} total</div>
+
+          </div>
+
+
+
+          <div id="cityGrid-${escapeHtml(section.cityName)}" class="events-grid">
+
+            ${section.initialItems.map((event) => renderEventCard(event, currentProfile, savedSet, interestedSet)).join("")}
+
+          </div>
+
+
+
+          <div id="cityLoader-${escapeHtml(section.cityName)}" class="events-load-state" style="display:${section.hasMore ? "block" : "none"};">
+
+            Loading more ${escapeHtml(section.cityName)} events...
+
+          </div>
+
+
+
+          <div id="cityEnd-${escapeHtml(section.cityName)}" class="events-load-state" style="display:${section.hasMore ? "none" : "block"};">
+
+            No more ${escapeHtml(section.cityName)} events
+
+          </div>
+
+
+
+          <div id="citySentinel-${escapeHtml(section.cityName)}" style="height:1px;"></div>
+
+        </section>
+
+      `).join("")}
 
 
 
@@ -1104,6 +1498,18 @@ router.get("/events", async (req, res) => {
 
 
 
+      .events-load-state{
+
+        text-align:center;
+
+        color:#95a5bf;
+
+        padding:22px 0 8px;
+
+      }
+
+
+
       @media(max-width:900px){
 
         .events-main-title{
@@ -1181,6 +1587,534 @@ router.get("/events", async (req, res) => {
       }
 
     </style>
+
+
+
+    <script>
+
+      (function () {
+
+        const FEED_PAGE_SIZE = ${JSON.stringify(FEED_PAGE_SIZE)};
+
+        const category = ${JSON.stringify(category)};
+
+        const cities = ${JSON.stringify(citySections.map((s) => s.cityName))};
+
+
+
+        function escapeUnsafe(value) {
+
+          return String(value || "")
+
+            .replace(/&/g, "&amp;")
+
+            .replace(/</g, "&lt;")
+
+            .replace(/>/g, "&gt;")
+
+            .replace(/"/g, "&quot;")
+
+            .replace(/'/g, "&#39;");
+
+        }
+
+
+
+        function pickFallbackImage(event) {
+
+          const categoryText = String(event.category || "").toLowerCase();
+
+
+
+          if (
+
+            categoryText.includes("nightlife") ||
+
+            categoryText.includes("party") ||
+
+            categoryText.includes("club") ||
+
+            categoryText.includes("dj")
+
+          ) {
+
+            return "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1400&q=80";
+
+          }
+
+
+
+          if (
+
+            categoryText.includes("concert") ||
+
+            categoryText.includes("music") ||
+
+            categoryText.includes("festival")
+
+          ) {
+
+            return "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80";
+
+          }
+
+
+
+          if (
+
+            categoryText.includes("sport") ||
+
+            categoryText.includes("hockey") ||
+
+            categoryText.includes("basketball") ||
+
+            categoryText.includes("football") ||
+
+            categoryText.includes("soccer") ||
+
+            categoryText.includes("baseball") ||
+
+            categoryText.includes("mma") ||
+
+            categoryText.includes("ufc")
+
+          ) {
+
+            return "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1400&q=80";
+
+          }
+
+
+
+          if (
+
+            categoryText.includes("convention") ||
+
+            categoryText.includes("expo") ||
+
+            categoryText.includes("comic") ||
+
+            categoryText.includes("fan")
+
+          ) {
+
+            return "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1400&q=80";
+
+          }
+
+
+
+          return "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80";
+
+        }
+
+
+
+        function formatClientDate(value) {
+
+          if (!value) return "Date coming soon";
+
+          const d = new Date(value);
+
+          if (Number.isNaN(d.getTime())) return "Date coming soon";
+
+          return d.toLocaleString();
+
+        }
+
+
+
+        function renderClientCard(event) {
+
+          const image = event.imageUrl || pickFallbackImage(event);
+
+          const when = formatClientDate(event.startAt);
+
+
+
+          return \`
+
+            <div class="event-card">
+
+              <div class="event-media" style="background-image:
+
+                linear-gradient(180deg, rgba(6,6,8,.18), rgba(6,6,8,.84)),
+
+                url('\${escapeUnsafe(image)}');"></div>
+
+
+
+              <div class="event-content">
+
+                <div class="row event-top-row">
+
+                  <span class="pill">\${escapeUnsafe(event.category || "Event")}</span>
+
+                  \${event.priceText ? \`<span class="pill">\${escapeUnsafe(event.priceText)}</span>\` : ""}
+
+                </div>
+
+
+
+                <h3 class="event-title">\${escapeUnsafe(event.title || "Untitled Event")}</h3>
+
+
+
+                <div class="muted event-copy">
+
+                  \${escapeUnsafe(event.description || "Premium event discovery inside Tapzy.")}
+
+                </div>
+
+
+
+                <div class="event-meta">
+
+                  <div><b>When:</b> \${escapeUnsafe(when)}</div>
+
+                  <div><b>Where:</b> \${escapeUnsafe(event.venueName || event.address || event.city || "Location coming soon")}</div>
+
+                  \${event.city ? \`<div><b>City:</b> \${escapeUnsafe(event.city)}</div>\` : ""}
+
+                </div>
+
+
+
+                <div class="row" style="margin-top:16px;">
+
+                  \${event.eventUrl ? \`<a class="btn btnDark" target="_blank" rel="noopener noreferrer" href="\${escapeUnsafe(event.eventUrl)}">Open Event</a>\` : ""}
+
+                  \${event.ticketUrl ? \`<a class="btn btnDark" target="_blank" rel="noopener noreferrer" href="\${escapeUnsafe(event.ticketUrl)}">Tickets</a>\` : ""}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          \`;
+
+        }
+
+
+
+        function setupMainFeedInfinite() {
+
+          const grid = document.getElementById("mainFeedGrid");
+
+          const sentinel = document.getElementById("mainFeedSentinel");
+
+          const loader = document.getElementById("mainFeedLoader");
+
+          const end = document.getElementById("mainFeedEnd");
+
+
+
+          if (!grid || !sentinel || !loader || !end) return;
+
+
+
+          let page = 2;
+
+          let loading = false;
+
+          let hasMore = loader.style.display !== "none";
+
+
+
+          async function loadMore() {
+
+            if (loading || !hasMore) return;
+
+            loading = true;
+
+            loader.style.display = "block";
+
+
+
+            try {
+
+              const qs = new URLSearchParams({
+
+                page: String(page),
+
+                limit: String(FEED_PAGE_SIZE),
+
+                city: "",
+
+                category,
+
+              });
+
+
+
+              const res = await fetch("/events/feed?" + qs.toString(), {
+
+                cache: "no-store",
+
+              });
+
+
+
+              const data = await res.json();
+
+
+
+              if (!res.ok || !data.ok) {
+
+                throw new Error(data.error || "Could not load more events");
+
+              }
+
+
+
+              const items = Array.isArray(data.items) ? data.items : [];
+
+
+
+              if (!items.length) {
+
+                hasMore = false;
+
+                loader.style.display = "none";
+
+                end.style.display = "block";
+
+                return;
+
+              }
+
+
+
+              grid.insertAdjacentHTML("beforeend", items.map(renderClientCard).join(""));
+
+              page += 1;
+
+              hasMore = !!data.hasMore;
+
+
+
+              if (!hasMore) {
+
+                loader.style.display = "none";
+
+                end.style.display = "block";
+
+              }
+
+            } catch (err) {
+
+              console.error(err);
+
+              loader.textContent = "Could not load more events";
+
+              hasMore = false;
+
+              end.style.display = "none";
+
+            } finally {
+
+              loading = false;
+
+            }
+
+          }
+
+
+
+          const observer = new IntersectionObserver(
+
+            (entries) => {
+
+              const first = entries[0];
+
+              if (first && first.isIntersecting) {
+
+                loadMore();
+
+              }
+
+            },
+
+            {
+
+              rootMargin: "300px 0px",
+
+            }
+
+          );
+
+
+
+          observer.observe(sentinel);
+
+        }
+
+
+
+        function setupCityInfinite(cityName) {
+
+          const safe = cityName;
+
+          const grid = document.getElementById("cityGrid-" + safe);
+
+          const sentinel = document.getElementById("citySentinel-" + safe);
+
+          const loader = document.getElementById("cityLoader-" + safe);
+
+          const end = document.getElementById("cityEnd-" + safe);
+
+
+
+          if (!grid || !sentinel || !loader || !end) return;
+
+
+
+          let page = 2;
+
+          let loading = false;
+
+          let hasMore = loader.style.display !== "none";
+
+
+
+          async function loadMore() {
+
+            if (loading || !hasMore) return;
+
+            loading = true;
+
+            loader.style.display = "block";
+
+
+
+            try {
+
+              const qs = new URLSearchParams({
+
+                page: String(page),
+
+                limit: String(FEED_PAGE_SIZE),
+
+                city: cityName,
+
+                category,
+
+              });
+
+
+
+              const res = await fetch("/events/feed?" + qs.toString(), {
+
+                cache: "no-store",
+
+              });
+
+
+
+              const data = await res.json();
+
+
+
+              if (!res.ok || !data.ok) {
+
+                throw new Error(data.error || "Could not load more events");
+
+              }
+
+
+
+              const items = Array.isArray(data.items) ? data.items : [];
+
+
+
+              if (!items.length) {
+
+                hasMore = false;
+
+                loader.style.display = "none";
+
+                end.style.display = "block";
+
+                return;
+
+              }
+
+
+
+              grid.insertAdjacentHTML("beforeend", items.map(renderClientCard).join(""));
+
+              page += 1;
+
+              hasMore = !!data.hasMore;
+
+
+
+              if (!hasMore) {
+
+                loader.style.display = "none";
+
+                end.style.display = "block";
+
+              }
+
+            } catch (err) {
+
+              console.error(err);
+
+              loader.textContent = "Could not load more events";
+
+              hasMore = false;
+
+              end.style.display = "none";
+
+            } finally {
+
+              loading = false;
+
+            }
+
+          }
+
+
+
+          const observer = new IntersectionObserver(
+
+            (entries) => {
+
+              const first = entries[0];
+
+              if (first && first.isIntersecting) {
+
+                loadMore();
+
+              }
+
+            },
+
+            {
+
+              rootMargin: "300px 0px",
+
+            }
+
+          );
+
+
+
+          observer.observe(sentinel);
+
+        }
+
+
+
+        setupMainFeedInfinite();
+
+        cities.forEach(setupCityInfinite);
+
+      })();
+
+    </script>
 
 
 
