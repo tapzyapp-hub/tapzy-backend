@@ -1542,7 +1542,7 @@ router.get("/events", async (req, res) => {
 
 
 
-        <div class="events-filter-wrap desktop-only">
+        <div class="events-filter-wrap">
 
           <form method="GET" action="/events" class="events-filter-grid">
 
