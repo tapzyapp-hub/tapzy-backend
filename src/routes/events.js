@@ -1182,6 +1182,66 @@ function renderSection(title, items, currentProfile, savedSet) {
 
 
 
+function renderCitySwitcher(city, hasAdminKey, adminKey, category) {
+
+  const currentCity = String(city || "").trim().toLowerCase();
+
+  const currentCategory = String(category || "").trim();
+
+
+
+  function makeHref(cityName) {
+
+    const params = new URLSearchParams();
+
+    if (cityName) params.set("city", cityName);
+
+    if (currentCategory) params.set("category", currentCategory);
+
+    if (hasAdminKey && adminKey) params.set("key", adminKey);
+
+    const qs = params.toString();
+
+    return `/events${qs ? `?${qs}` : ""}`;
+
+  }
+
+
+
+  return `
+
+  <div class="city-switcher-wrap">
+
+    <div class="city-switcher" id="citySwitcher">
+
+      <a class="city-chip ${!currentCity ? "is-active" : ""}" href="${makeHref("")}">All Cities</a>
+
+      ${TOP_CITY_ORDER.map((cityName) => `
+
+        <a
+
+          class="city-chip ${cityName.toLowerCase() === currentCity ? "is-active" : ""}"
+
+          href="${makeHref(cityName)}"
+
+        >
+
+          ${escapeHtml(cityName)}
+
+        </a>
+
+      `).join("")}
+
+    </div>
+
+  </div>
+
+  `;
+
+}
+
+
+
 function buildWhere({ city, category, now }) {
 
   const where = {
@@ -1570,6 +1630,10 @@ router.get("/events", async (req, res) => {
 
 
 
+      ${renderCitySwitcher(city, hasAdminKey, adminKey, category)}
+
+
+
       <section class="reel-wrap mobile-only">
 
         <div class="reel-feed" id="reelFeed">
@@ -1820,6 +1884,8 @@ router.get("/events", async (req, res) => {
 
       .events-hero-top{ position:relative; z-index:2; }
 
+
+
       .events-kicker{
 
         color:#95a5bf;
@@ -1879,6 +1945,132 @@ router.get("/events", async (req, res) => {
         grid-template-columns:1fr 1fr auto;
 
         gap:12px;
+
+      }
+
+
+
+      .city-switcher-wrap{
+
+        margin-top:16px;
+
+        margin-bottom:18px;
+
+      }
+
+
+
+      .city-switcher{
+
+        display:flex;
+
+        gap:10px;
+
+        overflow-x:auto;
+
+        padding:4px 2px 6px;
+
+        -webkit-overflow-scrolling:touch;
+
+        scrollbar-width:none;
+
+      }
+
+
+
+      .city-switcher::-webkit-scrollbar{
+
+        display:none;
+
+      }
+
+
+
+      .city-chip{
+
+        flex:0 0 auto;
+
+        display:inline-flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        min-height:42px;
+
+        padding:0 16px;
+
+        border-radius:999px;
+
+        text-decoration:none;
+
+        font-weight:800;
+
+        font-size:13px;
+
+        letter-spacing:.6px;
+
+        text-transform:uppercase;
+
+        color:#dbe8f7;
+
+        background:rgba(255,255,255,.06);
+
+        border:1px solid rgba(255,255,255,.10);
+
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+
+        backdrop-filter:blur(10px);
+
+        transition:
+
+          transform .18s ease,
+
+          background .18s ease,
+
+          border-color .18s ease,
+
+          color .18s ease,
+
+          box-shadow .18s ease;
+
+      }
+
+
+
+      .city-chip:hover{
+
+        transform:translateY(-1px);
+
+        border-color:rgba(127,210,255,.28);
+
+        color:#f4f9ff;
+
+      }
+
+
+
+      .city-chip:active{
+
+        transform:scale(.97);
+
+      }
+
+
+
+      .city-chip.is-active{
+
+        color:#07111d;
+
+        background:linear-gradient(180deg, #f8fbff, #dceeff);
+
+        border-color:rgba(255,255,255,.75);
+
+        box-shadow:
+
+          0 10px 24px rgba(0,0,0,.18),
+
+          inset 0 1px 0 rgba(255,255,255,.85);
 
       }
 
@@ -2694,6 +2886,38 @@ router.get("/events", async (req, res) => {
 
         .events-main-title{ font-size:38px; }
 
+
+
+        .events-filter-grid{
+
+          grid-template-columns:1fr;
+
+        }
+
+
+
+        .city-switcher-wrap{
+
+          margin-top:14px;
+
+          margin-bottom:14px;
+
+        }
+
+
+
+        .city-chip{
+
+          min-height:40px;
+
+          padding:0 14px;
+
+          font-size:12px;
+
+        }
+
+
+
         .reel-title{ font-size:30px; }
 
         .reel-actions{ grid-template-columns:1fr; }
@@ -2776,7 +3000,7 @@ router.get("/events", async (req, res) => {
 
         function getClientDescription(event) {
 
-          const text = String(event.description || "").replace(/\\s+/g, " ").trim();
+          const text = String(event.description || "").replace(/\s+/g, " ").trim();
 
           if (!text) return "Premium event discovery inside Tapzy Network™.";
 
@@ -2920,7 +3144,7 @@ router.get("/events", async (req, res) => {
 
 
 
-          const label = event.isSaved ? "Saved ✓" : "Save";
+         const label = event.isSaved ? "Saved ✓" : "Save";
 
           return \`
 
