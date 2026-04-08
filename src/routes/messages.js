@@ -141,7 +141,7 @@ router.get("/messages", async (req, res) => {
                   <h3>No conversations yet</h3>
                   <p>Start a private Tapzy conversation with someone from search, your profile connections, or your network.</p>
                   <div style="margin-top:14px;">
-                    <a class="tz-core-btn" href="/search">Find People</a>
+                    <a class="tz-core-btn" href="/discovery/${encodeURIComponent(currentProfile.username || "user")}?tab=search">Find People</a>
                   </div>
                 </div>
               `
