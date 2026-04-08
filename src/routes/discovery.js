@@ -128,7 +128,7 @@ router.get("/discovery/:username", async (req, res) => {
           </div>
 
           <div class="td-person-actions">
-            <a class="btn td-open-btn" href="/u/${escapeHtml(p.username || "")}">Open Profile</a>
+            <a class="btn td-open-btn" href="/u/${escapeHtml(p.username || "")}">View</a>
             ${rightActionHtml}
           </div>
         </div>
@@ -305,29 +305,29 @@ router.get("/discovery/:username", async (req, res) => {
       }
 
       .td-section{
-        margin-top:18px;
+        margin-top:16px;
       }
 
       .td-section-head{
         display:flex;
         justify-content:space-between;
         align-items:center;
-        gap:12px;
+        gap:10px;
         flex-wrap:wrap;
-        margin-bottom:16px;
+        margin-bottom:14px;
       }
 
       .td-section-title{
         margin:0;
         font-size:28px;
-        line-height:1.05;
-        letter-spacing:-.8px;
+        line-height:1.02;
+        letter-spacing:-.9px;
         font-weight:900;
       }
 
       .td-hub{
         position:relative;
-        border-radius:34px;
+        border-radius:30px;
         border:1px solid rgba(255,255,255,.08);
         background:
           radial-gradient(900px 300px at 80% 0%, rgba(90,165,255,.12), transparent 42%),
@@ -337,7 +337,8 @@ router.get("/discovery/:username", async (req, res) => {
           inset 0 1px 0 rgba(255,255,255,.04),
           0 24px 60px rgba(0,0,0,.30),
           0 0 0 1px rgba(120,170,255,.03);
-        padding:18px;
+        backdrop-filter: blur(8px);
+        padding:16px;
         overflow:hidden;
       }
 
@@ -369,7 +370,7 @@ router.get("/discovery/:username", async (req, res) => {
       .td-tabs{
         display:grid;
         grid-template-columns:repeat(4, minmax(0, 1fr));
-        gap:12px;
+        gap:10px;
       }
 
       .td-tab{
@@ -377,9 +378,9 @@ router.get("/discovery/:username", async (req, res) => {
         align-items:center;
         justify-content:space-between;
         gap:10px;
-        min-height:56px;
-        padding:0 16px;
-        border-radius:18px;
+        min-height:48px;
+        padding:0 12px;
+        border-radius:16px;
         text-decoration:none;
         border:1px solid rgba(255,255,255,.08);
         background:
@@ -414,6 +415,7 @@ router.get("/discovery/:username", async (req, res) => {
       .td-tab-label{
         font-weight:700;
         white-space:nowrap;
+        font-size:14px;
         letter-spacing:.1px;
       }
 
@@ -421,8 +423,8 @@ router.get("/discovery/:username", async (req, res) => {
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        min-width:30px;
-        height:30px;
+        min-width:28px;
+        height:28px;
         padding:0 8px;
         border-radius:999px;
         background:rgba(255,255,255,.06);
@@ -433,7 +435,7 @@ router.get("/discovery/:username", async (req, res) => {
       }
 
       .td-content{
-        margin-top:18px;
+        margin-top:16px;
         position:relative;
         z-index:2;
       }
@@ -441,14 +443,14 @@ router.get("/discovery/:username", async (req, res) => {
       .td-search-inline{
         display:grid;
         grid-template-columns:1fr auto;
-        gap:12px;
-        margin-bottom:18px;
+        gap:10px;
+        margin-bottom:16px;
       }
 
       .td-search-input{
         width:100%;
-        padding:18px 20px;
-        border-radius:22px;
+        padding:16px 18px;
+        border-radius:20px;
         border:1px solid rgba(255,255,255,.08);
         background:linear-gradient(180deg, rgba(8,10,16,.98), rgba(4,6,10,1));
         color:#fff;
@@ -468,18 +470,18 @@ router.get("/discovery/:username", async (req, res) => {
       }
 
       .td-search-btn{
-        min-width:140px;
+        min-width:124px;
       }
 
       .td-results-list{
         display:grid;
-        gap:14px;
+        gap:12px;
       }
 
       .td-person-card{
         position:relative;
         overflow:hidden;
-        border-radius:26px;
+        border-radius:22px;
         border:1px solid rgba(255,255,255,.08);
         background:
           radial-gradient(460px 200px at 85% 10%, rgba(90,165,255,.11), transparent 42%),
@@ -487,7 +489,7 @@ router.get("/discovery/:username", async (req, res) => {
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.03),
           0 16px 38px rgba(0,0,0,.24);
-        padding:18px;
+        padding:16px;
         transition:
           transform .18s ease,
           box-shadow .18s ease,
@@ -495,8 +497,8 @@ router.get("/discovery/:username", async (req, res) => {
         display:flex;
         align-items:center;
         justify-content:space-between;
-        gap:16px;
-        min-height:108px;
+        gap:14px;
+        min-height:94px;
       }
 
       .td-person-card:hover{
@@ -558,14 +560,14 @@ router.get("/discovery/:username", async (req, res) => {
       .td-person-left{
         display:flex;
         align-items:center;
-        gap:16px;
+        gap:14px;
         min-width:0;
       }
 
       .td-person-avatar{
-        width:70px;
-        height:70px;
-        border-radius:22px;
+        width:62px;
+        height:62px;
+        border-radius:18px;
         overflow:hidden;
         display:flex;
         align-items:center;
@@ -576,7 +578,7 @@ router.get("/discovery/:username", async (req, res) => {
         border:1px solid rgba(255,255,255,.08);
         color:#fff;
         font-weight:900;
-        font-size:22px;
+        font-size:21px;
         letter-spacing:.5px;
         flex:0 0 auto;
         box-shadow:
@@ -598,38 +600,38 @@ router.get("/discovery/:username", async (req, res) => {
       .td-person-topline{
         display:flex;
         align-items:center;
-        gap:10px;
+        gap:8px;
         flex-wrap:wrap;
       }
 
       .td-person-name{
-        font-size:24px;
+        font-size:22px;
         font-weight:900;
-        line-height:1.08;
-        letter-spacing:-.4px;
+        line-height:1.06;
+        letter-spacing:-.35px;
       }
 
       .td-person-handle{
-        margin-top:6px;
+        margin-top:5px;
         color:#98a6ba;
         font-size:14px;
       }
 
       .td-person-title,
       .td-person-meta{
-        margin-top:8px;
+        margin-top:7px;
         color:#c8d4e3;
         font-size:14px;
-        line-height:1.55;
+        line-height:1.5;
       }
 
       .td-badge{
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        padding:7px 12px;
+        padding:5px 10px;
         border-radius:999px;
-        font-size:11px;
+        font-size:10px;
         font-weight:800;
         letter-spacing:.7px;
         text-transform:uppercase;
@@ -655,35 +657,42 @@ router.get("/discovery/:username", async (req, res) => {
         flex:0 0 auto;
       }
 
-      .td-open-btn,
+      .td-open-btn{
+        min-width:110px;
+        padding:10px 14px;
+        font-size:14px;
+        background:rgba(255,255,255,0.08);
+        border:1px solid rgba(255,255,255,0.12);
+      }
+
       .td-follow-btn{
-        min-width:132px;
+        min-width:110px;
       }
 
       .td-empty{
-        border-radius:24px;
+        border-radius:22px;
         border:1px dashed rgba(255,255,255,.10);
         background:
           radial-gradient(260px 120px at 50% 0%, rgba(90,165,255,.06), transparent 62%),
           rgba(255,255,255,.03);
-        padding:24px;
+        padding:22px;
         color:#9fb0c8;
       }
 
       .td-empty-search{
         text-align:center;
-        padding:40px 24px;
+        padding:26px 18px;
       }
 
       .td-empty-icon{
-        width:58px;
-        height:58px;
-        margin:0 auto 14px;
-        border-radius:18px;
+        width:46px;
+        height:46px;
+        margin:0 auto 12px;
+        border-radius:16px;
         display:flex;
         align-items:center;
         justify-content:center;
-        font-size:28px;
+        font-size:22px;
         color:#dff4ff;
         background:
           radial-gradient(circle at 50% 0%, rgba(150,230,255,.18), transparent 55%),
@@ -730,9 +739,9 @@ router.get("/discovery/:username", async (req, res) => {
         }
 
         .td-tab{
-          min-width:170px;
-          min-height:50px;
-          padding:0 14px;
+          min-width:156px;
+          min-height:46px;
+          padding:0 12px;
           border-radius:16px;
           flex:0 0 auto;
         }
@@ -740,7 +749,7 @@ router.get("/discovery/:username", async (req, res) => {
 
       @media(max-width:700px){
         .td-hub{
-          padding:14px;
+          padding:12px;
           border-radius:24px;
         }
 
@@ -755,21 +764,31 @@ router.get("/discovery/:username", async (req, res) => {
         .td-person-card{
           flex-direction:column;
           align-items:flex-start;
-          border-radius:22px;
+          border-radius:20px;
           min-height:auto;
+          padding:14px;
         }
 
         .td-person-left{
           width:100%;
+          gap:12px;
         }
 
         .td-person-actions{
           width:100%;
           justify-content:flex-start;
+          margin-top:2px;
         }
 
         .td-person-name{
-          font-size:20px;
+          font-size:18px;
+        }
+
+        .td-person-avatar{
+          width:56px;
+          height:56px;
+          border-radius:16px;
+          font-size:19px;
         }
 
         .td-tabs{
@@ -780,7 +799,8 @@ router.get("/discovery/:username", async (req, res) => {
         }
 
         .td-tab{
-          min-width:160px;
+          min-width:152px;
+          min-height:46px;
         }
 
         .td-toast{
@@ -802,8 +822,8 @@ router.get("/discovery/:username", async (req, res) => {
             const y = e.clientY - rect.top;
             const midX = rect.width / 2;
             const midY = rect.height / 2;
-            const rotateY = ((x - midX) / midX) * 1.3;
-            const rotateX = -((y - midY) / midY) * 1.0;
+            const rotateY = ((x - midX) / midX) * 1.1;
+            const rotateX = -((y - midY) / midY) * 0.9;
             card.style.transform =
               "translateY(-2px) rotateX(" + rotateX + "deg) rotateY(" + rotateY + "deg)";
           });
