@@ -16,6 +16,7 @@ const messagesRoutes = require("./routes/messages");
 const searchRoutes = require("./routes/search");
 const adminRoutes = require("./routes/admin");
 const miscRoutes = require("./routes/misc");
+const discoveryRoutes = require("./routes/discovery");
 const assistantRoutes = require("./routes/assistantRoutes");
 const pairRoutes = require("./routes/pair");
 const eventsRoutes = require("./routes/events");
@@ -85,9 +86,11 @@ app.use("/", messagesRoutes);
 app.use("/", searchRoutes);
 app.use("/", adminRoutes);
 app.use("/", miscRoutes);
+app.use("/", discoveryRoutes);
 app.use("/", pairRoutes);
 app.use("/", eventsRoutes);
 app.use("/", storiesRoutes);
 app.use("/", postsRoutes);
 
 module.exports = app;
+
