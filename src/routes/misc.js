@@ -58,12 +58,9 @@ router.get("/", async (req, res) => {
 
 
 
-          <a class="home-btn home-btn-dark" href="/search">
-
-            Search Users
-
-          </a>
-
+         <a class="home-btn home-btn-dark" href="${signedIn ? `/discovery/${username}?tab=search` : "/auth"}">
+  Search Users
+</a>
 
 
           <a class="home-btn home-btn-dark home-btn-center" href="${signedIn ? "/messages" : "/auth"}">
