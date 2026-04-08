@@ -753,9 +753,7 @@ function renderTopBar({ currentProfile = null, pageTitle = "Tapzy Network™", p
     { key: "profile", label: "My Profile", href: signedIn ? `/u/${username}` : "/auth" },
 
     { key: "edit", label: "Edit Profile", href: signedIn ? `/edit/${username}` : "/auth" },
-
-    { key: "pair", label: "Pair", href: signedIn ? "/pair" : "/auth" },
-
+   
     { key: "events", label: "Events", href: "/events" },
 
     { key: "stories", label: "Stories", href: "/stories" },
