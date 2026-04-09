@@ -1,5 +1,7 @@
 const router = require("express").Router();
 
+
+
 const {
 
   renderShell,
@@ -50,7 +52,7 @@ router.get("/", async (req, res) => {
 
         <div class="home-actions">
 
-          <a class="home-btn home-btn-light" href="${primaryHref}">
+          <a class="home-btn home-btn-dark home-btn-glow-1" href="${primaryHref}">
 
             ${escapeHtml(primaryLabel)}
 
@@ -58,12 +60,15 @@ router.get("/", async (req, res) => {
 
 
 
-         <a class="home-btn home-btn-dark" href="${signedIn ? `/discovery/${username}?tab=search` : "/auth"}">
-  Search Users
-</a>
+          <a class="home-btn home-btn-dark home-btn-glow-2" href="${signedIn ? `/discovery/${username}?tab=search` : "/auth"}">
+
+            Search Users
+
+          </a>
 
 
-          <a class="home-btn home-btn-dark home-btn-center" href="${signedIn ? "/messages" : "/auth"}">
+
+          <a class="home-btn home-btn-dark home-btn-glow-3 home-btn-center" href="${signedIn ? "/messages" : "/auth"}">
 
             Messages
 
@@ -116,6 +121,14 @@ router.get("/", async (req, res) => {
     position:relative;
 
     overflow:hidden;
+
+    transition:
+
+      box-shadow .22s ease,
+
+      border-color .22s ease,
+
+      transform .22s ease;
 
   }
 
@@ -179,6 +192,8 @@ router.get("/", async (req, res) => {
 
     justify-content:center;
 
+    justify-items:center;
+
     gap:18px 18px;
 
   }
@@ -205,7 +220,23 @@ router.get("/", async (req, res) => {
 
     font-weight:800;
 
-    transition:all .2s ease;
+    transition:
+
+      transform .18s ease,
+
+      box-shadow .18s ease,
+
+      border-color .18s ease,
+
+      background .18s ease,
+
+      filter .18s ease;
+
+    position:relative;
+
+    isolation:isolate;
+
+    width:100%;
 
   }
 
@@ -219,18 +250,6 @@ router.get("/", async (req, res) => {
 
 
 
-  .home-btn-light{
-
-    color:#000;
-
-    background:linear-gradient(180deg, #f7fbff, #deeffb);
-
-    box-shadow:0 18px 36px rgba(0,0,0,.25);
-
-  }
-
-
-
   .home-btn-dark{
 
     color:#fff;
@@ -238,6 +257,92 @@ router.get("/", async (req, res) => {
     background:linear-gradient(180deg, rgba(22,23,31,.98), rgba(14,15,22,.98));
 
     border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+
+      inset 0 1px 0 rgba(255,255,255,.03),
+
+      0 12px 26px rgba(0,0,0,.22);
+
+  }
+
+
+
+  .home-btn::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:-3px;
+
+    border-radius:30px;
+
+    z-index:-1;
+
+    opacity:.85;
+
+    pointer-events:none;
+
+    filter:blur(12px);
+
+    background:
+
+      radial-gradient(circle, rgba(78,156,255,.42) 0%, rgba(78,156,255,.18) 36%, rgba(78,156,255,0) 72%);
+
+    animation:buttonBluePulse 3.2s ease-in-out infinite;
+
+  }
+
+
+
+  .home-btn-glow-1::after{
+
+    animation-delay:0s;
+
+  }
+
+
+
+  .home-btn-glow-2::after{
+
+    animation-delay:1.05s;
+
+  }
+
+
+
+  .home-btn-glow-3::after{
+
+    animation-delay:2.1s;
+
+  }
+
+
+
+  .home-btn:hover::after{
+
+    opacity:1;
+
+    filter:blur(14px);
+
+  }
+
+
+
+  .home-btn-dark:hover{
+
+    border-color:rgba(110,170,255,.35);
+
+    box-shadow:
+
+      inset 0 1px 0 rgba(255,255,255,.04),
+
+      0 14px 30px rgba(0,0,0,.26),
+
+      0 0 0 1px rgba(95,165,255,.18),
+
+      0 0 24px rgba(65,135,255,.20);
 
   }
 
@@ -247,9 +352,7 @@ router.get("/", async (req, res) => {
 
     grid-column:1 / -1;
 
-    width:100%;
-
-    max-width:240px;
+    max-width:290px;
 
     margin:0 auto;
 
@@ -325,9 +428,25 @@ router.get("/", async (req, res) => {
 
 
 
+    .home-btn::after{
+
+      inset:-2px;
+
+      border-radius:26px;
+
+      opacity:.95;
+
+      filter:blur(11px);
+
+    }
+
+
+
     .home-btn-center{
 
-      max-width:240px;
+      max-width:190px;
+
+      width:100%;
 
     }
 
@@ -350,6 +469,36 @@ router.get("/", async (req, res) => {
       transform:scale(1.018);
 
       filter:drop-shadow(0 12px 40px rgba(255,255,255,.16));
+
+    }
+
+  }
+
+
+
+  @keyframes buttonBluePulse{
+
+    0%{
+
+      opacity:.30;
+
+      transform:scale(.985);
+
+    }
+
+    50%{
+
+      opacity:.95;
+
+      transform:scale(1.02);
+
+    }
+
+    100%{
+
+      opacity:.30;
+
+      transform:scale(.985);
 
     }
 
@@ -398,3 +547,4 @@ ${renderTapzyAssistant({
 
 
 module.exports = router;
+
