@@ -32,7 +32,7 @@ module.exports = function renderMessagesInboxPage({
               </div>
 
               <div class="tz-msg-head-actions">
-                <a class="tz-btn tz-btn-primary" href="${escapeHtml(discoveryHref)}">Start Conversation</a>
+                <a class="tz-btn tz-btn-dark" href="${escapeHtml(discoveryHref)}">Start Conversation</a>
               </div>
             </div>
 
@@ -156,7 +156,12 @@ module.exports = function renderMessagesInboxPage({
         text-decoration:none;
         font-weight:700;
         font-size:14px;
-        transition:transform .16s ease, box-shadow .16s ease, opacity .16s ease, filter .16s ease;
+        transition:
+          transform .16s ease,
+          box-shadow .16s ease,
+          opacity .16s ease,
+          filter .16s ease,
+          border-color .16s ease;
         -webkit-tap-highlight-color: transparent;
       }
 
@@ -168,10 +173,21 @@ module.exports = function renderMessagesInboxPage({
         transform:scale(.985);
       }
 
-      .tz-btn-primary{
-        background:linear-gradient(180deg,#ffffff,#dfe6ee);
-        color:#000;
-        box-shadow:0 10px 22px rgba(0,0,0,.18);
+      .tz-btn-dark{
+        color:#fff;
+        background:linear-gradient(180deg, rgba(22,23,31,.98), rgba(14,15,22,.98));
+        border:1px solid rgba(255,255,255,.08);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.03),
+          0 12px 26px rgba(0,0,0,.22);
+      }
+
+      .tz-btn-dark:hover{
+        border-color:rgba(127,210,255,.28);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 18px 34px rgba(0,0,0,.26),
+          0 0 22px rgba(90,165,255,.16);
       }
 
       .tz-msg-content{
@@ -208,67 +224,90 @@ module.exports = function renderMessagesInboxPage({
       }
 
       .tz-msg-thread{
+        position:relative;
+        overflow:hidden;
         display:grid;
         grid-template-columns:auto 1fr auto;
         gap:14px;
         align-items:center;
-        padding:14px;
-        border-radius:24px;
+        padding:16px;
+        border-radius:22px;
         text-decoration:none;
         background:
-          radial-gradient(380px 150px at 78% 14%, rgba(30, 52, 96, .10), transparent 40%),
-          linear-gradient(180deg, rgba(12,14,20,.96), rgba(7,9,14,.99));
-        border:1px solid rgba(168, 184, 210, .10);
+          radial-gradient(460px 200px at 85% 10%, rgba(90,165,255,.11), transparent 42%),
+          linear-gradient(180deg, rgba(20,22,30,.97), rgba(9,11,16,.995));
+        border:1px solid rgba(255,255,255,.08);
         box-shadow:
-          inset 0 1px 0 rgba(255,255,255,.025),
-          0 14px 28px rgba(0,0,0,.22);
+          inset 0 1px 0 rgba(255,255,255,.03),
+          0 16px 38px rgba(0,0,0,.24);
         transition:
           transform .18s ease,
-          border-color .18s ease,
           box-shadow .18s ease,
-          background .18s ease;
+          border-color .18s ease;
+        min-height:94px;
         -webkit-tap-highlight-color: transparent;
+      }
+
+      .tz-msg-thread::before{
+        content:"";
+        position:absolute;
+        width:220px;
+        height:220px;
+        right:-60px;
+        top:-40px;
+        border-radius:999px;
+        background:radial-gradient(circle, rgba(86,156,255,.16), transparent 68%);
+        filter:blur(16px);
+        pointer-events:none;
+      }
+
+      .tz-msg-thread::after{
+        content:"";
+        position:absolute;
+        top:0;
+        bottom:0;
+        left:-30%;
+        width:28%;
+        background:linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent);
+        transform:skewX(-18deg);
+        pointer-events:none;
+        opacity:.45;
       }
 
       .tz-msg-thread:hover{
         transform:translateY(-2px);
-        border-color:rgba(170, 190, 220, .16);
+        border-color:rgba(127,210,255,.18);
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.03),
-          0 18px 34px rgba(0,0,0,.25),
-          0 0 18px rgba(120,170,235,.05);
+          0 22px 42px rgba(0,0,0,.28),
+          0 0 20px rgba(90,165,255,.15);
       }
 
       .tz-msg-thread:active{
-        transform:scale(.992);
+        transform:scale(.985);
       }
 
       .tz-msg-thread-avatar{
-        width:56px;
-        height:56px;
-        border-radius:16px;
+        width:62px;
+        height:62px;
+        border-radius:18px;
         overflow:hidden;
-        background:
-          radial-gradient(circle at 50% 0%, rgba(120,160,220,.08), transparent 55%),
-          linear-gradient(180deg, rgba(10,12,18,.98), rgba(5,6,10,1));
-        border:1px solid rgba(168, 184, 210, .10);
         display:flex;
         align-items:center;
         justify-content:center;
-        color:#eef6ff;
-        font-weight:800;
-        font-size:20px;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(130,200,255,.14), transparent 55%),
+          linear-gradient(180deg,#162033,#0d1118);
+        border:1px solid rgba(255,255,255,.08);
+        color:#fff;
+        font-weight:900;
+        font-size:21px;
+        letter-spacing:.5px;
+        flex:0 0 auto;
         box-shadow:
-          0 10px 24px rgba(0,0,0,.26),
-          inset 0 1px 0 rgba(255,255,255,.03);
-        transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-      }
-
-      .tz-msg-thread:hover .tz-msg-thread-avatar{
-        transform:translateY(-1px);
-        box-shadow:
-          0 12px 26px rgba(0,0,0,.28),
-          0 0 16px rgba(120,170,235,.05);
+          0 12px 28px rgba(0,0,0,.22),
+          0 0 14px rgba(120,200,255,.08),
+          inset 0 1px 0 rgba(255,255,255,.06);
       }
 
       .tz-msg-thread-avatar img{
@@ -310,10 +349,11 @@ module.exports = function renderMessagesInboxPage({
       }
 
       .tz-msg-thread-name{
-        font-size:17px;
-        font-weight:800;
+        font-size:22px;
+        font-weight:900;
+        line-height:1.06;
+        letter-spacing:-.35px;
         color:#f8fbff;
-        line-height:1.1;
         white-space:nowrap;
         overflow:hidden;
         text-overflow:ellipsis;
@@ -337,9 +377,9 @@ module.exports = function renderMessagesInboxPage({
       }
 
       .tz-msg-thread-user{
-        margin-top:4px;
-        color:#8f9db3;
-        font-size:12px;
+        margin-top:5px;
+        color:#98a6ba;
+        font-size:14px;
         white-space:nowrap;
         overflow:hidden;
         text-overflow:ellipsis;
@@ -353,10 +393,10 @@ module.exports = function renderMessagesInboxPage({
       }
 
       .tz-msg-thread-preview{
-        margin-top:8px;
-        color:#d5deea;
+        margin-top:7px;
+        color:#c8d4e3;
         font-size:14px;
-        line-height:1.45;
+        line-height:1.5;
         overflow:hidden;
         text-overflow:ellipsis;
         white-space:nowrap;
@@ -369,13 +409,13 @@ module.exports = function renderMessagesInboxPage({
       }
 
       .tz-core-empty{
-        border-radius:24px;
-        border:1px dashed rgba(168, 184, 210, .12);
+        border-radius:22px;
+        border:1px dashed rgba(255,255,255,.10);
         background:
-          radial-gradient(240px 110px at 50% 0%, rgba(26, 46, 84, .12), transparent 62%),
-          rgba(255,255,255,.02);
-        padding:24px;
-        color:#9ba9bf;
+          radial-gradient(260px 120px at 50% 0%, rgba(90,165,255,.06), transparent 62%),
+          rgba(255,255,255,.03);
+        padding:22px;
+        color:#9fb0c8;
         text-align:center;
       }
 
@@ -396,7 +436,7 @@ module.exports = function renderMessagesInboxPage({
 
       @media(max-width:700px){
         .tz-msg-hub{
-          padding:14px;
+          padding:12px;
           border-radius:24px;
         }
 
@@ -410,17 +450,17 @@ module.exports = function renderMessagesInboxPage({
           margin-top:10px;
         }
 
-        .tz-btn-primary{
+        .tz-msg-head-actions{
           width:100%;
         }
 
-        .tz-msg-head-actions{
+        .tz-btn-dark{
           width:100%;
         }
 
         .tz-msg-thread{
           grid-template-columns:auto 1fr;
-          padding:12px;
+          padding:14px;
           border-radius:20px;
         }
 
@@ -429,14 +469,14 @@ module.exports = function renderMessagesInboxPage({
         }
 
         .tz-msg-thread-avatar{
-          width:50px;
-          height:50px;
-          border-radius:14px;
+          width:56px;
+          height:56px;
+          border-radius:16px;
           font-size:18px;
         }
 
         .tz-msg-thread-name{
-          font-size:16px;
+          font-size:18px;
         }
 
         .tz-msg-thread-badge{
@@ -453,4 +493,3 @@ module.exports = function renderMessagesInboxPage({
     })}
   `;
 };
-

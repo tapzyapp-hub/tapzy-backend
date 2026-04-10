@@ -17,6 +17,7 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
   const name = other?.name || other?.username || "Unknown";
   const username = other?.username || "user";
   const preview = safePreview(row.preview);
+
   const timeHtml = row.time
     ? `<div class="tz-msg-thread-time">${escapeHtml(row.time)}</div>`
     : "";
@@ -31,6 +32,9 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
 
   return `
     <a class="tz-msg-thread" href="/messages/${escapeHtml(String(row.id || ""))}">
+      <div class="tz-msg-thread-shimmer" aria-hidden="true"></div>
+      <div class="tz-msg-thread-glow" aria-hidden="true"></div>
+
       <div class="tz-msg-thread-avatar">
         ${avatarHtml}
       </div>
@@ -55,3 +59,4 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
     </a>
   `;
 };
+
