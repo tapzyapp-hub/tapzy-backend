@@ -104,9 +104,9 @@ router.get("/", async (req, res) => {
 
     background:
 
-      radial-gradient(900px 420px at 50% -10%, rgba(125,214,255,.06), transparent 45%),
+      radial-gradient(700px 260px at 50% -5%, rgba(127,210,255,.08), transparent 48%),
 
-      linear-gradient(180deg, rgba(9,10,15,.98), rgba(4,4,7,1));
+      linear-gradient(180deg, rgba(10,12,18,.98), rgba(6,6,8,1));
 
     box-shadow:
 
@@ -173,8 +173,6 @@ router.get("/", async (req, res) => {
     height:auto;
 
     object-fit:contain;
-
-    filter:drop-shadow(0 10px 30px rgba(255,255,255,.08));
 
     animation:logoPulse 2.8s ease-in-out infinite;
 
@@ -352,7 +350,7 @@ router.get("/", async (req, res) => {
 
     grid-column:1 / -1;
 
-    max-width:290px;
+    max-width:190px;
 
     margin:0 auto;
 
@@ -460,15 +458,11 @@ router.get("/", async (req, res) => {
 
       transform:scale(1);
 
-      filter:drop-shadow(0 10px 30px rgba(255,255,255,.08));
-
     }
 
     50%{
 
       transform:scale(1.018);
-
-      filter:drop-shadow(0 12px 40px rgba(255,255,255,.16));
 
     }
 
@@ -547,4 +541,3 @@ ${renderTapzyAssistant({
 
 
 module.exports = router;
-
