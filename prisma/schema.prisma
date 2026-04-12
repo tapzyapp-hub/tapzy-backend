@@ -85,13 +85,17 @@ model UserProfile {
   pairParticipations      PairParticipant[]    @relation("PairParticipantProfile")
   savedEvents             SavedEvent[]
   interestedEvents        InterestedEvent[]
+  notificationsReceived   Notification[]      @relation("NotificationRecipient")
+  notificationsSent       Notification[]      @relation("NotificationActor")
 
   eventAttendances EventAttendance[]
   stories          Story[]
   storyViews       StoryView[]
   storyRepliesSent StoryReply[]      @relation("StoryReplySender")
+  storyLikes       StoryLike[]
   posts            Post[]
   postLikes        PostLike[]
+  postComments     PostComment[]
 
   @@index([createdAt], map: "userprofile_createdAt_idx")
   @@index([connections], map: "userprofile_connections_idx")
@@ -253,6 +257,8 @@ model ConversationMember {
   conversationId String
   profileId      String
   joinedAt       DateTime @default(now())
+  hiddenAt       DateTime?
+  lastReadAt     DateTime?
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   profile      UserProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
@@ -260,6 +266,7 @@ model ConversationMember {
   @@unique([conversationId, profileId], map: "conversationmember_conversationId_profileId_key")
   @@index([profileId], map: "conversationmember_profileId_idx")
   @@index([conversationId], map: "conversationmember_conversationId_idx")
+  @@index([profileId, hiddenAt], map: "conversationmember_profileId_hiddenAt_idx")
 }
 
 model DirectMessage {
@@ -268,6 +275,8 @@ model DirectMessage {
   senderProfileId String
   body            String?
   imageUrl        String?
+  audioUrl        String?
+  deliveredAt     DateTime  @default(now())
   createdAt       DateTime  @default(now())
   readAt          DateTime?
 
@@ -277,6 +286,7 @@ model DirectMessage {
   @@index([conversationId, createdAt], map: "directmessage_conversationId_createdAt_idx")
   @@index([senderProfileId], map: "directmessage_senderProfileId_idx")
   @@index([createdAt], map: "directmessage_createdAt_idx")
+  @@index([conversationId, readAt], map: "directmessage_conversationId_readAt_idx")
 }
 
 model VideoCallRoom {
@@ -417,6 +427,29 @@ model EventAttendance {
   @@index([createdAt], map: "eventattendance_createdAt_idx")
 }
 
+model Notification {
+  id         String      @id @default(cuid())
+  profileId  String
+  actorId    String?
+  type       String
+  title      String
+  body       String?
+  link       String?
+  entityType String?
+  entityId   String?
+  image      String?
+  readAt     DateTime?
+  createdAt  DateTime    @default(now())
+
+  profile    UserProfile  @relation("NotificationRecipient", fields: [profileId], references: [id], onDelete: Cascade)
+  actor      UserProfile? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, createdAt], map: "notification_profileId_createdAt_idx")
+  @@index([profileId, readAt], map: "notification_profileId_readAt_idx")
+  @@index([actorId], map: "notification_actorId_idx")
+  @@index([type, entityType, entityId], map: "notification_type_entity_idx")
+}
+
 model Story {
   id           String   @id @default(cuid())
   profileId    String
@@ -432,6 +465,7 @@ model Story {
   event   EventFinderItem? @relation(fields: [eventId], references: [id], onDelete: SetNull)
   views   StoryView[]
   replies StoryReply[]
+  likes   StoryLike[]
 
   @@index([profileId], map: "story_profileId_idx")
   @@index([eventId], map: "story_eventId_idx")
@@ -482,8 +516,9 @@ model Post {
   updatedAt    DateTime @updatedAt
 
   profile UserProfile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  event   EventFinderItem? @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  likes   PostLike[]
+  event    EventFinderItem? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  likes    PostLike[]
+  comments PostComment[]
 
   @@index([profileId], map: "post_profileId_idx")
   @@index([eventId], map: "post_eventId_idx")
@@ -506,3 +541,39 @@ model PostLike {
   @@index([createdAt], map: "postlike_createdAt_idx")
 }
 
+
+
+model StoryLike {
+  id        String   @id @default(cuid())
+  storyId   String
+  profileId String
+  createdAt DateTime @default(now())
+
+  story   Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  profile UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, profileId], map: "storylike_storyId_profileId_key")
+  @@index([storyId], map: "storylike_storyId_idx")
+  @@index([profileId], map: "storylike_profileId_idx")
+  @@index([createdAt], map: "storylike_createdAt_idx")
+}
+
+model PostComment {
+  id        String   @id @default(cuid())
+  postId    String
+  profileId String
+  parentId  String?
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post    Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  parent  PostComment?  @relation("PostCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies PostComment[] @relation("PostCommentReplies")
+
+  @@index([postId], map: "postcomment_postId_idx")
+  @@index([profileId], map: "postcomment_profileId_idx")
+  @@index([parentId], map: "postcomment_parentId_idx")
+  @@index([createdAt], map: "postcomment_createdAt_idx")
+}

@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const prisma = require("../prisma");
+const { createNotification } = require("../services/notificationService");
 const { searchLimiter, followLimiter } = require("../middleware");
 const {
   cleanUsername,
@@ -357,7 +358,7 @@ router.post("/follow/:username", followLimiter, async (req, res) => {
     if (!target) return res.status(404).send("Profile not found");
     if (target.id === currentProfile.id) return res.status(400).send("You cannot follow yourself.");
 
-    await prisma.follow.upsert({
+    const follow = await prisma.follow.upsert({
       where: {
         followerProfileId_followingProfileId: {
           followerProfileId: currentProfile.id,
@@ -369,6 +370,19 @@ router.post("/follow/:username", followLimiter, async (req, res) => {
         followerProfileId: currentProfile.id,
         followingProfileId: target.id,
       },
+    });
+
+    await createNotification({
+      profileId: target.id,
+      actorId: currentProfile.id,
+      type: "followed_you",
+      title: `${currentProfile.name || currentProfile.username || "Someone"} followed you`,
+      body: currentProfile.title ? String(currentProfile.title).trim().slice(0, 120) : "",
+      link: currentProfile.username ? `/u/${currentProfile.username}` : "/search",
+      entityType: "follow",
+      entityId: follow.id,
+      image: String(currentProfile.photo || "").trim() || null,
+      skipDuplicateWindow: true,
     });
 
     res.redirect(backUrl(req, `/u/${target.username}?followed=1`));

@@ -64,15 +64,25 @@ function formatStoryTimeShort(date) {
 
   const now = Date.now();
 
-  const diffMs = now - d.getTime();
+  const diffMs = Math.max(0, now - d.getTime());
 
-  const hours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-  if (hours < 24) return `${hours}h`;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
-  const days = Math.max(1, Math.floor(hours / 24));
+  if (diffHours >= 1) {
 
-  return `${days}d`;
+    return `${diffHours}h`;
+
+  }
+
+  if (diffMinutes >= 1) {
+
+    return `${diffMinutes}m`;
+
+  }
+
+  return "Just now";
 
 }
 

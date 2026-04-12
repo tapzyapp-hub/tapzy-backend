@@ -25,6 +25,12 @@ const {
   backUrl,
 
 } = require("../utils");
+const { createNotification } = require("../services/notificationService");
+
+function extractMentions(value) {
+  const matches = String(value || "").match(/@([a-zA-Z0-9_\.]+)/g) || [];
+  return Array.from(new Set(matches.map((item) => item.slice(1).toLowerCase()).filter(Boolean)));
+}
 
 
 
@@ -994,7 +1000,7 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
 
 
-    await prisma.story.create({
+    const createdStory = await prisma.story.create({
 
       data: {
 
@@ -1014,7 +1020,30 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
     });
 
+    const mentionedUsernames = extractMentions(text);
+    if (mentionedUsernames.length) {
+      const mentionedProfiles = await prisma.userProfile.findMany({
+        where: { username: { in: mentionedUsernames } },
+        select: { id: true, username: true },
+      });
 
+      await Promise.all(
+        mentionedProfiles.map((profile) =>
+          createNotification({
+            profileId: profile.id,
+            actorId: currentProfile.id,
+            type: "story_mention",
+            title: `${currentProfile.name || currentProfile.username || "Someone"} mentioned you in a story`,
+            body: text ? String(text).trim().slice(0, 140) : "",
+            link: currentProfile.username ? `/stories/${currentProfile.username}` : "/stories",
+            entityType: "story",
+            entityId: createdStory.id,
+            image: String(currentProfile.photo || "").trim() || null,
+            skipDuplicateWindow: false,
+          })
+        )
+      );
+    }
 
     res.redirect(backUrl(req, "/stories"));
 
@@ -1216,6 +1245,28 @@ router.get("/stories/:username", async (req, res) => {
 
 
 
+    const storyIds = stories.map((story) => story.id);
+
+    const likeRows = currentProfile && storyIds.length
+      ? await prisma.storyLike.findMany({
+          where: { storyId: { in: storyIds } },
+          select: { storyId: true, profileId: true },
+        })
+      : storyIds.length
+        ? await prisma.storyLike.findMany({
+            where: { storyId: { in: storyIds } },
+            select: { storyId: true, profileId: true },
+          })
+        : [];
+
+    const storyLikeCounts = new Map();
+    const likedStoryIds = new Set();
+
+    for (const row of likeRows) {
+      storyLikeCounts.set(row.storyId, (storyLikeCounts.get(row.storyId) || 0) + 1);
+      if (currentProfile && row.profileId === currentProfile.id) likedStoryIds.add(row.storyId);
+    }
+
     const storyItems = stories
 
       .map((story, index) => {
@@ -1313,6 +1364,17 @@ router.get("/stories/:username", async (req, res) => {
               ${eventPill}
 
               ${story.text ? `<div class="story-caption">${escapeHtml(story.text)}</div>` : ""}
+
+              <div class="story-social-row">
+                ${
+                  currentProfile
+                    ? `<form method="POST" action="/stories/${escapeHtml(story.id)}/like" style="margin:0;">
+                         <button class="story-like-btn" type="submit">${likedStoryIds.has(story.id) ? "Liked ✓" : "Like"}</button>
+                       </form>`
+                    : `<a class="story-like-btn" href="/auth">Like</a>`
+                }
+                <div class="story-like-count">${escapeHtml(String(storyLikeCounts.get(story.id) || 0))} like${(storyLikeCounts.get(story.id) || 0) === 1 ? "" : "s"}</div>
+              </div>
 
             </div>
 
@@ -1724,6 +1786,36 @@ router.get("/stories/:username", async (req, res) => {
 
 
 
+      .story-social-row{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin-top:14px;
+        flex-wrap:wrap;
+      }
+
+      .story-like-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:36px;
+        padding:0 14px;
+        border-radius:999px;
+        text-decoration:none;
+        border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.08);
+        color:#fff;
+        font-size:13px;
+        font-weight:800;
+        cursor:pointer;
+      }
+
+      .story-like-count{
+        color:rgba(255,255,255,.78);
+        font-size:13px;
+        font-weight:700;
+      }
+
       .story-reply-form{
 
         display:grid;
@@ -1906,7 +1998,37 @@ router.get("/stories/:username", async (req, res) => {
 
 
 
-        .story-reply-form{
+        .story-social-row{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin-top:14px;
+        flex-wrap:wrap;
+      }
+
+      .story-like-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:36px;
+        padding:0 14px;
+        border-radius:999px;
+        text-decoration:none;
+        border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.08);
+        color:#fff;
+        font-size:13px;
+        font-weight:800;
+        cursor:pointer;
+      }
+
+      .story-like-count{
+        color:rgba(255,255,255,.78);
+        font-size:13px;
+        font-weight:700;
+      }
+
+      .story-reply-form{
 
           grid-template-columns:1fr;
 
@@ -2174,7 +2296,7 @@ router.post("/stories/:username/reply", async (req, res) => {
 
 
 
-    await prisma.storyReply.create({
+    const reply = await prisma.storyReply.create({
 
       data: {
 
@@ -2186,6 +2308,19 @@ router.post("/stories/:username/reply", async (req, res) => {
 
       },
 
+    });
+
+    await createNotification({
+      profileId: profile.id,
+      actorId: currentProfile.id,
+      type: "story_reply",
+      title: `${currentProfile.name || currentProfile.username || "Someone"} replied to your story`,
+      body,
+      link: `/stories/${username}`,
+      entityType: "story",
+      entityId: story.id,
+      image: String(currentProfile.photo || "").trim() || null,
+      skipDuplicateWindow: false,
     });
 
 
@@ -2203,6 +2338,63 @@ router.post("/stories/:username/reply", async (req, res) => {
 });
 
 
+
+router.post("/stories/:id/like", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.redirect("/auth");
+
+    const storyId = String(req.params.id || "").trim();
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+      include: {
+        profile: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    });
+
+    if (!story) return res.status(404).send("Story not found");
+
+    const existing = await prisma.storyLike.findFirst({
+      where: { storyId, profileId: currentProfile.id },
+      select: { id: true },
+    });
+
+    if (existing) {
+      await prisma.storyLike.delete({ where: { id: existing.id } });
+    } else {
+      await prisma.storyLike.create({
+        data: {
+          storyId,
+          profileId: currentProfile.id,
+        },
+      });
+
+      await createNotification({
+        profileId: story.profileId,
+        actorId: currentProfile.id,
+        type: "story_like",
+        title: `${currentProfile.name || currentProfile.username || "Someone"} liked your story`,
+        body: story.text ? String(story.text).trim().slice(0, 120) : "",
+        link: story.profile?.username ? `/stories/${story.profile.username}` : "/stories",
+        entityType: "story",
+        entityId: story.id,
+        image: String(currentProfile.photo || "").trim() || null,
+        skipDuplicateWindow: true,
+      });
+    }
+
+    const fallback = story.profile?.username ? `/stories/${story.profile.username}` : "/stories";
+    return res.redirect(backUrl(req, fallback));
+  } catch (e) {
+    console.error(e);
+    return res.status(500).send("Story like error");
+  }
+});
 
 module.exports = router;
 

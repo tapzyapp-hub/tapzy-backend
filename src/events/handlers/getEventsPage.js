@@ -39,7 +39,8 @@ module.exports = async function getEventsPage(req, res) {
 
     const adminKey = String(req.query.key || "").trim();
 
-    const hasAdminKey = !!adminKey;
+    const { ADMIN_KEY } = require("../../config");
+    const hasAdminKey = !!ADMIN_KEY && adminKey === ADMIN_KEY;
 
     const now = new Date();
 
@@ -79,7 +80,6 @@ module.exports = async function getEventsPage(req, res) {
 
     if (events.length) {
       const rows = await prisma.eventAttendance.findMany({
-        where: { eventId: { in: events.map((e) => e.id) } },
         where: { eventId: { in: events.map((e) => e.id) }, status: "going" },
         select: { eventId: true, profileId: true },
       });

@@ -9,7 +9,7 @@ fs.mkdirSync(uploadsDir, { recursive: true });
 function safeExtension(originalName = "", mimetype = "") {
   const ext = path.extname(originalName).toLowerCase();
 
-  if ([".jpg", ".jpeg", ".png", ".webp", ".mp4", ".mov", ".webm"].includes(ext)) {
+  if ([".jpg", ".jpeg", ".png", ".webp", ".mp4", ".mov", ".webm", ".mp3", ".wav", ".ogg", ".m4a"].includes(ext)) {
     return ext;
   }
 
@@ -19,6 +19,14 @@ function safeExtension(originalName = "", mimetype = "") {
   if (mimetype === "video/mp4") return ".mp4";
   if (mimetype === "video/quicktime") return ".mov";
   if (mimetype === "video/webm") return ".webm";
+  if (mimetype === "audio/mpeg") return ".mp3";
+  if (mimetype === "audio/wav") return ".wav";
+  if (mimetype === "audio/x-wav") return ".wav";
+  if (mimetype === "audio/ogg") return ".ogg";
+  if (mimetype === "audio/webm") return ".webm";
+  if (mimetype === "audio/mp4") return ".m4a";
+  if (mimetype === "audio/x-m4a") return ".m4a";
+  if (mimetype === "audio/aac") return ".m4a";
 
   return ".jpg";
 }
@@ -47,10 +55,18 @@ const upload = multer({
       "video/mp4",
       "video/quicktime",
       "video/webm",
+      "audio/mpeg",
+      "audio/wav",
+      "audio/x-wav",
+      "audio/ogg",
+      "audio/webm",
+      "audio/mp4",
+      "audio/x-m4a",
+      "audio/aac",
     ];
 
     const ok = allowed.includes(file.mimetype);
-    cb(ok ? null : new Error("Only images and videos are allowed"), ok);
+    cb(ok ? null : new Error("Only images, videos, and audio are allowed"), ok);
   },
 });
 
