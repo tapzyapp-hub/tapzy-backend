@@ -859,34 +859,6 @@ function sortRanked(events) {
 
 }
 
-
-function normalizeCategoryQuery(category) {
-  return String(category || "").trim().toLowerCase();
-}
-
-function eventMatchesCategoryFilter(event, category) {
-  const group = normalizeCategoryQuery(category);
-  if (!group) return true;
-
-  if (["concerts", "concert", "music", "festival"].includes(group)) {
-    return eventMatchesCategoryGroup(event, "concerts") || normalizeCategory(event).toLowerCase() === "concerts";
-  }
-
-  if (["sports", "sport"].includes(group)) {
-    return eventMatchesCategoryGroup(event, "sports") || normalizeCategory(event).toLowerCase() === "sports";
-  }
-
-  if (["nightlife", "party", "club", "dj"].includes(group)) {
-    return eventMatchesCategoryGroup(event, "nightlife") || normalizeCategory(event).toLowerCase() === "nightlife";
-  }
-
-  if (["conventions", "convention", "expo", "conference", "comic"].includes(group)) {
-    return eventMatchesCategoryGroup(event, "conventions") || normalizeCategory(event).toLowerCase() === "conventions";
-  }
-
-  return normalizeCategory(event).toLowerCase().includes(group);
-}
-
 function buildWhere({ city, category, now }) {
   const where = {
     OR: [
@@ -914,7 +886,6 @@ module.exports = {
   getShortDescription,
   pickImage,
   eventMatchesCategoryGroup,
-  eventMatchesCategoryFilter,
   rankEvent,
   getUrgencyBadge,
   sortRanked,

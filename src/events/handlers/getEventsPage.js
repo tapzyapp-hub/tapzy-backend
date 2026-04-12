@@ -1,14 +1,14 @@
 
 const prisma = require("../../prisma");
 const { renderShell, renderTapzyAssistant, escapeHtml } = require("../../utils");
-const { TOP_CITY_ORDER, TOP_CATEGORY_ORDER, MAIN_QUERY_LIMIT, FEED_PAGE_SIZE } = require("../config");
+const { TOP_CITY_ORDER, MAIN_QUERY_LIMIT, FEED_PAGE_SIZE } = require("../config");
 const {
   seedEventsIfEmpty,
   startOfDay,
   endOfDay,
   isBetween,
   eventMatchesCategoryGroup,
-  eventMatchesCategoryFilter,
+  normalizeCategory,
   sortRanked,
   buildWhere,
 } = require("../helpers/eventServerUtils");
@@ -17,7 +17,6 @@ const {
   renderReelItem,
   renderSection,
   renderCitySwitcher,
-  renderCategorySwitcher,
 } = require("../render/renderEventParts");
 const renderEventsClientScript = require("../render/renderEventsClientScript");
 
@@ -62,52 +61,36 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    const events = sortRanked(rawEvents).filter((event) => eventMatchesCategoryFilter(event, category));
+    let events = sortRanked(rawEvents);
+
+    if (category) {
+      const normalizedFilter = String(category).trim().toLowerCase();
+      events = events.filter((event) => {
+        const normalized = String(normalizeCategory(event) || '').trim().toLowerCase();
+        if (normalized === normalizedFilter) return true;
+        return eventMatchesCategoryGroup(event, normalizedFilter);
+      });
+    }
 
 
 
     let goingSet = new Set();
     const goingCounts = new Map();
-    const goingPreviewMap = new Map();
 
     if (events.length) {
       const rows = await prisma.eventAttendance.findMany({
-        where: {
-          eventId: { in: events.map((e) => e.id) },
-          status: "going",
-        },
-        orderBy: { createdAt: "desc" },
-        include: {
-          profile: {
-            select: {
-              username: true,
-              name: true,
-              photo: true,
-            },
-          },
-        },
+        where: { eventId: { in: events.map((e) => e.id) } },
+        where: { eventId: { in: events.map((e) => e.id) }, status: "going" },
+        select: { eventId: true, profileId: true },
       });
 
       for (const row of rows) {
         goingCounts.set(row.eventId, (goingCounts.get(row.eventId) || 0) + 1);
-        if (!goingPreviewMap.has(row.eventId)) {
-          goingPreviewMap.set(row.eventId, []);
-        }
-        const list = goingPreviewMap.get(row.eventId);
-        if (row.profile && list.length < 3) {
-          list.push(row.profile);
-        }
         if (currentProfile && row.profileId === currentProfile.id) {
           goingSet.add(row.eventId);
         }
       }
     }
-
-    const decorateEvent = (event) => ({
-      ...event,
-      goingCount: Number(goingCounts.get(event.id) || 0),
-      goingPreviewProfiles: goingPreviewMap.get(event.id) || [],
-    });
 
     const tonightMin = startOfDay(now);
 
@@ -123,7 +106,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    const mainFeedInitial = events.slice(0, FEED_PAGE_SIZE).map(decorateEvent);
+    const mainFeedInitial = events.slice(0, FEED_PAGE_SIZE);
 
     const mainFeedTotal = events.length;
 
@@ -131,21 +114,21 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    const featured = events.slice(0, 6).map(decorateEvent);
+    const featured = events.slice(0, 6);
 
-    const tonight = sortRanked(events.filter((e) => isBetween(e.startAt, tonightMin, tonightMax))).slice(0, 8).map(decorateEvent);
+    const tonight = sortRanked(events.filter((e) => isBetween(e.startAt, tonightMin, tonightMax))).slice(0, 8);
 
-    const week = sortRanked(events.filter((e) => isBetween(e.startAt, weekMin, weekMax))).slice(0, 12).map(decorateEvent);
+    const week = sortRanked(events.filter((e) => isBetween(e.startAt, weekMin, weekMax))).slice(0, 12);
 
 
 
-    const sports = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "sports"))).slice(0, 10).map(decorateEvent);
+    const sports = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "sports"))).slice(0, 10);
 
-    const concerts = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "concerts"))).slice(0, 10).map(decorateEvent);
+    const concerts = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "concerts"))).slice(0, 10);
 
-    const nightlife = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "nightlife"))).slice(0, 10).map(decorateEvent);
+    const nightlife = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "nightlife"))).slice(0, 10);
 
-    const conventions = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "conventions"))).slice(0, 10).map(decorateEvent);
+    const conventions = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "conventions"))).slice(0, 10);
 
 
 
@@ -163,7 +146,7 @@ module.exports = async function getEventsPage(req, res) {
 
         cityName,
 
-        initialItems: cityEvents.slice(0, FEED_PAGE_SIZE).map(decorateEvent),
+        initialItems: cityEvents.slice(0, FEED_PAGE_SIZE),
 
         total: cityEvents.length,
 
@@ -261,23 +244,15 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-        <div class="events-filter-wrap">
-
-          <div class="muted events-filter-copy">
-
-            Tap a city or category below to filter instantly.
-
-          </div>
-
-        </div>
-
       </section>
 
 
 
       ${renderCitySwitcher(city, hasAdminKey, adminKey, category)}
 
-      ${renderCategorySwitcher(category, hasAdminKey, adminKey, city)}
+      <div class="muted" style="margin:8px 0 20px;">Tap a city to filter instantly.</div>
+
+
 
       <section class="reel-wrap mobile-only">
 
@@ -446,6 +421,11 @@ module.exports = async function getEventsPage(req, res) {
       .mobile-only{ display:none; }
 
       .desktop-only{ display:block; }
+      .events-chip-wrap{ display:grid; gap:12px; margin:18px 0 12px; }
+      .events-chip-row{ display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+      .events-chip-row::-webkit-scrollbar{ display:none; }
+      .events-chip{ flex:0 0 auto; min-width:160px; text-align:center; padding:18px 26px; border-radius:999px; text-decoration:none; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
+      .events-chip.is-active{ background:#eef3fb; color:#101626; border-color:rgba(255,255,255,.45); }
 
 
 
@@ -530,65 +510,6 @@ module.exports = async function getEventsPage(req, res) {
       .events-hero-top{ position:relative; z-index:2; }
 
 
-      .event-going-preview{
-        display:flex;
-        pointer-events:none;
-        align-items:center;
-        gap:12px;
-        margin-top:14px;
-        min-height:34px;
-        position:relative;
-        z-index:6;
-      }
-
-      .event-going-avatars{
-        display:flex;
-        align-items:center;
-        flex-shrink:0;
-      }
-
-      .event-going-avatar{
-        pointer-events:auto;
-        width:32px;
-        height:32px;
-        margin-left:-8px;
-        border-radius:999px;
-        overflow:hidden;
-        border:2px solid rgba(7,10,18,.96);
-        background:linear-gradient(180deg, rgba(21,30,52,.96), rgba(8,12,22,.96));
-        color:#fff;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:11px;
-        font-weight:700;
-        text-decoration:none;
-        box-shadow:0 8px 20px rgba(0,0,0,.28);
-      }
-
-      .event-going-avatar:first-child{ margin-left:0; }
-
-      .event-going-avatar img{
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        display:block;
-      }
-
-      .event-going-avatar-more{
-        font-size:10px;
-        letter-spacing:.03em;
-        background:linear-gradient(180deg, rgba(38,53,89,.96), rgba(16,24,44,.96));
-      }
-
-      .event-going-copy{
-        color:rgba(226,232,240,.84);
-        font-size:13px;
-        line-height:1.2;
-      }
-
-
-
 
       .events-kicker{
 
@@ -642,11 +563,13 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-      .events-filter-copy{
+      .events-filter-grid{
 
-        max-width:520px;
+        display:grid;
 
-        line-height:1.6;
+        grid-template-columns:1fr 1fr auto;
+
+        gap:12px;
 
       }
 
@@ -654,27 +577,9 @@ module.exports = async function getEventsPage(req, res) {
 
       .city-switcher-wrap{
 
-        margin-top:18px;
+        margin-top:16px;
 
-        margin-bottom:14px;
-
-      }
-
-
-
-      .filter-chip-label{
-
-        margin:0 0 10px 4px;
-
-        font-size:12px;
-
-        font-weight:800;
-
-        letter-spacing:.26em;
-
-        text-transform:uppercase;
-
-        color:rgba(219,232,247,.68);
+        margin-bottom:18px;
 
       }
 
@@ -684,11 +589,11 @@ module.exports = async function getEventsPage(req, res) {
 
         display:flex;
 
-        gap:12px;
+        gap:10px;
 
         overflow-x:auto;
 
-        padding:4px 2px 8px;
+        padding:4px 2px 6px;
 
         -webkit-overflow-scrolling:touch;
 
@@ -708,8 +613,6 @@ module.exports = async function getEventsPage(req, res) {
 
       .city-chip{
 
-        white-space:nowrap;
-
         flex:0 0 auto;
 
         display:inline-flex;
@@ -718,9 +621,9 @@ module.exports = async function getEventsPage(req, res) {
 
         justify-content:center;
 
-        min-height:46px;
+        min-height:42px;
 
-        padding:0 18px;
+        padding:0 16px;
 
         border-radius:999px;
 
@@ -775,22 +678,6 @@ module.exports = async function getEventsPage(req, res) {
       .city-chip:active{
 
         transform:scale(.97);
-
-      }
-
-
-
-      .category-switcher-wrap{
-
-        margin-top:0;
-
-      }
-
-
-
-      .category-switcher{
-
-        padding-top:2px;
 
       }
 
@@ -878,13 +765,13 @@ module.exports = async function getEventsPage(req, res) {
 
         position:absolute;
 
-        inset:-1px;
+        inset:0;
 
         background:
 
           radial-gradient(circle at var(--mx,50%) var(--my,50%),
 
-          rgba(127,210,255,.28) 0%, rgba(127,210,255,.16) 14%, rgba(127,210,255,.08) 26%, transparent 46%);
+          rgba(127,210,255,.18), transparent 40%);
 
         opacity:0;
 
@@ -976,19 +863,19 @@ module.exports = async function getEventsPage(req, res) {
 
         position:absolute;
 
-        width:260px;
+        width:220px;
 
-        height:260px;
+        height:220px;
 
-        right:-70px;
+        right:-60px;
 
-        top:-40px;
+        top:-30px;
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(86,156,255,.22), rgba(86,156,255,.08) 38%, transparent 70%);
+        background:radial-gradient(circle, rgba(86,156,255,.18), transparent 68%);
 
-        filter:blur(18px);
+        filter:blur(16px);
 
         z-index:1;
 
@@ -1048,7 +935,7 @@ module.exports = async function getEventsPage(req, res) {
 
         position:relative;
 
-        z-index:4;
+        z-index:3;
 
         min-height:450px;
 
@@ -1260,10 +1147,6 @@ module.exports = async function getEventsPage(req, res) {
 
         margin-top:20px;
 
-        position:relative;
-
-        z-index:7;
-
       }
 
 
@@ -1275,10 +1158,6 @@ module.exports = async function getEventsPage(req, res) {
         justify-content:flex-start;
 
         margin-top:10px;
-
-        position:relative;
-
-        z-index:8;
 
       }
 
@@ -1314,14 +1193,6 @@ module.exports = async function getEventsPage(req, res) {
 
         backdrop-filter:blur(8px);
 
-      }
-
-      .js-going-btn{
-        position:relative;
-        z-index:20;
-        pointer-events:auto;
-        touch-action:manipulation;
-        -webkit-tap-highlight-color:transparent;
       }
 
 
@@ -1396,8 +1267,6 @@ module.exports = async function getEventsPage(req, res) {
 
         overflow-y:auto;
 
-        overscroll-behavior:contain;
-
         scroll-snap-type:y mandatory;
 
         border-radius:28px;
@@ -1426,8 +1295,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-      .reel-item.is-active,
-      .reel-item.is-touch-active{ transform:scale(1); }
+      .reel-item.is-active{ transform:scale(1); }
 
 
 
@@ -1449,8 +1317,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-      .reel-item.is-active .reel-bg,
-      .reel-item.is-touch-active .reel-bg{ transform:scale(1.08); }
+      .reel-item.is-active .reel-bg{ transform:scale(1.08); }
 
 
 
@@ -1468,8 +1335,6 @@ module.exports = async function getEventsPage(req, res) {
 
         z-index:1;
 
-        pointer-events:none;
-
       }
 
 
@@ -1478,23 +1343,21 @@ module.exports = async function getEventsPage(req, res) {
 
         position:absolute;
 
-        width:290px;
+        width:260px;
 
-        height:290px;
+        height:260px;
 
-        right:-70px;
+        right:-60px;
 
         top:10%;
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(86,156,255,.24), rgba(86,156,255,.08) 40%, transparent 72%);
+        background:radial-gradient(circle, rgba(86,156,255,.20), transparent 68%);
 
-        filter:blur(20px);
+        filter:blur(18px);
 
         z-index:1;
-
-        pointer-events:none;
 
       }
 
@@ -1504,7 +1367,7 @@ module.exports = async function getEventsPage(req, res) {
 
         position:relative;
 
-        z-index:4;
+        z-index:2;
 
         min-height:100dvh;
 
@@ -1518,17 +1381,9 @@ module.exports = async function getEventsPage(req, res) {
 
       }
 
-      .reel-top{
-        position:relative;
-        z-index:7;
-        padding-top:8px;
-      }
 
-      .reel-pill-stack{
-        justify-content:flex-start;
-      }
 
-      .reel-body{ margin-top:auto; position:relative; z-index:6; }
+      .reel-body{ margin-top:auto; }
 
 
 
@@ -1678,8 +1533,6 @@ module.exports = async function getEventsPage(req, res) {
 
         .city-chip{
 
-        white-space:nowrap;
-
           min-height:40px;
 
           padding:0 14px;
@@ -1700,7 +1553,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    ${renderEventsClientScript({ FEED_PAGE_SIZE, category, city, citySections, currentProfile })}
+    ${renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile })}
 
 
 

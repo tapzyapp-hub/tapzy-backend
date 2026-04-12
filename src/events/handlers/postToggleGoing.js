@@ -46,29 +46,6 @@ module.exports = async function postToggleGoing(req, res) {
       },
     });
 
-
-    const goingPreviewRows = await prisma.eventAttendance.findMany({
-      where: {
-        eventId,
-        status: "going",
-      },
-      orderBy: { createdAt: "desc" },
-      take: 3,
-      include: {
-        profile: {
-          select: {
-            username: true,
-            name: true,
-            photo: true,
-          },
-        },
-      },
-    });
-
-    const goingPreviewProfiles = goingPreviewRows
-      .map((row) => row.profile)
-      .filter(Boolean);
-
     let knownGoingCount = 0;
 
     const connections = await prisma.connection.findMany({
@@ -111,7 +88,6 @@ module.exports = async function postToggleGoing(req, res) {
         going,
         goingCount,
         knownGoingCount,
-        goingPreviewProfiles,
       });
     }
 

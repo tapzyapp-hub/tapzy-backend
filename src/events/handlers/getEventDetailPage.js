@@ -344,8 +344,6 @@ module.exports = async function getEventDetailPage(req, res) {
 
         z-index:1;
 
-        pointer-events:none;
-
       }
 
 
@@ -370,8 +368,6 @@ module.exports = async function getEventDetailPage(req, res) {
 
         z-index:1;
 
-        pointer-events:none;
-
       }
 
 
@@ -380,7 +376,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
         position:relative;
 
-        z-index:4;
+        z-index:2;
 
         min-height:640px;
 

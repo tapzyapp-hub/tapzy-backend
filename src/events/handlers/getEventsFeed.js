@@ -4,9 +4,9 @@ const {
   normalizeCategory,
   getShortDescription,
   getUrgencyBadge,
+  eventMatchesCategoryGroup,
   sortRanked,
   buildWhere,
-  eventMatchesCategoryFilter,
 } = require("../helpers/eventServerUtils");
 
 module.exports = async function getEventsFeed(req, res) {
@@ -26,36 +26,28 @@ module.exports = async function getEventsFeed(req, res) {
       take: MAIN_QUERY_LIMIT,
     });
 
-    const ranked = sortRanked(rawItems).filter((event) => eventMatchesCategoryFilter(event, category));
+    let ranked = sortRanked(rawItems);
+    if (category) {
+      const normalizedFilter = String(category).trim().toLowerCase();
+      ranked = ranked.filter((event) => {
+        const normalized = String(normalizeCategory(event) || '').trim().toLowerCase();
+        if (normalized === normalizedFilter) return true;
+        return eventMatchesCategoryGroup(event, normalizedFilter);
+      });
+    }
     const slice = ranked.slice(skip, skip + limit);
 
     let goingSet = new Set();
     const goingCounts = new Map();
-    const goingPreviewMap = new Map();
 
     if (slice.length) {
       const rows = await prisma.eventAttendance.findMany({
-        where: {
-          eventId: { in: slice.map((x) => x.id) },
-          status: "going",
-        },
-        orderBy: { createdAt: "desc" },
-        include: {
-          profile: {
-            select: {
-              username: true,
-              name: true,
-              photo: true,
-            },
-          },
-        },
+        where: { eventId: { in: slice.map((x) => x.id) }, status: "going" },
+        select: { eventId: true, profileId: true },
       });
 
       for (const row of rows) {
         goingCounts.set(row.eventId, (goingCounts.get(row.eventId) || 0) + 1);
-        if (!goingPreviewMap.has(row.eventId)) goingPreviewMap.set(row.eventId, []);
-        const list = goingPreviewMap.get(row.eventId);
-        if (row.profile && list.length < 3) list.push(row.profile);
         if (currentProfile && row.profileId === currentProfile.id) goingSet.add(row.eventId);
       }
     }
@@ -67,7 +59,6 @@ module.exports = async function getEventsFeed(req, res) {
       urgencyBadge: getUrgencyBadge(event),
       isGoing: goingSet.has(event.id),
       goingCount: goingCounts.get(event.id) || 0,
-      goingPreviewProfiles: goingPreviewMap.get(event.id) || [],
     }));
 
     return res.json({ ok: true, items, page, limit, total: ranked.length, hasMore: skip + items.length < ranked.length });
