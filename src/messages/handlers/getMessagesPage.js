@@ -5,14 +5,17 @@ const {
   renderTapzyAssistant,
 } = require("../../utils");
 const renderMessagesInboxPage = require("../pages/renderMessagesInboxPage");
+const { getUnreadNotificationCount } = require("../../services/notificationService");
 
 function cleanPreview(lastMessage) {
   if (!lastMessage) return "No messages yet";
 
   const body = String(lastMessage.body || "").trim();
   const hasImage = !!String(lastMessage.imageUrl || "").trim();
+  const hasAudio = !!String(lastMessage.audioUrl || "").trim();
 
   if (body) return body;
+  if (hasAudio) return "Voice message";
   if (hasImage) return "Sent an image";
   return "No messages yet";
 }
@@ -25,7 +28,10 @@ module.exports = async function getMessagesPage(req, res) {
     const conversations = await prisma.conversation.findMany({
       where: {
         members: {
-          some: { profileId: currentProfile.id },
+          some: {
+            profileId: currentProfile.id,
+            hiddenAt: null,
+          },
         },
       },
       include: {
@@ -78,6 +84,22 @@ module.exports = async function getMessagesPage(req, res) {
       );
     }
 
+    const unreadCounts = conversations.length
+      ? await prisma.directMessage.groupBy({
+          by: ["conversationId"],
+          where: {
+            conversationId: { in: conversations.map((conversation) => conversation.id) },
+            senderProfileId: { not: currentProfile.id },
+            readAt: null,
+          },
+          _count: { _all: true },
+        })
+      : [];
+
+    const unreadMap = new Map(
+      unreadCounts.map((row) => [row.conversationId, row._count._all || 0])
+    );
+
     const rows = conversations.map((conversation) => {
       const otherMember = conversation.members.find(
         (member) => member.profileId !== currentProfile.id
@@ -93,15 +115,19 @@ module.exports = async function getMessagesPage(req, res) {
         other,
         preview,
         time,
+        unreadCount: unreadMap.get(conversation.id) || 0,
         isConnected: !!(other?.id && mutualConnectionIds.has(other.id)),
       };
     });
+
+    const unreadNotificationCount = await getUnreadNotificationCount(currentProfile.id);
 
     const body = renderMessagesInboxPage({
       currentProfile,
       rows,
       conversationCount: conversations.length,
       renderTapzyAssistant,
+      unreadNotificationCount,
     });
 
     res.send(

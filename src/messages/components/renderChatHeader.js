@@ -6,7 +6,7 @@ function getInitials(profile) {
   return parts.map((part) => part.charAt(0).toUpperCase()).join("");
 }
 
-module.exports = function renderChatHeader({ other, escapeHtml }) {
+module.exports = function renderChatHeader({ other, escapeHtml, conversationId }) {
   const name = other?.name || other?.username || "Conversation";
   const username = other?.username || "user";
 
@@ -38,11 +38,13 @@ module.exports = function renderChatHeader({ other, escapeHtml }) {
       <div class="tz-chat-topbar-actions">
         ${
           other?.username
-            ? `<a class="tz-chat-pill tz-chat-pill-light" href="/u/${escapeHtml(username)}">Open Profile</a>`
+            ? `<a class="tz-chat-pill tz-chat-pill-light" href="/u/${escapeHtml(username)}">Profile</a>`
             : ""
         }
+        <form class="tz-chat-remove-form" method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">
+          <button class="tz-chat-pill tz-chat-pill-danger" type="submit">Remove</button>
+        </form>
       </div>
     </div>
   `;
 };
-
