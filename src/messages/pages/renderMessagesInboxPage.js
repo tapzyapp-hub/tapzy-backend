@@ -6,7 +6,6 @@ module.exports = function renderMessagesInboxPage({
   rows,
   conversationCount,
   renderTapzyAssistant,
-  unreadNotificationCount = 0,
 }) {
   const { escapeHtml } = require("../../utils");
 
@@ -34,7 +33,6 @@ module.exports = function renderMessagesInboxPage({
 
               <div class="tz-msg-head-actions">
                 <a class="tz-btn tz-btn-dark" href="${escapeHtml(discoveryHref)}">Start Conversation</a>
-                <a class="tz-btn tz-btn-dark" href="/notifications">Notifications${unreadNotificationCount ? ` (${unreadNotificationCount})` : ""}</a>
               </div>
             </div>
 
@@ -436,67 +434,7 @@ module.exports = function renderMessagesInboxPage({
         }
       }
 
-
-      .tz-msg-thread-wrap{
-        display:grid;
-        grid-template-columns:minmax(0,1fr) auto;
-        gap:12px;
-        align-items:center;
-      }
-
-      .tz-msg-thread-top-right{
-        display:flex;
-        align-items:center;
-        gap:10px;
-      }
-
-      .tz-msg-thread-unread{
-        min-width:24px;
-        height:24px;
-        padding:0 8px;
-        border-radius:999px;
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        background:linear-gradient(180deg, rgba(47,113,255,.96), rgba(22,57,125,.98));
-        color:#fff;
-        font-size:12px;
-        font-weight:800;
-        box-shadow:0 0 14px rgba(66,140,255,.18);
-      }
-
-      .tz-msg-thread-remove-form{
-        margin:0;
-      }
-
-      .tz-msg-thread-remove{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        min-height:42px;
-        padding:0 14px;
-        border-radius:999px;
-        border:1px solid rgba(255,255,255,.08);
-        background:rgba(255,255,255,.04);
-        color:#d7e3f6;
-        font-size:13px;
-        font-weight:700;
-        cursor:pointer;
-      }
-
-      .tz-msg-thread-remove:hover{
-        background:rgba(255,255,255,.07);
-      }
-
       @media(max-width:700px){
-        .tz-msg-thread-wrap{
-          grid-template-columns:1fr;
-        }
-
-        .tz-msg-thread-remove{
-          width:100%;
-        }
-
         .tz-msg-hub{
           padding:12px;
           border-radius:24px;
