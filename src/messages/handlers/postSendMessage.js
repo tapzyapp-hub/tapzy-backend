@@ -1,6 +1,5 @@
 const prisma = require("../../prisma");
 const { publicAbsoluteUrl } = require("../../utils");
-const { notifyNewMessage } = require("../../services/messageNotificationHelper");
 
 module.exports = async function postSendMessage(req, res) {
   try {
@@ -14,18 +13,11 @@ module.exports = async function postSendMessage(req, res) {
 
     const id = String(req.params.id || "").trim();
     const text = String(req.body.text || "").trim() || null;
-    const mediaUrl = req.file
+    const imageUrl = req.file
       ? publicAbsoluteUrl(req, `/uploads/${req.file.filename}`)
       : null;
-    const mimetype = String(req.file?.mimetype || "").toLowerCase();
 
-    const imageUrl = mediaUrl && mimetype.startsWith("image/") ? mediaUrl : null;
-    const audioUrl =
-      mediaUrl && mimetype.startsWith("audio/")
-        ? mediaUrl
-        : null;
-
-    if (!text && !imageUrl && !audioUrl) {
+    if (!text && !imageUrl) {
       if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
         return res.status(400).json({ ok: false, error: "Message is empty" });
       }
@@ -44,30 +36,14 @@ module.exports = async function postSendMessage(req, res) {
       return res.status(404).send("Conversation not found");
     }
 
-    const myMembership = conversation.members.find(
+    const isMember = conversation.members.some(
       (member) => member.profileId === currentProfile.id
     );
-    if (!myMembership) {
+    if (!isMember) {
       if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
         return res.status(403).json({ ok: false, error: "Forbidden" });
       }
       return res.status(403).send("Forbidden");
-    }
-
-    await prisma.conversationMember.update({
-      where: { id: myMembership.id },
-      data: { hiddenAt: null, lastReadAt: new Date() },
-    });
-
-    const recipientMembershipIds = conversation.members
-      .filter((member) => member.profileId !== currentProfile.id)
-      .map((member) => member.id);
-
-    if (recipientMembershipIds.length) {
-      await prisma.conversationMember.updateMany({
-        where: { id: { in: recipientMembershipIds } },
-        data: { hiddenAt: null },
-      });
     }
 
     const createdMessage = await prisma.directMessage.create({
@@ -76,7 +52,6 @@ module.exports = async function postSendMessage(req, res) {
         senderProfileId: currentProfile.id,
         body: text,
         imageUrl,
-        audioUrl,
       },
       include: {
         sender: true,
@@ -93,36 +68,11 @@ module.exports = async function postSendMessage(req, res) {
       conversationId: createdMessage.conversationId,
       body: createdMessage.body,
       imageUrl: createdMessage.imageUrl,
-      audioUrl: createdMessage.audioUrl,
       createdAt: createdMessage.createdAt,
-      deliveredAt: createdMessage.deliveredAt,
-      readAt: createdMessage.readAt,
       senderProfileId: createdMessage.senderProfileId,
       senderName: createdMessage.sender?.name || createdMessage.sender?.username || "User",
       senderUsername: createdMessage.sender?.username || "user",
-      senderPhoto: createdMessage.sender?.photo || "",
     };
-
-    const otherMemberIds = conversation.members
-      .map((member) => member.profileId)
-      .filter((profileId) => profileId && profileId !== currentProfile.id);
-
-    if (otherMemberIds.length) {
-      const preview =
-        text || (audioUrl ? "Sent a voice message" : imageUrl ? "Sent an image" : "New message");
-      await Promise.all(
-        otherMemberIds.map((receiverId) =>
-          notifyNewMessage({
-            receiverId,
-            senderId: currentProfile.id,
-            senderName: payload.senderName,
-            senderPhoto: payload.senderPhoto,
-            conversationId: id,
-            preview,
-          })
-        )
-      );
-    }
 
     const io = req.app.get("io");
     if (io) {
