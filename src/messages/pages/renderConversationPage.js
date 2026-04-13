@@ -268,10 +268,11 @@ module.exports = function renderConversationPage({
         display:grid;
         grid-template-columns:minmax(0,1fr) 40px 40px 78px;
         gap:8px;
-        align-items:center;
+        align-items:stretch;
       }
       .tz-chat-input-wrap{
         min-width:0;
+        align-self:stretch;
       }
       .tz-chat-input{
         width:100%;
@@ -433,7 +434,7 @@ module.exports = function renderConversationPage({
         .tz-chat-composer-inner{
           grid-template-columns:minmax(0,1fr) 38px 38px 72px;
           gap:8px;
-          align-items:center;
+          align-items:stretch;
         }
         .tz-chat-input{
           min-height:46px;
@@ -442,9 +443,10 @@ module.exports = function renderConversationPage({
         }
         .tz-chat-upload-pill,
         .tz-chat-send{
-          min-height:44px;
-          height:44px;
+          min-height:46px;
+          height:46px;
           border-radius:15px;
+          align-self:stretch;
         }
         .tz-chat-upload-pill{
           font-size:16px;
