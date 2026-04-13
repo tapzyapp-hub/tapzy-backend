@@ -319,9 +319,9 @@ module.exports = function renderConversationPage({
         justify-content:center;
         line-height:1;
         width:100%;
-        transform:none;
         position:relative;
         top:0;
+        transform:none;
       }
       .tz-chat-mic-pill{
         font-size:22px;
@@ -437,7 +437,6 @@ module.exports = function renderConversationPage({
         }
         .tz-chat-send{font-size:14px;}
       }
-    
 
     </style>
 
