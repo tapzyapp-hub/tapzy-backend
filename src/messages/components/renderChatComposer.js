@@ -28,12 +28,12 @@ module.exports = function renderChatComposer({ conversationId }) {
         ><span>+</span></label>
 
         <button
-          class="tz-chat-upload-pill"
+          class="tz-chat-upload-pill tz-chat-mic-pill"
           id="tzRecordBtn"
           type="button"
           aria-label="Record voice message"
           title="Record voice message"
-        >🎤</button>
+        ><span>🎤</span></button>
 
         <input
           id="tzMediaInput"

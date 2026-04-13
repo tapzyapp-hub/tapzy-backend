@@ -291,6 +291,7 @@ module.exports = function renderConversationPage({
       .tz-chat-upload-pill,
       .tz-chat-send{
         min-height:48px;
+        height:48px;
         width:100%;
         padding:0 10px;
         border-radius:16px;
@@ -311,12 +312,19 @@ module.exports = function renderConversationPage({
         padding:0;
       }
       .tz-chat-upload-pill span,
-      .tz-chat-send span{
+      .tz-chat-send span,
+      .tz-chat-mic-pill span{
         display:inline-flex;
         align-items:center;
         justify-content:center;
         line-height:1;
         width:100%;
+        transform:none;
+        position:relative;
+        top:0;
+      }
+      .tz-chat-mic-pill{
+        font-size:22px;
       }
       .tz-chat-send{
         font-size:15px;
@@ -416,22 +424,20 @@ module.exports = function renderConversationPage({
         .tz-chat-upload-pill,
         .tz-chat-send{
           min-height:46px;
+          height:46px;
           border-radius:15px;
           line-height:1;
+        }
+        .tz-chat-upload-pill{
+          font-size:21px;
+          transform:none;
+        }
+        .tz-chat-mic-pill{
+          font-size:21px;
         }
         .tz-chat-send{font-size:14px;}
       }
     
-      .tz-chat-upload-pill span{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        line-height:1;
-        width:100%;
-        transform:none;
-        position:relative;
-        top:0;
-      }
 
     </style>
 
