@@ -420,6 +420,11 @@ module.exports = function renderConversationPage({
         }
         .tz-chat-send{font-size:14px;}
       }
+    
+      .tz-chat-upload-pill span{
+        transform: translateY(-2px);
+      }
+
     </style>
 
 
