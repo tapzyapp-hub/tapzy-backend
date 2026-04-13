@@ -308,6 +308,7 @@ module.exports = function renderConversationPage({
       }
       .tz-chat-upload-pill{
         font-size:22px;
+        padding:0;
       }
       .tz-chat-upload-pill span,
       .tz-chat-send span{
@@ -422,7 +423,14 @@ module.exports = function renderConversationPage({
       }
     
       .tz-chat-upload-pill span{
-        transform: translateY(-2px);
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        line-height:1;
+        width:100%;
+        transform:none;
+        position:relative;
+        top:0;
       }
 
     </style>
