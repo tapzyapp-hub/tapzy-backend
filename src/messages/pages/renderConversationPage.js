@@ -303,9 +303,19 @@ module.exports = function renderConversationPage({
         align-items:center;
         justify-content:center;
         box-sizing:border-box;
+        line-height:1;
+        text-align:center;
       }
       .tz-chat-upload-pill{
         font-size:22px;
+      }
+      .tz-chat-upload-pill span,
+      .tz-chat-send span{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        line-height:1;
+        width:100%;
       }
       .tz-chat-send{
         font-size:15px;
@@ -406,6 +416,7 @@ module.exports = function renderConversationPage({
         .tz-chat-send{
           min-height:46px;
           border-radius:15px;
+          line-height:1;
         }
         .tz-chat-send{font-size:14px;}
       }
