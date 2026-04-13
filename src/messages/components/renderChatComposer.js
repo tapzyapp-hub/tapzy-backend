@@ -35,6 +35,14 @@ module.exports = function renderChatComposer({ conversationId }) {
           accept="image/png,image/jpeg,image/webp"
         />
 
+        <button
+          class="tz-chat-voice"
+          id="tzVoiceBtn"
+          type="button"
+          aria-label="Record voice message"
+          title="Hold to record voice message"
+        >🎤</button>
+
         <button class="tz-chat-send" id="tzSendBtn" type="submit">Send</button>
       </div>
     </form>

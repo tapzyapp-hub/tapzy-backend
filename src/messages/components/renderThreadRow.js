@@ -31,6 +31,8 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
     : "";
 
   return `
+    <div class="tz-msg-thread-wrap" data-conversation-id="${escapeHtml(String(row.id || ""))}">
+    <button class="tz-msg-thread-delete" type="button" aria-label="Delete conversation">Delete</button>
     <a class="tz-msg-thread" href="/messages/${escapeHtml(String(row.id || ""))}">
       <div class="tz-msg-thread-shimmer" aria-hidden="true"></div>
       <div class="tz-msg-thread-glow" aria-hidden="true"></div>
@@ -57,6 +59,7 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
 
       <div class="tz-msg-thread-arrow" aria-hidden="true">›</div>
     </a>
+  </div>
   `;
 };
 
