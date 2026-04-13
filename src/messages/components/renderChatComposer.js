@@ -20,20 +20,22 @@ module.exports = function renderChatComposer({ conversationId }) {
           ></textarea>
         </div>
 
-        <label
-          class="tz-chat-upload-pill"
-          for="tzMediaInput"
-          aria-label="Upload media"
-          title="Upload image or voice note"
-        ><span class="tz-icon">+</span></label>
+        <div class="tz-chat-actions">
+          <label
+            class="tz-chat-upload-pill"
+            for="tzMediaInput"
+            aria-label="Upload media"
+            title="Upload image or voice note"
+          ><span class="tz-icon">+</span></label>
 
-        <button
-          class="tz-chat-upload-pill tz-chat-mic-pill"
-          id="tzRecordBtn"
-          type="button"
-          aria-label="Record voice message"
-          title="Record voice message"
-        ><span class="tz-icon">🎤</span></button>
+          <button
+            class="tz-chat-upload-pill tz-chat-mic-pill"
+            id="tzRecordBtn"
+            type="button"
+            aria-label="Record voice message"
+            title="Record voice message"
+          ><span class="tz-icon">🎤</span></button>
+        </div>
 
         <input
           id="tzMediaInput"
