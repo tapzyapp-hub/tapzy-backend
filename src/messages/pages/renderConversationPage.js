@@ -171,16 +171,33 @@ module.exports = function renderConversationPage({
         border-top:1px solid rgba(255,255,255,.06);
         padding:14px 18px 18px;
       }
-      .tz-chat-composer-inner{display:flex;gap:10px;align-items:flex-end;}
+      .tz-chat-composer-inner{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
       .tz-chat-input-wrap{flex:1;}
       .tz-chat-input{
-        width:100%;min-height:48px;max-height:140px;border-radius:18px;border:1px solid rgba(255,255,255,.08);
-        background:rgba(255,255,255,.04);color:#fff;padding:13px 14px;resize:none;box-sizing:border-box;font:inherit;
-      }
-      .tz-chat-upload-pill,.tz-chat-send{
-        min-height:48px;padding:0 16px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#fff;font-weight:800;cursor:pointer;
-        display:inline-flex;align-items:center;justify-content:center;
-      }
+  flex:1;
+  width:100%;
+  min-height:50px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  padding:14px 16px;
+  resize:none;
+  font:inherit;
+}
+      .tz-chat-upload-pill,
+.tz-chat-send{
+  height:50px;
+  min-width:50px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
       .tz-chat-send{
         background:linear-gradient(180deg, rgba(43,98,220,.92), rgba(23,56,122,.98));
         border-color:rgba(104,154,255,.32);
@@ -196,9 +213,21 @@ module.exports = function renderConversationPage({
         .tz-chat-topbar{padding:14px;}
         .tz-chat-window{height:64vh;padding:14px 14px 8px;}
         .tz-chat-composer{padding:12px 14px 14px;}
-        .tz-chat-composer-inner{flex-wrap:wrap;}
+        .tz-chat-composer-inner{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
         .tz-chat-input-wrap{width:100%;}
-        .tz-chat-upload-pill,.tz-chat-send{flex:1;}
+        .tz-chat-upload-pill,
+.tz-chat-send{
+  height:50px;
+  min-width:50px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
         .tz-chat-topbar-actions{width:100%;}
       }
     </style>
