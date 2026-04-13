@@ -11,11 +11,9 @@ function cleanPreview(lastMessage) {
 
   const body = String(lastMessage.body || "").trim();
   const hasImage = !!String(lastMessage.imageUrl || "").trim();
-  const hasAudio = !!String(lastMessage.audioUrl || "").trim();
 
   if (body) return body;
   if (hasImage) return "Sent an image";
-  if (hasAudio) return "Sent a voice message";
   return "No messages yet";
 }
 

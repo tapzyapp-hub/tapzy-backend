@@ -13,15 +13,11 @@ module.exports = async function postSendMessage(req, res) {
 
     const id = String(req.params.id || "").trim();
     const text = String(req.body.text || "").trim() || null;
-    const uploadUrl = req.file
+    const imageUrl = req.file
       ? publicAbsoluteUrl(req, `/uploads/${req.file.filename}`)
       : null;
-    const mimeType = String(req.file?.mimetype || "").toLowerCase();
-    const isAudioUpload = mimeType.startsWith("audio/");
-    const imageUrl = isAudioUpload ? null : uploadUrl;
-    const audioUrl = isAudioUpload ? uploadUrl : null;
 
-    if (!text && !imageUrl && !audioUrl) {
+    if (!text && !imageUrl) {
       if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
         return res.status(400).json({ ok: false, error: "Message is empty" });
       }
@@ -56,7 +52,6 @@ module.exports = async function postSendMessage(req, res) {
         senderProfileId: currentProfile.id,
         body: text,
         imageUrl,
-        audioUrl,
       },
       include: {
         sender: true,
@@ -73,7 +68,6 @@ module.exports = async function postSendMessage(req, res) {
       conversationId: createdMessage.conversationId,
       body: createdMessage.body,
       imageUrl: createdMessage.imageUrl,
-      audioUrl: createdMessage.audioUrl,
       createdAt: createdMessage.createdAt,
       senderProfileId: createdMessage.senderProfileId,
       senderName: createdMessage.sender?.name || createdMessage.sender?.username || "User",

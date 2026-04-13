@@ -223,36 +223,6 @@ module.exports = function renderMessagesInboxPage({
         gap:12px;
       }
 
-
-      .tz-msg-thread-wrap{
-        position:relative;
-        overflow:hidden;
-        border-radius:22px;
-      }
-
-      .tz-msg-thread-delete{
-        position:absolute;
-        inset:0 0 0 auto;
-        width:108px;
-        border:0;
-        border-radius:22px;
-        background:linear-gradient(180deg, rgba(128,18,30,.96), rgba(86,10,18,.96));
-        color:#fff;
-        font-weight:800;
-        letter-spacing:.02em;
-        z-index:1;
-      }
-
-      .tz-msg-thread-wrap.is-swiped .tz-msg-thread{
-        transform:translateX(-94px);
-      }
-
-      .tz-msg-thread-wrap.is-removing{
-        opacity:0;
-        transform:scale(.985);
-        transition:opacity .18s ease, transform .18s ease;
-      }
-
       .tz-msg-thread{
         position:relative;
         overflow:hidden;
@@ -516,95 +486,6 @@ module.exports = function renderMessagesInboxPage({
         }
       }
     </style>
-
-    <script>
-      (function(){
-        const isTouchLike = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-        if (!isTouchLike) return;
-
-        const wraps = Array.from(document.querySelectorAll(".tz-msg-thread-wrap[data-conversation-id]"));
-        let activeWrap = null;
-
-        function closeAll(exceptWrap) {
-          wraps.forEach(function(wrap){
-            if (wrap !== exceptWrap) wrap.classList.remove("is-swiped");
-          });
-        }
-
-        wraps.forEach(function(wrap){
-          const thread = wrap.querySelector(".tz-msg-thread");
-          const deleteBtn = wrap.querySelector(".tz-msg-thread-delete");
-          if (!thread || !deleteBtn) return;
-
-          let startX = 0;
-          let currentX = 0;
-          let dragging = false;
-
-          wrap.addEventListener("touchstart", function(event){
-            startX = event.touches[0].clientX;
-            currentX = startX;
-            dragging = true;
-            closeAll(wrap);
-          }, { passive: true });
-
-          wrap.addEventListener("touchmove", function(event){
-            if (!dragging) return;
-            currentX = event.touches[0].clientX;
-          }, { passive: true });
-
-          wrap.addEventListener("touchend", function(){
-            if (!dragging) return;
-            dragging = false;
-            const deltaX = currentX - startX;
-            if (deltaX < -56) {
-              wrap.classList.add("is-swiped");
-              activeWrap = wrap;
-            } else if (deltaX > 28) {
-              wrap.classList.remove("is-swiped");
-              if (activeWrap === wrap) activeWrap = null;
-            }
-          });
-
-          thread.addEventListener("click", function(event){
-            if (wrap.classList.contains("is-swiped")) {
-              event.preventDefault();
-              wrap.classList.remove("is-swiped");
-              if (activeWrap === wrap) activeWrap = null;
-            }
-          });
-
-          deleteBtn.addEventListener("click", async function(event){
-            event.preventDefault();
-            event.stopPropagation();
-
-            const conversationId = wrap.getAttribute("data-conversation-id");
-            if (!conversationId) return;
-
-            try {
-              const res = await fetch("/messages/" + encodeURIComponent(conversationId), {
-                method: "DELETE",
-                headers: { "X-Requested-With": "XMLHttpRequest" }
-              });
-
-              const data = await res.json();
-              if (!res.ok || !data.ok) throw new Error(data.error || "Delete failed");
-
-              wrap.classList.add("is-removing");
-              setTimeout(function(){ wrap.remove(); }, 180);
-            } catch (error) {
-              alert(error.message || "Could not delete conversation");
-            }
-          });
-        });
-
-        document.addEventListener("touchstart", function(event){
-          if (activeWrap && !activeWrap.contains(event.target)) {
-            activeWrap.classList.remove("is-swiped");
-            activeWrap = null;
-          }
-        }, { passive: true });
-      })();
-    </script>
 
     ${renderTapzyAssistant({
       username: currentProfile.username || "User",

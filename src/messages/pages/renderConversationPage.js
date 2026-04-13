@@ -151,7 +151,6 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
   const hasBody = !!String(message.body || "").trim();
 
   const hasImage = !!String(message.imageUrl || "").trim();
-  const hasAudio = !!String(message.audioUrl || "").trim();
 
 
 
@@ -171,14 +170,6 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
 
 
-  const audioHtml = hasAudio
-
-    ? `<audio class="tz-chat-audio" controls preload="metadata" src="${escapeHtml(message.audioUrl)}"></audio>`
-
-    : "";
-
-
-
   const bubbleClass = [
 
     "tz-chat-bubble",
@@ -190,8 +181,6 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
     hasImage && !hasBody ? "is-image-only" : "",
 
     hasImage && hasBody ? "has-image" : "",
-
-    hasAudio ? "has-audio" : "",
 
   ]
 
@@ -210,8 +199,6 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
         ${bodyHtml}
 
         ${imageHtml}
-
-        ${audioHtml}
 
         <div class="tz-chat-time">${escapeHtml(formatPrettyLocalClientSeed(message.createdAt))}</div>
 
@@ -1622,7 +1609,6 @@ module.exports = function renderConversationPage({
         const imageInput = document.getElementById("tzImageInput");
 
         const sendBtn = document.getElementById("tzSendBtn");
-        const voiceBtn = document.getElementById("tzVoiceBtn");
 
         const typingIndicator = document.getElementById("tzTypingIndicator");
 
@@ -1657,10 +1643,6 @@ module.exports = function renderConversationPage({
         let typingTimer = null;
 
         let isSending = false;
-        let mediaRecorder = null;
-        let mediaStream = null;
-        let audioChunks = [];
-        let isRecordingVoice = false;
 
 
 
@@ -1895,7 +1877,6 @@ module.exports = function renderConversationPage({
           const hasBody = !!String(message.body || "").trim();
 
           const hasImage = !!String(message.imageUrl || "").trim();
-          const hasAudio = !!String(message.audioUrl || "").trim();
 
 
 
@@ -1933,8 +1914,6 @@ module.exports = function renderConversationPage({
 
             hasImage && hasBody ? "has-image" : "",
 
-            hasAudio ? "has-audio" : "",
-
             "is-single",
 
           ].filter(Boolean).join(" ");
@@ -1959,93 +1938,7 @@ module.exports = function renderConversationPage({
 
           chat.appendChild(row);
 
-  
-        async function startVoiceRecording() {
-
-          if (isSending || isRecordingVoice || !voiceBtn) return;
-
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === "undefined") {
-            alert("Voice messages are not supported on this device yet");
-            return;
-          }
-
-          try {
-            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioChunks = [];
-            mediaRecorder = new MediaRecorder(mediaStream);
-            mediaRecorder.addEventListener("dataavailable", function(event){
-              if (event.data && event.data.size > 0) audioChunks.push(event.data);
-            });
-            mediaRecorder.start();
-            isRecordingVoice = true;
-            voiceBtn.classList.add("is-recording");
-            setSending(true);
-          } catch (error) {
-            console.error(error);
-            alert("Could not start voice recording");
-          }
-
-        }
-
-        async function stopVoiceRecording() {
-
-          if (!isRecordingVoice || !mediaRecorder) return;
-
-          const recorder = mediaRecorder;
-          const stream = mediaStream;
-
-          mediaRecorder = null;
-          mediaStream = null;
-          isRecordingVoice = false;
-          if (voiceBtn) voiceBtn.classList.remove("is-recording");
-
-          await new Promise(function(resolve){
-            recorder.addEventListener("stop", resolve, { once: true });
-            recorder.stop();
-          });
-
-          if (stream) {
-            stream.getTracks().forEach(function(track){ track.stop(); });
-          }
-
-          const blobType = recorder.mimeType || "audio/webm";
-          const blob = new Blob(audioChunks, { type: blobType });
-          audioChunks = [];
-
-          if (!blob.size) {
-            setSending(false);
-            return;
-          }
-
-          try {
-            const formData = new FormData();
-            const ext = blobType.indexOf("mp4") >= 0 ? "m4a" : "webm";
-            formData.append("audio", blob, "voice-message." + ext);
-
-            const res = await fetch("/messages/" + encodeURIComponent(conversationId) + "/voice", {
-              method: "POST",
-              body: formData,
-              headers: { "X-Requested-With": "XMLHttpRequest" }
-            });
-
-            const data = await res.json();
-            if (!res.ok || !data.ok) {
-              throw new Error(data.error || "Voice message failed");
-            }
-
-            if (typingIndicator) typingIndicator.style.display = "none";
-            socket.emit("stop_typing", { conversationId });
-          } catch (error) {
-            console.error(error);
-            alert(error.message || "Could not send voice message");
-          } finally {
-            setSending(false);
-          }
-
-        }
-
-
-        applyBubbleGrouping();
+          applyBubbleGrouping();
 
           chat.scrollTop = chat.scrollHeight;
 
@@ -2061,7 +1954,7 @@ module.exports = function renderConversationPage({
 
             form.classList.add("tz-chat-sending");
 
-            if (sendBtn) sendBtn.textContent = isRecordingVoice ? "Recording..." : "Sending...";
+            if (sendBtn) sendBtn.textContent = "Sending...";
 
           } else {
 
@@ -2167,31 +2060,11 @@ module.exports = function renderConversationPage({
 
 
 
-
-        if (voiceBtn) {
-          const startEvents = ["mousedown", "touchstart"];
-          const stopEvents = ["mouseup", "mouseleave", "touchend", "touchcancel"];
-
-          startEvents.forEach(function(eventName){
-            voiceBtn.addEventListener(eventName, function(event){
-              event.preventDefault();
-              startVoiceRecording();
-            }, { passive: false });
-          });
-
-          stopEvents.forEach(function(eventName){
-            voiceBtn.addEventListener(eventName, function(event){
-              event.preventDefault();
-              stopVoiceRecording();
-            }, { passive: false });
-          });
-        }
-
         form.addEventListener("submit", async function(e){
 
           e.preventDefault();
 
-          if (isSending || isRecordingVoice) return;
+          if (isSending) return;
 
 
 
