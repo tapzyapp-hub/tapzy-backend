@@ -311,27 +311,32 @@ module.exports = function renderConversationPage({
       }
 
       .tz-chat-upload-pill{
-        font-size:18px;
+        font-size:17px;
+        position:relative;
+        overflow:hidden;
       }
 
-      .tz-chat-upload-pill span,
-      .tz-chat-mic-pill span{
+      .tz-icon{
+        position:absolute;
+        inset:0;
         display:flex;
         align-items:center;
         justify-content:center;
         width:100%;
         height:100%;
         line-height:1;
+        pointer-events:none;
       }
 
-      .tz-chat-upload-pill > span{
+      .tz-chat-upload-pill > .tz-icon{
         font-size:18px;
         font-weight:900;
+        transform:translateY(-1px);
       }
 
-      .tz-chat-mic-pill > span{
+      .tz-chat-mic-pill > .tz-icon{
         font-size:18px;
-        transform:translateY(-1px);
+        transform:translateY(-2px);
       }
 
       .tz-chat-send{
@@ -442,14 +447,15 @@ module.exports = function renderConversationPage({
           border-radius:15px;
         }
         .tz-chat-upload-pill{
-          font-size:17px;
+          font-size:16px;
         }
-        .tz-chat-upload-pill > span{
-          font-size:17px;
-        }
-        .tz-chat-mic-pill > span{
+        .tz-chat-upload-pill > .tz-icon{
           font-size:17px;
           transform:translateY(-1px);
+        }
+        .tz-chat-mic-pill > .tz-icon{
+          font-size:17px;
+          transform:translateY(-2px);
         }
         .tz-chat-send{
           font-size:14px;

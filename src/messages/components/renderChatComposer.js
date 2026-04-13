@@ -25,7 +25,7 @@ module.exports = function renderChatComposer({ conversationId }) {
           for="tzMediaInput"
           aria-label="Upload media"
           title="Upload image or voice note"
-        ><span>+</span></label>
+        ><span class="tz-icon">+</span></label>
 
         <button
           class="tz-chat-upload-pill tz-chat-mic-pill"
@@ -33,7 +33,7 @@ module.exports = function renderChatComposer({ conversationId }) {
           type="button"
           aria-label="Record voice message"
           title="Record voice message"
-        ><span>🎤</span></button>
+        ><span class="tz-icon">🎤</span></button>
 
         <input
           id="tzMediaInput"
