@@ -266,8 +266,8 @@ module.exports = function renderConversationPage({
       }
       .tz-chat-composer-inner{
         display:grid;
-        grid-template-columns:minmax(0,1fr) 46px 46px 78px;
-        gap:6px;
+        grid-template-columns:minmax(0,1fr) 40px 40px 78px;
+        gap:8px;
         align-items:center;
       }
       .tz-chat-input-wrap{
@@ -288,50 +288,61 @@ module.exports = function renderConversationPage({
         box-sizing:border-box;
       }
       .tz-chat-input::placeholder{color:#93a6c3;}
+
       .tz-chat-upload-pill,
       .tz-chat-send{
         min-height:48px;
         height:48px;
         width:100%;
-        padding:0 10px;
+        padding:0;
         border-radius:16px;
         border:1px solid rgba(255,255,255,.08);
         background:rgba(255,255,255,.05);
         color:#fff;
         font-weight:800;
         cursor:pointer;
-        display:inline-flex;
+        display:flex;
         align-items:center;
         justify-content:center;
         box-sizing:border-box;
         line-height:1;
         text-align:center;
+        vertical-align:middle;
       }
+
       .tz-chat-upload-pill{
-        font-size:22px;
-        padding:0;
+        font-size:18px;
       }
+
       .tz-chat-upload-pill span,
-      .tz-chat-send span,
       .tz-chat-mic-pill span{
-        display:inline-flex;
+        display:flex;
         align-items:center;
         justify-content:center;
-        line-height:1;
         width:100%;
-        position:relative;
-        top:0;
-        transform:none;
+        height:100%;
+        line-height:1;
       }
-      .tz-chat-mic-pill{
-        font-size:22px;
+
+      .tz-chat-upload-pill > span{
+        font-size:18px;
+        font-weight:900;
       }
+
+      .tz-chat-mic-pill > span{
+        font-size:18px;
+        transform:translateY(-1px);
+      }
+
       .tz-chat-send{
         font-size:15px;
+        padding:0 12px;
         background:linear-gradient(180deg, rgba(43,98,220,.94), rgba(23,56,122,.99));
         border-color:rgba(104,154,255,.32);
       }
+
       .tz-chat-file{display:none;}
+
       .tz-chat-composer-subrow{
         display:flex;
         justify-content:flex-start;
@@ -339,12 +350,14 @@ module.exports = function renderConversationPage({
         flex-wrap:wrap;
         margin-top:7px;
       }
+
       .tz-chat-media-hint,.tz-chat-record-status,.tz-typing-indicator{
         color:#8fa4c2;
         font-size:10px;
         font-weight:700;
         line-height:1.35;
       }
+
       .tz-chat-record-status.is-live{color:#ffb3b3;}
       .tz-chat-sending .tz-chat-send{opacity:.7;pointer-events:none;}
 
@@ -413,8 +426,9 @@ module.exports = function renderConversationPage({
           backdrop-filter:blur(10px);
         }
         .tz-chat-composer-inner{
-          grid-template-columns:minmax(0,1fr) 44px 44px 74px;
-          gap:6px;
+          grid-template-columns:minmax(0,1fr) 38px 38px 72px;
+          gap:8px;
+          align-items:center;
         }
         .tz-chat-input{
           min-height:46px;
@@ -423,21 +437,24 @@ module.exports = function renderConversationPage({
         }
         .tz-chat-upload-pill,
         .tz-chat-send{
-          min-height:46px;
-          height:46px;
+          min-height:44px;
+          height:44px;
           border-radius:15px;
-          line-height:1;
         }
         .tz-chat-upload-pill{
-          font-size:21px;
-          transform:none;
+          font-size:17px;
         }
-        .tz-chat-mic-pill{
-          font-size:21px;
+        .tz-chat-upload-pill > span{
+          font-size:17px;
         }
-        .tz-chat-send{font-size:14px;}
+        .tz-chat-mic-pill > span{
+          font-size:17px;
+          transform:translateY(-1px);
+        }
+        .tz-chat-send{
+          font-size:14px;
+        }
       }
-
     </style>
 
 
