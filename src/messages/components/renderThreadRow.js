@@ -66,7 +66,7 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
         <div class="tz-msg-thread-arrow" aria-hidden="true">›</div>
       </a>
 
-      <form class="tz-msg-thread-remove-form" method="POST" action="/messages/${escapeHtml(String(row.id || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">
+      <form class="tz-msg-thread-remove-form tz-msg-thread-remove-mobile-hide" method="POST" action="/messages/${escapeHtml(String(row.id || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">
         <button class="tz-msg-thread-remove" type="submit">Remove</button>
       </form>
     </div>

@@ -547,6 +547,13 @@ module.exports = function renderMessagesInboxPage({
           font-size:10px;
         }
       }
+    
+      @media (max-width:700px){
+        .tz-msg-thread-remove-mobile-hide{
+          display:none !important;
+        }
+      }
+
     </style>
 
     ${renderTapzyAssistant({
