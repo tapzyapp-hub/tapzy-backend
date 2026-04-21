@@ -22,6 +22,16 @@ module.exports = async function startConversation(req, res) {
       other.id
     );
 
+    await prisma.conversationMember.updateMany({
+      where: {
+        conversationId: conversation.id,
+        profileId: currentProfile.id,
+      },
+      data: {
+        hiddenAt: null,
+      },
+    });
+
     return res.redirect(`/messages/${conversation.id}`);
   } catch (e) {
     console.error(e);

@@ -151,6 +151,7 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
   const hasBody = !!String(message.body || "").trim();
 
   const hasImage = !!String(message.imageUrl || "").trim();
+  const hasAudio = !!String(message.audioUrl || "").trim();
 
 
 
@@ -170,6 +171,14 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
 
 
+  const audioHtml = hasAudio
+
+    ? `<audio class="tz-chat-audio" controls preload="metadata" src="${escapeHtml(message.audioUrl)}"></audio>`
+
+    : "";
+
+
+
   const bubbleClass = [
 
     "tz-chat-bubble",
@@ -178,9 +187,11 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
     groupPosition,
 
-    hasImage && !hasBody ? "is-image-only" : "",
+    hasImage && !hasBody && !hasAudio ? "is-image-only" : "",
 
     hasImage && hasBody ? "has-image" : "",
+
+    hasAudio ? "has-audio" : "",
 
   ]
 
@@ -190,9 +201,17 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
 
 
+  const statusHtml = isMine
+
+    ? `<div class="tz-chat-status">${escapeHtml(message.readAt ? "Seen" : "Delivered")}</div>`
+
+    : "";
+
+
+
   return `
 
-    <div class="tz-chat-row ${isMine ? "mine" : "other"}" data-created-at="${escapeHtml(String(message.createdAt || ""))}">
+    <div class="tz-chat-row ${isMine ? "mine" : "other"}" data-created-at="${escapeHtml(String(message.createdAt || ""))}" data-sender-id="${escapeHtml(String(message.senderProfileId || ""))}" data-message-id="${escapeHtml(String(message.id || ""))}" data-read-at="${escapeHtml(String(message.readAt || ""))}">
 
       <div class="${bubbleClass}">
 
@@ -200,7 +219,11 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
         ${imageHtml}
 
+        ${audioHtml}
+
         <div class="tz-chat-time">${escapeHtml(formatPrettyLocalClientSeed(message.createdAt))}</div>
+
+        ${statusHtml}
 
       </div>
 
@@ -280,7 +303,7 @@ module.exports = function renderConversationPage({
 
       <div class="tz-chat-shell">
 
-        ${renderChatHeader({ other, escapeHtml })}
+        ${renderChatHeader({ other, escapeHtml, conversationId: conversation.id })}
 
 
 
@@ -691,6 +714,18 @@ module.exports = function renderConversationPage({
 
     flex-wrap:wrap;
 
+    align-items:stretch;
+
+  }
+
+
+
+  .tz-chat-topbar-actions form{
+
+    margin:0;
+
+    display:flex;
+
   }
 
 
@@ -703,9 +738,11 @@ module.exports = function renderConversationPage({
 
     justify-content:center;
 
+    min-width:168px;
+
     min-height:40px;
 
-    padding:0 15px;
+    padding:0 18px;
 
     border-radius:999px;
 
@@ -768,6 +805,29 @@ module.exports = function renderConversationPage({
       0 18px 34px rgba(0,0,0,.26),
 
       0 0 22px rgba(90,165,255,.16);
+
+  }
+
+
+  .tz-chat-pill-danger{
+
+    color:#fff;
+
+    background:linear-gradient(180deg, rgba(72,22,30,.92), rgba(36,12,18,.96));
+
+    border:1px solid rgba(255,120,150,.18);
+
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 12px 26px rgba(0,0,0,.22);
+
+  }
+
+
+
+  .tz-chat-pill-danger:hover{
+
+    border-color:rgba(255,140,170,.28);
+
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 18px 34px rgba(0,0,0,.26),0 0 22px rgba(255,120,150,.16);
 
   }
 
@@ -1126,6 +1186,33 @@ module.exports = function renderConversationPage({
     border:1px solid rgba(168,184,210,.10);
 
     display:block;
+
+  }
+
+
+  .tz-chat-audio{
+
+    width:100%;
+
+    margin-top:8px;
+
+    border-radius:14px;
+
+    filter:drop-shadow(0 8px 18px rgba(0,0,0,.18));
+
+  }
+
+
+
+  .tz-chat-status{
+
+    margin-top:5px;
+
+    font-size:11px;
+
+    opacity:.76;
+
+    font-weight:700;
 
   }
 
@@ -1606,7 +1693,13 @@ module.exports = function renderConversationPage({
 
         const textarea = document.getElementById("tzMessageInput");
 
-        const imageInput = document.getElementById("tzImageInput");
+        const mediaInput = document.getElementById("tzMediaInput");
+
+        const recordBtn = document.getElementById("tzRecordBtn");
+
+        const recordStatus = document.getElementById("tzRecordStatus");
+
+        const mediaHint = document.getElementById("tzMediaHint");
 
         const sendBtn = document.getElementById("tzSendBtn");
 
@@ -1643,6 +1736,12 @@ module.exports = function renderConversationPage({
         let typingTimer = null;
 
         let isSending = false;
+
+        let mediaRecorder = null;
+
+        let mediaChunks = [];
+
+        let activeStream = null;
 
 
 
@@ -1878,6 +1977,8 @@ module.exports = function renderConversationPage({
 
           const hasImage = !!String(message.imageUrl || "").trim();
 
+          const hasAudio = !!String(message.audioUrl || "").trim();
+
 
 
           const previousRow = lastRow();
@@ -1902,6 +2003,10 @@ module.exports = function renderConversationPage({
 
           row.setAttribute("data-sender-id", String(message.senderProfileId || ""));
 
+          row.setAttribute("data-message-id", String(message.id || ""));
+
+          row.setAttribute("data-read-at", String(message.readAt || ""));
+
 
 
           const bubbleClass = [
@@ -1910,9 +2015,11 @@ module.exports = function renderConversationPage({
 
             isMine ? "mine" : "other",
 
-            hasImage && !hasBody ? "is-image-only" : "",
+            hasImage && !hasBody && !hasAudio ? "is-image-only" : "",
 
             hasImage && hasBody ? "has-image" : "",
+
+            hasAudio ? "has-audio" : "",
 
             "is-single",
 
@@ -1928,7 +2035,11 @@ module.exports = function renderConversationPage({
 
               \${hasImage ? \`<img class="tz-chat-image" src="\${safeEscape(message.imageUrl)}" alt="Message image" />\` : ""}
 
+              \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(message.audioUrl)}"></audio>\` : ""}
+
               <div class="tz-chat-time">\${safeEscape(formatPrettyLocalClient(message.createdAt))}</div>
+
+              \${isMine ? \`<div class="tz-chat-status">\${safeEscape(message.readAt ? "Seen" : "Delivered")}</div>\` : ""}
 
             </div>
 
@@ -1941,6 +2052,30 @@ module.exports = function renderConversationPage({
           applyBubbleGrouping();
 
           chat.scrollTop = chat.scrollHeight;
+
+        }
+
+
+
+        function markSeen(messageIds) {
+
+          const ids = new Set((messageIds || []).map(String));
+
+          document.querySelectorAll('.tz-chat-row.mine[data-message-id]').forEach((row) => {
+
+            const messageId = String(row.getAttribute("data-message-id") || "");
+
+            if (!ids.size || ids.has(messageId)) {
+
+              row.setAttribute("data-read-at", new Date().toISOString());
+
+              const status = row.querySelector(".tz-chat-status");
+
+              if (status) status.textContent = "Seen";
+
+            }
+
+          });
 
         }
 
@@ -1975,6 +2110,108 @@ module.exports = function renderConversationPage({
           textarea.style.height = "auto";
 
           textarea.style.height = Math.min(textarea.scrollHeight, 140) + "px";
+
+        }
+
+
+
+        function setRecordState(text, live) {
+
+          if (!recordStatus) return;
+
+          recordStatus.textContent = text || "";
+
+          recordStatus.classList.toggle("is-live", !!live);
+
+        }
+
+
+
+        async function toggleRecording() {
+
+          if (!recordBtn) return;
+
+          if (!navigator.mediaDevices || !window.MediaRecorder) {
+
+            alert("Voice recording is not supported on this device.");
+
+            return;
+
+          }
+
+
+
+          if (mediaRecorder && mediaRecorder.state === "recording") {
+
+            mediaRecorder.stop();
+
+            return;
+
+          }
+
+
+
+          try {
+
+            activeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            mediaChunks = [];
+
+            mediaRecorder = new MediaRecorder(activeStream);
+
+
+
+            mediaRecorder.ondataavailable = function(event) {
+
+              if (event.data && event.data.size) mediaChunks.push(event.data);
+
+            };
+
+
+
+            mediaRecorder.onstop = function() {
+
+              const blob = new Blob(mediaChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+
+              const ext = (mediaRecorder.mimeType || "").includes("mp4") ? "m4a" : "webm";
+
+              const file = new File([blob], 'voice-note.' + ext, { type: mediaRecorder.mimeType || 'audio/webm' });
+
+              const dt = new DataTransfer();
+
+              dt.items.add(file);
+
+              mediaInput.files = dt.files;
+
+              if (mediaHint) mediaHint.textContent = "Voice note ready to send.";
+
+              setRecordState("Voice note ready", false);
+
+              if (recordBtn) recordBtn.textContent = "🎤";
+
+              if (activeStream) activeStream.getTracks().forEach((track) => track.stop());
+
+              activeStream = null;
+
+            };
+
+
+
+            mediaRecorder.start();
+
+            setRecordState("Recording voice note...", true);
+
+            if (recordBtn) recordBtn.textContent = "■";
+
+            if (mediaHint) mediaHint.textContent = "Tap stop, then send.";
+
+          } catch (err) {
+
+            console.error(err);
+
+            alert("Could not access microphone.");
+
+          }
 
         }
 
@@ -2024,6 +2261,18 @@ module.exports = function renderConversationPage({
 
 
 
+        socket.on("messages_seen", function(data){
+
+          if (!data || String(data.conversationId || "") !== String(conversationId)) return;
+
+          if (String(data.readerProfileId || "") === String(currentProfileId)) return;
+
+          markSeen(data.messageIds || []);
+
+        });
+
+
+
         if (textarea) {
 
           autoResizeTextarea();
@@ -2060,6 +2309,30 @@ module.exports = function renderConversationPage({
 
 
 
+        if (recordBtn) {
+
+          recordBtn.addEventListener("click", toggleRecording);
+
+        }
+
+
+
+        if (mediaInput) {
+
+          mediaInput.addEventListener("change", function() {
+
+            if (mediaInput.files && mediaInput.files[0] && mediaHint) {
+
+              mediaHint.textContent = mediaInput.files[0].name;
+
+            }
+
+          });
+
+        }
+
+
+
         form.addEventListener("submit", async function(e){
 
           e.preventDefault();
@@ -2070,9 +2343,9 @@ module.exports = function renderConversationPage({
 
           const text = String(textarea?.value || "").trim();
 
-          const hasImage = !!(imageInput && imageInput.files && imageInput.files[0]);
+          const hasMedia = !!(mediaInput && mediaInput.files && mediaInput.files[0]);
 
-          if (!text && !hasImage) return;
+          if (!text && !hasMedia) return;
 
 
 
@@ -2116,7 +2389,13 @@ module.exports = function renderConversationPage({
 
             }
 
-            if (imageInput) imageInput.value = "";
+            if (mediaInput) mediaInput.value = "";
+
+            if (mediaHint) mediaHint.textContent = "You can send text, images, or voice notes.";
+
+            setRecordState("", false);
+
+            if (recordBtn) recordBtn.textContent = "🎤";
 
             if (typingIndicator) typingIndicator.style.display = "none";
 

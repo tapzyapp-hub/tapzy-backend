@@ -22,20 +22,31 @@ module.exports = function renderChatComposer({ conversationId }) {
 
         <label
           class="tz-chat-upload-pill"
-          for="tzImageInput"
-          aria-label="Upload image"
-          title="Upload image"
+          for="tzMediaInput"
+          aria-label="Upload media"
+          title="Upload image or voice note"
         >+</label>
 
+        <button
+          class="tz-chat-upload-pill"
+          id="tzRecordBtn"
+          type="button"
+          aria-label="Record voice message"
+          title="Record voice message"
+        >🎤</button>
+
         <input
-          id="tzImageInput"
+          id="tzMediaInput"
           class="tz-chat-file"
           type="file"
-          name="image"
-          accept="image/png,image/jpeg,image/webp"
+          name="media"
+          accept="image/png,image/jpeg,image/webp,audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/webm,audio/mp4,audio/x-m4a,audio/aac"
         />
 
         <button class="tz-chat-send" id="tzSendBtn" type="submit">Send</button>
+      </div>
+
+              <div id="tzRecordStatus" class="tz-chat-record-status"></div>
       </div>
     </form>
   `;
