@@ -100,7 +100,7 @@ function storyTrayCard(profile, story, isOwner) {
 
     ? isVideo
 
-      ? `<video class="profile-story-card-media" src="${escapeHtml(story.mediaUrl)}" muted playsinline preload="metadata"></video>`
+      ? renderVideoFrame(story.mediaUrl, { className: "profile-story-card-media", controls: false, muted: true, preload: "metadata" })
 
       : `<img class="profile-story-card-media" src="${escapeHtml(story.mediaUrl)}" alt="Story preview" />`
 
@@ -1670,6 +1670,11 @@ router.get("/u/:username", async (req, res) => {
 
 
 
+      .tz-video-frame{position:relative;overflow:hidden;background:#05070d;}
+      .tz-video-preview{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;cursor:pointer;background:radial-gradient(circle at 50% 20%, rgba(52,116,255,.22), transparent 42%),linear-gradient(180deg, rgba(8,12,24,.96), rgba(3,5,12,.98));transition:opacity .22s ease, visibility .22s ease;}
+      .tz-video-preview-blur{position:absolute;inset:0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+      .tz-video-preview-badge{position:relative;z-index:1;width:60px;height:60px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(10,14,24,.72);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 28px rgba(0,0,0,.34);color:#fff;font-size:24px;line-height:1;}
+      .tz-video-frame.is-ready .tz-video-preview,.tz-video-frame.is-playing .tz-video-preview{opacity:0;visibility:hidden;pointer-events:none;}
       .profile-story-card-media{
 
         width:100%;

@@ -17,6 +17,27 @@ function isVideo(url) {
   return v.endsWith(".mp4") || v.endsWith(".mov") || v.endsWith(".webm");
 }
 
+
+function renderVideoFrame(url, options = {}) {
+  const src = escapeHtml(url || "");
+  const className = escapeHtml(options.className || "post-video");
+  const autoplay = options.autoplay ? ' autoplay' : '';
+  const muted = options.muted ? ' muted' : '';
+  const controls = options.controls === false ? '' : ' controls';
+  const loop = options.loop ? ' loop' : '';
+  const preload = escapeHtml(options.preload || 'metadata');
+  const aria = escapeHtml(options.ariaLabel || 'Play video');
+  return `
+    <div class="tz-video-frame${options.autoplay ? ' is-autoplay' : ''}" data-video-frame>
+      <div class="tz-video-preview" data-video-preview tabindex="0" role="button" aria-label="${aria}">
+        <div class="tz-video-preview-blur"></div>
+        <div class="tz-video-preview-badge">▶</div>
+      </div>
+      <video class="${className}" src="${src}"${controls}${autoplay}${muted}${loop} playsinline preload="${preload}"></video>
+    </div>
+  `;
+}
+
 function extractMentions(value) {
   const matches = String(value || "").match(/@([a-zA-Z0-9_\.]+)/g) || [];
   return Array.from(new Set(matches.map((item) => item.slice(1).toLowerCase()).filter(Boolean)));
@@ -58,7 +79,7 @@ function renderComment(comment, currentProfile, postOwnerUsername) {
 function postCard(post, currentProfile, likedSet) {
   const media = post.mediaUrl
     ? isVideo(post.mediaUrl)
-      ? `<video src="${escapeHtml(post.mediaUrl)}" controls playsinline></video>`
+      ? renderVideoFrame(post.mediaUrl, { className: "post-video", ariaLabel: "Play post video" })
       : `<img src="${escapeHtml(post.mediaUrl)}" alt="Post media" />`
     : "";
 
@@ -265,7 +286,12 @@ router.get("/posts", async (req, res) => {
         background:radial-gradient(420px 180px at 68% 20%, rgba(36,80,125,.14), transparent 48%),linear-gradient(180deg, rgba(13,15,20,.98), rgba(7,9,14,1));
         box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 14px 28px rgba(0,0,0,.22);
       }
-      .post-media img,.post-media video{width:100%;display:block;max-height:560px;object-fit:cover;background:#000;}
+      .post-media img,.post-media video,.post-media .post-video{width:100%;display:block;max-height:560px;object-fit:cover;background:#000;}
+      .tz-video-frame{position:relative;overflow:hidden;background:#05070d;}
+      .tz-video-preview{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;cursor:pointer;background:radial-gradient(circle at 50% 20%, rgba(52,116,255,.22), transparent 42%),linear-gradient(180deg, rgba(8,12,24,.96), rgba(3,5,12,.98));transition:opacity .22s ease, visibility .22s ease;}
+      .tz-video-preview-blur{position:absolute;inset:0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+      .tz-video-preview-badge{position:relative;z-index:1;width:74px;height:74px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(10,14,24,.74);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 28px rgba(0,0,0,.34);color:#fff;font-size:30px;line-height:1;}
+      .tz-video-frame.is-ready .tz-video-preview,.tz-video-frame.is-playing .tz-video-preview{opacity:0;visibility:hidden;pointer-events:none;}
       .post-body{padding:18px;}
       .post-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;}
       .post-user{color:#fff;font-weight:800;font-size:16px;}
@@ -295,6 +321,36 @@ router.get("/posts", async (req, res) => {
         .post-comment-form{flex-direction:column;align-items:stretch;}
       }
     </style>
+
+    <script>
+      (function(){
+        function initVideoPreviewFrames(root){
+          (root || document).querySelectorAll('[data-video-frame]').forEach(function(frame){
+            if (frame.dataset.videoReady === '1') return;
+            frame.dataset.videoReady = '1';
+            const video = frame.querySelector('video');
+            const preview = frame.querySelector('[data-video-preview]');
+            if (!video || !preview) return;
+            const markReady = function(){ frame.classList.add('is-ready'); };
+            const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
+            const markPaused = function(){ frame.classList.remove('is-playing'); };
+            preview.addEventListener('click', function(){ video.play().catch(function(){}); });
+            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
+            video.addEventListener('loadeddata', markReady, { once: true });
+            video.addEventListener('canplay', markReady, { once: true });
+            video.addEventListener('play', markPlaying);
+            video.addEventListener('playing', markPlaying);
+            video.addEventListener('pause', markPaused);
+            if (video.readyState >= 2) markReady();
+          });
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function(){ initVideoPreviewFrames(document); }, { once: true });
+        } else {
+          initVideoPreviewFrames(document);
+        }
+      })();
+    </script>
 
     ${renderTapzyAssistant({
       username: currentProfile?.username || "User",

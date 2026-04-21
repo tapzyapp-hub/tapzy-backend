@@ -153,6 +153,26 @@ function isVideoMediaUrl(url) {
   return /\.(mp4|mov|webm|m4v)(?:[?#].*)?$/i.test(String(url || "").trim());
 }
 
+
+function renderVideoPreviewFrame(url, extra = {}) {
+  const src = escapeHtml(url || "");
+  const className = escapeHtml(extra.className || "tz-chat-video");
+  const controls = extra.controls === false ? '' : ' controls';
+  const autoplay = extra.autoplay ? ' autoplay' : '';
+  const muted = extra.muted ? ' muted' : '';
+  const preload = escapeHtml(extra.preload || 'metadata');
+  const aria = escapeHtml(extra.ariaLabel || 'Play video');
+  return `
+    <div class="tz-video-frame${extra.autoplay ? ' is-autoplay' : ''}" data-video-frame>
+      <div class="tz-video-preview" data-video-preview tabindex="0" role="button" aria-label="${aria}">
+        <div class="tz-video-preview-blur"></div>
+        <div class="tz-video-preview-badge">▶</div>
+      </div>
+      <video class="${className}"${controls}${autoplay}${muted} preload="${preload}" playsinline src="${src}"></video>
+    </div>
+  `;
+}
+
 function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }) {
 
   const isMine = message.senderProfileId === currentProfile.id;
@@ -188,7 +208,7 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
   const videoHtml = hasVideo
 
-    ? `<video class="tz-chat-video" controls preload="metadata" playsinline src="${escapeHtml(videoUrl)}"></video>`
+    ? renderVideoPreviewFrame(videoUrl, { className: "tz-chat-video", ariaLabel: "Play message video" })
 
     : "";
 
@@ -1214,6 +1234,94 @@ module.exports = function renderConversationPage({
 
   }
 
+  .tz-video-frame{
+
+    position:relative;
+
+    overflow:hidden;
+
+    border-radius:22px;
+
+    background:#05070d;
+
+  }
+
+  .tz-video-preview{
+
+    position:absolute;
+
+    inset:0;
+
+    z-index:3;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    background:radial-gradient(circle at 50% 20%, rgba(52,116,255,.22), transparent 42%),linear-gradient(180deg, rgba(8,12,24,.96), rgba(3,5,12,.98));
+
+    transition:opacity .22s ease, visibility .22s ease;
+
+  }
+
+  .tz-video-preview-blur{
+
+    position:absolute;
+
+    inset:0;
+
+    backdrop-filter:blur(14px);
+
+    -webkit-backdrop-filter:blur(14px);
+
+  }
+
+  .tz-video-preview-badge{
+
+    position:relative;
+
+    z-index:1;
+
+    width:68px;
+
+    height:68px;
+
+    border-radius:999px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:rgba(10,14,24,.72);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    box-shadow:0 10px 28px rgba(0,0,0,.34);
+
+    color:#fff;
+
+    font-size:28px;
+
+    line-height:1;
+
+  }
+
+  .tz-video-frame.is-ready .tz-video-preview,.tz-video-frame.is-playing .tz-video-preview{
+
+    opacity:0;
+
+    visibility:hidden;
+
+    pointer-events:none;
+
+  }
+
   .tz-chat-video{
 
     display:block;
@@ -2053,6 +2161,41 @@ module.exports = function renderConversationPage({
 
 
 
+        function renderVideoPreviewFrameClient(url) {
+          return \`
+            <div class="tz-video-frame" data-video-frame>
+              <div class="tz-video-preview" data-video-preview tabindex="0" role="button" aria-label="Play message video">
+                <div class="tz-video-preview-blur"></div>
+                <div class="tz-video-preview-badge">▶</div>
+              </div>
+              <video class="tz-chat-video" controls preload="metadata" playsinline src="\${safeEscape(url)}"></video>
+            </div>
+          \`;
+        }
+
+        function initVideoPreviewFrames(root) {
+          (root || document).querySelectorAll('[data-video-frame]').forEach(function(frame){
+            if (frame.dataset.videoReady === '1') return;
+            frame.dataset.videoReady = '1';
+            const video = frame.querySelector('video');
+            const preview = frame.querySelector('[data-video-preview]');
+            if (!video || !preview) return;
+            const markReady = function(){ frame.classList.add('is-ready'); };
+            const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
+            const markPaused = function(){ frame.classList.remove('is-playing'); };
+            preview.addEventListener('click', function(){ video.play().catch(function(){}); });
+            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
+            video.addEventListener('loadeddata', markReady, { once: true });
+            video.addEventListener('canplay', markReady, { once: true });
+            video.addEventListener('play', markPlaying);
+            video.addEventListener('playing', markPlaying);
+            video.addEventListener('pause', markPaused);
+            if (video.readyState >= 2) markReady();
+          });
+        }
+
+        initVideoPreviewFrames(document);
+
         function appendMessage(message) {
 
           const isMine = String(message.senderProfileId || "") === String(currentProfileId || "");
@@ -2133,7 +2276,7 @@ module.exports = function renderConversationPage({
 
               \${hasImage ? \`<img class="tz-chat-image" src="\${safeEscape(imageUrl)}" alt="Message image" />\` : ""}
 
-              \${hasVideo ? \`<video class="tz-chat-video" controls preload="metadata" playsinline src="\${safeEscape(videoUrl)}"></video>\` : ""}
+              ${hasVideo ? renderVideoPreviewFrameClient(videoUrl) : ""}
 
               \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(audioUrl)}"></audio>\` : ""}
 
