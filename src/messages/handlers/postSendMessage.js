@@ -3,10 +3,24 @@ const prisma = require("../../prisma");
 const { publicAbsoluteUrl } = require("../../utils");
 const { notifyNewMessage } = require("../../services/messageNotificationHelper");
 
+function getFileExt(file) {
+  return path.extname(String(file?.originalname || "")).toLowerCase();
+}
+
 function isAudioUpload(file) {
   const mimetype = String(file?.mimetype || "").toLowerCase();
-  const ext = path.extname(String(file?.originalname || "")).toLowerCase();
-  return mimetype.startsWith("audio/") || mimetype === "application/octet-stream" && [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".webm"].includes(ext) || [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".webm"].includes(ext) || (mimetype.startsWith("video/mp4") && /^voice-note\./i.test(String(file?.originalname || "")));
+  const ext = getFileExt(file);
+  return mimetype.startsWith("audio/")
+    || (mimetype === "application/octet-stream" && [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".webm"].includes(ext))
+    || [".mp3", ".wav", ".ogg", ".m4a", ".aac"].includes(ext)
+    || ((mimetype.startsWith("video/") || mimetype === "application/octet-stream") && /^voice-note\./i.test(String(file?.originalname || "")) && [".webm", ".mp4", ".m4a"].includes(ext));
+}
+
+function isVideoUpload(file) {
+  const mimetype = String(file?.mimetype || "").toLowerCase();
+  const ext = getFileExt(file);
+  return (mimetype.startsWith("video/") && !/^voice-note\./i.test(String(file?.originalname || "")))
+    || [".mp4", ".mov", ".webm", ".m4v"].includes(ext);
 }
 
 module.exports = async function postSendMessage(req, res) {
@@ -25,6 +39,7 @@ module.exports = async function postSendMessage(req, res) {
       ? publicAbsoluteUrl(req, `/uploads/${req.file.filename}`)
       : null;
     const audioUpload = isAudioUpload(req.file);
+    const videoUpload = isVideoUpload(req.file) && !audioUpload;
     const imageUrl = mediaUrl && !audioUpload ? mediaUrl : null;
     const audioUrl = mediaUrl && audioUpload ? mediaUrl : null;
 
@@ -57,20 +72,30 @@ module.exports = async function postSendMessage(req, res) {
       return res.status(403).send("Forbidden");
     }
 
-    await prisma.conversationMember.update({
-      where: { id: myMembership.id },
-      data: { hiddenAt: null, lastReadAt: new Date() },
-    });
+    try {
+      await prisma.conversationMember.update({
+        where: { id: myMembership.id },
+        data: { hiddenAt: null, lastReadAt: new Date() },
+      });
+    } catch (memberUpdateError) {
+      const message = String(memberUpdateError?.message || memberUpdateError || "");
+      if (!/(hiddenAt|lastReadAt|Unknown arg|P2022|column)/i.test(message)) throw memberUpdateError;
+    }
 
     const recipientMembershipIds = conversation.members
       .filter((member) => member.profileId !== currentProfile.id)
       .map((member) => member.id);
 
     if (recipientMembershipIds.length) {
-      await prisma.conversationMember.updateMany({
-        where: { id: { in: recipientMembershipIds } },
-        data: { hiddenAt: null },
-      });
+      try {
+        await prisma.conversationMember.updateMany({
+          where: { id: { in: recipientMembershipIds } },
+          data: { hiddenAt: null },
+        });
+      } catch (recipientUpdateError) {
+        const message = String(recipientUpdateError?.message || recipientUpdateError || "");
+        if (!/(hiddenAt|Unknown arg|P2022|column)/i.test(message)) throw recipientUpdateError;
+      }
     }
 
     let createdMessage;
@@ -131,19 +156,23 @@ module.exports = async function postSendMessage(req, res) {
 
     if (otherMemberIds.length) {
       const preview =
-        text || (audioUrl ? "Sent a voice message" : imageUrl ? "Sent an image" : "New message");
-      await Promise.all(
-        otherMemberIds.map((receiverId) =>
-          notifyNewMessage({
-            receiverId,
-            senderId: currentProfile.id,
-            senderName: payload.senderName,
-            senderPhoto: payload.senderPhoto,
-            conversationId: id,
-            preview,
-          })
-        )
-      );
+        text || (audioUrl ? "Sent a voice message" : videoUpload ? "Sent a video" : imageUrl ? "Sent an image" : "New message");
+      try {
+        await Promise.all(
+          otherMemberIds.map((receiverId) =>
+            notifyNewMessage({
+              receiverId,
+              senderId: currentProfile.id,
+              senderName: payload.senderName,
+              senderPhoto: payload.senderPhoto,
+              conversationId: id,
+              preview,
+            })
+          )
+        );
+      } catch (notifyError) {
+        console.error("Message notification error", notifyError);
+      }
     }
 
     const io = req.app.get("io");

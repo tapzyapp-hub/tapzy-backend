@@ -24,7 +24,7 @@ module.exports = function renderChatComposer({ conversationId }) {
           class="tz-chat-upload-pill"
           for="tzMediaInput"
           aria-label="Upload media"
-          title="Upload image or voice note"
+          title="Upload image, video, or voice note"
         >+</label>
 
         <button
@@ -40,7 +40,7 @@ module.exports = function renderChatComposer({ conversationId }) {
           class="tz-chat-file"
           type="file"
           name="media"
-          accept="image/png,image/jpeg,image/webp,audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/webm,audio/mp4,audio/x-m4a,audio/aac"
+          accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime,video/webm,video/x-m4v,audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/webm,audio/mp4,audio/x-m4a,audio/aac"
         />
 
         <button class="tz-chat-send" id="tzSendBtn" type="submit">Send</button>

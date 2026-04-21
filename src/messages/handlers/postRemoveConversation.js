@@ -18,10 +18,18 @@ module.exports = async function postRemoveConversation(req, res) {
 
     if (!membership) return res.status(404).send("Conversation not found");
 
-    await prisma.conversationMember.update({
-      where: { id: membership.id },
-      data: { hiddenAt: new Date() },
-    });
+    try {
+      await prisma.conversationMember.update({
+        where: { id: membership.id },
+        data: { hiddenAt: new Date() },
+      });
+    } catch (updateError) {
+      const message = String(updateError?.message || updateError || "");
+      if (!/(hiddenAt|Unknown arg|P2022|column)/i.test(message)) throw updateError;
+      await prisma.conversationMember.delete({
+        where: { id: membership.id },
+      });
+    }
 
     return res.redirect("/messages");
   } catch (e) {

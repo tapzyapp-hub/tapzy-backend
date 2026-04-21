@@ -145,7 +145,12 @@ function getGroupPosition(messages, index) {
 
 
 function isAudioMediaUrl(url) {
-  return /\.(mp3|wav|ogg|m4a|aac|webm)(?:[?#].*)?$/i.test(String(url || "").trim());
+  const value = String(url || "").trim();
+  return /\.(mp3|wav|ogg|m4a|aac)(?:[?#].*)?$/i.test(value) || /voice-note\./i.test(value);
+}
+
+function isVideoMediaUrl(url) {
+  return /\.(mp4|mov|webm|m4v)(?:[?#].*)?$/i.test(String(url || "").trim());
 }
 
 function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }) {
@@ -156,8 +161,11 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
   const fallbackAudioUrl = isAudioMediaUrl(message.imageUrl) ? String(message.imageUrl || "").trim() : "";
   const audioUrl = String(message.audioUrl || "").trim() || fallbackAudioUrl;
-  const imageUrl = fallbackAudioUrl ? "" : String(message.imageUrl || "").trim();
+  const rawMediaUrl = fallbackAudioUrl ? "" : String(message.imageUrl || "").trim();
+  const videoUrl = isVideoMediaUrl(rawMediaUrl) ? rawMediaUrl : "";
+  const imageUrl = videoUrl ? "" : rawMediaUrl;
   const hasImage = !!imageUrl;
+  const hasVideo = !!videoUrl;
   const hasAudio = !!audioUrl;
 
 
@@ -178,6 +186,12 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
 
 
+  const videoHtml = hasVideo
+
+    ? `<video class="tz-chat-video" controls preload="metadata" playsinline src="${escapeHtml(videoUrl)}"></video>`
+
+    : "";
+
   const audioHtml = hasAudio
 
     ? `<audio class="tz-chat-audio" controls preload="metadata" src="${escapeHtml(audioUrl)}"></audio>`
@@ -194,11 +208,13 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
     groupPosition,
 
-    hasImage && !hasBody && !hasAudio ? "is-image-only" : "",
+    (hasImage || hasVideo) && !hasBody && !hasAudio ? "is-image-only" : "",
 
-    hasImage && hasBody ? "has-image" : "",
+    (hasImage || hasVideo) && hasBody ? "has-image" : "",
 
     hasAudio ? "has-audio" : "",
+
+    hasVideo ? "has-video" : "",
 
   ]
 
@@ -225,6 +241,8 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
         ${bodyHtml}
 
         ${imageHtml}
+
+        ${videoHtml}
 
         ${audioHtml}
 
@@ -745,11 +763,11 @@ module.exports = function renderConversationPage({
 
     justify-content:center;
 
-    min-width:168px;
+    min-width:112px;
 
-    min-height:40px;
+    min-height:34px;
 
-    padding:0 18px;
+    padding:0 14px;
 
     border-radius:999px;
 
@@ -1193,6 +1211,24 @@ module.exports = function renderConversationPage({
     border:1px solid rgba(168,184,210,.10);
 
     display:block;
+
+  }
+
+  .tz-chat-video{
+
+    display:block;
+
+    width:min(100%, 360px);
+
+    max-width:100%;
+
+    border-radius:22px;
+
+    border:1px solid rgba(255,255,255,.06);
+
+    background:#05070d;
+
+    box-shadow:0 16px 34px rgba(0,0,0,.28);
 
   }
 
@@ -1641,11 +1677,12 @@ module.exports = function renderConversationPage({
     .tz-chat-pill{
       min-width:0;
       width:auto;
-      min-height:26px;
-      height:26px;
-      padding:0 11px;
+      min-width:74px;
+      min-height:22px;
+      height:22px;
+      padding:0 9px;
       border-radius:999px;
-      font-size:10px;
+      font-size:9px;
       font-weight:700;
       letter-spacing:.03em;
       box-shadow:
@@ -2026,9 +2063,15 @@ module.exports = function renderConversationPage({
 
           const audioUrl = String(message.audioUrl || "").trim() || fallbackAudioUrl;
 
-          const imageUrl = fallbackAudioUrl ? "" : String(message.imageUrl || "").trim();
+          const rawMediaUrl = fallbackAudioUrl ? "" : String(message.imageUrl || "").trim();
+
+          const videoUrl = isVideoMediaUrl(rawMediaUrl) ? rawMediaUrl : "";
+
+          const imageUrl = videoUrl ? "" : rawMediaUrl;
 
           const hasImage = !!imageUrl;
+
+          const hasVideo = !!videoUrl;
 
           const hasAudio = !!audioUrl;
 
@@ -2068,11 +2111,13 @@ module.exports = function renderConversationPage({
 
             isMine ? "mine" : "other",
 
-            hasImage && !hasBody && !hasAudio ? "is-image-only" : "",
+            (hasImage || hasVideo) && !hasBody && !hasAudio ? "is-image-only" : "",
 
-            hasImage && hasBody ? "has-image" : "",
+            (hasImage || hasVideo) && hasBody ? "has-image" : "",
 
             hasAudio ? "has-audio" : "",
+
+            hasVideo ? "has-video" : "",
 
             "is-single",
 
@@ -2087,6 +2132,8 @@ module.exports = function renderConversationPage({
               \${hasBody ? \`<div class="tz-chat-body">\${safeEscape(message.body)}</div>\` : ""}
 
               \${hasImage ? \`<img class="tz-chat-image" src="\${safeEscape(imageUrl)}" alt="Message image" />\` : ""}
+
+              \${hasVideo ? \`<video class="tz-chat-video" controls preload="metadata" playsinline src="\${safeEscape(videoUrl)}"></video>\` : ""}
 
               \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(audioUrl)}"></audio>\` : ""}
 
@@ -2376,7 +2423,14 @@ module.exports = function renderConversationPage({
 
             if (mediaInput.files && mediaInput.files[0] && mediaHint) {
 
-              mediaHint.textContent = mediaInput.files[0].name;
+              const selectedFile = mediaInput.files[0];
+              if (selectedFile.type && selectedFile.type.startsWith("video/")) {
+                mediaHint.textContent = "Video ready: " + selectedFile.name;
+              } else if (selectedFile.type && selectedFile.type.startsWith("audio/")) {
+                mediaHint.textContent = "Audio ready: " + selectedFile.name;
+              } else {
+                mediaHint.textContent = selectedFile.name;
+              }
 
             }
 

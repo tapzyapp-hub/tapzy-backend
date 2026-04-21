@@ -8,7 +8,12 @@ const renderMessagesInboxPage = require("../pages/renderMessagesInboxPage");
 const { getUnreadNotificationCount } = require("../../services/notificationService");
 
 function isAudioMediaUrl(url) {
-  return /\.(mp3|wav|ogg|m4a|aac|webm)(?:[?#].*)?$/i.test(String(url || "").trim());
+  const value = String(url || "").trim();
+  return /\.(mp3|wav|ogg|m4a|aac)(?:[?#].*)?$/i.test(value) || /voice-note\./i.test(value);
+}
+
+function isVideoMediaUrl(url) {
+  return /\.(mp4|mov|webm|m4v)(?:[?#].*)?$/i.test(String(url || "").trim());
 }
 
 function cleanPreview(lastMessage) {
@@ -17,10 +22,12 @@ function cleanPreview(lastMessage) {
   const body = String(lastMessage.body || "").trim();
   const imageUrl = String(lastMessage.imageUrl || "").trim();
   const hasAudio = !!String(lastMessage.audioUrl || "").trim() || isAudioMediaUrl(imageUrl);
-  const hasImage = !!imageUrl && !isAudioMediaUrl(imageUrl);
+  const hasVideo = !!imageUrl && !hasAudio && isVideoMediaUrl(imageUrl);
+  const hasImage = !!imageUrl && !hasAudio && !hasVideo;
 
   if (body) return body;
   if (hasAudio) return "Voice message";
+  if (hasVideo) return "Sent a video";
   if (hasImage) return "Sent an image";
   return "No messages yet";
 }

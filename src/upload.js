@@ -9,16 +9,19 @@ fs.mkdirSync(uploadsDir, { recursive: true });
 function safeExtension(originalName = "", mimetype = "") {
   const ext = path.extname(originalName).toLowerCase();
 
-  if ([".jpg", ".jpeg", ".png", ".webp", ".mp4", ".mov", ".webm", ".mp3", ".wav", ".ogg", ".m4a"].includes(ext)) {
+  if ([".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v", ".mp3", ".wav", ".ogg", ".m4a", ".aac"].includes(ext)) {
     return ext;
   }
 
   if (mimetype === "image/jpeg") return ".jpg";
   if (mimetype === "image/png") return ".png";
   if (mimetype === "image/webp") return ".webp";
+  if (mimetype === "image/gif") return ".gif";
   if (mimetype === "video/mp4") return ".mp4";
   if (mimetype === "video/quicktime") return ".mov";
   if (mimetype === "video/webm") return ".webm";
+  if (mimetype === "video/x-m4v") return ".m4v";
+  if (mimetype === "application/octet-stream" && [".webm", ".m4a", ".mp4", ".mov", ".m4v", ".mp3", ".wav", ".ogg", ".aac"].includes(ext)) return ext;
   if (mimetype === "audio/mpeg") return ".mp3";
   if (mimetype === "audio/wav") return ".wav";
   if (mimetype === "audio/x-wav") return ".wav";
@@ -52,9 +55,12 @@ const upload = multer({
       "image/jpeg",
       "image/png",
       "image/webp",
+      "image/gif",
       "video/mp4",
       "video/quicktime",
       "video/webm",
+      "video/x-m4v",
+      "application/octet-stream",
       "audio/mpeg",
       "audio/wav",
       "audio/x-wav",
