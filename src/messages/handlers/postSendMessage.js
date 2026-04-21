@@ -1,6 +1,13 @@
+const path = require("path");
 const prisma = require("../../prisma");
 const { publicAbsoluteUrl } = require("../../utils");
 const { notifyNewMessage } = require("../../services/messageNotificationHelper");
+
+function isAudioUpload(file) {
+  const mimetype = String(file?.mimetype || "").toLowerCase();
+  const ext = path.extname(String(file?.originalname || "")).toLowerCase();
+  return mimetype.startsWith("audio/") || mimetype === "application/octet-stream" && [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".webm"].includes(ext) || [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".webm"].includes(ext) || (mimetype.startsWith("video/mp4") && /^voice-note\./i.test(String(file?.originalname || "")));
+}
 
 module.exports = async function postSendMessage(req, res) {
   try {
@@ -17,13 +24,9 @@ module.exports = async function postSendMessage(req, res) {
     const mediaUrl = req.file
       ? publicAbsoluteUrl(req, `/uploads/${req.file.filename}`)
       : null;
-    const mimetype = String(req.file?.mimetype || "").toLowerCase();
-
-    const imageUrl = mediaUrl && mimetype.startsWith("image/") ? mediaUrl : null;
-    const audioUrl =
-      mediaUrl && mimetype.startsWith("audio/")
-        ? mediaUrl
-        : null;
+    const audioUpload = isAudioUpload(req.file);
+    const imageUrl = mediaUrl && !audioUpload ? mediaUrl : null;
+    const audioUrl = mediaUrl && audioUpload ? mediaUrl : null;
 
     if (!text && !imageUrl && !audioUrl) {
       if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
@@ -70,18 +73,37 @@ module.exports = async function postSendMessage(req, res) {
       });
     }
 
-    const createdMessage = await prisma.directMessage.create({
-      data: {
-        conversationId: id,
-        senderProfileId: currentProfile.id,
-        body: text,
-        imageUrl,
-        audioUrl,
-      },
-      include: {
-        sender: true,
-      },
-    });
+    let createdMessage;
+    try {
+      createdMessage = await prisma.directMessage.create({
+        data: {
+          conversationId: id,
+          senderProfileId: currentProfile.id,
+          body: text,
+          imageUrl,
+          audioUrl,
+        },
+        include: {
+          sender: true,
+        },
+      });
+    } catch (createError) {
+      const canFallbackAudio = !!audioUrl && /(audioUrl|column .*audioUrl|Unknown arg `audioUrl`|P2022)/i.test(String(createError && (createError.message || createError)));
+      if (!canFallbackAudio) throw createError;
+      createdMessage = await prisma.directMessage.create({
+        data: {
+          conversationId: id,
+          senderProfileId: currentProfile.id,
+          body: text,
+          imageUrl: audioUrl,
+        },
+        include: {
+          sender: true,
+        },
+      });
+      createdMessage.audioUrl = audioUrl;
+      createdMessage.imageUrl = null;
+    }
 
     await prisma.conversation.update({
       where: { id },

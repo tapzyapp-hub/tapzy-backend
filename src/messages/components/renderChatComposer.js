@@ -47,7 +47,7 @@ module.exports = function renderChatComposer({ conversationId }) {
       </div>
 
       <div class="tz-chat-composer-subrow">
-        <div id="tzMediaHint" class="tz-chat-media-hint">You can send text, images, or voice notes.</div>
+        <div id="tzMediaHint" class="tz-chat-media-hint"></div>
         <div id="tzRecordStatus" class="tz-chat-record-status"></div>
       </div>
     </form>

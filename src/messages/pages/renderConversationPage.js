@@ -144,14 +144,21 @@ function getGroupPosition(messages, index) {
 
 
 
+function isAudioMediaUrl(url) {
+  return /\.(mp3|wav|ogg|m4a|aac|webm)(?:[?#].*)?$/i.test(String(url || "").trim());
+}
+
 function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }) {
 
   const isMine = message.senderProfileId === currentProfile.id;
 
   const hasBody = !!String(message.body || "").trim();
 
-  const hasImage = !!String(message.imageUrl || "").trim();
-  const hasAudio = !!String(message.audioUrl || "").trim();
+  const fallbackAudioUrl = isAudioMediaUrl(message.imageUrl) ? String(message.imageUrl || "").trim() : "";
+  const audioUrl = String(message.audioUrl || "").trim() || fallbackAudioUrl;
+  const imageUrl = fallbackAudioUrl ? "" : String(message.imageUrl || "").trim();
+  const hasImage = !!imageUrl;
+  const hasAudio = !!audioUrl;
 
 
 
@@ -165,7 +172,7 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
   const imageHtml = hasImage
 
-    ? `<img class="tz-chat-image" src="${escapeHtml(message.imageUrl)}" alt="Message image" />`
+    ? `<img class="tz-chat-image" src="${escapeHtml(imageUrl)}" alt="Message image" />`
 
     : "";
 
@@ -173,7 +180,7 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
   const audioHtml = hasAudio
 
-    ? `<audio class="tz-chat-audio" controls preload="metadata" src="${escapeHtml(message.audioUrl)}"></audio>`
+    ? `<audio class="tz-chat-audio" controls preload="metadata" src="${escapeHtml(audioUrl)}"></audio>`
 
     : "";
 
@@ -1619,28 +1626,43 @@ module.exports = function renderConversationPage({
     .tz-chat-topbar-actions{
       width:100%;
       display:flex;
-      flex-direction:column;
+      flex-direction:row;
       gap:8px;
-      align-items:flex-start;
+      align-items:center;
       margin-top:10px;
+      flex-wrap:wrap;
     }
 
     .tz-chat-topbar-actions form{
-      width:100%;
+      width:auto;
       display:block;
     }
 
     .tz-chat-pill{
       min-width:0;
-      width:148px;
-      min-height:36px;
-      height:36px;
-      padding:0 14px;
-      border-radius:14px;
-      font-size:13px;
+      width:auto;
+      min-height:26px;
+      height:26px;
+      padding:0 11px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.03em;
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.03),
-        0 8px 18px rgba(0,0,0,.20);
+        0 6px 14px rgba(0,0,0,.18);
+    }
+
+    .tz-chat-pill-light{
+      background:rgba(120,160,220,.07);
+      border:1px solid rgba(140,176,226,.18);
+      color:#dcecff;
+    }
+
+    .tz-chat-pill-danger{
+      background:rgba(120,160,220,.07);
+      border:1px solid rgba(140,176,226,.18);
+      color:#dcecff;
     }
 
 
@@ -2000,9 +2022,15 @@ module.exports = function renderConversationPage({
 
           const hasBody = !!String(message.body || "").trim();
 
-          const hasImage = !!String(message.imageUrl || "").trim();
+          const fallbackAudioUrl = isAudioMediaUrl(message.imageUrl) ? String(message.imageUrl || "").trim() : "";
 
-          const hasAudio = !!String(message.audioUrl || "").trim();
+          const audioUrl = String(message.audioUrl || "").trim() || fallbackAudioUrl;
+
+          const imageUrl = fallbackAudioUrl ? "" : String(message.imageUrl || "").trim();
+
+          const hasImage = !!imageUrl;
+
+          const hasAudio = !!audioUrl;
 
 
 
@@ -2058,9 +2086,9 @@ module.exports = function renderConversationPage({
 
               \${hasBody ? \`<div class="tz-chat-body">\${safeEscape(message.body)}</div>\` : ""}
 
-              \${hasImage ? \`<img class="tz-chat-image" src="\${safeEscape(message.imageUrl)}" alt="Message image" />\` : ""}
+              \${hasImage ? \`<img class="tz-chat-image" src="\${safeEscape(imageUrl)}" alt="Message image" />\` : ""}
 
-              \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(message.audioUrl)}"></audio>\` : ""}
+              \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(audioUrl)}"></audio>\` : ""}
 
               <div class="tz-chat-time">\${safeEscape(formatPrettyLocalClient(message.createdAt))}</div>
 
@@ -2416,7 +2444,7 @@ module.exports = function renderConversationPage({
 
             if (mediaInput) mediaInput.value = "";
 
-            if (mediaHint) mediaHint.textContent = "You can send text, images, or voice notes.";
+            if (mediaHint) mediaHint.textContent = "";
 
             setRecordState("", false);
 
