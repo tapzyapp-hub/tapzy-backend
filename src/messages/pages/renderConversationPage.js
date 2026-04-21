@@ -1616,7 +1616,32 @@ module.exports = function renderConversationPage({
 
     .tz-chat-topbar{ align-items:flex-start; }
 
-    .tz-chat-topbar-actions{ width:100%; }
+    .tz-chat-topbar-actions{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-start;
+      margin-top:10px;
+    }
+
+    .tz-chat-topbar-actions form{
+      width:100%;
+      display:block;
+    }
+
+    .tz-chat-pill{
+      min-width:0;
+      width:148px;
+      min-height:36px;
+      height:36px;
+      padding:0 14px;
+      border-radius:14px;
+      font-size:13px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.03),
+        0 8px 18px rgba(0,0,0,.20);
+    }
 
 
 
