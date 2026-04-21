@@ -58,6 +58,27 @@ function isVideoUrl(url) {
 
 
 
+function renderVideoFrame(url, options = {}) {
+  const src = escapeHtml(url || "");
+  const className = escapeHtml(options.className || "profile-story-card-media");
+  const autoplay = options.autoplay ? ' autoplay' : '';
+  const muted = options.muted ? ' muted' : '';
+  const controls = options.controls === false ? '' : ' controls';
+  const loop = options.loop ? ' loop' : '';
+  const preload = escapeHtml(options.preload || 'metadata');
+  const aria = escapeHtml(options.ariaLabel || 'Play video');
+  return `
+    <div class="tz-video-frame${options.autoplay ? ' is-autoplay' : ''}" data-video-frame>
+      <div class="tz-video-preview" data-video-preview tabindex="0" role="button" aria-label="${aria}">
+        <div class="tz-video-preview-blur"></div>
+        <div class="tz-video-preview-badge">▶</div>
+      </div>
+      <video class="${className}" src="${src}"${controls}${autoplay}${muted}${loop} playsinline preload="${preload}"></video>
+    </div>
+  `;
+}
+
+
 function formatStoryTimeShort(date) {
 
   const d = new Date(date);
@@ -2156,6 +2177,39 @@ router.get("/u/:username", async (req, res) => {
         `
 
         : ""
+
+    }
+
+    <script>
+      (function(){
+        function initVideoPreviewFrames(root){
+          (root || document).querySelectorAll('[data-video-frame]').forEach(function(frame){
+            if (frame.dataset.videoReady === '1') return;
+            frame.dataset.videoReady = '1';
+            const video = frame.querySelector('video');
+            const preview = frame.querySelector('[data-video-preview]');
+            if (!video || !preview) return;
+            const markReady = function(){ frame.classList.add('is-ready'); };
+            const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
+            const markPaused = function(){ frame.classList.remove('is-playing'); };
+            preview.addEventListener('click', function(){ video.play().catch(function(){}); });
+            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
+            video.addEventListener('loadeddata', markReady, { once: true });
+            video.addEventListener('canplay', markReady, { once: true });
+            video.addEventListener('play', markPlaying);
+            video.addEventListener('playing', markPlaying);
+            video.addEventListener('pause', markPaused);
+            if (video.readyState >= 2) markReady();
+          });
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function(){ initVideoPreviewFrames(document); }, { once: true });
+        } else {
+          initVideoPreviewFrames(document);
+        }
+      })();
+    </script>
+
 
     }
 

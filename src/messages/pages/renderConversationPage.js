@@ -2276,7 +2276,7 @@ module.exports = function renderConversationPage({
 
               \${hasImage ? \`<img class="tz-chat-image" src="\${safeEscape(imageUrl)}" alt="Message image" />\` : ""}
 
-              ${hasVideo ? renderVideoPreviewFrameClient(videoUrl) : ""}
+              \${hasVideo ? renderVideoPreviewFrameClient(videoUrl) : ""}
 
               \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(audioUrl)}"></audio>\` : ""}
 
