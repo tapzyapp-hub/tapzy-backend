@@ -72,8 +72,9 @@ function renderVideoFrame(url, options = {}) {
   const loop = options.loop ? ' loop' : '';
   const preload = escapeHtml(options.preload || 'metadata');
   const aria = escapeHtml(options.ariaLabel || 'Play video');
+  const unmuteOnPreview = options.unmuteOnPreview ? ' data-unmute-on-preview="1"' : '';
   return `
-    <div class="tz-video-frame${options.autoplay ? ' is-autoplay' : ''}" data-video-frame>
+    <div class="tz-video-frame${options.autoplay ? ' is-autoplay' : ''}" data-video-frame${unmuteOnPreview}>
       <div class="tz-video-preview" data-video-preview tabindex="0" role="button" aria-label="${aria}">
         <div class="tz-video-preview-blur"></div>
         <div class="tz-video-preview-badge">▶</div>
@@ -951,8 +952,15 @@ router.get("/stories", async (req, res) => {
             const markReady = function(){ frame.classList.add('is-ready'); };
             const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
             const markPaused = function(){ frame.classList.remove('is-playing'); };
-            preview.addEventListener('click', function(){ video.play().catch(function(){}); });
-            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
+            const playFromPreview = function(){
+              if (frame.dataset.unmuteOnPreview === '1') {
+                video.muted = false;
+                video.removeAttribute('muted');
+              }
+              video.play().catch(function(){});
+            };
+            preview.addEventListener('click', playFromPreview);
+            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playFromPreview(); } });
             video.addEventListener('loadeddata', markReady, { once: true });
             video.addEventListener('canplay', markReady, { once: true });
             video.addEventListener('play', markPlaying);
@@ -1324,7 +1332,7 @@ router.get("/stories/:username", async (req, res) => {
 
           ? isVideoUrl(story.mediaUrl)
 
-            ? renderVideoFrame(story.mediaUrl, { className: "story-view-media", autoplay: true, muted: true, controls: true, preload: index === 0 ? "metadata" : "none", ariaLabel: "Play story video" })
+            ? renderVideoFrame(story.mediaUrl, { className: "story-view-media", autoplay: true, muted: true, controls: true, preload: index === 0 ? "metadata" : "none", ariaLabel: "Play story video", unmuteOnPreview: true })
 
             : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" />`
 
@@ -1943,6 +1951,7 @@ router.get("/stories/:username", async (req, res) => {
         font-size:13px;
         font-weight:800;
         cursor:pointer;
+        pointer-events:auto;
       }
 
       .story-like-count{
@@ -2155,6 +2164,7 @@ router.get("/stories/:username", async (req, res) => {
         font-size:13px;
         font-weight:800;
         cursor:pointer;
+        pointer-events:auto;
       }
 
       .story-like-count{
@@ -2197,8 +2207,15 @@ router.get("/stories/:username", async (req, res) => {
             const markReady = function(){ frame.classList.add('is-ready'); };
             const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
             const markPaused = function(){ frame.classList.remove('is-playing'); };
-            preview.addEventListener('click', function(){ video.play().catch(function(){}); });
-            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
+            const playFromPreview = function(){
+              if (frame.dataset.unmuteOnPreview === '1') {
+                video.muted = false;
+                video.removeAttribute('muted');
+              }
+              video.play().catch(function(){});
+            };
+            preview.addEventListener('click', playFromPreview);
+            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playFromPreview(); } });
             video.addEventListener('loadeddata', markReady, { once: true });
             video.addEventListener('canplay', markReady, { once: true });
             video.addEventListener('play', markPlaying);
