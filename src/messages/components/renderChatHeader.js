@@ -9,31 +9,35 @@ function getInitials(profile) {
 module.exports = function renderChatHeader({ other, escapeHtml, conversationId }) {
   const name = other?.name || other?.username || "Conversation";
   const username = other?.username || "user";
+  const profileHref = other?.username ? `/u/${escapeHtml(username)}` : "#";
+  const avatarLabel = other?.username ? `Open ${name}'s profile` : `${name} avatar`;
 
-  const otherAvatarHtml = other?.photo
+  const avatarInnerHtml = other?.photo
     ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" />`
     : `<span>${escapeHtml(getInitials(other))}</span>`;
 
-  const profileInner = `
-    <div class="tz-chat-partner-avatar">${otherAvatarHtml}</div>
-    <div class="tz-chat-partner-copy">
-      <div class="tz-chat-partner-name">${escapeHtml(name)}</div>
-    </div>
-  `;
-
-  const profileHtml = other?.username
-    ? `<a class="tz-chat-partner tz-chat-partner-link" href="/u/${escapeHtml(username)}" aria-label="Open ${escapeHtml(name)} profile">${profileInner}</a>`
-    : `<div class="tz-chat-partner">${profileInner}</div>`;
+  const otherAvatarHtml = other?.username
+    ? `<a class="tz-chat-partner-avatar tz-chat-partner-avatar-link" href="${profileHref}" aria-label="${escapeHtml(avatarLabel)}">${avatarInnerHtml}</a>`
+    : `<div class="tz-chat-partner-avatar">${avatarInnerHtml}</div>`;
 
   return `
     <div class="tz-chat-topbar">
       <div class="tz-chat-topbar-left">
         <a class="tz-chat-back" href="/messages" aria-label="Back to messages">‹</a>
-        ${profileHtml}
+
+        <div class="tz-chat-partner">
+          ${otherAvatarHtml}
+
+          <div class="tz-chat-partner-copy">
+            <div class="tz-chat-partner-name-row">
+              <div class="tz-chat-partner-name">${escapeHtml(name)}</div>
+              <div class="tz-chat-partner-badge">Private</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="tz-chat-topbar-actions">
-        <div class="tz-chat-pill tz-chat-pill-light">Private</div>
         <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">
           <button class="tz-chat-pill tz-chat-pill-danger" type="submit">Remove</button>
         </form>

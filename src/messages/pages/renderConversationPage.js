@@ -266,7 +266,7 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
         ${audioHtml}
 
-        <div class="tz-chat-time">${escapeHtml(formatPrettyLocalClientSeed(message.createdAt))}</div>
+        <div class="tz-chat-time" data-local-time="${escapeHtml(String(message.createdAt || ""))}">${escapeHtml(formatPrettyLocalClientSeed(message.createdAt))}</div>
 
         ${statusHtml}
 
@@ -575,25 +575,13 @@ module.exports = function renderConversationPage({
 
 
 
-  .tz-chat-partner-link{
-
-    text-decoration:none;
-
-    color:inherit;
-
-    flex:1;
-
-  }
-
-
-
   .tz-chat-partner-avatar{
 
     width:52px;
 
     height:52px;
 
-    border-radius:50%;
+    border-radius:16px;
 
     overflow:hidden;
 
@@ -629,7 +617,8 @@ module.exports = function renderConversationPage({
 
 
 
-  .tz-chat-partner:hover .tz-chat-partner-avatar{
+  .tz-chat-partner:hover .tz-chat-partner-avatar,
+  .tz-chat-partner-avatar-link:hover{
 
     transform:translateY(-1px);
 
@@ -671,7 +660,12 @@ module.exports = function renderConversationPage({
 
 
 
-  .tz-chat-partner-copy{ min-width:0; display:flex; align-items:center; }
+  .tz-chat-partner-copy{ min-width:0; }
+
+  .tz-chat-partner-avatar-link{
+    text-decoration:none;
+    -webkit-tap-highlight-color: transparent;
+  }
 
 
 
@@ -868,13 +862,17 @@ module.exports = function renderConversationPage({
 
   .tz-chat-pill-danger{
 
-    color:#fff;
+    color:#ffd8df;
 
-    background:linear-gradient(180deg, rgba(72,22,30,.92), rgba(36,12,18,.96));
+    background:linear-gradient(180deg, rgba(74,20,30,.94), rgba(40,10,18,.98));
 
-    border:1px solid rgba(255,120,150,.18);
+    border:1px solid rgba(255,120,150,.44);
 
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 12px 26px rgba(0,0,0,.22);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.05),
+      0 12px 26px rgba(0,0,0,.22),
+      0 0 0 1px rgba(255,94,138,.12),
+      0 0 20px rgba(255,78,124,.24);
 
   }
 
@@ -882,9 +880,12 @@ module.exports = function renderConversationPage({
 
   .tz-chat-pill-danger:hover{
 
-    border-color:rgba(255,140,170,.28);
+    border-color:rgba(255,160,188,.56);
 
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 18px 34px rgba(0,0,0,.26),0 0 22px rgba(255,120,150,.16);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.04),
+      0 18px 34px rgba(0,0,0,.26),
+      0 0 26px rgba(255,92,138,.32);
 
   }
 
@@ -1779,20 +1780,14 @@ module.exports = function renderConversationPage({
 
     .tz-chat-topbar{
       align-items:flex-start;
-      gap:10px;
       flex-wrap:nowrap;
+      gap:10px;
     }
 
     .tz-chat-topbar-left{
+      flex:1;
+      min-width:0;
       gap:10px;
-      min-width:0;
-      flex:1;
-    }
-
-    .tz-chat-partner{
-      gap:12px;
-      min-width:0;
-      flex:1;
     }
 
     .tz-chat-topbar-actions{
@@ -1801,53 +1796,48 @@ module.exports = function renderConversationPage({
       flex-direction:row;
       gap:8px;
       align-items:flex-start;
-      justify-content:flex-end;
       margin-top:0;
       flex-wrap:nowrap;
-      padding-top:3px;
-      flex:0 0 auto;
+      margin-left:auto;
     }
 
     .tz-chat-topbar-actions form{
       width:auto;
       display:block;
-      flex:0 0 auto;
+      margin:0;
     }
 
     .tz-chat-pill{
       min-width:0;
       width:auto;
-      min-width:92px;
-      min-height:34px;
-      height:34px;
-      padding:0 14px;
+      min-width:74px;
+      min-height:22px;
+      height:22px;
+      padding:0 9px;
       border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      letter-spacing:.05em;
-      text-transform:uppercase;
+      font-size:9px;
+      font-weight:700;
+      letter-spacing:.03em;
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.03),
-        0 8px 18px rgba(0,0,0,.2);
+        0 6px 14px rgba(0,0,0,.18);
     }
 
     .tz-chat-pill-light{
       background:rgba(120,160,220,.07);
       border:1px solid rgba(140,176,226,.18);
       color:#dcecff;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.03),
-        0 8px 18px rgba(0,0,0,.2);
     }
 
     .tz-chat-pill-danger{
-      background:linear-gradient(180deg, rgba(72,22,30,.92), rgba(36,12,18,.96));
-      border:1px solid rgba(255,120,150,.42);
-      color:#ffe8ee;
+      color:#ffd8df;
+      background:linear-gradient(180deg, rgba(74,20,30,.94), rgba(40,10,18,.98));
+      border:1px solid rgba(255,120,150,.44);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.04),
-        0 8px 18px rgba(0,0,0,.22),
-        0 0 18px rgba(255,96,136,.22);
+        inset 0 1px 0 rgba(255,255,255,.05),
+        0 8px 18px rgba(0,0,0,.20),
+        0 0 0 1px rgba(255,94,138,.10),
+        0 0 18px rgba(255,78,124,.24);
     }
 
 
@@ -1876,49 +1866,66 @@ module.exports = function renderConversationPage({
 
 
 
-    .tz-chat-partner-name{ font-size:18px; }
+    .tz-chat-partner-name{ font-size:16px; }
 
-
+    .tz-chat-partner-name-row{
+      gap:8px;
+      flex-wrap:nowrap;
+    }
 
     .tz-chat-partner-avatar{
 
-      width:72px;
+      width:44px;
 
-      height:72px;
+      height:44px;
 
-      border-radius:50%;
+      border-radius:14px;
 
-      font-size:28px;
+      font-size:16px;
 
-      border:1px solid rgba(110,150,220,.28);
-
-      box-shadow:
-
-        0 12px 28px rgba(0,0,0,.28),
-
-        0 0 24px rgba(90,165,255,.12),
-
-        inset 0 1px 0 rgba(255,255,255,.04);
+      flex:0 0 44px;
 
     }
 
 
 
-    .tz-chat-partner-copy{
+    .tz-chat-partner-badge{
 
-      min-width:0;
+      min-height:24px;
 
-      padding-top:2px;
+      padding:0 9px;
+
+      font-size:10px;
 
     }
 
 
 
+    .tz-chat-composer-inner{
+      gap:8px;
+      padding:8px;
+    }
 
+    .tz-chat-input{
+      min-height:42px;
+      padding:11px 12px;
+    }
 
-    .tz-chat-partner-handle{ display:none; }
+    .tz-chat-upload-pill{
+      width:34px;
+      height:34px;
+      font-size:19px;
+    }
 
-    .tz-chat-send{ padding:0 14px; }
+    #tzRecordBtn{
+      font-size:15px;
+    }
+
+    .tz-chat-send{
+      min-height:38px;
+      padding:0 13px;
+      font-size:13px;
+    }
 
   }
 
@@ -2092,6 +2099,7 @@ module.exports = function renderConversationPage({
         function formatPrettyLocalClient(dt) {
 
           const d = new Date(dt);
+          if (Number.isNaN(d.getTime())) return "";
 
           const yyyy = d.getFullYear();
 
@@ -2131,6 +2139,16 @@ module.exports = function renderConversationPage({
 
           });
 
+        }
+
+
+        function hydrateLocalTimes(root) {
+          (root || document).querySelectorAll('.tz-chat-time[data-local-time]').forEach(function(node){
+            const raw = node.getAttribute('data-local-time');
+            if (!raw) return;
+            const formatted = formatPrettyLocalClient(raw);
+            if (formatted) node.textContent = formatted;
+          });
         }
 
 
@@ -2247,6 +2265,7 @@ module.exports = function renderConversationPage({
         }
 
         initVideoPreviewFrames(document);
+        hydrateLocalTimes(document);
 
         function appendMessage(message) {
 
@@ -2332,7 +2351,7 @@ module.exports = function renderConversationPage({
 
               \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(audioUrl)}"></audio>\` : ""}
 
-              <div class="tz-chat-time">\${safeEscape(formatPrettyLocalClient(message.createdAt))}</div>
+              <div class="tz-chat-time" data-local-time="\${safeEscape(String(message.createdAt || ""))}">\${safeEscape(formatPrettyLocalClient(message.createdAt))}</div>
 
               \${isMine ? \`<div class="tz-chat-status">\${safeEscape(message.readAt ? "Seen" : "Delivered")}</div>\` : ""}
 
