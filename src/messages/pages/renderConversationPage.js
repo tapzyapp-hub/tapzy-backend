@@ -173,6 +173,37 @@ function renderVideoPreviewFrame(url, escapeHtml, extra = {}) {
   `;
 }
 
+function summarizeReactions(reactions = []) {
+  const grouped = new Map();
+  reactions.forEach((reaction) => {
+    const emoji = String(reaction?.emoji || "").trim();
+    if (!emoji) return;
+    if (!grouped.has(emoji)) grouped.set(emoji, { emoji, count: 0, profileIds: [], names: [] });
+    const item = grouped.get(emoji);
+    item.count += 1;
+    if (reaction?.profileId) item.profileIds.push(String(reaction.profileId));
+    const name = reaction?.profile?.name || reaction?.profile?.username || "";
+    if (name) item.names.push(String(name));
+  });
+  return Array.from(grouped.values());
+}
+
+function renderReactionSummary(summary = [], escapeHtml, currentProfileId = "") {
+  if (!summary.length) return "";
+  return `<div class="tz-chat-reactions">${summary.map((item) => {
+    const profileIds = Array.isArray(item.profileIds) ? item.profileIds.map((id) => String(id)) : [];
+    const names = Array.isArray(item.names) ? item.names.filter(Boolean) : [];
+    const isMine = currentProfileId && profileIds.includes(String(currentProfileId));
+    const title = names.length ? `${item.emoji} ${names.join(", ")}` : item.emoji;
+    return `<button class="tz-reaction-pill ${isMine ? "is-active" : ""}" type="button" data-message-reaction="${escapeHtml(item.emoji)}" data-emoji="${escapeHtml(item.emoji)}" title="${escapeHtml(title)}"><span>${escapeHtml(item.emoji)}</span><strong>${escapeHtml(String(item.count || 0))}</strong></button>`;
+  }).join("")}</div>`;
+}
+
+function renderReactionPicker(escapeHtml) {
+  const emojis = ["❤️", "🔥", "😂", "👍", "👀", "😮"];
+  return `<div class="tz-reaction-picker">${emojis.map((emoji) => `<button class="tz-reaction-option" type="button" data-message-reaction="${escapeHtml(emoji)}" aria-label="React ${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`).join("")}</div>`;
+}
+
 function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }) {
 
   const isMine = message.senderProfileId === currentProfile.id;
@@ -266,11 +297,15 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
         ${audioHtml}
 
-        <div class="tz-chat-time" data-local-time="${escapeHtml(String(message.createdAt || ""))}">${escapeHtml(formatPrettyLocalClientSeed(message.createdAt))}</div>
+        <div class="tz-chat-time">${escapeHtml(formatPrettyLocalClientSeed(message.createdAt))}</div>
 
         ${statusHtml}
 
       </div>
+
+      ${renderReactionPicker(escapeHtml)}
+
+      ${renderReactionSummary(summarizeReactions(message.reactions || []), escapeHtml, currentProfile.id)}
 
     </div>
 
@@ -617,8 +652,7 @@ module.exports = function renderConversationPage({
 
 
 
-  .tz-chat-partner:hover .tz-chat-partner-avatar,
-  .tz-chat-partner-avatar-link:hover{
+  .tz-chat-partner:hover .tz-chat-partner-avatar{
 
     transform:translateY(-1px);
 
@@ -661,11 +695,6 @@ module.exports = function renderConversationPage({
 
 
   .tz-chat-partner-copy{ min-width:0; }
-
-  .tz-chat-partner-avatar-link{
-    text-decoration:none;
-    -webkit-tap-highlight-color: transparent;
-  }
 
 
 
@@ -862,17 +891,13 @@ module.exports = function renderConversationPage({
 
   .tz-chat-pill-danger{
 
-    color:#ffd8df;
+    color:#fff;
 
-    background:linear-gradient(180deg, rgba(74,20,30,.94), rgba(40,10,18,.98));
+    background:linear-gradient(180deg, rgba(72,22,30,.92), rgba(36,12,18,.96));
 
-    border:1px solid rgba(255,120,150,.44);
+    border:1px solid rgba(255,120,150,.18);
 
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.05),
-      0 12px 26px rgba(0,0,0,.22),
-      0 0 0 1px rgba(255,94,138,.12),
-      0 0 20px rgba(255,78,124,.24);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 12px 26px rgba(0,0,0,.22);
 
   }
 
@@ -880,12 +905,9 @@ module.exports = function renderConversationPage({
 
   .tz-chat-pill-danger:hover{
 
-    border-color:rgba(255,160,188,.56);
+    border-color:rgba(255,140,170,.28);
 
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.04),
-      0 18px 34px rgba(0,0,0,.26),
-      0 0 26px rgba(255,92,138,.32);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 18px 34px rgba(0,0,0,.26),0 0 22px rgba(255,120,150,.16);
 
   }
 
@@ -1002,6 +1024,42 @@ module.exports = function renderConversationPage({
 
 
   .tz-chat-row.mine{ justify-content:flex-end; }
+
+  .tz-chat-row{ position:relative; }
+  .tz-chat-row.picker-open .tz-reaction-picker,
+  .tz-chat-row:hover .tz-reaction-picker,
+  .tz-chat-row:focus-within .tz-reaction-picker{ display:flex; opacity:1; pointer-events:auto; transform:translateY(-10px) scale(1); }
+  .tz-chat-reactions{
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; padding-inline:4px; align-items:center;
+  }
+  .tz-reaction-pill{
+    position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg, rgba(17,24,48,.88), rgba(8,12,24,.82)); color:#fff;
+    border-radius:999px; padding:6px 11px; display:inline-flex; align-items:center; gap:6px;
+    font:inherit; backdrop-filter:blur(14px); box-shadow:0 10px 22px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08);
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+    cursor:pointer;
+  }
+  .tz-reaction-pill::after{ content:""; position:absolute; inset:1px; border-radius:inherit; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)); pointer-events:none; }
+  .tz-reaction-pill strong{ font-size:12px; opacity:.92; }
+  .tz-reaction-pill.is-active{ border-color:rgba(110,160,255,.42); box-shadow:0 14px 28px rgba(12,18,38,.34), 0 0 0 1px rgba(80,120,255,.08), inset 0 1px 0 rgba(255,255,255,.1); background:linear-gradient(180deg, rgba(26,44,90,.92), rgba(11,18,38,.92)); }
+  .tz-reaction-pill:hover{ transform:translateY(-1px) scale(1.03); }
+  .tz-reaction-picker{
+    position:absolute; inset-inline-start:0; bottom:100%; transform:translateY(-4px) scale(.96);
+    display:flex; opacity:0; pointer-events:none; gap:8px; padding:9px 11px; border-radius:999px; z-index:6;
+    background:rgba(10,14,28,.94); border:1px solid rgba(255,255,255,.12); box-shadow:0 18px 40px rgba(0,0,0,.35);
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .tz-chat-row.mine .tz-reaction-picker{ inset-inline-start:auto; inset-inline-end:0; }
+  .tz-reaction-option{
+    width:36px; height:36px; border-radius:50%; border:0; cursor:pointer;
+    background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)); color:#fff; font-size:18px; line-height:1;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(0,0,0,.18); transition:transform .16s ease, background .16s ease, box-shadow .16s ease;
+  }
+  .tz-reaction-option:hover{ transform:translateY(-1px) scale(1.08); background:rgba(255,255,255,.18); box-shadow:0 12px 22px rgba(0,0,0,.26); }
+  .tz-chat-bubble.can-quick-react{ cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .tz-reaction-burst{ position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:8; }
+  .tz-reaction-burst-particle{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:18px; opacity:0; animation:tzReactionBurst .72s cubic-bezier(.19,.89,.24,1) forwards; filter:drop-shadow(0 8px 18px rgba(0,0,0,.25)); }
+  @keyframes tzReactionBurst{ 0%{ opacity:0; transform:translate(-50%,-50%) scale(.45); } 12%{ opacity:1; } 100%{ opacity:0; transform:translate(calc(-50% + var(--tx, 0px)), calc(-50% + var(--ty, -38px))) scale(1.24); } }
 
 
 
@@ -1778,33 +1836,21 @@ module.exports = function renderConversationPage({
 
 
 
-    .tz-chat-topbar{
-      align-items:flex-start;
-      flex-wrap:nowrap;
-      gap:10px;
-    }
-
-    .tz-chat-topbar-left{
-      flex:1;
-      min-width:0;
-      gap:10px;
-    }
+    .tz-chat-topbar{ align-items:flex-start; }
 
     .tz-chat-topbar-actions{
-      width:auto;
+      width:100%;
       display:flex;
       flex-direction:row;
       gap:8px;
-      align-items:flex-start;
-      margin-top:0;
-      flex-wrap:nowrap;
-      margin-left:auto;
+      align-items:center;
+      margin-top:10px;
+      flex-wrap:wrap;
     }
 
     .tz-chat-topbar-actions form{
       width:auto;
       display:block;
-      margin:0;
     }
 
     .tz-chat-pill{
@@ -1830,14 +1876,9 @@ module.exports = function renderConversationPage({
     }
 
     .tz-chat-pill-danger{
-      color:#ffd8df;
-      background:linear-gradient(180deg, rgba(74,20,30,.94), rgba(40,10,18,.98));
-      border:1px solid rgba(255,120,150,.44);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.05),
-        0 8px 18px rgba(0,0,0,.20),
-        0 0 0 1px rgba(255,94,138,.10),
-        0 0 18px rgba(255,78,124,.24);
+      background:rgba(120,160,220,.07);
+      border:1px solid rgba(140,176,226,.18);
+      color:#dcecff;
     }
 
 
@@ -1868,10 +1909,7 @@ module.exports = function renderConversationPage({
 
     .tz-chat-partner-name{ font-size:16px; }
 
-    .tz-chat-partner-name-row{
-      gap:8px;
-      flex-wrap:nowrap;
-    }
+
 
     .tz-chat-partner-avatar{
 
@@ -1882,8 +1920,6 @@ module.exports = function renderConversationPage({
       border-radius:14px;
 
       font-size:16px;
-
-      flex:0 0 44px;
 
     }
 
@@ -1901,31 +1937,7 @@ module.exports = function renderConversationPage({
 
 
 
-    .tz-chat-composer-inner{
-      gap:8px;
-      padding:8px;
-    }
-
-    .tz-chat-input{
-      min-height:42px;
-      padding:11px 12px;
-    }
-
-    .tz-chat-upload-pill{
-      width:34px;
-      height:34px;
-      font-size:19px;
-    }
-
-    #tzRecordBtn{
-      font-size:15px;
-    }
-
-    .tz-chat-send{
-      min-height:38px;
-      padding:0 13px;
-      font-size:13px;
-    }
+    .tz-chat-send{ padding:0 14px; }
 
   }
 
@@ -1972,7 +1984,7 @@ module.exports = function renderConversationPage({
 
         const socket = io({
 
-          transports: ["websocket"],
+          transports: ["websocket", "polling"],
 
           reconnection: true,
 
@@ -1988,6 +2000,8 @@ module.exports = function renderConversationPage({
 
         let isSending = false;
 
+        const renderedMessageIds = new Set(Array.from(document.querySelectorAll('.tz-chat-row[data-message-id]')).map(function(row){ return String(row.getAttribute('data-message-id') || ''); }).filter(Boolean));
+
         let mediaRecorder = null;
 
         let mediaChunks = [];
@@ -1997,6 +2011,12 @@ module.exports = function renderConversationPage({
 
 
         socket.emit("join_conversation", conversationId);
+
+        function vibratePhone(pattern) {
+          try {
+            if (navigator.vibrate) navigator.vibrate(pattern || [45, 25, 65]);
+          } catch (e) {}
+        }
 
 
 
@@ -2099,7 +2119,6 @@ module.exports = function renderConversationPage({
         function formatPrettyLocalClient(dt) {
 
           const d = new Date(dt);
-          if (Number.isNaN(d.getTime())) return "";
 
           const yyyy = d.getFullYear();
 
@@ -2139,16 +2158,6 @@ module.exports = function renderConversationPage({
 
           });
 
-        }
-
-
-        function hydrateLocalTimes(root) {
-          (root || document).querySelectorAll('.tz-chat-time[data-local-time]').forEach(function(node){
-            const raw = node.getAttribute('data-local-time');
-            if (!raw) return;
-            const formatted = formatPrettyLocalClient(raw);
-            if (formatted) node.textContent = formatted;
-          });
         }
 
 
@@ -2264,10 +2273,172 @@ module.exports = function renderConversationPage({
           });
         }
 
+        function summarizeReactionGroups(reactions) {
+          const grouped = new Map();
+          (reactions || []).forEach(function(reaction){
+            const emoji = String(reaction && reaction.emoji || '').trim();
+            if (!emoji) return;
+            if (!grouped.has(emoji)) grouped.set(emoji, { emoji: emoji, count: 0, profileIds: [], names: [] });
+            const item = grouped.get(emoji);
+            item.count += Number(reaction.count || 1);
+            (reaction.profileIds || []).forEach(function(id){ if (id) item.profileIds.push(String(id)); });
+            (reaction.names || []).forEach(function(name){ if (name) item.names.push(String(name)); });
+          });
+          return Array.from(grouped.values());
+        }
+
+        function renderReactionSummaryClient(summary) {
+          const items = summarizeReactionGroups(summary);
+          if (!items.length) return '';
+          return '<div class="tz-chat-reactions">' + items.map(function(item){
+            const mine = (item.profileIds || []).includes(String(currentProfileId || ''));
+            const title = item.names && item.names.length ? item.emoji + ' ' + item.names.join(', ') : item.emoji;
+            return '<button class="tz-reaction-pill ' + (mine ? 'is-active' : '') + '" type="button" data-message-reaction="' + safeEscape(item.emoji) + '" data-emoji="' + safeEscape(item.emoji) + '" title="' + safeEscape(title) + '"><span>' + safeEscape(item.emoji) + '</span><strong>' + safeEscape(String(item.count || 0)) + '</strong></button>';
+          }).join('') + '</div>';
+        }
+
+        function renderReactionPickerClient() {
+          return '<div class="tz-reaction-picker">' + ['❤️','🔥','😂','👍','👀','😮'].map(function(emoji){ return '<button class="tz-reaction-option" type="button" data-message-reaction="' + safeEscape(emoji) + '" aria-label="React ' + safeEscape(emoji) + '">' + safeEscape(emoji) + '</button>'; }).join('') + '</div>';
+        }
+
+        const quickReactionEmoji = '❤️';
+        let activeLongPressTimer = null;
+        let activeLongPressRow = null;
+        let lastTapMeta = { id: '', at: 0 };
+
+        async function sendReaction(messageId, emoji) {
+          const res = await fetch('/messages/' + encodeURIComponent(conversationId) + '/reactions/' + encodeURIComponent(messageId), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ emoji: emoji })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.error || 'Reaction failed');
+          applyReactionSummary(messageId, data.reactions || []);
+          return data;
+        }
+
+        function closeReactionPickers() {
+          chat.querySelectorAll('.tz-chat-row.picker-open').forEach(function(row){ row.classList.remove('picker-open'); });
+        }
+
+        function openReactionPicker(row) {
+          if (!row) return;
+          closeReactionPickers();
+          row.classList.add('picker-open');
+        }
+
+        function burstReaction(row, emoji) {
+          const bubble = row && row.querySelector('.tz-chat-bubble');
+          if (!bubble) return;
+          const host = document.createElement('div');
+          host.className = 'tz-reaction-burst';
+          const particles = [
+            { x: -30, y: -48 },
+            { x: -10, y: -62 },
+            { x: 12, y: -58 },
+            { x: 30, y: -44 },
+            { x: 0, y: -78 },
+          ];
+          particles.forEach(function(point, index){
+            const particle = document.createElement('span');
+            particle.className = 'tz-reaction-burst-particle';
+            particle.textContent = emoji || quickReactionEmoji;
+            particle.style.setProperty('--tx', point.x + 'px');
+            particle.style.setProperty('--ty', point.y + 'px');
+            particle.style.animationDelay = (index * 18) + 'ms';
+            host.appendChild(particle);
+          });
+          bubble.appendChild(host);
+          setTimeout(function(){ host.remove(); }, 900);
+        }
+
+        function applyReactionSummary(messageId, reactions) {
+          const row = chat.querySelector('.tz-chat-row[data-message-id="' + CSS.escape(String(messageId || '')) + '"]');
+          if (!row) return;
+          const existing = row.querySelector('.tz-chat-reactions');
+          if (existing) existing.remove();
+          const html = renderReactionSummaryClient(reactions || []);
+          if (html) row.insertAdjacentHTML('beforeend', html);
+        }
+
+        function triggerQuickReaction(row, emoji) {
+          if (!row) return;
+          const messageId = row.getAttribute('data-message-id');
+          if (!messageId) return;
+          burstReaction(row, emoji);
+          sendReaction(messageId, emoji).catch(function(err){ alert(err.message || 'Reaction failed'); });
+        }
+
+        chat.addEventListener('click', function(event){
+          const button = event.target.closest('[data-message-reaction]');
+          if (button) {
+            const row = button.closest('.tz-chat-row[data-message-id]');
+            if (!row) return;
+            const messageId = row.getAttribute('data-message-id');
+            const emoji = button.getAttribute('data-message-reaction');
+            if (emoji) burstReaction(row, emoji);
+            sendReaction(messageId, emoji).then(function(){ closeReactionPickers(); }).catch(function(err){ alert(err.message || 'Reaction failed'); });
+            return;
+          }
+          if (!event.target.closest('.tz-chat-row')) closeReactionPickers();
+        });
+
+        chat.addEventListener('dblclick', function(event){
+          const bubble = event.target.closest('.tz-chat-bubble');
+          if (!bubble) return;
+          const row = bubble.closest('.tz-chat-row[data-message-id]');
+          if (!row) return;
+          triggerQuickReaction(row, quickReactionEmoji);
+        });
+
+        chat.addEventListener('touchstart', function(event){
+          const bubble = event.target.closest('.tz-chat-bubble');
+          if (!bubble) return;
+          const row = bubble.closest('.tz-chat-row[data-message-id]');
+          if (!row) return;
+          bubble.classList.add('can-quick-react');
+          activeLongPressRow = row;
+          clearTimeout(activeLongPressTimer);
+          activeLongPressTimer = setTimeout(function(){
+            if (activeLongPressRow === row) openReactionPicker(row);
+          }, 380);
+        }, { passive: true });
+
+        ['touchend', 'touchcancel', 'touchmove'].forEach(function(type){
+          chat.addEventListener(type, function(){
+            clearTimeout(activeLongPressTimer);
+            activeLongPressTimer = null;
+            activeLongPressRow = null;
+          }, { passive: true });
+        });
+
+        chat.addEventListener('touchend', function(event){
+          const bubble = event.target.closest('.tz-chat-bubble');
+          if (!bubble) return;
+          const row = bubble.closest('.tz-chat-row[data-message-id]');
+          if (!row) return;
+          const now = Date.now();
+          const messageId = row.getAttribute('data-message-id') || '';
+          if (lastTapMeta.id === messageId && (now - lastTapMeta.at) < 320) {
+            triggerQuickReaction(row, quickReactionEmoji);
+            lastTapMeta = { id: '', at: 0 };
+          } else {
+            lastTapMeta = { id: messageId, at: now };
+          }
+        }, { passive: true });
+
+        document.addEventListener('click', function(event){
+          if (!event.target.closest('.tz-chat-row')) closeReactionPickers();
+        });
+
         initVideoPreviewFrames(document);
-        hydrateLocalTimes(document);
 
         function appendMessage(message) {
+
+          const messageId = String(message?.id || "");
+          if (messageId && renderedMessageIds.has(messageId)) return;
+          if (messageId) renderedMessageIds.add(messageId);
 
           const isMine = String(message.senderProfileId || "") === String(currentProfileId || "");
 
@@ -2351,11 +2522,14 @@ module.exports = function renderConversationPage({
 
               \${hasAudio ? \`<audio class="tz-chat-audio" controls preload="metadata" src="\${safeEscape(audioUrl)}"></audio>\` : ""}
 
-              <div class="tz-chat-time" data-local-time="\${safeEscape(String(message.createdAt || ""))}">\${safeEscape(formatPrettyLocalClient(message.createdAt))}</div>
+              <div class="tz-chat-time">\${safeEscape(formatPrettyLocalClient(message.createdAt))}</div>
 
               \${isMine ? \`<div class="tz-chat-status">\${safeEscape(message.readAt ? "Seen" : "Delivered")}</div>\` : ""}
 
             </div>
+
+            \${renderReactionPickerClient()}
+            \${renderReactionSummaryClient(message.reactions || [])}
 
           \`;
 
@@ -2538,9 +2712,15 @@ module.exports = function renderConversationPage({
         socket.on("receive_message", function(message){
 
           appendMessage(message);
+          if (String(message?.senderProfileId || '') !== String(currentProfileId || '')) vibratePhone([55, 30, 90]);
 
           if (typingIndicator) typingIndicator.style.display = "none";
 
+        });
+
+        socket.on("message_reactions_updated", function(data){
+          if (!data || String(data.conversationId || '') !== String(conversationId)) return;
+          applyReactionSummary(data.messageId, data.reactions || []);
         });
 
 
@@ -2701,6 +2881,10 @@ module.exports = function renderConversationPage({
             }
 
 
+
+            if (data && data.message) {
+              appendMessage(data.message);
+            }
 
             if (textarea) {
 

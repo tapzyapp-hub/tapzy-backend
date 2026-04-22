@@ -23,6 +23,7 @@ const eventsRoutes = require("./routes/events");
 const storiesRoutes = require("./routes/stories");
 const postsRoutes = require("./routes/posts");
 const notificationsRoutes = require("./routes/notifications");
+const pushRoutes = require("./routes/push");
 
 const app = express();
 
@@ -93,6 +94,7 @@ app.use("/", eventsRoutes);
 app.use("/", storiesRoutes);
 app.use("/", postsRoutes);
 app.use("/", notificationsRoutes);
+app.use("/", pushRoutes);
 
 module.exports = app;
 

@@ -2,6 +2,7 @@ const path = require("path");
 const prisma = require("../../prisma");
 const { publicAbsoluteUrl } = require("../../utils");
 const { notifyNewMessage } = require("../../services/messageNotificationHelper");
+const { formatPrettyLocal } = require("../../utils");
 
 function getFileExt(file) {
   return path.extname(String(file?.originalname || "")).toLowerCase();
@@ -21,6 +22,59 @@ function isVideoUpload(file) {
   const ext = getFileExt(file);
   return (mimetype.startsWith("video/") && !/^voice-note\./i.test(String(file?.originalname || "")))
     || [".mp4", ".mov", ".webm", ".m4v"].includes(ext);
+}
+
+
+function isAudioMediaUrl(url) {
+  const value = String(url || "").trim();
+  return /\.(mp3|wav|ogg|m4a|aac)(?:[?#].*)?$/i.test(value) || /voice-note\./i.test(value);
+}
+
+function isVideoMediaUrl(url) {
+  return /\.(mp4|mov|webm|m4v)(?:[?#].*)?$/i.test(String(url || "").trim());
+}
+
+function cleanPreviewFromPayload({ body = "", imageUrl = "", audioUrl = "" }) {
+  const text = String(body || "").trim();
+  const media = String(imageUrl || "").trim();
+  const hasAudio = !!String(audioUrl || "").trim() || isAudioMediaUrl(media);
+  const hasVideo = !!media && !hasAudio && isVideoMediaUrl(media);
+  const hasImage = !!media && !hasAudio && !hasVideo;
+  if (text) return text;
+  if (hasAudio) return "Voice message";
+  if (hasVideo) return "Sent a video";
+  if (hasImage) return "Sent an image";
+  return "New message";
+}
+
+async function buildInboxEventForProfile({ conversation, profileId, messagePayload, prisma }) {
+  const otherMember = (conversation.members || []).find((member) => member.profileId !== profileId);
+  const other = otherMember?.profile || null;
+  const unreadCount = await prisma.directMessage.count({
+    where: {
+      conversationId: conversation.id,
+      senderProfileId: { not: profileId },
+      readAt: null,
+    },
+  });
+
+  return {
+    conversationId: conversation.id,
+    row: {
+      id: conversation.id,
+      other: other ? {
+        id: other.id,
+        name: other.name || "",
+        username: other.username || "user",
+        photo: other.photo || "",
+      } : null,
+      preview: cleanPreviewFromPayload(messagePayload),
+      time: formatPrettyLocal(messagePayload.createdAt),
+      unreadCount,
+      isConnected: false,
+      updatedAt: messagePayload.createdAt,
+    },
+  };
 }
 
 module.exports = async function postSendMessage(req, res) {
@@ -52,7 +106,7 @@ module.exports = async function postSendMessage(req, res) {
 
     const conversation = await prisma.conversation.findUnique({
       where: { id },
-      include: { members: true },
+      include: { members: { include: { profile: true } } },
     });
 
     if (!conversation) {
@@ -148,7 +202,10 @@ module.exports = async function postSendMessage(req, res) {
       senderName: createdMessage.sender?.name || createdMessage.sender?.username || "User",
       senderUsername: createdMessage.sender?.username || "user",
       senderPhoto: createdMessage.sender?.photo || "",
+      reactions: [],
     };
+
+    const io = req.app.get("io");
 
     const otherMemberIds = conversation.members
       .map((member) => member.profileId)
@@ -167,6 +224,7 @@ module.exports = async function postSendMessage(req, res) {
               senderPhoto: payload.senderPhoto,
               conversationId: id,
               preview,
+              io,
             })
           )
         );
@@ -175,11 +233,30 @@ module.exports = async function postSendMessage(req, res) {
       }
     }
 
-    const io = req.app.get("io");
     if (io) {
       io.to(`conversation:${id}`).emit("receive_message", payload);
       io.to(`conversation:${id}`).emit("stop_typing", {
         conversationId: id,
+      });
+
+      const memberIds = conversation.members.map((member) => member.profileId).filter(Boolean);
+      const inboxEvents = await Promise.all(
+        memberIds.map(async (profileId) => ({
+          profileId,
+          payload: await buildInboxEventForProfile({
+            conversation,
+            profileId,
+            messagePayload: payload,
+            prisma,
+          }),
+        }))
+      );
+
+      inboxEvents.forEach((entry) => {
+        io.to(`profile:${entry.profileId}`).emit("conversation_updated", {
+          profileId: entry.profileId,
+          ...entry.payload,
+        });
       });
     }
 

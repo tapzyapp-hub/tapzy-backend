@@ -80,6 +80,7 @@ model UserProfile {
   account                 UserAccount?
   conversationMemberships ConversationMember[]
   sentMessages            DirectMessage[]      @relation("DirectMessageSender")
+  messageReactions        MessageReaction[]
   createdCallRooms        VideoCallRoom[]      @relation("VideoRoomCreator")
   createdPairRooms        PairRoom[]           @relation("PairRoomCreator")
   pairParticipations      PairParticipant[]    @relation("PairParticipantProfile")
@@ -87,6 +88,7 @@ model UserProfile {
   interestedEvents        InterestedEvent[]
   notificationsReceived   Notification[]      @relation("NotificationRecipient")
   notificationsSent       Notification[]      @relation("NotificationActor")
+  pushSubscriptions       PushSubscription[]
 
   eventAttendances EventAttendance[]
   stories          Story[]
@@ -282,11 +284,29 @@ model DirectMessage {
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       UserProfile  @relation("DirectMessageSender", fields: [senderProfileId], references: [id], onDelete: Cascade)
+  reactions    MessageReaction[]
 
   @@index([conversationId, createdAt], map: "directmessage_conversationId_createdAt_idx")
   @@index([senderProfileId], map: "directmessage_senderProfileId_idx")
   @@index([createdAt], map: "directmessage_createdAt_idx")
   @@index([conversationId, readAt], map: "directmessage_conversationId_readAt_idx")
+}
+
+
+model MessageReaction {
+  id        String        @id @default(cuid())
+  messageId String
+  profileId String
+  emoji     String
+  createdAt DateTime      @default(now())
+
+  message DirectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  profile UserProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, profileId, emoji], map: "messagereaction_messageId_profileId_emoji_key")
+  @@index([messageId], map: "messagereaction_messageId_idx")
+  @@index([profileId], map: "messagereaction_profileId_idx")
+  @@index([createdAt], map: "messagereaction_createdAt_idx")
 }
 
 model VideoCallRoom {
@@ -448,6 +468,23 @@ model Notification {
   @@index([profileId, readAt], map: "notification_profileId_readAt_idx")
   @@index([actorId], map: "notification_actorId_idx")
   @@index([type, entityType, entityId], map: "notification_type_entity_idx")
+}
+
+
+model PushSubscription {
+  id         String   @id @default(cuid())
+  profileId   String
+  endpoint    String   @unique
+  p256dh      String
+  auth        String
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime?
+
+  profile UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId], map: "pushsubscription_profileId_idx")
+  @@index([createdAt], map: "pushsubscription_createdAt_idx")
 }
 
 model Story {

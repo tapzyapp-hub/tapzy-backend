@@ -34,7 +34,7 @@ module.exports = function renderMessagesInboxPage({
 
               <div class="tz-msg-head-actions">
                 <a class="tz-btn tz-btn-dark" href="${escapeHtml(discoveryHref)}">Start Conversation</a>
-                <a class="tz-btn tz-btn-dark" href="/notifications">Notifications${unreadNotificationCount ? ` (${unreadNotificationCount})` : ""}</a>
+                <a class="tz-btn tz-btn-dark" href="/notifications">Notifications <span class="tz-btn-notif-count" data-live-notification-badge ${unreadNotificationCount ? "" : "hidden"}>${unreadNotificationCount ? `${unreadNotificationCount}` : "0"}</span></a>
               </div>
             </div>
 
@@ -46,7 +46,7 @@ module.exports = function renderMessagesInboxPage({
                 </div>
               </div>
 
-              <div class="tz-msg-list">
+              <div class="tz-msg-list" id="tzInboxList">
                 ${threadsHtml}
               </div>
             </div>
@@ -548,6 +548,54 @@ module.exports = function renderMessagesInboxPage({
         }
       }
     </style>
+
+
+
+    <script>
+      (function(){
+        const profileId = ${JSON.stringify(currentProfile.id)};
+        const inboxList = document.getElementById('tzInboxList');
+        const socket = window.__tapzyLiveSocket;
+        if (!profileId || !inboxList || !socket) return;
+
+        function esc(value) {
+          return String(value || '').replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; });
+        }
+
+        function initials(profile) {
+          const source = String((profile && (profile.name || profile.username)) || 'T').trim();
+          const parts = source.split(/\s+/).filter(Boolean).slice(0, 2);
+          if (!parts.length) return 'T';
+          return parts.map(function(part){ return part.charAt(0).toUpperCase(); }).join('');
+        }
+
+        function renderRow(row) {
+          const other = row.other || null;
+          const name = (other && (other.name || other.username)) || 'Unknown';
+          const username = (other && other.username) || 'user';
+          const avatarHtml = other && other.photo
+            ? '<img src="' + esc(other.photo) + '" alt="' + esc(username) + '" />'
+            : '<span>' + esc(initials(other)) + '</span>';
+          const connectedBadge = row.isConnected ? '<div class="tz-msg-thread-badge">⚡ Connected</div>' : '';
+          const unreadBadge = row.unreadCount ? '<div class="tz-msg-thread-unread">' + esc(String(row.unreadCount)) + '</div>' : '';
+          const timeHtml = row.time ? '<div class="tz-msg-thread-time">' + esc(row.time) + '</div>' : '';
+          return '<a class="tz-msg-thread" data-conversation-id="' + esc(String(row.id || '')) + '" href="/messages/' + esc(String(row.id || '')) + '">' +
+            '<div class="tz-msg-thread-shimmer" aria-hidden="true"></div>' +
+            '<div class="tz-msg-thread-glow" aria-hidden="true"></div>' +
+            '<div class="tz-msg-thread-avatar">' + avatarHtml + '</div>' +
+            '<div class="tz-msg-thread-main"><div class="tz-msg-thread-top"><div class="tz-msg-thread-copy"><div class="tz-msg-thread-name-row"><div class="tz-msg-thread-name">' + esc(name) + '</div>' + connectedBadge + '</div><div class="tz-msg-thread-user">@' + esc(username) + '</div></div><div class="tz-msg-thread-top-right">' + timeHtml + unreadBadge + '</div></div><div class="tz-msg-thread-preview">' + esc(row.preview || 'No messages yet') + '</div></div><div class="tz-msg-thread-arrow" aria-hidden="true">›</div></a>';
+        }
+
+        socket.on('conversation_updated', function(payload){
+          if (!payload || String(payload.profileId || '') !== String(profileId) || !payload.row) return;
+          const row = payload.row;
+          const existing = inboxList.querySelector('.tz-msg-thread[data-conversation-id="' + String(row.id || '').replace(/"/g, '&quot;') + '"]');
+          if (existing) existing.remove();
+          inboxList.insertAdjacentHTML('afterbegin', renderRow(row));
+        });
+      })();
+    </script>
+
 
     ${renderTapzyAssistant({
       username: currentProfile.username || "User",
