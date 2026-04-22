@@ -154,7 +154,7 @@ function isVideoMediaUrl(url) {
 }
 
 
-function renderVideoPreviewFrame(url, extra = {}) {
+function renderVideoPreviewFrame(url, escapeHtml, extra = {}) {
   const src = escapeHtml(url || "");
   const className = escapeHtml(extra.className || "tz-chat-video");
   const controls = extra.controls === false ? '' : ' controls';
@@ -208,7 +208,7 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
   const videoHtml = hasVideo
 
-    ? renderVideoPreviewFrame(videoUrl, { className: "tz-chat-video", ariaLabel: "Play message video" })
+    ? renderVideoPreviewFrame(videoUrl, escapeHtml, { className: "tz-chat-video", ariaLabel: "Play message video" })
 
     : "";
 
