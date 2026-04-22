@@ -6,7 +6,6 @@ const getMessagesPage = require("../messages/handlers/getMessagesPage");
 const getConversationPage = require("../messages/handlers/getConversationPage");
 const postSendMessage = require("../messages/handlers/postSendMessage");
 const postRemoveConversation = require("../messages/handlers/postRemoveConversation");
-const postToggleReaction = require("../messages/handlers/postToggleReaction");
 
 router.post("/messages/start/:username", startConversation);
 router.get("/messages", getMessagesPage);
@@ -22,7 +21,6 @@ router.post("/messages/:id", (req, res, next) => {
     return res.status(400).send(message);
   });
 }, postSendMessage);
-router.post("/messages/:id/reactions/:messageId", postToggleReaction);
 router.post("/messages/:id/remove", postRemoveConversation);
 
 module.exports = router;

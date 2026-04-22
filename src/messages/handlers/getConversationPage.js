@@ -19,7 +19,7 @@ module.exports = async function getConversationPage(req, res) {
         messages: {
           orderBy: { createdAt: "asc" },
           take: 200,
-          include: { sender: true, reactions: { include: { profile: true }, orderBy: { createdAt: "asc" } } },
+          include: { sender: true },
         },
       },
     });
@@ -79,7 +79,7 @@ module.exports = async function getConversationPage(req, res) {
         messages: {
           orderBy: { createdAt: "asc" },
           take: 200,
-          include: { sender: true, reactions: { include: { profile: true }, orderBy: { createdAt: "asc" } } },
+          include: { sender: true },
         },
       },
     });

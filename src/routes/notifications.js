@@ -3,18 +3,6 @@ const prisma = require("../prisma");
 const { markAllNotificationsRead, markNotificationRead, getUnreadNotificationCount } = require("../services/notificationService");
 const { renderShell, renderTapzyAssistant, escapeHtml, formatPrettyLocal } = require("../utils");
 
-router.get("/api/notifications/unread-count", async (req, res) => {
-  try {
-    const currentProfile = req.currentProfile || null;
-    if (!currentProfile) return res.status(401).json({ ok: false, error: "Unauthorized" });
-    const unreadCount = await getUnreadNotificationCount(currentProfile.id);
-    return res.json({ ok: true, unreadCount });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ ok: false, error: "Unread notifications error" });
-  }
-});
-
 router.post("/notifications/read-all", async (req, res) => {
   try {
     const currentProfile = req.currentProfile || null;

@@ -9,10 +9,16 @@ function getInitials(profile) {
 module.exports = function renderChatHeader({ other, escapeHtml, conversationId }) {
   const name = other?.name || other?.username || "Conversation";
   const username = other?.username || "user";
+  const profileHref = other?.username ? `/u/${escapeHtml(username)}` : "#";
+  const avatarLabel = other?.username ? `Open ${name}'s profile` : `${name} avatar`;
 
-  const otherAvatarHtml = other?.photo
+  const avatarInnerHtml = other?.photo
     ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" />`
     : `<span>${escapeHtml(getInitials(other))}</span>`;
+
+  const otherAvatarHtml = other?.username
+    ? `<a class="tz-chat-partner-avatar tz-chat-partner-avatar-link" href="${profileHref}" aria-label="${escapeHtml(avatarLabel)}">${avatarInnerHtml}</a>`
+    : `<div class="tz-chat-partner-avatar">${avatarInnerHtml}</div>`;
 
   return `
     <div class="tz-chat-topbar">
@@ -20,27 +26,18 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId }
         <a class="tz-chat-back" href="/messages" aria-label="Back to messages">‹</a>
 
         <div class="tz-chat-partner">
-          <div class="tz-chat-partner-avatar">${otherAvatarHtml}</div>
+          ${otherAvatarHtml}
 
           <div class="tz-chat-partner-copy">
             <div class="tz-chat-partner-name-row">
               <div class="tz-chat-partner-name">${escapeHtml(name)}</div>
               <div class="tz-chat-partner-badge">Private</div>
             </div>
-
-            <div class="tz-chat-partner-handle">
-              ${other ? `@${escapeHtml(username)}` : ""}
-            </div>
           </div>
         </div>
       </div>
 
       <div class="tz-chat-topbar-actions">
-        ${
-          other?.username
-            ? `<a class="tz-chat-pill tz-chat-pill-light" href="/u/${escapeHtml(username)}">Open Profile</a>`
-            : ""
-        }
         <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">
           <button class="tz-chat-pill tz-chat-pill-danger" type="submit">Remove</button>
         </form>

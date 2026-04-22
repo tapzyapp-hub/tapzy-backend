@@ -750,8 +750,6 @@ function renderTopBar({ currentProfile = null, pageTitle = "Tapzy Network™", p
 
     { key: "messages-list", label: "Messages", href: signedIn ? "/messages" : "/auth" },
 
-    { key: "notifications", label: "Notifications", href: signedIn ? "/notifications" : "/auth" },
-
     { key: "profile", label: "My Profile", href: signedIn ? `/u/${username}` : "/auth" },
 
     { key: "edit", label: "Edit Profile", href: signedIn ? `/edit/${username}` : "/auth" },
@@ -785,10 +783,7 @@ function renderTopBar({ currentProfile = null, pageTitle = "Tapzy Network™", p
 
         <div class="tz-page-chip">${escapeHtml(pageTitle)}</div>
 
-        ${signedIn ? `<a class="tz-notif-bell" href="/notifications" aria-label="Notifications">
-          <span class="tz-notif-bell-icon">🔔</span>
-          <span class="tz-notif-bell-badge" data-live-notification-badge hidden>0</span>
-        </a>` : ""}
+
 
         <button class="tz-menu-btn" id="tzMenuBtn" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="tzMenuPanel">
 
@@ -1139,162 +1134,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       }
 
 
-
-      .tz-notif-bell{
-
-        position:relative;
-
-        width:52px;
-
-        height:52px;
-
-        border-radius:18px;
-
-        border:1px solid rgba(140,198,255,.12);
-
-        background:linear-gradient(180deg, rgba(18,21,31,.96), rgba(10,12,18,.98));
-
-        display:inline-flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        text-decoration:none;
-
-        box-shadow:0 12px 28px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03);
-
-      }
-
-
-
-      .tz-notif-bell-icon{
-
-        font-size:20px;
-
-        line-height:1;
-
-      }
-
-
-
-      .tz-notif-bell-badge{
-
-        position:absolute;
-
-        top:-4px;
-
-        right:-4px;
-
-        min-width:24px;
-
-        height:24px;
-
-        padding:0 7px;
-
-        border-radius:999px;
-
-        background:linear-gradient(180deg, rgba(58,127,255,.98), rgba(24,60,130,.98));
-
-        color:#fff;
-
-        font-size:12px;
-
-        font-weight:900;
-
-        display:inline-flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        box-shadow:0 0 18px rgba(90,165,255,.32);
-
-        border:1px solid rgba(255,255,255,.14);
-
-      }
-
-
-
-      .tz-live-toast-stack{
-
-        position:fixed;
-
-        right:16px;
-
-        bottom:16px;
-
-        z-index:9800;
-
-        display:flex;
-
-        flex-direction:column;
-
-        gap:10px;
-
-        pointer-events:none;
-
-      }
-
-
-
-      .tz-live-toast{
-
-        width:min(360px, calc(100vw - 32px));
-
-        padding:14px 16px;
-
-        border-radius:20px;
-
-        border:1px solid rgba(127,210,255,.18);
-
-        background:linear-gradient(180deg, rgba(18,21,31,.98), rgba(9,12,18,.99));
-
-        box-shadow:0 22px 54px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.04);
-
-        transform:translateY(10px);
-
-        opacity:0;
-
-        transition:transform .18s ease, opacity .18s ease;
-
-      }
-
-
-
-      .tz-live-toast.show{
-
-        transform:translateY(0);
-
-        opacity:1;
-
-      }
-
-
-
-      .tz-live-toast-title{
-
-        color:#fff;
-
-        font-size:14px;
-
-        font-weight:800;
-
-      }
-
-
-
-      .tz-live-toast-body{
-
-        color:#aeb9cf;
-
-        font-size:13px;
-
-        line-height:1.5;
-
-        margin-top:4px;
-
-      }
 
       .tz-page-chip{
 
@@ -2854,8 +2693,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
 
 
-    <script src="/socket.io/socket.io.js"></script>
-
     <script>
 
       (function(){
@@ -2940,159 +2777,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         });
 
-      })();
-
-      (function(){
-
-        const profileId = ${JSON.stringify(currentProfile?.id || "")};
-
-        if (!profileId || typeof io !== "function") return;
-
-        const badges = Array.from(document.querySelectorAll("[data-live-notification-badge]"));
-
-        const topbarBell = document.querySelector('.tz-notif-bell');
-
-        let unreadCount = 0;
-
-        let audioContext = null;
-
-        function esc(value){
-          return String(value || '').replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; });
-        }
-
-        function setUnreadCount(nextCount) {
-          unreadCount = Math.max(0, Number(nextCount || 0));
-          badges.forEach(function(badge){
-            if (!badge) return;
-            if (unreadCount > 0) {
-              badge.hidden = false;
-              badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
-            } else {
-              badge.hidden = true;
-              badge.textContent = '0';
-            }
-          });
-        }
-
-        function playPing() {
-          try {
-            const Ctx = window.AudioContext || window.webkitAudioContext;
-            if (!Ctx) return;
-            audioContext = audioContext || new Ctx();
-            if (audioContext.state === 'suspended') audioContext.resume().catch(function(){});
-            const now = audioContext.currentTime;
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, now);
-            gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.exponentialRampToValueAtTime(0.06, now + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.start(now);
-            osc.stop(now + 0.2);
-          } catch (e) {}
-        }
-
-        function vibratePhone(pattern) {
-          try {
-            if (navigator.vibrate) navigator.vibrate(pattern || [70, 30, 110]);
-          } catch (e) {}
-        }
-
-        function urlBase64ToUint8Array(base64String) {
-          const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-          const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-          const rawData = window.atob(base64);
-          return Uint8Array.from(rawData.split('').map(function(char){ return char.charCodeAt(0); }));
-        }
-
-        async function registerPushNotifications() {
-          if (!('serviceWorker' in navigator) || !('PushManager' in window) || !profileId) return;
-          try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            const keyRes = await fetch('/api/push/public-key', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-            const keyData = await keyRes.json();
-            if (!keyRes.ok || !keyData || !keyData.publicKey) return;
-            let permission = Notification.permission;
-            if (permission === 'default') {
-              permission = await Notification.requestPermission();
-            }
-            if (permission !== 'granted') return;
-            const existing = await registration.pushManager.getSubscription();
-            const subscription = existing || await registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
-            });
-            await fetch('/api/push/subscribe', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-              body: JSON.stringify({ subscription: subscription.toJSON() }),
-            });
-          } catch (e) {
-            console.warn('Push registration skipped', e && e.message ? e.message : e);
-          }
-        }
-
-        function showToast(title, body) {
-          let stack = document.querySelector('.tz-live-toast-stack');
-          if (!stack) {
-            stack = document.createElement('div');
-            stack.className = 'tz-live-toast-stack';
-            document.body.appendChild(stack);
-          }
-          const toast = document.createElement('div');
-          toast.className = 'tz-live-toast';
-          toast.innerHTML = '<div class="tz-live-toast-title">' + esc(title || 'New notification') + '</div>' + (body ? '<div class="tz-live-toast-body">' + esc(body) + '</div>' : '');
-          stack.appendChild(toast);
-          requestAnimationFrame(function(){ toast.classList.add('show'); });
-          setTimeout(function(){
-            toast.classList.remove('show');
-            setTimeout(function(){ toast.remove(); }, 220);
-          }, 2600);
-        }
-
-        fetch('/api/notifications/unread-count', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-          .then(function(res){ return res.ok ? res.json() : null; })
-          .then(function(data){ if (data && data.ok) setUnreadCount(data.unreadCount || 0); })
-          .catch(function(){});
-
-        if (topbarBell) {
-          topbarBell.addEventListener('click', function(){ setUnreadCount(0); registerPushNotifications(); });
-        }
-
-        let pushInitDone = false;
-        function kickPushInit() {
-          if (pushInitDone) return;
-          pushInitDone = true;
-          registerPushNotifications();
-        }
-        window.addEventListener('click', kickPushInit, { once: true });
-        window.addEventListener('touchstart', kickPushInit, { once: true });
-
-        const socket = io({ transports: ['websocket', 'polling'], reconnection: true, reconnectionAttempts: 10, reconnectionDelay: 500 });
-        socket.emit('join_profile', profileId);
-
-        socket.on('notification_count', function(payload){
-          if (!payload || String(payload.profileId || '') !== String(profileId)) return;
-          setUnreadCount(payload.unreadCount || 0);
-        });
-
-        socket.on('notification_new', function(payload){
-          if (!payload || String(payload.profileId || '') !== String(profileId)) return;
-          if (typeof payload.unreadCount !== 'undefined') setUnreadCount(payload.unreadCount);
-          playPing();
-          vibratePhone([80, 35, 110]);
-          showToast(payload.title || 'New notification', payload.body || '');
-        });
-
-        window.addEventListener('beforeunload', function(){
-          socket.emit('leave_profile', profileId);
-        });
-
-        window.__tapzyLiveSocket = socket;
-        window.__tapzySetNotificationCount = setUnreadCount;
       })();
 
     </script>

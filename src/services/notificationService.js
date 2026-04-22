@@ -1,6 +1,4 @@
 const prisma = require("../prisma");
-const { getIO } = require("./realtimeService");
-const { sendPushToProfile } = require("./pushService");
 
 function normalizeValue(value) {
   return value == null ? "" : String(value).trim();
@@ -57,7 +55,7 @@ async function createNotification({
     if (existing) return existing;
   }
 
-  const created = await prisma.notification.create({
+  return prisma.notification.create({
     data: {
       profileId: recipientId,
       actorId: actorProfileId,
@@ -70,46 +68,6 @@ async function createNotification({
       image: normalizeValue(image) || null,
     },
   });
-}
-
-
-async function emitNotificationToProfile(notification) {
-  if (!notification?.profileId) return;
-  try {
-    const unreadCount = await getUnreadNotificationCount(notification.profileId);
-    const io = getIO();
-    if (io) {
-      io.to(`profile:${notification.profileId}`).emit("notification_new", {
-        profileId: notification.profileId,
-        unreadCount,
-        title: notification.title || "New notification",
-        body: notification.body || "",
-        link: notification.link || "/notifications",
-        image: notification.image || "",
-        type: notification.type || "general",
-      });
-      io.to(`profile:${notification.profileId}`).emit("notification_count", {
-        profileId: notification.profileId,
-        unreadCount,
-      });
-    }
-
-    await sendPushToProfile(notification.profileId, {
-      title: notification.title || "Tapzy",
-      body: notification.body || "You have a new notification",
-      image: notification.image || "",
-      url: notification.link || "/notifications",
-      type: notification.type || "general",
-      tag: `${notification.type || 'notification'}:${notification.entityType || ''}:${notification.entityId || notification.id || ''}`,
-      data: {
-        link: notification.link || "/notifications",
-        notificationId: notification.id || "",
-        type: notification.type || "general",
-      },
-    });
-  } catch (error) {
-    console.error("emitNotificationToProfile error", error);
-  }
 }
 
 async function createManyNotifications(items = []) {
