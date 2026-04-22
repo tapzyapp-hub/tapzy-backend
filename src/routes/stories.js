@@ -62,28 +62,6 @@ function isVideoUrl(url) {
 
 
 
-
-function renderVideoFrame(url, options = {}) {
-  const src = escapeHtml(url || "");
-  const className = escapeHtml(options.className || "story-video");
-  const autoplay = options.autoplay ? ' autoplay' : '';
-  const muted = options.muted ? ' muted' : '';
-  const controls = options.controls === false ? '' : ' controls';
-  const loop = options.loop ? ' loop' : '';
-  const preload = escapeHtml(options.preload || 'metadata');
-  const aria = escapeHtml(options.ariaLabel || 'Play video');
-  const unmuteOnPreview = options.unmuteOnPreview ? ' data-unmute-on-preview="1"' : '';
-  return `
-    <div class="tz-video-frame${options.autoplay ? ' is-autoplay' : ''}" data-video-frame${unmuteOnPreview}>
-      <div class="tz-video-preview" data-video-preview tabindex="0" role="button" aria-label="${aria}">
-        <div class="tz-video-preview-blur"></div>
-        <div class="tz-video-preview-badge">▶</div>
-      </div>
-      <video class="${className}" src="${src}"${controls}${autoplay}${muted}${loop} playsinline preload="${preload}"></video>
-    </div>
-  `;
-}
-
 function storyRing(profile, storyCount, hasLiveStory) {
 
   const photo = profile.photo
@@ -272,7 +250,7 @@ function profileStoryCard(profile, stories) {
 
     ? previewIsVideo
 
-      ? renderVideoFrame(previewUrl, { className: "stories-profile-preview-media", controls: false, muted: true, preload: "metadata", ariaLabel: "Preview story video" })
+      ? `<video class="stories-profile-preview-media" src="${escapeHtml(previewUrl)}" muted playsinline></video>`
 
       : `<img class="stories-profile-preview-media" src="${escapeHtml(previewUrl)}" alt="${escapeHtml(profile.username || "story")}" />`
 
@@ -940,42 +918,7 @@ router.get("/stories", async (req, res) => {
 
     </style>
 
-    <script>
-      (function(){
-        function initVideoPreviewFrames(root){
-          (root || document).querySelectorAll('[data-video-frame]').forEach(function(frame){
-            if (frame.dataset.videoReady === '1') return;
-            frame.dataset.videoReady = '1';
-            const video = frame.querySelector('video');
-            const preview = frame.querySelector('[data-video-preview]');
-            if (!video || !preview) return;
-            const markReady = function(){ frame.classList.add('is-ready'); };
-            const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
-            const markPaused = function(){ frame.classList.remove('is-playing'); };
-            const playFromPreview = function(){
-              if (frame.dataset.unmuteOnPreview === '1') {
-                video.muted = false;
-                video.removeAttribute('muted');
-              }
-              video.play().catch(function(){});
-            };
-            preview.addEventListener('click', playFromPreview);
-            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playFromPreview(); } });
-            video.addEventListener('loadeddata', markReady, { once: true });
-            video.addEventListener('canplay', markReady, { once: true });
-            video.addEventListener('play', markPlaying);
-            video.addEventListener('playing', markPlaying);
-            video.addEventListener('pause', markPaused);
-            if (video.readyState >= 2) markReady();
-          });
-        }
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initVideoPreviewFrames(document); }, { once: true });
-        } else {
-          initVideoPreviewFrames(document);
-        }
-      })();
-    </script>
+
 
     ${renderTapzyAssistant({
 
@@ -1332,7 +1275,7 @@ router.get("/stories/:username", async (req, res) => {
 
           ? isVideoUrl(story.mediaUrl)
 
-            ? renderVideoFrame(story.mediaUrl, { className: "story-view-media", autoplay: true, muted: true, controls: true, preload: index === 0 ? "metadata" : "none", ariaLabel: "Play story video", unmuteOnPreview: true })
+            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline controls ${index === 0 ? "" : "preload='none'"}></video>`
 
             : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" />`
 
@@ -1711,92 +1654,6 @@ router.get("/stories/:username", async (req, res) => {
 
 
 
-      .tz-video-frame{
-
-        position:relative;
-
-        overflow:hidden;
-
-        background:#05070d;
-
-      }
-
-      .tz-video-preview{
-
-        position:absolute;
-
-        inset:0;
-
-        z-index:4;
-
-        display:flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        cursor:pointer;
-
-        background:radial-gradient(circle at 50% 20%, rgba(52,116,255,.22), transparent 42%),linear-gradient(180deg, rgba(8,12,24,.96), rgba(3,5,12,.98));
-
-        transition:opacity .22s ease, visibility .22s ease;
-
-      }
-
-      .tz-video-preview-blur{
-
-        position:absolute;
-
-        inset:0;
-
-        backdrop-filter:blur(16px);
-
-        -webkit-backdrop-filter:blur(16px);
-
-      }
-
-      .tz-video-preview-badge{
-
-        position:relative;
-
-        z-index:1;
-
-        width:84px;
-
-        height:84px;
-
-        border-radius:999px;
-
-        display:flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        background:rgba(10,14,24,.72);
-
-        border:1px solid rgba(255,255,255,.12);
-
-        box-shadow:0 10px 28px rgba(0,0,0,.34);
-
-        color:#fff;
-
-        font-size:30px;
-
-        line-height:1;
-
-      }
-
-      .tz-video-frame.is-ready .tz-video-preview,.tz-video-frame.is-playing .tz-video-preview{
-
-        opacity:0;
-
-        visibility:hidden;
-
-        pointer-events:none;
-
-      }
-
       .story-view-media,
 
       .story-view-text-only{
@@ -1951,7 +1808,6 @@ router.get("/stories/:username", async (req, res) => {
         font-size:13px;
         font-weight:800;
         cursor:pointer;
-        pointer-events:auto;
       }
 
       .story-like-count{
@@ -2164,7 +2020,6 @@ router.get("/stories/:username", async (req, res) => {
         font-size:13px;
         font-weight:800;
         cursor:pointer;
-        pointer-events:auto;
       }
 
       .story-like-count{
@@ -2196,34 +2051,6 @@ router.get("/stories/:username", async (req, res) => {
         let index = 0;
 
         let timer = null;
-
-        function initVideoPreviewFrames(root){
-          (root || document).querySelectorAll('[data-video-frame]').forEach(function(frame){
-            if (frame.dataset.videoReady === '1') return;
-            frame.dataset.videoReady = '1';
-            const video = frame.querySelector('video');
-            const preview = frame.querySelector('[data-video-preview]');
-            if (!video || !preview) return;
-            const markReady = function(){ frame.classList.add('is-ready'); };
-            const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
-            const markPaused = function(){ frame.classList.remove('is-playing'); };
-            const playFromPreview = function(){
-              if (frame.dataset.unmuteOnPreview === '1') {
-                video.muted = false;
-                video.removeAttribute('muted');
-              }
-              video.play().catch(function(){});
-            };
-            preview.addEventListener('click', playFromPreview);
-            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playFromPreview(); } });
-            video.addEventListener('loadeddata', markReady, { once: true });
-            video.addEventListener('canplay', markReady, { once: true });
-            video.addEventListener('play', markPlaying);
-            video.addEventListener('playing', markPlaying);
-            video.addEventListener('pause', markPaused);
-            if (video.readyState >= 2) markReady();
-          });
-        }
 
 
 
@@ -2314,8 +2141,6 @@ router.get("/stories/:username", async (req, res) => {
         });
 
 
-
-        initVideoPreviewFrames(document);
 
         activate(0);
 
