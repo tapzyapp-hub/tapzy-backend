@@ -6,12 +6,10 @@ const getMessagesPage = require("../messages/handlers/getMessagesPage");
 const getConversationPage = require("../messages/handlers/getConversationPage");
 const postSendMessage = require("../messages/handlers/postSendMessage");
 const postRemoveConversation = require("../messages/handlers/postRemoveConversation");
-const getConversationMessages = require("../messages/handlers/getConversationMessages");
 
 router.post("/messages/start/:username", startConversation);
 router.get("/messages", getMessagesPage);
 router.get("/messages/:id", getConversationPage);
-router.get("/messages/:id/live", getConversationMessages);
 router.post("/messages/:id", (req, res, next) => {
   upload.single("media")(req, res, (err) => {
     if (!err) return next();

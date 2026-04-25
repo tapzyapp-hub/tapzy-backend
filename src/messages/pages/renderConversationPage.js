@@ -1970,9 +1970,9 @@ module.exports = function renderConversationPage({
 
 
 
-        const socket = window.io ? io({
+        const socket = io({
 
-          transports: ["websocket", "polling"],
+          transports: ["websocket"],
 
           reconnection: true,
 
@@ -1980,7 +1980,7 @@ module.exports = function renderConversationPage({
 
           reconnectionDelay: 500,
 
-        }) : null;
+        });
 
 
 
@@ -1994,11 +1994,9 @@ module.exports = function renderConversationPage({
 
         let activeStream = null;
 
-        let lastKnownMessageAt = "";
 
 
-
-        if (socket) socket.emit("join_conversation", conversationId);
+        socket.emit("join_conversation", conversationId);
 
 
 
@@ -2187,34 +2185,6 @@ module.exports = function renderConversationPage({
 
 
 
-        function hasMessage(messageId) {
-
-          if (!messageId) return false;
-
-          return !!chat.querySelector('.tz-chat-row[data-message-id="' + CSS.escape(String(messageId)) + '"]');
-
-        }
-
-
-
-        function updateLastKnownMessageAt(value) {
-
-          if (!value) return;
-
-          const nextTime = new Date(value).getTime();
-
-          const currentTime = lastKnownMessageAt ? new Date(lastKnownMessageAt).getTime() : 0;
-
-          if (!Number.isNaN(nextTime) && nextTime > currentTime) {
-
-            lastKnownMessageAt = value;
-
-          }
-
-        }
-
-
-
         function extractMessageMetaFromRow(row) {
 
           if (!row) return null;
@@ -2298,10 +2268,6 @@ module.exports = function renderConversationPage({
         hydrateLocalTimes(document);
 
         function appendMessage(message) {
-
-          if (!message || hasMessage(message.id)) return;
-
-          chat.querySelectorAll(".tz-core-empty").forEach(function(empty){ empty.remove(); });
 
           const isMine = String(message.senderProfileId || "") === String(currentProfileId || "");
 
@@ -2396,8 +2362,6 @@ module.exports = function renderConversationPage({
 
 
           chat.appendChild(row);
-
-          updateLastKnownMessageAt(message.createdAt);
 
           applyBubbleGrouping();
 
@@ -2569,45 +2533,9 @@ module.exports = function renderConversationPage({
 
         applyBubbleGrouping();
 
-        const newestSeedRow = lastRow();
-
-        if (newestSeedRow) updateLastKnownMessageAt(newestSeedRow.getAttribute("data-created-at"));
 
 
-
-        async function fetchNewMessages() {
-
-          if (!document.hasFocus()) return;
-
-          try {
-
-            const url = "/messages/" + encodeURIComponent(conversationId) + "/live" + (lastKnownMessageAt ? "?after=" + encodeURIComponent(lastKnownMessageAt) : "");
-
-            const res = await fetch(url, {
-
-              headers: { "X-Requested-With": "XMLHttpRequest" },
-
-              cache: "no-store",
-
-            });
-
-            const data = await res.json();
-
-            if (!res.ok || !data.ok) return;
-
-            (data.messages || []).forEach(appendMessage);
-
-          } catch (err) {
-
-            // Socket is the primary live channel; polling quietly backs it up when needed.
-
-          }
-
-        }
-
-
-
-        if (socket) socket.on("receive_message", function(message){
+        socket.on("receive_message", function(message){
 
           appendMessage(message);
 
@@ -2617,7 +2545,7 @@ module.exports = function renderConversationPage({
 
 
 
-        if (socket) socket.on("typing", function(data){
+        socket.on("typing", function(data){
 
           if (!typingIndicator) return;
 
@@ -2635,7 +2563,7 @@ module.exports = function renderConversationPage({
 
 
 
-        if (socket) socket.on("stop_typing", function(data){
+        socket.on("stop_typing", function(data){
 
           if (!typingIndicator) return;
 
@@ -2647,7 +2575,7 @@ module.exports = function renderConversationPage({
 
 
 
-        if (socket) socket.on("messages_seen", function(data){
+        socket.on("messages_seen", function(data){
 
           if (!data || String(data.conversationId || "") !== String(conversationId)) return;
 
@@ -2671,7 +2599,7 @@ module.exports = function renderConversationPage({
 
 
 
-            if (socket) socket.emit("typing", {
+            socket.emit("typing", {
 
               conversationId,
 
@@ -2685,7 +2613,7 @@ module.exports = function renderConversationPage({
 
             typingTimer = setTimeout(function(){
 
-              if (socket) socket.emit("stop_typing", { conversationId });
+              socket.emit("stop_typing", { conversationId });
 
             }, 900);
 
@@ -2774,14 +2702,6 @@ module.exports = function renderConversationPage({
 
 
 
-            if (data.message) {
-
-              appendMessage(data.message);
-
-            }
-
-
-
             if (textarea) {
 
               textarea.value = "";
@@ -2802,7 +2722,7 @@ module.exports = function renderConversationPage({
 
 
 
-            if (socket) socket.emit("stop_typing", { conversationId });
+            socket.emit("stop_typing", { conversationId });
 
           } catch (err) {
 
@@ -2818,19 +2738,9 @@ module.exports = function renderConversationPage({
 
 
 
-        const liveFallbackTimer = window.setInterval(fetchNewMessages, 3000);
-
-        document.addEventListener("visibilitychange", function(){
-
-          if (!document.hidden) fetchNewMessages();
-
-        });
-
         window.addEventListener("beforeunload", function(){
 
-          window.clearInterval(liveFallbackTimer);
-
-          if (socket) socket.emit("leave_conversation", conversationId);
+          socket.emit("leave_conversation", conversationId);
 
         });
 
