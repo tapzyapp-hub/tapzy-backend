@@ -725,6 +725,12 @@ router.get("/u/:username", async (req, res) => {
 
     <style>
 
+      :root{
+        --tapzy-discovery-glow-border: rgba(127,210,255,.34);
+        --tapzy-discovery-glow-soft: rgba(127,210,255,.11);
+        --tapzy-discovery-glow-fill: radial-gradient(220px 90px at 50% 0%, rgba(111,210,255,.14), transparent 60%), linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99));
+      }
+
       .profile-wrap{
 
         max-width:920px;
@@ -1878,6 +1884,64 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
+
+      /* Discovery-page glow applied to every profile button and profile photo */
+      .profile-showcase-avatar-wrap{
+        position:relative;
+      }
+
+      .profile-showcase-avatar-wrap::before{
+        content:"";
+        position:absolute;
+        inset:-8px;
+        border-radius:38px;
+        background:radial-gradient(circle at 50% 50%, rgba(127,210,255,.14), transparent 68%);
+        filter:blur(10px);
+        opacity:.95;
+        pointer-events:none;
+      }
+
+      .profile-showcase-avatar{
+        position:relative;
+        z-index:1;
+        border-color:var(--tapzy-discovery-glow-border) !important;
+        background:
+          radial-gradient(220px 120px at 50% 0%, rgba(111,210,255,.16), transparent 62%),
+          linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99)) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(127,210,255,.08),
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 0 22px var(--tapzy-discovery-glow-soft),
+          0 16px 38px rgba(0,0,0,.28) !important;
+      }
+
+      .profile-pill-btn,
+      .profile-showcase-actions .btn,
+      .profile-showcase-actions form .btn,
+      .profile-mini-action,
+      .profile-quick-btn,
+      .profile-edit-btn,
+      .profile-attending-actions .profile-pill-btn{
+        border-color:var(--tapzy-discovery-glow-border) !important;
+        background:var(--tapzy-discovery-glow-fill) !important;
+        color:#fff !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(127,210,255,.08),
+          0 0 22px var(--tapzy-discovery-glow-soft) !important;
+      }
+
+      .profile-pill-btn:hover,
+      .profile-showcase-actions .btn:hover,
+      .profile-showcase-actions form .btn:hover,
+      .profile-mini-action:hover,
+      .profile-quick-btn:hover,
+      .profile-edit-btn:hover{
+        transform:translateY(-1px);
+        border-color:rgba(127,210,255,.44) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(127,210,255,.10),
+          0 0 28px rgba(127,210,255,.16) !important;
+      }
           0 8px 18px rgba(0,0,0,.18);
 
       }
@@ -2118,74 +2182,6 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
-    
-
-      /* Tapzy profile buttons: matched to Discovery active blue-glow buttons */
-      .profile-showcase-actions .profile-pill-btn,
-      .profile-showcase-actions .btn,
-      .profile-attending-actions .profile-pill-btn,
-      .profile-mini-action,
-      .profile-quick-btn,
-      .profile-edit-btn,
-      .tapzy-contact-btn,
-      .tapzy-contact-btn-dark{
-        position:relative;
-        overflow:hidden;
-        border:1px solid rgba(127,210,255,.34) !important;
-        background:
-          radial-gradient(220px 90px at 50% 0%, rgba(111,210,255,.14), transparent 60%),
-          linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99)) !important;
-        color:#fff !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.08),
-          inset 0 1px 0 rgba(255,255,255,.05),
-          0 0 22px rgba(127,210,255,.11),
-          0 14px 30px rgba(0,0,0,.18) !important;
-        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
-      }
-
-      .profile-showcase-actions .profile-pill-btn::before,
-      .profile-showcase-actions .btn::before,
-      .profile-attending-actions .profile-pill-btn::before,
-      .profile-mini-action::before,
-      .profile-quick-btn::before,
-      .profile-edit-btn::before,
-      .tapzy-contact-btn::before{
-        content:"";
-        position:absolute;
-        inset:-1px;
-        border-radius:inherit;
-        pointer-events:none;
-        background:linear-gradient(120deg, transparent 0%, rgba(180,230,255,.10) 45%, transparent 75%);
-        opacity:.65;
-      }
-
-      .profile-showcase-actions .profile-pill-btn:hover,
-      .profile-showcase-actions .btn:hover,
-      .profile-attending-actions .profile-pill-btn:hover,
-      .profile-mini-action:hover,
-      .profile-quick-btn:hover,
-      .profile-edit-btn:hover,
-      .tapzy-contact-btn:hover{
-        transform:translateY(-1px) scale(1.01);
-        border-color:rgba(127,210,255,.48) !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.12),
-          inset 0 1px 0 rgba(255,255,255,.07),
-          0 0 28px rgba(127,210,255,.18),
-          0 16px 34px rgba(0,0,0,.22) !important;
-      }
-
-      .profile-showcase-actions .profile-pill-btn:active,
-      .profile-showcase-actions .btn:active,
-      .profile-attending-actions .profile-pill-btn:active,
-      .profile-mini-action:active,
-      .profile-quick-btn:active,
-      .profile-edit-btn:active,
-      .tapzy-contact-btn:active{
-        transform:translateY(0) scale(.99);
-      }
-
     </style>
 
 
@@ -2278,8 +2274,6 @@ router.get("/u/:username", async (req, res) => {
       })();
     </script>
 
-
-    }
 
     `;
 
