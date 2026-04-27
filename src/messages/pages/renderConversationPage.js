@@ -2744,6 +2744,58 @@ module.exports = function renderConversationPage({
 
 
 
+        function uploadMessageWithProgress(formData) {
+
+          return new Promise(function(resolve, reject) {
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.open("POST", form.action);
+
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+            xhr.upload.onprogress = function(event) {
+
+              if (!event.lengthComputable || !sendBtn) return;
+
+              const percent = Math.max(1, Math.min(99, Math.round((event.loaded / event.total) * 100)));
+
+              sendBtn.textContent = "Uploading " + percent + "%";
+
+            };
+
+            xhr.onload = function() {
+
+              let data = {};
+
+              try { data = JSON.parse(xhr.responseText || "{}"); } catch (_) {}
+
+              if (xhr.status < 200 || xhr.status >= 300 || !data.ok) {
+
+                reject(new Error(data.error || "Send failed"));
+
+                return;
+
+              }
+
+              resolve(data);
+
+            };
+
+            xhr.onerror = function() { reject(new Error("Network upload failed")); };
+
+            xhr.ontimeout = function() { reject(new Error("Upload timed out")); };
+
+            xhr.timeout = 120000;
+
+            xhr.send(formData);
+
+          });
+
+        }
+
+
+
         form.addEventListener("submit", async function(e){
 
           e.preventDefault();
@@ -2754,13 +2806,33 @@ module.exports = function renderConversationPage({
 
           const text = String(textarea?.value || "").trim();
 
-          const hasMedia = !!(mediaInput && mediaInput.files && mediaInput.files[0]);
+          const selectedFile = mediaInput && mediaInput.files ? mediaInput.files[0] : null;
+
+          const hasMedia = !!selectedFile;
 
           if (!text && !hasMedia) return;
 
 
 
+          if (selectedFile && selectedFile.type && selectedFile.type.startsWith("video/") && selectedFile.size > 30 * 1024 * 1024) {
+
+            alert("This video is too large for fast mobile sending. Please trim it or choose a shorter clip under 30 MB.");
+
+            return;
+
+          }
+
+
+
           setSending(true);
+
+          if (selectedFile && selectedFile.type && selectedFile.type.startsWith("video/") && sendBtn) {
+
+            sendBtn.textContent = "Preparing...";
+
+            if (mediaHint) mediaHint.textContent = "Sending video — keep this page open.";
+
+          }
 
 
 
@@ -2768,27 +2840,7 @@ module.exports = function renderConversationPage({
 
             const formData = new FormData(form);
 
-
-
-            const res = await fetch(form.action, {
-
-              method: "POST",
-
-              body: formData,
-
-              headers: { "X-Requested-With": "XMLHttpRequest" }
-
-            });
-
-
-
-            const data = await res.json();
-
-            if (!res.ok || !data.ok) {
-
-              throw new Error(data.error || "Send failed");
-
-            }
+            const data = await uploadMessageWithProgress(formData);
 
 
 
