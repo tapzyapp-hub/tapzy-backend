@@ -1929,6 +1929,110 @@ module.exports = function renderConversationPage({
 
   }
 
+
+
+  .tz-video-trim-modal{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    padding:16px;
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(14px);
+  }
+
+  .tz-video-trim-modal.is-open{ display:flex; }
+
+  .tz-video-trim-card{
+    width:min(560px, 100%);
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.12);
+    background:linear-gradient(180deg, rgba(13,16,24,.98), rgba(4,5,9,.99));
+    box-shadow:0 28px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+    padding:14px;
+  }
+
+  .tz-video-trim-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    color:#f4f7ff;
+    margin-bottom:10px;
+  }
+
+  .tz-video-trim-head strong{ display:block; font-size:18px; letter-spacing:.01em; }
+  .tz-video-trim-head span{ display:block; color:rgba(220,228,242,.58); font-size:12px; margin-top:2px; }
+
+  .tz-video-trim-close{
+    width:40px; height:40px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.05); color:#fff;
+    font-size:26px; line-height:1;
+  }
+
+  .tz-video-trim-preview{
+    width:100%;
+    max-height:48vh;
+    border-radius:20px;
+    background:#000;
+    border:1px solid rgba(255,255,255,.08);
+    object-fit:contain;
+  }
+
+  .tz-video-trim-times{
+    display:flex; justify-content:space-between;
+    color:rgba(235,241,255,.75);
+    font-size:12px; font-weight:800;
+    margin:10px 2px 4px;
+  }
+
+  .tz-video-trim-range-wrap{
+    display:grid; gap:8px;
+    padding:8px 0 2px;
+  }
+
+  .tz-video-trim-range{ width:100%; accent-color:#8fc7ff; }
+
+  .tz-video-trim-actions{
+    display:flex; gap:10px; margin-top:12px;
+  }
+
+  .tz-video-trim-secondary, .tz-video-trim-primary{
+    border:1px solid rgba(255,255,255,.11);
+    border-radius:999px;
+    padding:12px 14px;
+    font-weight:900;
+    color:#f5f8ff;
+    background:rgba(255,255,255,.055);
+    flex:1;
+  }
+
+  .tz-video-trim-primary{
+    border-color:rgba(127,210,255,.24);
+    background:linear-gradient(180deg, rgba(33,70,120,.36), rgba(17,26,45,.72));
+    box-shadow:0 0 22px rgba(120,180,255,.10);
+  }
+
+  .tz-video-trim-note{
+    margin:10px 2px 0;
+    color:rgba(220,228,242,.54);
+    font-size:12px;
+    line-height:1.35;
+  }
+
+  .tz-inline-trim-btn{
+    margin-left:8px;
+    border:1px solid rgba(127,210,255,.22);
+    border-radius:999px;
+    background:rgba(120,180,255,.10);
+    color:#dcecff;
+    font-weight:900;
+    padding:5px 10px;
+  }
+
 </style>
 
 
@@ -1955,6 +2059,26 @@ module.exports = function renderConversationPage({
         const sendBtn = document.getElementById("tzSendBtn");
 
         const typingIndicator = document.getElementById("tzTypingIndicator");
+
+        const videoTrimModal = document.getElementById("tzVideoTrimModal");
+
+        const videoTrimPreview = document.getElementById("tzVideoTrimPreview");
+
+        const videoTrimStart = document.getElementById("tzVideoTrimStart");
+
+        const videoTrimEnd = document.getElementById("tzVideoTrimEnd");
+
+        const videoTrimStartLabel = document.getElementById("tzVideoTrimStartLabel");
+
+        const videoTrimEndLabel = document.getElementById("tzVideoTrimEndLabel");
+
+        const videoTrimClose = document.getElementById("tzVideoTrimClose");
+
+        const videoTrimPlay = document.getElementById("tzVideoTrimPlay");
+
+        const videoTrimApply = document.getElementById("tzVideoTrimApply");
+
+        const videoTrimNote = document.getElementById("tzVideoTrimNote");
 
         const conversationId = ${JSON.stringify(conversation.id)};
 
@@ -1995,6 +2119,8 @@ module.exports = function renderConversationPage({
         let activeStream = null;
 
         let lastKnownMessageAt = "";
+
+        let videoTrimState = { file: null, url: "", duration: 0, start: 0, end: 0 };
 
 
 
@@ -2494,6 +2620,147 @@ module.exports = function renderConversationPage({
         }
 
 
+        function isVideoFile(file) {
+          if (!file) return false;
+          const type = String(file.type || "").toLowerCase();
+          const name = String(file.name || "").toLowerCase();
+          return type.startsWith("video/") || /\.(mp4|mov|webm|m4v)$/.test(name);
+        }
+
+        function formatTrimTime(seconds) {
+          seconds = Math.max(0, Number(seconds) || 0);
+          const mins = Math.floor(seconds / 60);
+          const secs = Math.floor(seconds % 60);
+          return mins + ":" + String(secs).padStart(2, "0");
+        }
+
+        function setTrimLabels() {
+          if (videoTrimStartLabel) videoTrimStartLabel.textContent = formatTrimTime(videoTrimState.start);
+          if (videoTrimEndLabel) videoTrimEndLabel.textContent = formatTrimTime(videoTrimState.end);
+          if (videoTrimNote) {
+            const length = Math.max(0, videoTrimState.end - videoTrimState.start);
+            videoTrimNote.textContent = "Selected clip: " + formatTrimTime(length) + ". For fastest mobile sending, keep clips around 5–20 seconds.";
+          }
+        }
+
+        function closeVideoTrimmer() {
+          if (videoTrimModal) {
+            videoTrimModal.classList.remove("is-open");
+            videoTrimModal.setAttribute("aria-hidden", "true");
+          }
+          if (videoTrimPreview) {
+            videoTrimPreview.pause();
+            videoTrimPreview.removeAttribute("src");
+            videoTrimPreview.load();
+          }
+          if (videoTrimState.url) URL.revokeObjectURL(videoTrimState.url);
+          videoTrimState = { file: null, url: "", duration: 0, start: 0, end: 0 };
+        }
+
+        function openVideoTrimmer(file) {
+          if (!file || !videoTrimModal || !videoTrimPreview || !videoTrimStart || !videoTrimEnd) return;
+          if (videoTrimState.url) URL.revokeObjectURL(videoTrimState.url);
+          const url = URL.createObjectURL(file);
+          videoTrimState = { file: file, url: url, duration: 0, start: 0, end: 0 };
+          videoTrimPreview.src = url;
+          videoTrimPreview.currentTime = 0;
+          videoTrimModal.classList.add("is-open");
+          videoTrimModal.setAttribute("aria-hidden", "false");
+          if (videoTrimNote) videoTrimNote.textContent = "Loading video…";
+          videoTrimPreview.onloadedmetadata = function() {
+            const duration = Number(videoTrimPreview.duration || 0);
+            videoTrimState.duration = duration;
+            videoTrimState.start = 0;
+            videoTrimState.end = Math.max(1, Math.min(duration || 1, 20));
+            videoTrimStart.min = "0";
+            videoTrimStart.max = String(Math.max(1, duration || 1));
+            videoTrimStart.step = "0.1";
+            videoTrimStart.value = "0";
+            videoTrimEnd.min = "0";
+            videoTrimEnd.max = String(Math.max(1, duration || 1));
+            videoTrimEnd.step = "0.1";
+            videoTrimEnd.value = String(videoTrimState.end);
+            setTrimLabels();
+          };
+        }
+
+        function syncTrimRanges(changed) {
+          if (!videoTrimStart || !videoTrimEnd) return;
+          let start = Number(videoTrimStart.value || 0);
+          let end = Number(videoTrimEnd.value || 0);
+          const minLength = 1;
+          if (changed === "start" && start > end - minLength) start = Math.max(0, end - minLength);
+          if (changed === "end" && end < start + minLength) end = Math.min(videoTrimState.duration || start + minLength, start + minLength);
+          videoTrimState.start = Math.max(0, start);
+          videoTrimState.end = Math.max(videoTrimState.start + minLength, end);
+          videoTrimStart.value = String(videoTrimState.start);
+          videoTrimEnd.value = String(videoTrimState.end);
+          if (videoTrimPreview) videoTrimPreview.currentTime = videoTrimState.start;
+          setTrimLabels();
+        }
+
+        function mediaRecorderMimeType() {
+          const choices = ["video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+          if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return "";
+          return choices.find(function(type){ return MediaRecorder.isTypeSupported(type); }) || "";
+        }
+
+        function trimVideoFile(file, start, end) {
+          return new Promise(function(resolve, reject) {
+            if (!window.MediaRecorder) {
+              reject(new Error("This phone browser cannot trim inside Tapzy yet. Use iPhone Photos edit/trim, then send the shorter clip."));
+              return;
+            }
+            const video = document.createElement("video");
+            video.muted = false;
+            video.playsInline = true;
+            video.preload = "auto";
+            video.src = URL.createObjectURL(file);
+
+            video.onloadedmetadata = function() {
+              const stream = video.captureStream ? video.captureStream() : (video.mozCaptureStream ? video.mozCaptureStream() : null);
+              if (!stream) {
+                URL.revokeObjectURL(video.src);
+                reject(new Error("This phone browser cannot trim inside Tapzy yet. Use iPhone Photos edit/trim, then send the shorter clip."));
+                return;
+              }
+              const chunks = [];
+              const mimeType = mediaRecorderMimeType();
+              let recorder;
+              try {
+                recorder = new MediaRecorder(stream, mimeType ? { mimeType: mimeType } : undefined);
+              } catch (err) {
+                URL.revokeObjectURL(video.src);
+                reject(new Error("Could not start video trimmer on this device."));
+                return;
+              }
+              recorder.ondataavailable = function(event) { if (event.data && event.data.size) chunks.push(event.data); };
+              recorder.onerror = function() { reject(new Error("Video trim failed.")); };
+              recorder.onstop = function() {
+                URL.revokeObjectURL(video.src);
+                const type = recorder.mimeType || mimeType || file.type || "video/mp4";
+                const ext = type.includes("webm") ? "webm" : "mp4";
+                const trimmed = new File([new Blob(chunks, { type: type })], "tapzy-trimmed-video." + ext, { type: type });
+                resolve(trimmed);
+              };
+              video.currentTime = Math.max(0, start || 0);
+              video.onseeked = function() {
+                recorder.start(250);
+                video.play().catch(function(){ reject(new Error("Could not play video for trimming.")); });
+                const timer = window.setInterval(function(){
+                  if (video.currentTime >= end || video.ended) {
+                    window.clearInterval(timer);
+                    video.pause();
+                    if (recorder.state !== "inactive") recorder.stop();
+                  }
+                }, 120);
+              };
+            };
+            video.onerror = function() { reject(new Error("Could not load video for trimming.")); };
+          });
+        }
+
+
 
         async function toggleRecording() {
 
@@ -2721,6 +2988,63 @@ module.exports = function renderConversationPage({
 
 
 
+        if (videoTrimClose) videoTrimClose.addEventListener("click", closeVideoTrimmer);
+
+        if (videoTrimModal) {
+          videoTrimModal.addEventListener("click", function(event) {
+            if (event.target === videoTrimModal) closeVideoTrimmer();
+          });
+        }
+
+        if (videoTrimStart) videoTrimStart.addEventListener("input", function(){ syncTrimRanges("start"); });
+
+        if (videoTrimEnd) videoTrimEnd.addEventListener("input", function(){ syncTrimRanges("end"); });
+
+        if (videoTrimPlay) {
+          videoTrimPlay.addEventListener("click", function() {
+            if (!videoTrimPreview) return;
+            videoTrimPreview.currentTime = videoTrimState.start || 0;
+            videoTrimPreview.play().catch(function(){});
+            const stopAtEnd = function() {
+              if (videoTrimPreview.currentTime >= videoTrimState.end) {
+                videoTrimPreview.pause();
+                videoTrimPreview.removeEventListener("timeupdate", stopAtEnd);
+              }
+            };
+            videoTrimPreview.addEventListener("timeupdate", stopAtEnd);
+          });
+        }
+
+        if (videoTrimApply) {
+          videoTrimApply.addEventListener("click", async function() {
+            if (!videoTrimState.file || !mediaInput) return;
+            const start = videoTrimState.start || 0;
+            const end = videoTrimState.end || videoTrimState.duration || 0;
+            const length = Math.max(0, end - start);
+            if (length < 1) {
+              alert("Choose at least 1 second of video.");
+              return;
+            }
+            videoTrimApply.disabled = true;
+            videoTrimApply.textContent = "Trimming…";
+            if (mediaHint) mediaHint.textContent = "Trimming video on your phone…";
+            try {
+              const trimmedFile = await trimVideoFile(videoTrimState.file, start, end);
+              const dt = new DataTransfer();
+              dt.items.add(trimmedFile);
+              mediaInput.files = dt.files;
+              if (mediaHint) mediaHint.textContent = "Trimmed video ready: " + formatTrimTime(length);
+              closeVideoTrimmer();
+            } catch (err) {
+              alert(err.message || "Could not trim video on this device.");
+              if (mediaHint) mediaHint.textContent = "Video ready. For faster sending, trim it in Photos first if needed.";
+            } finally {
+              videoTrimApply.disabled = false;
+              videoTrimApply.textContent = "Use trimmed clip";
+            }
+          });
+        }
+
         if (mediaInput) {
 
           mediaInput.addEventListener("change", function() {
@@ -2728,8 +3052,11 @@ module.exports = function renderConversationPage({
             if (mediaInput.files && mediaInput.files[0] && mediaHint) {
 
               const selectedFile = mediaInput.files[0];
-              if (selectedFile.type && selectedFile.type.startsWith("video/")) {
-                mediaHint.textContent = "Video ready: " + selectedFile.name;
+              if (isVideoFile(selectedFile)) {
+                mediaHint.innerHTML = "Video ready: " + safeEscape(selectedFile.name) + " <button type=\"button\" id=\"tzOpenVideoTrimInline\" class=\"tz-inline-trim-btn\">Trim</button>";
+                const trimButton = document.getElementById("tzOpenVideoTrimInline");
+                if (trimButton) trimButton.addEventListener("click", function(){ openVideoTrimmer(selectedFile); });
+                window.setTimeout(function(){ openVideoTrimmer(selectedFile); }, 80);
               } else if (selectedFile.type && selectedFile.type.startsWith("audio/")) {
                 mediaHint.textContent = "Audio ready: " + selectedFile.name;
               } else {
