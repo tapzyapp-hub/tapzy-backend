@@ -1,7 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const compression = require("compression");
+let compression = null;
+try {
+  compression = require("compression");
+} catch (err) {
+  console.warn("Optional dependency compression is not installed; continuing without HTTP compression.");
+}
 const cookieParser = require("cookie-parser");
 const path = require("path");
 
@@ -69,7 +74,9 @@ app.use(
   })
 );
 
-app.use(compression({ threshold: 1024 }));
+if (compression) {
+  app.use(compression({ threshold: 1024 }));
+}
 
 app.use(cookieParser());
 app.use(express.json({ limit: "12mb" }));
