@@ -168,7 +168,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
           <label class="stories-upload-drop">
 
-            <input type="file" name="storyMedia" accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm" />
+            <input type="file" name="storyMedia" accept="image/*,video/*,.heic,.heif,.mov,.mp4,.webm" />
 
             <span class="stories-upload-icon">＋</span>
 
@@ -1085,17 +1085,50 @@ router.get("/stories", async (req, res) => {
           updateCount();
         }
 
+        let activePreviewUrl = null;
+
+        function clearPreviewUrl(){
+          if (activePreviewUrl && window.URL && URL.revokeObjectURL) {
+            try { URL.revokeObjectURL(activePreviewUrl); } catch (e) {}
+          }
+          activePreviewUrl = null;
+        }
+
+        function renderPreview(selected){
+          if (!preview || !selected) return;
+          clearPreviewUrl();
+
+          const type = selected.type || '';
+          const name = (selected.name || '').toLowerCase();
+          const isVideo = type.indexOf('video/') === 0 || /\.(mov|mp4|webm|m4v)$/i.test(name);
+
+          if (isVideo) {
+            activePreviewUrl = URL.createObjectURL(selected);
+            preview.innerHTML = '<video src="' + activePreviewUrl + '" muted playsinline webkit-playsinline preload="metadata" controls></video>';
+            const video = preview.querySelector('video');
+            if (video && video.load) video.load();
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(e){
+            const src = e && e.target ? e.target.result : '';
+            if (!src) return;
+            preview.innerHTML = '<img src="' + src + '" alt="Story preview" loading="eager" decoding="async" />';
+          };
+          reader.onerror = function(){
+            activePreviewUrl = URL.createObjectURL(selected);
+            preview.innerHTML = '<img src="' + activePreviewUrl + '" alt="Story preview" loading="eager" decoding="async" />';
+          };
+          reader.readAsDataURL(selected);
+        }
+
         if (file) {
           file.addEventListener('change', function(){
             const selected = file.files && file.files[0];
             if (!selected) return;
-            if (label) label.textContent = selected.name;
-            if (!preview) return;
-            const url = URL.createObjectURL(selected);
-            const isVideo = selected.type && selected.type.indexOf('video/') === 0;
-            preview.innerHTML = isVideo
-              ? '<video src="' + url + '" muted playsinline preload="metadata"></video>'
-              : '<img src="' + url + '" alt="Story preview" />';
+            if (label) label.textContent = selected.name || 'Media selected';
+            renderPreview(selected);
           });
         }
 
