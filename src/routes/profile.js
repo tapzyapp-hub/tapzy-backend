@@ -65,7 +65,7 @@ function renderVideoFrame(url, options = {}) {
   const muted = options.muted ? ' muted' : '';
   const controls = options.controls === false ? '' : ' controls';
   const loop = options.loop ? ' loop' : '';
-  const preload = escapeHtml(options.preload || 'metadata');
+  const preload = escapeHtml(options.preload || 'auto');
   const aria = escapeHtml(options.ariaLabel || 'Play video');
   return `
     <div class="tz-video-frame${options.autoplay ? ' is-autoplay' : ''}" data-video-frame>
@@ -73,7 +73,7 @@ function renderVideoFrame(url, options = {}) {
         <div class="tz-video-preview-blur"></div>
         <div class="tz-video-preview-badge">▶</div>
       </div>
-      <video class="${className}" src="${src}"${controls}${autoplay}${muted}${loop} playsinline preload="${preload}"></video>
+      <video class="${className}" src="${src}"${controls}${autoplay}${muted}${loop} playsinline webkit-playsinline preload="${preload}"></video>
     </div>
   `;
 }
@@ -121,9 +121,9 @@ function storyTrayCard(profile, story, isOwner) {
 
     ? isVideo
 
-      ? renderVideoFrame(story.mediaUrl, { className: "profile-story-card-media", controls: false, muted: true, preload: "metadata" })
+      ? renderVideoFrame(story.mediaUrl, { className: "profile-story-card-media", controls: false, muted: true, preload: "auto" })
 
-      : `<img class="profile-story-card-media" src="${escapeHtml(story.mediaUrl)}" alt="Story preview" />`
+      : `<img class="profile-story-card-media" src="${escapeHtml(story.mediaUrl)}" alt="Story preview" loading="lazy" decoding="async" />`
 
     : `<div class="profile-story-card-textonly">${escapeHtml(
 
@@ -273,7 +273,7 @@ router.get("/u/:username", async (req, res) => {
 
     const photoHtml = profile.photo
 
-      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" />`
+      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" loading="eager" decoding="async" />`
 
       : escapeHtml((displayName || "T").slice(0, 1).toUpperCase());
 
@@ -724,12 +724,6 @@ router.get("/u/:username", async (req, res) => {
 
 
     <style>
-
-      :root{
-        --tapzy-discovery-glow-border: rgba(127,210,255,.34);
-        --tapzy-discovery-glow-soft: rgba(127,210,255,.11);
-        --tapzy-discovery-glow-fill: radial-gradient(220px 90px at 50% 0%, rgba(111,210,255,.14), transparent 60%), linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99));
-      }
 
       .profile-wrap{
 
@@ -1697,7 +1691,7 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .tz-video-frame{position:relative;overflow:hidden;background:#05070d;}
+      .tz-video-frame{position:relative;overflow:hidden;background:#05070d;width:100%;height:100%;}
       .tz-video-preview{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;cursor:pointer;background:radial-gradient(circle at 50% 20%, rgba(52,116,255,.22), transparent 42%),linear-gradient(180deg, rgba(8,12,24,.96), rgba(3,5,12,.98));transition:opacity .22s ease, visibility .22s ease;}
       .tz-video-preview-blur{position:absolute;inset:0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
       .tz-video-preview-badge{position:relative;z-index:1;width:60px;height:60px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(10,14,24,.72);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 28px rgba(0,0,0,.34);color:#fff;font-size:24px;line-height:1;}
@@ -1884,64 +1878,6 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-
-      /* Discovery-page glow applied to every profile button and profile photo */
-      .profile-showcase-avatar-wrap{
-        position:relative;
-      }
-
-      .profile-showcase-avatar-wrap::before{
-        content:"";
-        position:absolute;
-        inset:-8px;
-        border-radius:38px;
-        background:radial-gradient(circle at 50% 50%, rgba(127,210,255,.14), transparent 68%);
-        filter:blur(10px);
-        opacity:.95;
-        pointer-events:none;
-      }
-
-      .profile-showcase-avatar{
-        position:relative;
-        z-index:1;
-        border-color:var(--tapzy-discovery-glow-border) !important;
-        background:
-          radial-gradient(220px 120px at 50% 0%, rgba(111,210,255,.16), transparent 62%),
-          linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99)) !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.08),
-          inset 0 1px 0 rgba(255,255,255,.05),
-          0 0 22px var(--tapzy-discovery-glow-soft),
-          0 16px 38px rgba(0,0,0,.28) !important;
-      }
-
-      .profile-pill-btn,
-      .profile-showcase-actions .btn,
-      .profile-showcase-actions form .btn,
-      .profile-mini-action,
-      .profile-quick-btn,
-      .profile-edit-btn,
-      .profile-attending-actions .profile-pill-btn{
-        border-color:var(--tapzy-discovery-glow-border) !important;
-        background:var(--tapzy-discovery-glow-fill) !important;
-        color:#fff !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.08),
-          0 0 22px var(--tapzy-discovery-glow-soft) !important;
-      }
-
-      .profile-pill-btn:hover,
-      .profile-showcase-actions .btn:hover,
-      .profile-showcase-actions form .btn:hover,
-      .profile-mini-action:hover,
-      .profile-quick-btn:hover,
-      .profile-edit-btn:hover{
-        transform:translateY(-1px);
-        border-color:rgba(127,210,255,.44) !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.10),
-          0 0 28px rgba(127,210,255,.16) !important;
-      }
           0 8px 18px rgba(0,0,0,.18);
 
       }
@@ -2256,13 +2192,31 @@ router.get("/u/:username", async (req, res) => {
             const markReady = function(){ frame.classList.add('is-ready'); };
             const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
             const markPaused = function(){ frame.classList.remove('is-playing'); };
+            const warmPreviewFrame = function(){
+              try {
+                video.muted = true;
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+                video.preload = 'auto';
+                if (video.readyState === 0) video.load();
+                if (video.readyState >= 1 && !video.dataset.previewSeeked) {
+                  video.dataset.previewSeeked = '1';
+                  const target = Math.min(0.12, Math.max(0.01, (video.duration || 1) - 0.01));
+                  video.currentTime = target;
+                }
+              } catch (err) {}
+            };
             preview.addEventListener('click', function(){ video.play().catch(function(){}); });
             preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
+            video.addEventListener('loadedmetadata', warmPreviewFrame, { once: true });
             video.addEventListener('loadeddata', markReady, { once: true });
             video.addEventListener('canplay', markReady, { once: true });
+            video.addEventListener('seeked', markReady, { once: true });
             video.addEventListener('play', markPlaying);
             video.addEventListener('playing', markPlaying);
             video.addEventListener('pause', markPaused);
+            warmPreviewFrame();
             if (video.readyState >= 2) markReady();
           });
         }
@@ -2274,6 +2228,8 @@ router.get("/u/:username", async (req, res) => {
       })();
     </script>
 
+
+    }
 
     `;
 
