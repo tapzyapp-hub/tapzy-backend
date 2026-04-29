@@ -435,25 +435,21 @@ module.exports = async function getEventsPage(req, res) {
 
         overflow:hidden;
 
-        border-radius:34px;
+        border-radius:32px;
 
         border:1px solid rgba(255,255,255,.08);
 
+        /* Matches the Tapzy Stories premium card color system */
+
         background:
 
-          radial-gradient(980px 420px at 50% -8%, rgba(97,164,255,.10), transparent 46%),
+          radial-gradient(700px 260px at 50% -5%, rgba(127,210,255,.08), transparent 48%),
 
-          radial-gradient(440px 240px at 8% 14%, rgba(26,56,120,.14), transparent 58%),
-
-          linear-gradient(180deg, rgba(8,10,18,.98), rgba(3,4,8,1));
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(6,6,8,1));
 
         padding:30px;
 
-        box-shadow:
-
-          0 32px 90px rgba(0,0,0,.44),
-
-          inset 0 1px 0 rgba(255,255,255,.04);
+        box-shadow:0 24px 70px rgba(0,0,0,.40);
 
       }
 
@@ -477,15 +473,17 @@ module.exports = async function getEventsPage(req, res) {
 
       .events-hero-glow{
 
-        width:360px;
+        width:420px;
 
-        height:360px;
+        height:220px;
 
-        right:-40px;
+        left:50%;
 
-        top:-80px;
+        top:-120px;
 
-        background:radial-gradient(circle, rgba(111,210,255,.18) 0%, rgba(111,210,255,.05) 42%, transparent 72%);
+        transform:translateX(-50%);
+
+        background:radial-gradient(circle, rgba(127,210,255,.08) 0%, rgba(127,210,255,.04) 42%, transparent 72%);
 
       }
 
@@ -493,15 +491,7 @@ module.exports = async function getEventsPage(req, res) {
 
       .events-hero-glow-b{
 
-        width:260px;
-
-        height:260px;
-
-        left:-40px;
-
-        bottom:-60px;
-
-        background:radial-gradient(circle, rgba(87,144,255,.12) 0%, rgba(87,144,255,.04) 42%, transparent 72%);
+        display:none;
 
       }
 
@@ -1501,9 +1491,9 @@ module.exports = async function getEventsPage(req, res) {
 
         .events-hero{
 
-          padding:20px;
+          padding:24px;
 
-          border-radius:26px;
+          border-radius:32px;
 
         }
 
