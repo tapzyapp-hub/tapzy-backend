@@ -450,6 +450,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
         function bindCardMotion(scope) {
 
+          if (window.matchMedia && window.matchMedia("(max-width: 700px)").matches) return;
+
           const root = scope || document;
 
           const cards = root.querySelectorAll(".js-event-card");
@@ -614,57 +616,49 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
 
 
-          function refreshActive() {
+          const items = Array.from(feed.querySelectorAll(".js-reel-item"));
 
-            const all = Array.from(feed.querySelectorAll(".js-reel-item"));
-
-            let best = null;
-
-            let bestDelta = Infinity;
+          if (!items.length) return;
 
 
 
-            all.forEach((item) => {
+          function setActive(item) {
 
-              const rect = item.getBoundingClientRect();
-
-              const center = rect.top + rect.height / 2;
-
-              const delta = Math.abs(center - window.innerHeight / 2);
-
-
-
-              if (delta < bestDelta) {
-
-                bestDelta = delta;
-
-                best = item;
-
-              }
-
-            });
-
-
-
-            all.forEach((item) => item.classList.remove("is-active"));
-
-            if (best) best.classList.add("is-active");
+            items.forEach((node) => node.classList.toggle("is-active", node === item));
 
           }
 
 
 
-          feed.addEventListener("scroll", () => {
+          const observer = new IntersectionObserver((entries) => {
 
-            requestAnimationFrame(refreshActive);
+            let best = null;
 
-          }, { passive: true });
+            let bestRatio = 0;
+
+            entries.forEach((entry) => {
+
+              if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
+
+                bestRatio = entry.intersectionRatio;
+
+                best = entry.target;
+
+              }
+
+            });
+
+            if (best) setActive(best);
+
+          }, { threshold: [0.35, 0.55, 0.75] });
 
 
 
-          refreshActive();
+          items.forEach((item) => observer.observe(item));
 
-          feed.refreshActive = refreshActive;
+          setActive(items[0]);
+
+          feed.refreshActive = () => {};
 
         }
 

@@ -19,20 +19,19 @@ function toPayload(message) {
 
 module.exports = async function getConversationMessages(req, res) {
   try {
+    res.setHeader("Cache-Control", "no-store");
+
     const currentProfile = req.currentProfile;
     if (!currentProfile) return res.status(401).json({ ok: false, error: "Please sign in first" });
 
     const id = String(req.params.id || "").trim();
     if (!id) return res.status(404).json({ ok: false, error: "Conversation not found" });
 
-    const conversation = await prisma.conversation.findUnique({
-      where: { id },
-      include: { members: true },
+    const isMember = await prisma.conversationMember.findFirst({
+      where: { conversationId: id, profileId: currentProfile.id },
+      select: { id: true },
     });
 
-    if (!conversation) return res.status(404).json({ ok: false, error: "Conversation not found" });
-
-    const isMember = conversation.members.some((member) => member.profileId === currentProfile.id);
     if (!isMember) return res.status(403).json({ ok: false, error: "Forbidden" });
 
     const after = String(req.query.after || "").trim();
@@ -45,8 +44,17 @@ module.exports = async function getConversationMessages(req, res) {
         ...(hasValidCursor ? { createdAt: { gt: cursorDate } } : {}),
       },
       orderBy: { createdAt: "asc" },
-      take: 100,
-      include: { sender: true },
+      take: hasValidCursor ? 50 : 80,
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            photo: true,
+          },
+        },
+      },
     });
 
     const unreadIncomingIds = messages
@@ -55,14 +63,16 @@ module.exports = async function getConversationMessages(req, res) {
 
     if (unreadIncomingIds.length) {
       const now = new Date();
-      await prisma.directMessage.updateMany({
-        where: { id: { in: unreadIncomingIds } },
-        data: { readAt: now },
-      });
-      await prisma.conversationMember.updateMany({
-        where: { conversationId: id, profileId: currentProfile.id },
-        data: { lastReadAt: now },
-      });
+      await Promise.all([
+        prisma.directMessage.updateMany({
+          where: { id: { in: unreadIncomingIds } },
+          data: { readAt: now },
+        }),
+        prisma.conversationMember.updateMany({
+          where: { conversationId: id, profileId: currentProfile.id },
+          data: { lastReadAt: now },
+        }),
+      ]);
 
       const io = req.app.get("io");
       if (io) {

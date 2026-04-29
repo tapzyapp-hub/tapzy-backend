@@ -123,7 +123,7 @@ function storyTrayCard(profile, story, isOwner) {
 
       ? renderVideoFrame(story.mediaUrl, { className: "profile-story-card-media", controls: false, muted: true, preload: "metadata" })
 
-      : `<img class="profile-story-card-media" src="${escapeHtml(story.mediaUrl)}" alt="Story preview" />`
+      : `<img class="profile-story-card-media" src="${escapeHtml(story.mediaUrl)}" alt="Story preview" loading="lazy" decoding="async" />`
 
     : `<div class="profile-story-card-textonly">${escapeHtml(
 
@@ -273,7 +273,7 @@ router.get("/u/:username", async (req, res) => {
 
     const photoHtml = profile.photo
 
-      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" />`
+      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" loading="eager" decoding="async" />`
 
       : escapeHtml((displayName || "T").slice(0, 1).toUpperCase());
 
@@ -724,12 +724,6 @@ router.get("/u/:username", async (req, res) => {
 
 
     <style>
-
-      :root{
-        --tapzy-discovery-glow-border: rgba(127,210,255,.34);
-        --tapzy-discovery-glow-soft: rgba(127,210,255,.11);
-        --tapzy-discovery-glow-fill: radial-gradient(220px 90px at 50% 0%, rgba(111,210,255,.14), transparent 60%), linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99));
-      }
 
       .profile-wrap{
 
@@ -1884,64 +1878,6 @@ router.get("/u/:username", async (req, res) => {
 
           inset 0 1px 0 rgba(255,255,255,.04),
 
-
-      /* Discovery-page glow applied to every profile button and profile photo */
-      .profile-showcase-avatar-wrap{
-        position:relative;
-      }
-
-      .profile-showcase-avatar-wrap::before{
-        content:"";
-        position:absolute;
-        inset:-8px;
-        border-radius:38px;
-        background:radial-gradient(circle at 50% 50%, rgba(127,210,255,.14), transparent 68%);
-        filter:blur(10px);
-        opacity:.95;
-        pointer-events:none;
-      }
-
-      .profile-showcase-avatar{
-        position:relative;
-        z-index:1;
-        border-color:var(--tapzy-discovery-glow-border) !important;
-        background:
-          radial-gradient(220px 120px at 50% 0%, rgba(111,210,255,.16), transparent 62%),
-          linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99)) !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.08),
-          inset 0 1px 0 rgba(255,255,255,.05),
-          0 0 22px var(--tapzy-discovery-glow-soft),
-          0 16px 38px rgba(0,0,0,.28) !important;
-      }
-
-      .profile-pill-btn,
-      .profile-showcase-actions .btn,
-      .profile-showcase-actions form .btn,
-      .profile-mini-action,
-      .profile-quick-btn,
-      .profile-edit-btn,
-      .profile-attending-actions .profile-pill-btn{
-        border-color:var(--tapzy-discovery-glow-border) !important;
-        background:var(--tapzy-discovery-glow-fill) !important;
-        color:#fff !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.08),
-          0 0 22px var(--tapzy-discovery-glow-soft) !important;
-      }
-
-      .profile-pill-btn:hover,
-      .profile-showcase-actions .btn:hover,
-      .profile-showcase-actions form .btn:hover,
-      .profile-mini-action:hover,
-      .profile-quick-btn:hover,
-      .profile-edit-btn:hover{
-        transform:translateY(-1px);
-        border-color:rgba(127,210,255,.44) !important;
-        box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.10),
-          0 0 28px rgba(127,210,255,.16) !important;
-      }
           0 8px 18px rgba(0,0,0,.18);
 
       }
@@ -2274,6 +2210,8 @@ router.get("/u/:username", async (req, res) => {
       })();
     </script>
 
+
+    }
 
     `;
 

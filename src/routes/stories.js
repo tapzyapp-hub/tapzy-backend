@@ -252,7 +252,7 @@ function profileStoryCard(profile, stories) {
 
       ? `<video class="stories-profile-preview-media" src="${escapeHtml(previewUrl)}" muted playsinline></video>`
 
-      : `<img class="stories-profile-preview-media" src="${escapeHtml(previewUrl)}" alt="${escapeHtml(profile.username || "story")}" />`
+      : `<img class="stories-profile-preview-media" src="${escapeHtml(previewUrl)}" alt="${escapeHtml(profile.username || "story")}" loading="lazy" decoding="async" />`
 
     : `<div class="stories-profile-preview-fallback">@${escapeHtml(profile.username || "user")}</div>`;
 
