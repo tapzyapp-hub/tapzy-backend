@@ -200,7 +200,7 @@ function renderSeedBubble({ message, currentProfile, escapeHtml, groupPosition }
 
   const imageHtml = hasImage
 
-    ? `<img class="tz-chat-image" src="${escapeHtml(imageUrl)}" alt="Message image" loading="lazy" decoding="async" />`
+    ? `<img class="tz-chat-image" src="${escapeHtml(imageUrl)}" alt="Message image" />`
 
     : "";
 
@@ -2888,10 +2888,7 @@ module.exports = function renderConversationPage({
 
 
 
-        const liveFallbackTimer = window.setInterval(() => {
-          // Socket.IO is the fast path. Poll only as a quiet backup when live socket is down.
-          if (!socket || !socket.connected) fetchNewMessages();
-        }, 8000);
+        const liveFallbackTimer = window.setInterval(fetchNewMessages, 3000);
 
         document.addEventListener("visibilitychange", function(){
 

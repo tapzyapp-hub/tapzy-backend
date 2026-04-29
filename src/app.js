@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const path = require("path");
 
@@ -69,36 +68,12 @@ app.use(
   })
 );
 
-app.use(compression({ threshold: 1024 }));
-
 app.use(cookieParser());
 app.use(express.json({ limit: "12mb" }));
 app.use(express.urlencoded({ extended: true, limit: "12mb" }));
 
-// Speed pass: browser-cache static Tapzy assets so repeat visits feel much faster.
-// Server-rendered HTML still stays dynamic because this only affects static files.
-const staticCache = {
-  etag: true,
-  maxAge: "7d",
-  setHeaders(res, filePath) {
-    if (filePath && (/\/sw\.js$/i.test(filePath) || /\.(?:html?)$/i.test(filePath))) {
-      res.setHeader("Cache-Control", "no-cache");
-      return;
-    }
-    res.setHeader("Cache-Control", "public, max-age=604800, immutable");
-  },
-};
-
-const uploadsCache = {
-  etag: true,
-  maxAge: "30d",
-  setHeaders(res) {
-    res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
-  },
-};
-
-app.use(express.static(path.join(__dirname, "..", "public"), staticCache));
-app.use("/uploads", express.static(uploadsDir, uploadsCache));
+app.use(express.static(path.join(__dirname, "..", "public")));
+app.use("/uploads", express.static(uploadsDir));
 
 app.use(sessionMiddleware);
 

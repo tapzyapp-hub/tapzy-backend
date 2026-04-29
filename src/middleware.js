@@ -24,32 +24,6 @@ const messageLimiter = makeLimiter(120);
 const pairLimiter = makeLimiter(120);
 const eventLimiter = makeLimiter(120);
 
-const SESSION_CACHE_TTL_MS = 30 * 1000;
-const sessionCache = new Map();
-
-function getCachedSession(token) {
-  const cached = sessionCache.get(token);
-  if (!cached) return null;
-  if (cached.expiresAt <= Date.now()) {
-    sessionCache.delete(token);
-    return null;
-  }
-  return cached.value;
-}
-
-function setCachedSession(token, value) {
-  if (!token || !value) return;
-  sessionCache.set(token, { value, expiresAt: Date.now() + SESSION_CACHE_TTL_MS });
-
-  // Prevent unlimited memory growth on long-running servers.
-  if (sessionCache.size > 1000) {
-    for (const key of sessionCache.keys()) {
-      sessionCache.delete(key);
-      if (sessionCache.size <= 800) break;
-    }
-  }
-}
-
 function requireAdmin(req, res) {
   if (!ADMIN_KEY) return true;
 
@@ -71,28 +45,24 @@ async function sessionMiddleware(req, _res, next) {
     const token = String(req.cookies?.[SESSION_COOKIE] || "").trim();
     if (!token) return next();
 
-    let session = getCachedSession(token);
-
-    if (!session) {
-      session = await prisma.userSession.findUnique({
-        where: { token },
-        select: {
-          expiresAt: true,
-          userAccount: { include: { profile: true } },
+    const session = await prisma.userSession.findUnique({
+      where: { token },
+      include: {
+        userAccount: {
+          include: {
+            profile: true,
+          },
         },
-      });
+      },
+    });
 
-      if (!session) return next();
+    if (!session) return next();
 
-      if (session.expiresAt < new Date()) {
-        try {
-          await prisma.userSession.delete({ where: { token } });
-        } catch {}
-        sessionCache.delete(token);
-        return next();
-      }
-
-      setCachedSession(token, session);
+    if (session.expiresAt < new Date()) {
+      try {
+        await prisma.userSession.delete({ where: { token } });
+      } catch {}
+      return next();
     }
 
     req.currentAccount = session.userAccount || null;

@@ -918,8 +918,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
     <meta name="twitter:description" content="${escapeHtml(resolvedDescription)}" />
 
     ${extraHead}
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <script defer src="/js/tapzy-performance.js"></script>
 
     <style>
 

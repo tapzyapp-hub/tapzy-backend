@@ -13,7 +13,7 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId }
   const avatarLabel = other?.username ? `Open ${name}'s profile` : `${name} avatar`;
 
   const avatarInnerHtml = other?.photo
-    ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" loading="lazy" decoding="async" />`
+    ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" />`
     : `<span>${escapeHtml(getInitials(other))}</span>`;
 
   const otherAvatarHtml = other?.username

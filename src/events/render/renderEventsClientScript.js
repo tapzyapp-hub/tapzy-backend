@@ -450,8 +450,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
         function bindCardMotion(scope) {
 
-          if (window.matchMedia && window.matchMedia("(max-width: 700px)").matches) return;
-
           const root = scope || document;
 
           const cards = root.querySelectorAll(".js-event-card");
@@ -616,49 +614,57 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
 
 
-          const items = Array.from(feed.querySelectorAll(".js-reel-item"));
+          function refreshActive() {
 
-          if (!items.length) return;
-
-
-
-          function setActive(item) {
-
-            items.forEach((node) => node.classList.toggle("is-active", node === item));
-
-          }
-
-
-
-          const observer = new IntersectionObserver((entries) => {
+            const all = Array.from(feed.querySelectorAll(".js-reel-item"));
 
             let best = null;
 
-            let bestRatio = 0;
+            let bestDelta = Infinity;
 
-            entries.forEach((entry) => {
 
-              if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
 
-                bestRatio = entry.intersectionRatio;
+            all.forEach((item) => {
 
-                best = entry.target;
+              const rect = item.getBoundingClientRect();
+
+              const center = rect.top + rect.height / 2;
+
+              const delta = Math.abs(center - window.innerHeight / 2);
+
+
+
+              if (delta < bestDelta) {
+
+                bestDelta = delta;
+
+                best = item;
 
               }
 
             });
 
-            if (best) setActive(best);
-
-          }, { threshold: [0.35, 0.55, 0.75] });
 
 
+            all.forEach((item) => item.classList.remove("is-active"));
 
-          items.forEach((item) => observer.observe(item));
+            if (best) best.classList.add("is-active");
 
-          setActive(items[0]);
+          }
 
-          feed.refreshActive = () => {};
+
+
+          feed.addEventListener("scroll", () => {
+
+            requestAnimationFrame(refreshActive);
+
+          }, { passive: true });
+
+
+
+          refreshActive();
+
+          feed.refreshActive = refreshActive;
 
         }
 

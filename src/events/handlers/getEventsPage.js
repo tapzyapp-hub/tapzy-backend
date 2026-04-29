@@ -1487,62 +1487,6 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-
-
-      /* Mobile Events Scroll Performance Patch: removes GPU-heavy snap/blur effects
-         on phones so the events feed scrolls smoothly without changing desktop style. */
-      @media(max-width:700px){
-        html{ scroll-behavior:auto; }
-        .reel-feed{
-          height:auto;
-          min-height:100dvh;
-          overflow-y:visible;
-          scroll-snap-type:none;
-          border-radius:0;
-          -webkit-overflow-scrolling:auto;
-          contain:layout paint;
-        }
-        .reel-item{
-          min-height:calc(100dvh - 16px);
-          scroll-snap-align:none;
-          transform:none !important;
-          transition:none !important;
-          contain:layout paint;
-          content-visibility:auto;
-          contain-intrinsic-size:1000px;
-          border-radius:26px;
-          margin:0 0 14px;
-        }
-        .reel-bg,
-        .reel-item.is-active .reel-bg{
-          transform:none !important;
-          transition:none !important;
-          will-change:auto;
-        }
-        .reel-glow,
-        .reel-noise,
-        .event-card-glow,
-        .event-card-noise,
-        .event-card::after{ display:none; }
-        .event-card,
-        .event-card:hover,
-        .event-card.is-touch-active,
-        .event-media,
-        .event-card:hover .event-media,
-        .event-card.is-touch-active .event-media{
-          transform:none !important;
-          transition:none !important;
-          will-change:auto;
-        }
-        .event-content,
-        .event-pill,
-        .btnGhost{
-          backdrop-filter:none;
-          -webkit-backdrop-filter:none;
-        }
-        .skeleton-shimmer{ animation:none; }
-      }
-
       @media(max-width:700px){
 
         .mobile-only{ display:block; }

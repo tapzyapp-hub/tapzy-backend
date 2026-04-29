@@ -13,7 +13,7 @@ module.exports = function renderChatBubble({
     : "";
 
   const imageHtml = hasImage
-    ? `<img class="tz-chat-image" src="${escapeHtml(message.imageUrl)}" alt="Message image" loading="lazy" decoding="async" />`
+    ? `<img class="tz-chat-image" src="${escapeHtml(message.imageUrl)}" alt="Message image" />`
     : "";
 
   const bubbleClass = [

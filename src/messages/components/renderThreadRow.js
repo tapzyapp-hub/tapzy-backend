@@ -23,7 +23,7 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
     : "";
 
   const avatarHtml = other?.photo
-    ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" loading="lazy" decoding="async" />`
+    ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" />`
     : `<span>${escapeHtml(getInitials(other))}</span>`;
 
   const connectedBadge = row.isConnected
