@@ -100,7 +100,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
     return `
 
-    <section class="stories-create-card">
+    <section class="stories-create-card tapzy-premium-card">
 
       <div class="stories-create-head">
 
@@ -128,7 +128,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
   return `
 
-  <section class="stories-create-card">
+  <section class="stories-create-card tapzy-premium-card">
 
     <div class="stories-create-head">
 
@@ -146,25 +146,45 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
 
-    <form class="stories-create-form" method="POST" action="/stories" enctype="multipart/form-data">
+    <form class="stories-create-form" method="POST" action="/stories" enctype="multipart/form-data" data-story-composer>
 
-      <div class="stories-form-grid">
+      <div class="stories-form-grid stories-form-grid-premium">
 
         <div class="stories-field stories-field-full">
 
           <label>Caption</label>
 
-          <textarea name="text" placeholder="What’s happening? Going somewhere tonight? At an event right now?"></textarea>
+          <textarea name="text" maxlength="280" placeholder="What’s happening? Going somewhere tonight? At an event right now?"></textarea>
+
+          <div class="stories-caption-meter"><span data-caption-count>0</span>/280</div>
 
         </div>
 
 
 
-        <div class="stories-field">
+        <div class="stories-field stories-media-field">
 
           <label>Media</label>
 
-          <input type="file" name="storyMedia" accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm" />
+          <label class="stories-upload-drop">
+
+            <input type="file" name="storyMedia" accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm" />
+
+            <span class="stories-upload-icon">＋</span>
+
+            <span class="stories-upload-title">Add photo or video</span>
+
+            <span class="stories-upload-subtitle" data-upload-label>Tap to choose media</span>
+
+          </label>
+
+        </div>
+
+
+
+        <div class="stories-preview-card" data-story-preview>
+
+          <div class="stories-preview-empty">Preview appears here</div>
 
         </div>
 
@@ -188,7 +208,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
 
-        <div class="stories-field stories-field-full">
+        <div class="stories-field">
 
           <label>Link to event (optional)</label>
 
@@ -222,7 +242,9 @@ function storyComposer(currentProfile, upcomingEvents) {
 
       <div class="stories-create-actions">
 
-        <button class="stories-btn stories-btn-bright" type="submit">Post Story</button>
+        <button class="stories-btn stories-btn-bright" type="submit" data-story-submit>Post Story</button>
+
+        <span class="stories-post-status" data-story-status></span>
 
       </div>
 
@@ -233,9 +255,6 @@ function storyComposer(currentProfile, upcomingEvents) {
   `;
 
 }
-
-
-
 function profileStoryCard(profile, stories) {
 
   const firstStory = stories[0];
@@ -916,10 +935,179 @@ router.get("/stories", async (req, res) => {
 
       }
 
+
+      .tapzy-premium-card::before{
+        content:"";
+        position:absolute;
+        inset:-45% -25% auto -25%;
+        height:260px;
+        background:radial-gradient(circle, rgba(70,160,255,.18), transparent 64%);
+        pointer-events:none;
+      }
+
+      .stories-create-card{
+        isolation:isolate;
+      }
+
+      .stories-create-card > *,
+      .stories-discover-card > *{
+        position:relative;
+        z-index:1;
+      }
+
+      .stories-form-grid-premium{
+        grid-template-columns:minmax(0, 1.1fr) minmax(260px, .9fr);
+        align-items:stretch;
+      }
+
+      .stories-caption-meter{
+        align-self:flex-end;
+        color:rgba(220,231,246,.58);
+        font-size:12px;
+        font-weight:800;
+        letter-spacing:.5px;
+      }
+
+      .stories-upload-drop{
+        min-height:160px;
+        border-radius:22px;
+        border:1px dashed rgba(160,190,230,.22);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(125,214,255,.10), transparent 60%),
+          linear-gradient(180deg, rgba(12,15,21,.98), rgba(4,6,10,1));
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        cursor:pointer;
+        text-align:center;
+        padding:18px;
+        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+      }
+
+      .stories-upload-drop:hover{
+        transform:translateY(-1px);
+        border-color:rgba(150,220,255,.42);
+        box-shadow:0 16px 40px rgba(0,0,0,.22), 0 0 30px rgba(70,160,255,.08);
+      }
+
+      .stories-upload-drop input{
+        display:none;
+      }
+
+      .stories-upload-icon{
+        width:54px;
+        height:54px;
+        border-radius:18px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:28px;
+        color:#fff;
+        background:linear-gradient(180deg, rgba(42,94,210,.94), rgba(18,43,98,.98));
+        box-shadow:0 14px 35px rgba(36,100,255,.22);
+      }
+
+      .stories-upload-title{
+        color:#fff;
+        font-weight:900;
+        font-size:15px;
+      }
+
+      .stories-upload-subtitle,
+      .stories-post-status{
+        color:#96a5bd;
+        font-size:12px;
+        font-weight:700;
+      }
+
+      .stories-preview-card{
+        min-height:220px;
+        border-radius:24px;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015)),
+          #070a10;
+        overflow:hidden;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#9eabc0;
+        font-size:13px;
+        font-weight:800;
+      }
+
+      .stories-preview-card img,
+      .stories-preview-card video{
+        width:100%;
+        height:100%;
+        min-height:220px;
+        object-fit:cover;
+        display:block;
+      }
+
+      .stories-profile-card::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 40px rgba(86,170,255,.08);
+        pointer-events:none;
+      }
+
+      .stories-profile-card{
+        transform:translateZ(0);
+      }
     </style>
 
 
 
+
+    <script>
+      (function(){
+        const form = document.querySelector('[data-story-composer]');
+        if (!form) return;
+        const textarea = form.querySelector('textarea[name="text"]');
+        const count = form.querySelector('[data-caption-count]');
+        const file = form.querySelector('input[name="storyMedia"]');
+        const label = form.querySelector('[data-upload-label]');
+        const preview = form.querySelector('[data-story-preview]');
+        const status = form.querySelector('[data-story-status]');
+        const submit = form.querySelector('[data-story-submit]');
+
+        function updateCount(){
+          if (count && textarea) count.textContent = String((textarea.value || '').length);
+        }
+
+        if (textarea) {
+          textarea.addEventListener('input', updateCount, { passive:true });
+          updateCount();
+        }
+
+        if (file) {
+          file.addEventListener('change', function(){
+            const selected = file.files && file.files[0];
+            if (!selected) return;
+            if (label) label.textContent = selected.name;
+            if (!preview) return;
+            const url = URL.createObjectURL(selected);
+            const isVideo = selected.type && selected.type.indexOf('video/') === 0;
+            preview.innerHTML = isVideo
+              ? '<video src="' + url + '" muted playsinline preload="metadata"></video>'
+              : '<img src="' + url + '" alt="Story preview" />';
+          });
+        }
+
+        form.addEventListener('submit', function(){
+          if (status) status.textContent = 'Preparing story…';
+          if (submit) {
+            submit.disabled = true;
+            submit.textContent = 'Posting…';
+          }
+        });
+      })();
+    </script>
     ${renderTapzyAssistant({
 
       username: currentProfile?.username || "User",
@@ -1275,9 +1463,9 @@ router.get("/stories/:username", async (req, res) => {
 
           ? isVideoUrl(story.mediaUrl)
 
-            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline controls ${index === 0 ? "" : "preload='none'"}></video>`
+            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline webkit-playsinline preload="metadata"></video><button class="story-sound-btn" type="button" data-story-sound>Tap for sound</button>`
 
-            : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" />`
+            : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" loading="eager" decoding="async" />`
 
           : `<div class="story-view-text-only">${escapeHtml(story.text || "@"+(profile.username || "user"))}</div>`;
 
@@ -1816,6 +2004,22 @@ router.get("/stories/:username", async (req, res) => {
         font-weight:700;
       }
 
+
+        .story-sound-btn{
+          right:12px;
+          bottom:112px;
+          min-height:34px;
+          padding:0 12px;
+          font-size:11px;
+        }
+
+        .stories-form-grid-premium{
+          grid-template-columns:1fr;
+        }
+
+        .stories-preview-card{
+          min-height:190px;
+        }
       .story-reply-form{
 
         display:grid;
@@ -1904,6 +2108,77 @@ router.get("/stories/:username", async (req, res) => {
 
 
 
+
+      .story-view-shell::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+          radial-gradient(600px 240px at 50% 0%, rgba(90,180,255,.14), transparent 58%),
+          radial-gradient(420px 280px at 100% 100%, rgba(80,120,255,.10), transparent 62%);
+        pointer-events:none;
+        z-index:1;
+      }
+
+      .story-panel{
+        transform:translateZ(0);
+      }
+
+      .story-progress-fill{
+        background:linear-gradient(90deg, #fff, #9edcff);
+        box-shadow:0 0 14px rgba(125,214,255,.55);
+      }
+
+      .story-header-handle::before{
+        content:"";
+        display:inline-block;
+        width:8px;
+        height:8px;
+        margin-right:8px;
+        border-radius:999px;
+        background:#71d8ff;
+        box-shadow:0 0 16px rgba(113,216,255,.9);
+        vertical-align:middle;
+      }
+
+      .story-sound-btn{
+        position:absolute;
+        right:18px;
+        bottom:104px;
+        z-index:6;
+        min-height:38px;
+        padding:0 14px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(8,10,16,.62);
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        cursor:pointer;
+        backdrop-filter:blur(12px);
+        box-shadow:0 12px 30px rgba(0,0,0,.28);
+      }
+
+      .story-like-btn,
+      .story-event-pill,
+      .story-close-btn,
+      .story-delete-btn{
+        transition:transform .16s ease, background .16s ease, border-color .16s ease;
+      }
+
+      .story-like-btn:hover,
+      .story-event-pill:hover,
+      .story-close-btn:hover,
+      .story-delete-btn:hover{
+        transform:translateY(-1px);
+        border-color:rgba(160,220,255,.28);
+        background:rgba(255,255,255,.14);
+      }
+
+      .story-reply-form{
+        position:relative;
+        z-index:4;
+      }
       @keyframes storyProgress{
 
         from{ width:0%; }
@@ -2045,104 +2320,118 @@ router.get("/stories/:username", async (req, res) => {
       (function(){
 
         const panels = Array.from(document.querySelectorAll(".story-panel"));
-
         const fills = Array.from(document.querySelectorAll(".story-progress-fill"));
-
+        const shell = document.querySelector(".story-view-shell");
         let index = 0;
-
         let timer = null;
+        let startX = 0;
 
-
-
-        function activate(nextIndex){
-
-          if (nextIndex < 0 || nextIndex >= panels.length) return;
-
-
-
-          panels.forEach((panel, i) => {
-
-            panel.classList.toggle("story-panel-active", i === nextIndex);
-
-          });
-
-
-
-          fills.forEach((fill, i) => {
-
-            fill.classList.remove("story-progress-fill-active");
-
-            fill.style.width = i < nextIndex ? "100%" : "0%";
-
-          });
-
-
-
-          if (fills[nextIndex]) {
-
-            void fills[nextIndex].offsetWidth;
-
-            fills[nextIndex].classList.add("story-progress-fill-active");
-
-          }
-
-
-
-          index = nextIndex;
-
-
-
-          if (timer) clearTimeout(timer);
-
-          timer = setTimeout(function(){
-
-            if (index + 1 < panels.length) activate(index + 1);
-
-          }, 7000);
-
+        function currentVideo(){
+          return panels[index] ? panels[index].querySelector("video") : null;
         }
 
+        function pauseInactiveVideos(){
+          panels.forEach((panel, i) => {
+            const video = panel.querySelector("video");
+            if (!video) return;
+            if (i !== index) {
+              try { video.pause(); video.currentTime = 0; } catch(e) {}
+            }
+          });
+        }
 
+        function preloadNext(nextIndex){
+          const nextPanel = panels[nextIndex + 1];
+          if (!nextPanel) return;
+          const media = nextPanel.querySelector("video, img");
+          if (!media) return;
+          if (media.tagName === "VIDEO") media.preload = "metadata";
+          if (media.tagName === "IMG" && media.loading) media.loading = "eager";
+        }
 
-        document.addEventListener("click", function(e){
-
-          const shell = document.querySelector(".story-view-shell");
-
-          if (!shell) return;
-
-
-
-          const interactive = e.target.closest(
-
-            "video, .story-close-btn, .story-delete-btn, .story-reply-form, input, button, a"
-
-          );
-
-          if (interactive) return;
-
-
-
-          const bounds = shell.getBoundingClientRect();
-
-          const x = e.clientX - bounds.left;
-
-
-
-          if (x < bounds.width * 0.35) {
-
-            if (index > 0) activate(index - 1);
-
-          } else if (x > bounds.width * 0.65) {
-
+        function scheduleNext(){
+          if (timer) clearTimeout(timer);
+          const video = currentVideo();
+          const ms = video && Number.isFinite(video.duration) && video.duration > 1
+            ? Math.min(Math.max(video.duration * 1000, 5500), 15000)
+            : 7000;
+          timer = setTimeout(function(){
             if (index + 1 < panels.length) activate(index + 1);
+          }, ms);
+        }
 
+        function activate(nextIndex){
+          if (nextIndex < 0 || nextIndex >= panels.length) return;
+          index = nextIndex;
+
+          panels.forEach((panel, i) => {
+            panel.classList.toggle("story-panel-active", i === nextIndex);
+          });
+
+          fills.forEach((fill, i) => {
+            fill.classList.remove("story-progress-fill-active");
+            fill.style.width = i < nextIndex ? "100%" : "0%";
+          });
+
+          if (fills[nextIndex]) {
+            void fills[nextIndex].offsetWidth;
+            fills[nextIndex].classList.add("story-progress-fill-active");
           }
 
+          pauseInactiveVideos();
+          preloadNext(nextIndex);
+
+          const video = currentVideo();
+          if (video) {
+            video.play().catch(function(){});
+            video.onloadedmetadata = scheduleNext;
+            video.onended = function(){ if (index + 1 < panels.length) activate(index + 1); };
+          }
+          scheduleNext();
+        }
+
+        document.addEventListener("click", function(e){
+          const soundButton = e.target.closest("[data-story-sound]");
+          if (soundButton) {
+            const video = currentVideo();
+            if (video) {
+              video.muted = !video.muted;
+              video.play().catch(function(){});
+              soundButton.textContent = video.muted ? "Tap for sound" : "Sound on";
+            }
+            return;
+          }
+
+          if (!shell) return;
+          const interactive = e.target.closest(
+            "video, .story-close-btn, .story-delete-btn, .story-reply-form, input, button, a"
+          );
+          if (interactive) return;
+          const bounds = shell.getBoundingClientRect();
+          const x = e.clientX - bounds.left;
+          if (x < bounds.width * 0.35) {
+            if (index > 0) activate(index - 1);
+          } else if (x > bounds.width * 0.65) {
+            if (index + 1 < panels.length) activate(index + 1);
+          }
         });
 
+        if (shell) {
+          shell.addEventListener("touchstart", function(e){
+            startX = e.touches && e.touches[0] ? e.touches[0].clientX : 0;
+          }, { passive:true });
 
+          shell.addEventListener("touchend", function(e){
+            const endX = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : 0;
+            const diff = endX - startX;
+            if (Math.abs(diff) < 48) return;
+            if (diff > 0 && index > 0) activate(index - 1);
+            if (diff < 0 && index + 1 < panels.length) activate(index + 1);
+          }, { passive:true });
+        }
 
         activate(0);
+
 
       })();
 
