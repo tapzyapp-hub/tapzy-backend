@@ -2228,9 +2228,6 @@ router.get("/u/:username", async (req, res) => {
       })();
     </script>
 
-
-    }
-
     `;
 
 
