@@ -190,21 +190,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
 
-        <div class="stories-field">
-
-          <label>Story Type</label>
-
-          <select name="type">
-
-            <option value="image">Image</option>
-
-            <option value="video">Video</option>
-
-            <option value="text">Text only</option>
-
-          </select>
-
-        </div>
+        <input type="hidden" name="type" value="text" />
 
 
 
@@ -1059,6 +1045,51 @@ router.get("/stories", async (req, res) => {
       .stories-profile-card{
         transform:translateZ(0);
       }
+
+      @media(max-width:520px){
+        .stories-create-card{
+          padding:16px;
+          overflow:hidden;
+        }
+
+        .stories-form-grid-premium,
+        .stories-form-grid{
+          display:grid;
+          grid-template-columns:minmax(0, 1fr) !important;
+          gap:14px;
+        }
+
+        .stories-field,
+        .stories-media-field,
+        .stories-preview-card{
+          min-width:0;
+          width:100%;
+          grid-column:1 / -1;
+        }
+
+        .stories-upload-drop{
+          min-height:132px;
+          width:100%;
+          box-sizing:border-box;
+          border-radius:20px;
+          padding:16px;
+        }
+
+        .stories-preview-card{
+          min-height:190px;
+          border-radius:22px;
+        }
+
+        .stories-field textarea,
+        .stories-field select{
+          font-size:16px;
+        }
+
+        .stories-create-actions{
+          margin-top:14px;
+        }
+      }
+
     </style>
 
 
@@ -1318,6 +1349,8 @@ router.get("/stories/:username", async (req, res) => {
 
         event: true,
 
+        _count: { select: { views: true } },
+
         views: currentProfile
 
           ? {
@@ -1492,15 +1525,20 @@ router.get("/stories/:username", async (req, res) => {
 
       .map((story, index) => {
 
+        const isVideoStory = story.mediaUrl && isVideoUrl(story.mediaUrl);
+
         const media = story.mediaUrl
 
-          ? isVideoUrl(story.mediaUrl)
+          ? isVideoStory
 
-            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline webkit-playsinline preload="metadata"></video><button class="story-sound-btn" type="button" data-story-sound>Tap for sound</button>`
+            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline webkit-playsinline preload="metadata"></video>`
 
             : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" loading="eager" decoding="async" />`
 
           : `<div class="story-view-text-only">${escapeHtml(story.text || "@"+(profile.username || "user"))}</div>`;
+
+        const likeCount = storyLikeCounts.get(story.id) || 0;
+        const viewCount = story._count?.views || 0;
 
 
 
@@ -1594,7 +1632,10 @@ router.get("/stories/:username", async (req, res) => {
                        </form>`
                     : `<a class="story-like-btn" href="/auth">Like</a>`
                 }
-                <div class="story-like-count">${escapeHtml(String(storyLikeCounts.get(story.id) || 0))} like${(storyLikeCounts.get(story.id) || 0) === 1 ? "" : "s"}</div>
+                <div class="story-metric">${escapeHtml(String(likeCount))} like${likeCount === 1 ? "" : "s"}</div>
+                <div class="story-metric">${escapeHtml(String(viewCount))} view${viewCount === 1 ? "" : "s"}</div>
+                <div class="story-social-spacer"></div>
+                ${isVideoStory ? `<button class="story-sound-btn" type="button" data-story-sound>Tap for sound</button>` : ""}
               </div>
 
             </div>
@@ -2012,7 +2053,9 @@ router.get("/stories/:username", async (req, res) => {
         align-items:center;
         gap:12px;
         margin-top:14px;
-        flex-wrap:wrap;
+        flex-wrap:nowrap;
+        width:100%;
+        pointer-events:auto;
       }
 
       .story-like-btn{
@@ -2031,16 +2074,20 @@ router.get("/stories/:username", async (req, res) => {
         cursor:pointer;
       }
 
-      .story-like-count{
-        color:rgba(255,255,255,.78);
+      .story-metric{
+        color:rgba(255,255,255,.84);
         font-size:13px;
-        font-weight:700;
+        font-weight:800;
+        white-space:nowrap;
+      }
+
+      .story-social-spacer{
+        flex:1 1 auto;
+        min-width:8px;
       }
 
 
         .story-sound-btn{
-          right:12px;
-          bottom:112px;
           min-height:34px;
           padding:0 12px;
           font-size:11px;
@@ -2175,10 +2222,9 @@ router.get("/stories/:username", async (req, res) => {
       }
 
       .story-sound-btn{
-        position:absolute;
-        right:18px;
-        bottom:104px;
-        z-index:6;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
         min-height:38px;
         padding:0 14px;
         border-radius:999px;
@@ -2190,6 +2236,7 @@ router.get("/stories/:username", async (req, res) => {
         cursor:pointer;
         backdrop-filter:blur(12px);
         box-shadow:0 12px 30px rgba(0,0,0,.28);
+        white-space:nowrap;
       }
 
       .story-like-btn,
@@ -2382,12 +2429,32 @@ router.get("/stories/:username", async (req, res) => {
           if (media.tagName === "IMG" && media.loading) media.loading = "eager";
         }
 
+        function storyDurationMs(){
+          const video = currentVideo();
+          if (video && Number.isFinite(video.duration) && video.duration > 0) {
+            return Math.max(video.duration * 1000, 1000);
+          }
+          return 7000;
+        }
+
+        function startProgress(ms){
+          fills.forEach((fill, i) => {
+            fill.classList.remove("story-progress-fill-active");
+            fill.style.transition = "none";
+            fill.style.width = i < index ? "100%" : "0%";
+          });
+          const fill = fills[index];
+          if (!fill) return;
+          void fill.offsetWidth;
+          fill.classList.add("story-progress-fill-active");
+          fill.style.transition = "width " + ms + "ms linear";
+          fill.style.width = "100%";
+        }
+
         function scheduleNext(){
           if (timer) clearTimeout(timer);
-          const video = currentVideo();
-          const ms = video && Number.isFinite(video.duration) && video.duration > 1
-            ? Math.min(Math.max(video.duration * 1000, 5500), 15000)
-            : 7000;
+          const ms = storyDurationMs();
+          startProgress(ms);
           timer = setTimeout(function(){
             if (index + 1 < panels.length) activate(index + 1);
           }, ms);
@@ -2403,13 +2470,9 @@ router.get("/stories/:username", async (req, res) => {
 
           fills.forEach((fill, i) => {
             fill.classList.remove("story-progress-fill-active");
+            fill.style.transition = "none";
             fill.style.width = i < nextIndex ? "100%" : "0%";
           });
-
-          if (fills[nextIndex]) {
-            void fills[nextIndex].offsetWidth;
-            fills[nextIndex].classList.add("story-progress-fill-active");
-          }
 
           pauseInactiveVideos();
           preloadNext(nextIndex);
