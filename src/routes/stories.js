@@ -194,11 +194,11 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
 
-        <div class="stories-field">
+        <div class="stories-field stories-field-full">
 
-          <label>Link to event (optional)</label>
+          <label>Add event (optional)</label>
 
-          <select name="eventId">
+          <select name="eventId" data-story-event-select>
 
             <option value="">No event</option>
 
@@ -208,7 +208,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
                 (event) =>
 
-                  `<option value="${escapeHtml(event.id)}">${escapeHtml(event.title)}${
+                  `<option value="${escapeHtml(event.id)}">Going: ${escapeHtml(event.title)}${
 
                     event.city ? " • " + escapeHtml(event.city) : ""
 
@@ -218,7 +218,22 @@ function storyComposer(currentProfile, upcomingEvents) {
 
               .join("")}
 
+            <option value="__other__">Other event not in Tapzy</option>
+
           </select>
+
+          <div class="stories-event-hint">Only events marked Going show here. Use Other to add something manually.</div>
+
+          <div class="stories-manual-event" data-manual-event hidden>
+            <input name="manualEventTitle" maxlength="120" placeholder="Event name" />
+            <input name="manualEventLocation" maxlength="160" placeholder="Location / venue / address" data-manual-event-location />
+            <div class="stories-manual-row">
+              <button class="stories-mini-btn" type="button" data-use-location>Use my location</button>
+              <span class="stories-location-status" data-location-status></span>
+            </div>
+            <input type="hidden" name="manualEventLat" data-manual-event-lat />
+            <input type="hidden" name="manualEventLng" data-manual-event-lng />
+          </div>
 
         </div>
 
@@ -381,19 +396,39 @@ router.get("/stories", async (req, res) => {
 
     if (currentProfile) {
 
-      upcomingEvents = await prisma.eventFinderItem.findMany({
+      const goingRows = await prisma.eventAttendance.findMany({
 
         where: {
 
-          startAt: { gte: now },
+          profileId: currentProfile.id,
+
+          status: "going",
+
+          event: {
+
+            OR: [{ startAt: null }, { startAt: { gte: now } }],
+
+          },
 
         },
 
-        orderBy: [{ startAt: "asc" }],
+        include: { event: true },
 
-        take: 20,
+        orderBy: [{ updatedAt: "desc" }],
+
+        take: 30,
 
       });
+
+      upcomingEvents = goingRows
+        .map((row) => row.event)
+        .filter(Boolean)
+        .sort((a, b) => {
+          const at = a.startAt ? new Date(a.startAt).getTime() : Number.MAX_SAFE_INTEGER;
+          const bt = b.startAt ? new Date(b.startAt).getTime() : Number.MAX_SAFE_INTEGER;
+          return at - bt;
+        })
+        .slice(0, 20);
 
     }
 
@@ -1033,6 +1068,61 @@ router.get("/stories", async (req, res) => {
         display:block;
       }
 
+
+      .stories-event-hint{
+        margin-top:8px;
+        color:#91a1b8;
+        font-size:12px;
+        font-weight:700;
+      }
+
+      .stories-manual-event{
+        margin-top:12px;
+        display:grid;
+        gap:10px;
+      }
+
+      .stories-manual-event[hidden]{
+        display:none;
+      }
+
+      .stories-manual-event input{
+        width:100%;
+        min-height:44px;
+        border-radius:14px;
+        border:1px solid rgba(255,255,255,.08);
+        background:linear-gradient(180deg, rgba(12,15,21,.98), rgba(4,6,10,1));
+        color:#fff;
+        padding:0 14px;
+        box-sizing:border-box;
+        font-size:14px;
+      }
+
+      .stories-manual-row{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+
+      .stories-mini-btn{
+        min-height:34px;
+        padding:0 12px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(255,255,255,.07);
+        color:#fff;
+        font-size:12px;
+        font-weight:850;
+        cursor:pointer;
+      }
+
+      .stories-location-status{
+        color:#96a5bd;
+        font-size:12px;
+        font-weight:700;
+      }
+
       .stories-profile-card::after{
         content:"";
         position:absolute;
@@ -1088,6 +1178,14 @@ router.get("/stories", async (req, res) => {
         .stories-create-actions{
           margin-top:14px;
         }
+
+        .stories-create-actions .stories-btn{
+          min-height:38px;
+          padding:0 13px;
+          border-radius:13px;
+          font-size:13px;
+          width:auto;
+        }
       }
 
     </style>
@@ -1106,6 +1204,13 @@ router.get("/stories", async (req, res) => {
         const preview = form.querySelector('[data-story-preview]');
         const status = form.querySelector('[data-story-status]');
         const submit = form.querySelector('[data-story-submit]');
+        const eventSelect = form.querySelector('[data-story-event-select]');
+        const manualEvent = form.querySelector('[data-manual-event]');
+        const useLocation = form.querySelector('[data-use-location]');
+        const locationStatus = form.querySelector('[data-location-status]');
+        const manualLocationInput = form.querySelector('[data-manual-event-location]');
+        const manualLatInput = form.querySelector('[data-manual-event-lat]');
+        const manualLngInput = form.querySelector('[data-manual-event-lng]');
 
         function updateCount(){
           if (count && textarea) count.textContent = String((textarea.value || '').length);
@@ -1160,6 +1265,38 @@ router.get("/stories", async (req, res) => {
             if (!selected) return;
             if (label) label.textContent = selected.name || 'Media selected';
             renderPreview(selected);
+          });
+        }
+
+        function syncManualEvent(){
+          if (!manualEvent || !eventSelect) return;
+          manualEvent.hidden = eventSelect.value !== '__other__';
+        }
+
+        if (eventSelect) {
+          eventSelect.addEventListener('change', syncManualEvent);
+          syncManualEvent();
+        }
+
+        if (useLocation) {
+          useLocation.addEventListener('click', function(){
+            if (!navigator.geolocation) {
+              if (locationStatus) locationStatus.textContent = 'Location is not available on this device.';
+              return;
+            }
+            if (locationStatus) locationStatus.textContent = 'Getting location…';
+            navigator.geolocation.getCurrentPosition(function(pos){
+              const lat = pos && pos.coords ? pos.coords.latitude : null;
+              const lng = pos && pos.coords ? pos.coords.longitude : null;
+              if (manualLatInput && lat != null) manualLatInput.value = String(lat);
+              if (manualLngInput && lng != null) manualLngInput.value = String(lng);
+              if (manualLocationInput && !manualLocationInput.value && lat != null && lng != null) {
+                manualLocationInput.value = 'Current location: ' + lat.toFixed(5) + ', ' + lng.toFixed(5);
+              }
+              if (locationStatus) locationStatus.textContent = 'Location added.';
+            }, function(){
+              if (locationStatus) locationStatus.textContent = 'Location permission was not enabled.';
+            }, { enableHighAccuracy:true, timeout:8000, maximumAge:60000 });
           });
         }
 
@@ -1224,9 +1361,44 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
     const requestedType = String(req.body.type || "").trim().toLowerCase();
 
-    const eventId = String(req.body.eventId || "").trim() || null;
+    let eventId = String(req.body.eventId || "").trim() || null;
+    const manualEventTitle = String(req.body.manualEventTitle || "").trim();
+    const manualEventLocation = String(req.body.manualEventLocation || "").trim();
+    const manualEventLatRaw = String(req.body.manualEventLat || "").trim();
+    const manualEventLngRaw = String(req.body.manualEventLng || "").trim();
 
-
+    if (eventId === "__other__") {
+      eventId = null;
+      if (manualEventTitle) {
+        const lat = Number.parseFloat(manualEventLatRaw);
+        const lng = Number.parseFloat(manualEventLngRaw);
+        const manualEvent = await prisma.eventFinderItem.create({
+          data: {
+            source: "manual-story",
+            sourceEventId: `${currentProfile.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            title: manualEventTitle.slice(0, 120),
+            venueName: manualEventLocation ? manualEventLocation.slice(0, 160) : null,
+            address: manualEventLocation ? manualEventLocation.slice(0, 160) : null,
+            latitude: Number.isFinite(lat) ? lat : null,
+            longitude: Number.isFinite(lng) ? lng : null,
+            startAt: new Date(),
+            rawPayload: { manual: true, createdFrom: "story-composer", profileId: currentProfile.id },
+          },
+        });
+        await prisma.eventAttendance.upsert({
+          where: { profileId_eventId: { profileId: currentProfile.id, eventId: manualEvent.id } },
+          update: { status: "going" },
+          create: { profileId: currentProfile.id, eventId: manualEvent.id, status: "going" },
+        });
+        eventId = manualEvent.id;
+      }
+    } else if (eventId) {
+      const goingEvent = await prisma.eventAttendance.findFirst({
+        where: { profileId: currentProfile.id, eventId, status: "going" },
+        select: { id: true },
+      });
+      if (!goingEvent) eventId = null;
+    }
 
     let mediaUrl = null;
 
