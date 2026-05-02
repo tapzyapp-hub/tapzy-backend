@@ -6,7 +6,7 @@ const prisma = require("../prisma");
 
 
 
-const { upload, normalizeStoryVideoUpload } = require("../upload");
+const { upload } = require("../upload");
 
 
 
@@ -1407,8 +1407,6 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
     let mediaUrl = null;
 
     if (req.file) {
-
-      await normalizeStoryVideoUpload(req.file);
 
       mediaUrl = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
 
