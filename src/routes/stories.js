@@ -1786,7 +1786,7 @@ router.get("/stories/:username", async (req, res) => {
 
       .story-progress-fill-active{
 
-        animation:storyProgress 7s linear forwards;
+        width:0%;
 
       }
 
@@ -2259,16 +2259,6 @@ router.get("/stories/:username", async (req, res) => {
         position:relative;
         z-index:4;
       }
-      @keyframes storyProgress{
-
-        from{ width:0%; }
-
-        to{ width:100%; }
-
-      }
-
-
-
       @media(max-width:700px){
 
         .story-view-shell{
@@ -2400,14 +2390,52 @@ router.get("/stories/:username", async (req, res) => {
       (function(){
 
         const panels = Array.from(document.querySelectorAll(".story-panel"));
-        const fills = Array.from(document.querySelectorAll(".story-progress-fill"));
         const shell = document.querySelector(".story-view-shell");
         let index = 0;
         let timer = null;
+        let raf = null;
         let startX = 0;
 
+        function currentPanel(){
+          return panels[index] || null;
+        }
+
         function currentVideo(){
-          return panels[index] ? panels[index].querySelector("video") : null;
+          const panel = currentPanel();
+          return panel ? panel.querySelector("video") : null;
+        }
+
+        function activeFills(){
+          const panel = currentPanel();
+          return panel ? Array.from(panel.querySelectorAll(".story-progress-fill")) : [];
+        }
+
+        function stopProgress(){
+          if (timer) clearTimeout(timer);
+          if (raf) cancelAnimationFrame(raf);
+          timer = null;
+          raf = null;
+        }
+
+        function paintProgress(percent){
+          const fills = activeFills();
+          fills.forEach((fill, i) => {
+            fill.classList.toggle("story-progress-fill-active", i === index);
+            fill.style.transition = "none";
+            if (i < index) fill.style.width = "100%";
+            else if (i > index) fill.style.width = "0%";
+            else fill.style.width = Math.max(0, Math.min(100, percent)) + "%";
+          });
+        }
+
+        function resetAllVisibleBars(){
+          panels.forEach((panel) => {
+            Array.from(panel.querySelectorAll(".story-progress-fill")).forEach((fill) => {
+              fill.classList.remove("story-progress-fill-active");
+              fill.style.transition = "none";
+              fill.style.width = "0%";
+            });
+          });
         }
 
         function pauseInactiveVideos(){
@@ -2415,6 +2443,9 @@ router.get("/stories/:username", async (req, res) => {
             const video = panel.querySelector("video");
             if (!video) return;
             if (i !== index) {
+              video.onloadedmetadata = null;
+              video.ontimeupdate = null;
+              video.onended = null;
               try { video.pause(); video.currentTime = 0; } catch(e) {}
             }
           });
@@ -2429,61 +2460,66 @@ router.get("/stories/:username", async (req, res) => {
           if (media.tagName === "IMG" && media.loading) media.loading = "eager";
         }
 
-        function storyDurationMs(){
-          const video = currentVideo();
-          if (video && Number.isFinite(video.duration) && video.duration > 0) {
-            return Math.max(video.duration * 1000, 1000);
+        function goNext(){
+          stopProgress();
+          if (index + 1 < panels.length) activate(index + 1);
+          else paintProgress(100);
+        }
+
+        function startImageProgress(){
+          const duration = 7000;
+          const startedAt = performance.now();
+          function tick(now){
+            const pct = ((now - startedAt) / duration) * 100;
+            paintProgress(pct);
+            if (pct >= 100) return goNext();
+            raf = requestAnimationFrame(tick);
           }
-          return 7000;
+          raf = requestAnimationFrame(tick);
         }
 
-        function startProgress(ms){
-          fills.forEach((fill, i) => {
-            fill.classList.remove("story-progress-fill-active");
-            fill.style.transition = "none";
-            fill.style.width = i < index ? "100%" : "0%";
-          });
-          const fill = fills[index];
-          if (!fill) return;
-          void fill.offsetWidth;
-          fill.classList.add("story-progress-fill-active");
-          fill.style.transition = "width " + ms + "ms linear";
-          fill.style.width = "100%";
-        }
+        function startVideoProgress(video){
+          function duration(){
+            return Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
+          }
 
-        function scheduleNext(){
-          if (timer) clearTimeout(timer);
-          const ms = storyDurationMs();
-          startProgress(ms);
-          timer = setTimeout(function(){
-            if (index + 1 < panels.length) activate(index + 1);
-          }, ms);
+          function tick(){
+            const d = duration();
+            if (d > 0) paintProgress((video.currentTime / d) * 100);
+            raf = requestAnimationFrame(tick);
+          }
+
+          video.onloadedmetadata = function(){
+            paintProgress(0);
+          };
+          video.onended = goNext;
+          video.ontimeupdate = function(){
+            const d = duration();
+            if (d > 0) paintProgress((video.currentTime / d) * 100);
+          };
+
+          try { video.currentTime = 0; } catch(e) {}
+          video.play().catch(function(){});
+          raf = requestAnimationFrame(tick);
         }
 
         function activate(nextIndex){
           if (nextIndex < 0 || nextIndex >= panels.length) return;
+          stopProgress();
           index = nextIndex;
 
           panels.forEach((panel, i) => {
             panel.classList.toggle("story-panel-active", i === nextIndex);
           });
 
-          fills.forEach((fill, i) => {
-            fill.classList.remove("story-progress-fill-active");
-            fill.style.transition = "none";
-            fill.style.width = i < nextIndex ? "100%" : "0%";
-          });
-
+          resetAllVisibleBars();
+          paintProgress(0);
           pauseInactiveVideos();
           preloadNext(nextIndex);
 
           const video = currentVideo();
-          if (video) {
-            video.play().catch(function(){});
-            video.onloadedmetadata = scheduleNext;
-            video.onended = function(){ if (index + 1 < panels.length) activate(index + 1); };
-          }
-          scheduleNext();
+          if (video) startVideoProgress(video);
+          else startImageProgress();
         }
 
         document.addEventListener("click", function(e){
@@ -2527,7 +2563,6 @@ router.get("/stories/:username", async (req, res) => {
         }
 
         activate(0);
-
 
       })();
 
