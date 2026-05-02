@@ -34,21 +34,6 @@ function safeExtension(originalName = "", mimetype = "") {
   return ".jpg";
 }
 
-
-function isVideoUpload(file) {
-  if (!file) return false;
-  const mimetype = String(file.mimetype || "").toLowerCase();
-  const ext = path.extname(file.originalname || file.filename || "").toLowerCase();
-  return mimetype.startsWith("video/") || [".mp4", ".mov", ".m4v", ".webm"].includes(ext);
-}
-
-async function normalizeStoryVideoUpload(file) {
-  // Keep uploads fast and reliable.
-  // Do not run ffmpeg during the story post request, because hosted servers without ffmpeg
-  // or slow phone uploads can make every video fail/time out.
-  return file;
-}
-
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, uploadsDir);
@@ -63,26 +48,30 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 500 * 1024 * 1024,
+    fileSize: 50 * 1024 * 1024,
   },
   fileFilter: (_req, file, cb) => {
-    const mimetype = String(file.mimetype || "").toLowerCase();
-    const ext = path.extname(file.originalname || "").toLowerCase();
-
-    const allowedMimes = [
-      "image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif",
-      "video/mp4", "video/quicktime", "video/webm", "video/x-m4v", "video/hevc", "video/x-msvideo",
+    const allowed = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "video/mp4",
+      "video/quicktime",
+      "video/webm",
+      "video/x-m4v",
       "application/octet-stream",
-      "audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg", "audio/webm", "audio/mp4", "audio/x-m4a", "audio/aac",
+      "audio/mpeg",
+      "audio/wav",
+      "audio/x-wav",
+      "audio/ogg",
+      "audio/webm",
+      "audio/mp4",
+      "audio/x-m4a",
+      "audio/aac",
     ];
 
-    const allowedExts = [
-      ".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif",
-      ".mp4", ".mov", ".m4v", ".webm",
-      ".mp3", ".wav", ".ogg", ".m4a", ".aac",
-    ];
-
-    const ok = allowedMimes.includes(mimetype) || allowedExts.includes(ext) || mimetype.startsWith("video/") || mimetype.startsWith("image/") || mimetype.startsWith("audio/");
+    const ok = allowed.includes(file.mimetype);
     cb(ok ? null : new Error("Only images, videos, and audio are allowed"), ok);
   },
 });
@@ -90,5 +79,4 @@ const upload = multer({
 module.exports = {
   upload,
   uploadsDir,
-  normalizeStoryVideoUpload,
 };
