@@ -256,7 +256,7 @@ function storyComposer(currentProfile, upcomingEvents) {
   `;
 
 }
-function profileStoryCard(profile, stories) {
+function profileStoryCard(profile, stories, currentProfile) {
 
   const firstStory = stories[0];
 
@@ -302,6 +302,10 @@ function profileStoryCard(profile, stories) {
 
 
 
+  const isOwnStory = !!(currentProfile && (String(currentProfile.id || "") === String(profile.id || "") || String(currentProfile.username || "").toLowerCase() === String(profile.username || "").toLowerCase()));
+
+  const storyOwnerLabel = isOwnStory ? "Your Story" : `@${profile.username || profile.name || "user"}`;
+
   return `
 
   <a class="stories-profile-card" href="/stories/${escapeHtml(profile.username || "")}">
@@ -318,7 +322,7 @@ function profileStoryCard(profile, stories) {
 
       <div class="stories-profile-age">${escapeHtml(ageLabel)}</div>
 
-      <div class="stories-profile-handle">${stories.length === 1 ? "Your Story" : `${stories.length} Stories`}</div>
+      <div class="stories-profile-handle">${escapeHtml(storyOwnerLabel)}</div>
 
     </div>
 
@@ -468,7 +472,7 @@ router.get("/stories", async (req, res) => {
 
             <div class="stories-profile-grid">
 
-              ${groups.map((group) => profileStoryCard(group.profile, group.stories)).join("")}
+              ${groups.map((group) => profileStoryCard(group.profile, group.stories, currentProfile)).join("")}
 
             </div>
 
