@@ -5,7 +5,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
         const FEED_PAGE_SIZE = ${JSON.stringify(FEED_PAGE_SIZE)};
 
-        const category = ${JSON.stringify(category)};
+        const category = ${JSON.stringify(category === "all" ? "" : category)};
 
         const cities = ${JSON.stringify(citySections.map((s) => s.cityName))};
 
@@ -1106,29 +1106,61 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
           observer.observe(sentinel);
         }
 
-        function requestTapzyLocation() {
+        function requestTapzyLocation(ev) {
+          if (ev && typeof ev.preventDefault === "function") ev.preventDefault();
           const status = document.getElementById("locationPromptStatus");
           const notice = document.getElementById("liveLocationNotice");
+          const button = document.getElementById("enableLocationBtn");
+
+          if (button) {
+            button.disabled = true;
+            button.classList.add("is-loading");
+          }
+
+          function unlockButton() {
+            if (button) {
+              button.disabled = false;
+              button.classList.remove("is-loading");
+            }
+          }
+
+          if (!window.isSecureContext && location.hostname !== "localhost") {
+            if (status) status.textContent = "Location needs HTTPS. Open Tapzy from https://tapzy.org and try again.";
+            if (notice) notice.textContent = "Location permission needs a secure Tapzy page.";
+            unlockButton();
+            return false;
+          }
 
           if (!navigator.geolocation) {
             if (status) status.textContent = "This browser does not support location. Try Safari, Chrome, or enabling location in settings.";
             if (notice) notice.textContent = "Location is not available in this browser.";
-            return;
+            unlockButton();
+            return false;
           }
 
-          if (status) status.textContent = "Opening location permission...";
+          if (status) status.textContent = "Requesting location permission… tap Allow when your phone asks.";
+          if (notice) notice.textContent = "Waiting for your location permission…";
 
           navigator.geolocation.getCurrentPosition((pos) => {
+            if (status) status.textContent = "Location enabled. Loading nearby events…";
             const url = new URL(window.location.href);
             url.searchParams.set("lat", String(pos.coords.latitude));
             url.searchParams.set("lng", String(pos.coords.longitude));
             url.searchParams.set("radiusKm", String(RADIUS_KM || 85));
-            window.location.replace(url.toString());
-          }, () => {
-            if (status) status.textContent = "Location is off. Turn it on for this browser, then tap Enable Location again.";
-            if (notice) notice.textContent = "Location is off, so Tapzy cannot show area-only events yet.";
-          }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 });
+            window.location.assign(url.toString());
+          }, (err) => {
+            unlockButton();
+            let message = "Location is off. Turn it on for this browser, then tap Enable Location again.";
+            if (err && err.code === 1) message = "Location permission was blocked. Enable location for Safari/Chrome in your phone settings, then tap again.";
+            if (err && err.code === 2) message = "Your phone could not find your location yet. Check GPS/Wi‑Fi and tap again.";
+            if (err && err.code === 3) message = "Location request timed out. Tap Enable Location again.";
+            if (status) status.textContent = message;
+            if (notice) notice.textContent = message;
+          }, { enableHighAccuracy: true, timeout: 18000, maximumAge: 60000 });
+          return false;
         }
+
+        window.requestTapzyLocation = requestTapzyLocation;
 
         function setupLiveLocationGate() {
           const button = document.getElementById("enableLocationBtn");
@@ -1144,6 +1176,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
           if (button) {
             button.addEventListener("click", requestTapzyLocation);
+            button.addEventListener("touchend", requestTapzyLocation, { passive:false });
+            button.addEventListener("pointerup", requestTapzyLocation);
           }
 
           if (status) {

@@ -41,7 +41,9 @@ module.exports = async function getEventsPage(req, res) {
 
     const city = "";
 
-    const category = String(req.query.category || "").trim().toLowerCase();
+    const rawCategory = String(req.query.category || "").trim().toLowerCase();
+    const category = rawCategory === "all" ? "" : rawCategory;
+    const activeCategory = rawCategory === "all" ? "all" : category;
 
     const adminKey = String(req.query.key || "").trim();
 
@@ -268,6 +270,7 @@ module.exports = async function getEventsPage(req, res) {
         <div class="events-chip-row">
           ${[
             ["", "Hot Nearby", events.length],
+            ["all", "All Events", events.length],
             ["sports", "Sports", sports.length],
             ["dances", "Dances", dances.length],
             ["concerts", "Concerts", concerts.length],
@@ -281,7 +284,8 @@ module.exports = async function getEventsPage(req, res) {
             }
             if (hasAdminKey) qs.set("key", adminKey);
             const href = `/events${qs.toString() ? `?${qs.toString()}` : ""}`;
-            return `<a class="events-chip${category === value ? " is-active" : ""}" href="${href}">${escapeHtml(label)} <span>${escapeHtml(count)}</span></a>`;
+            const isActive = value === "all" ? activeCategory === "all" : activeCategory === value;
+            return `<a class="events-chip${isActive ? " is-active" : ""}" href="${href}">${escapeHtml(label)} <span>${escapeHtml(count)}</span></a>`;
           }).join("")}
         </div>
       </section>
@@ -293,7 +297,7 @@ module.exports = async function getEventsPage(req, res) {
           <div class="events-kicker">Live Location Required</div>
           <h2>Find what is hot around you</h2>
           <p class="muted">Tapzy uses your live location to show nearby sports, dances, and concerts. If nothing is close enough, we automatically switch to the closest area with events.</p>
-          <button id="enableLocationBtn" class="btn btnLuxury" type="button">Enable Location</button>
+          <button id="enableLocationBtn" class="btn btnLuxury" type="button" onclick="window.requestTapzyLocation && window.requestTapzyLocation(event)">Enable Location</button>
           <div id="locationPromptStatus" class="muted location-prompt-status">Your exact location is only used to build this event feed.</div>
         </section>
       ` : ""}
@@ -449,7 +453,7 @@ module.exports = async function getEventsPage(req, res) {
       .events-chip-row::-webkit-scrollbar{ display:none; }
       .events-chip{ flex:0 0 auto; min-width:160px; text-align:center; padding:18px 26px; border-radius:999px; text-decoration:none; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
       .events-chip.is-active{ background:#eef3fb; color:#101626; border-color:rgba(255,255,255,.45); }
-      .events-location-prompt{ position:relative; overflow:hidden; margin:18px 0 24px; padding:24px; border-radius:28px; border:1px solid rgba(127,210,255,.22); background:linear-gradient(180deg, rgba(17,23,36,.82), rgba(7,9,14,.94)); box-shadow:0 24px 70px rgba(0,0,0,.36), 0 0 0 1px rgba(255,255,255,.04) inset; }
+      .events-location-prompt{ position:relative; overflow:hidden; margin:18px 0 24px; padding:26px; border-radius:30px; border:1px solid rgba(127,210,255,.28); background:radial-gradient(520px 260px at 92% -10%, rgba(83,184,255,.22), transparent 58%), radial-gradient(380px 220px at 8% 0%, rgba(255,255,255,.08), transparent 56%), linear-gradient(180deg, rgba(19,28,43,.88), rgba(7,9,14,.96)); box-shadow:0 26px 80px rgba(0,0,0,.44), 0 0 0 1px rgba(255,255,255,.05) inset, 0 0 46px rgba(83,184,255,.10); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
       .events-location-prompt h2{ margin:8px 0 8px; font-size:28px; letter-spacing:-.04em; }
       .events-location-prompt p{ max-width:680px; line-height:1.55; }
       .location-prompt-glow{ position:absolute; width:280px; height:180px; right:-80px; top:-90px; border-radius:999px; background:radial-gradient(circle, rgba(127,210,255,.26), transparent 68%); filter:blur(12px); pointer-events:none; }
@@ -465,19 +469,21 @@ module.exports = async function getEventsPage(req, res) {
 
         border-radius:32px;
 
-        border:1px solid rgba(255,255,255,.08);
-
-        /* Matches the Tapzy Stories premium card color system */
+        border:1px solid rgba(127,210,255,.20);
 
         background:
 
-          radial-gradient(700px 260px at 50% -5%, rgba(127,210,255,.08), transparent 48%),
+          radial-gradient(720px 300px at 88% -12%, rgba(83,184,255,.20), transparent 56%),
 
-          linear-gradient(180deg, rgba(10,12,18,.98), rgba(6,6,8,1));
+          radial-gradient(520px 260px at 4% 0%, rgba(255,255,255,.075), transparent 54%),
+
+          linear-gradient(180deg, rgba(17,25,38,.92), rgba(6,7,11,.98));
 
         padding:30px;
 
-        box-shadow:0 24px 70px rgba(0,0,0,.40);
+        box-shadow:0 26px 80px rgba(0,0,0,.46), 0 0 0 1px rgba(255,255,255,.045) inset, 0 0 42px rgba(83,184,255,.09);
+
+        backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
 
       }
 
