@@ -41,10 +41,10 @@ module.exports = async function getEventsPage(req, res) {
 
     const city = "";
 
-    const rawCategory = String(req.query.category || "").trim().toLowerCase();
-    const category = rawCategory === "all" ? "" : rawCategory;
-    const activeCategory = rawCategory === "all" ? "all" : category;
-    const isHotNearbyMode = !rawCategory;
+    const rawCategory = String(req.query.category || "all").trim().toLowerCase();
+    const isHotNearbyMode = rawCategory === "nearby" || rawCategory === "hot-nearby";
+    const category = rawCategory === "all" || isHotNearbyMode ? "" : rawCategory;
+    const activeCategory = isHotNearbyMode ? "nearby" : (rawCategory === "all" ? "all" : category);
 
     const adminKey = String(req.query.key || "").trim();
 
@@ -277,7 +277,7 @@ module.exports = async function getEventsPage(req, res) {
       <section class="events-chip-wrap">
         <div class="events-chip-row">
           ${[
-            ["", "Hot Nearby", hasLiveLocation ? (localEvents.length || closestAreaFallback.events.length) : ""],
+            ["nearby", "Hot Nearby", hasLiveLocation ? (localEvents.length || closestAreaFallback.events.length) : ""],
             ["all", "All Events", allHotEvents.length],
             ["sports", "Sports", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "sports")).length],
             ["dances", "Dances", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "dances")).length],
@@ -285,14 +285,14 @@ module.exports = async function getEventsPage(req, res) {
           ].map(([value, label, count]) => {
             const qs = new URLSearchParams();
             if (value) qs.set("category", value);
-            if (!value && hasLiveLocation) {
+            if (value === "nearby" && hasLiveLocation) {
               qs.set("lat", String(liveLat));
               qs.set("lng", String(liveLng));
               qs.set("radiusKm", String(radiusKm));
             }
             if (hasAdminKey) qs.set("key", adminKey);
             const href = `/events${qs.toString() ? `?${qs.toString()}` : ""}`;
-            const isActive = value === "all" ? activeCategory === "all" : activeCategory === value;
+            const isActive = activeCategory === value;
             return `<a class="events-chip${isActive ? " is-active" : ""}" href="${href}">${escapeHtml(label)} <span>${escapeHtml(count)}</span></a>`;
           }).join("")}
         </div>

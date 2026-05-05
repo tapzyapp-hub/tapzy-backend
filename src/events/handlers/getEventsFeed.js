@@ -18,9 +18,9 @@ module.exports = async function getEventsFeed(req, res) {
     const limit = Math.min(24, Math.max(1, Number(req.query.limit || FEED_PAGE_SIZE)));
     const skip = (page - 1) * limit;
     const city = String(req.query.city || "").trim();
-    const rawCategory = String(req.query.category || "").trim().toLowerCase();
-    const category = rawCategory === "all" ? "" : rawCategory;
-    const isHotNearbyMode = !rawCategory;
+    const rawCategory = String(req.query.category || "all").trim().toLowerCase();
+    const isHotNearbyMode = rawCategory === "nearby" || rawCategory === "hot-nearby";
+    const category = rawCategory === "all" || isHotNearbyMode ? "" : rawCategory;
     const liveLat = Number(req.query.lat);
     const liveLng = Number(req.query.lng);
     const radiusKm = Math.max(25, Math.min(250, Number(req.query.radiusKm || 85)));
