@@ -1,11 +1,12 @@
-module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm, usingClosestAreaFallback, closestAreaFallback }) {
+module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, isHotNearbyMode, citySections, currentProfile, liveLat, liveLng, radiusKm, usingClosestAreaFallback, closestAreaFallback }) {
   return `
 <script>
 (function () {
 
         const FEED_PAGE_SIZE = ${JSON.stringify(FEED_PAGE_SIZE)};
 
-        const category = ${JSON.stringify(category === "all" ? "" : category)};
+        const category = ${JSON.stringify(category || "")};
+        const IS_HOT_NEARBY_MODE = ${JSON.stringify(!!isHotNearbyMode)};
 
         const cities = ${JSON.stringify(citySections.map((s) => s.cityName))};
 
@@ -795,7 +796,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
                 city: "",
                 category,
               });
-              if (HAS_LIVE_LOCATION) {
+              if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
                 qs.set("lat", String(LIVE_LAT));
                 qs.set("lng", String(LIVE_LNG));
                 qs.set("radiusKm", String(RADIUS_KM || 85));
@@ -940,7 +941,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
                 city: cityName,
                 category,
               });
-              if (HAS_LIVE_LOCATION) {
+              if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
                 qs.set("lat", String(LIVE_LAT));
                 qs.set("lng", String(LIVE_LNG));
                 qs.set("radiusKm", String(RADIUS_KM || 85));
@@ -1060,7 +1061,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
             try {
               const qs = new URLSearchParams({ page: String(page), limit: String(FEED_PAGE_SIZE), city: "", category });
-              if (HAS_LIVE_LOCATION) {
+              if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
                 qs.set("lat", String(LIVE_LAT));
                 qs.set("lng", String(LIVE_LNG));
                 qs.set("radiusKm", String(RADIUS_KM || 85));
@@ -1167,6 +1168,11 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
           const status = document.getElementById("locationPromptStatus");
           const notice = document.getElementById("liveLocationNotice");
 
+          if (!IS_HOT_NEARBY_MODE) {
+            if (notice) notice.textContent = "Browsing does not need location. Use Hot Nearby when you want live local events.";
+            return;
+          }
+
           if (HAS_LIVE_LOCATION) {
             if (notice && USING_CLOSEST_AREA_FALLBACK && CLOSEST_AREA_NAME) {
               notice.textContent = "No local events yet — automatically showing the closest active area: " + CLOSEST_AREA_NAME + ".";
@@ -1230,7 +1236,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
                 city: "",
                 category,
               });
-              if (HAS_LIVE_LOCATION) {
+              if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
                 qs.set("lat", String(LIVE_LAT));
                 qs.set("lng", String(LIVE_LNG));
                 qs.set("radiusKm", String(RADIUS_KM || 85));

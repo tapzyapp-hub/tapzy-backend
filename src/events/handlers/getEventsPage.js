@@ -44,6 +44,7 @@ module.exports = async function getEventsPage(req, res) {
     const rawCategory = String(req.query.category || "").trim().toLowerCase();
     const category = rawCategory === "all" ? "" : rawCategory;
     const activeCategory = rawCategory === "all" ? "all" : category;
+    const isHotNearbyMode = !rawCategory;
 
     const adminKey = String(req.query.key || "").trim();
 
@@ -70,17 +71,22 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    const localEvents = filterNearbyEvents(rawEvents, { lat: liveLat, lng: liveLng, radiusKm })
-      .filter(isAllowedHotCategory);
+    const allHotEvents = rawEvents.filter(isAllowedHotCategory);
 
-    const closestAreaFallback = hasLiveLocation && !localEvents.length
-      ? getClosestAreaEvents(rawEvents.filter(isAllowedHotCategory), { lat: liveLat, lng: liveLng, limit: MAIN_QUERY_LIMIT })
+    const localEvents = isHotNearbyMode
+      ? filterNearbyEvents(allHotEvents, { lat: liveLat, lng: liveLng, radiusKm })
+      : [];
+
+    const closestAreaFallback = isHotNearbyMode && hasLiveLocation && !localEvents.length
+      ? getClosestAreaEvents(allHotEvents, { lat: liveLat, lng: liveLng, limit: MAIN_QUERY_LIMIT })
       : { events: [], areaName: '', distanceKm: null };
 
-    let events = localEvents.length ? localEvents : closestAreaFallback.events;
-    const usingClosestAreaFallback = hasLiveLocation && !localEvents.length && events.length > 0;
+    let events = isHotNearbyMode
+      ? (localEvents.length ? localEvents : closestAreaFallback.events)
+      : allHotEvents;
+    const usingClosestAreaFallback = isHotNearbyMode && hasLiveLocation && !localEvents.length && events.length > 0;
 
-    if (category) {
+    if (!isHotNearbyMode && category) {
       const normalizedFilter = String(category).trim().toLowerCase();
       events = events.filter((event) => {
         const normalized = String(normalizeCategory(event) || '').trim().toLowerCase();
@@ -208,7 +214,9 @@ module.exports = async function getEventsPage(req, res) {
                   ? `<div class="muted" style="margin-top:10px;">No hot events were found within <b>${escapeHtml(radiusKm)} km</b>, so Tapzy switched to the closest active area: <b>${escapeHtml(closestAreaFallback.areaName)}</b>.</div>`
                   : `<div class="muted" style="margin-top:10px;">Showing live nearby events within <b>${escapeHtml(radiusKm)} km</b>.</div>`
 
-                : `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
+                : isHotNearbyMode
+                  ? `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
+                  : `<div class="muted" style="margin-top:10px;">Browse all hot sports, dances, and concerts. Location is only needed for Hot Nearby.</div>`
 
             }
 
@@ -269,15 +277,15 @@ module.exports = async function getEventsPage(req, res) {
       <section class="events-chip-wrap">
         <div class="events-chip-row">
           ${[
-            ["", "Hot Nearby", events.length],
-            ["all", "All Events", events.length],
-            ["sports", "Sports", sports.length],
-            ["dances", "Dances", dances.length],
-            ["concerts", "Concerts", concerts.length],
+            ["", "Hot Nearby", hasLiveLocation ? (localEvents.length || closestAreaFallback.events.length) : ""],
+            ["all", "All Events", allHotEvents.length],
+            ["sports", "Sports", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "sports")).length],
+            ["dances", "Dances", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "dances")).length],
+            ["concerts", "Concerts", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "concerts")).length],
           ].map(([value, label, count]) => {
             const qs = new URLSearchParams();
             if (value) qs.set("category", value);
-            if (hasLiveLocation) {
+            if (!value && hasLiveLocation) {
               qs.set("lat", String(liveLat));
               qs.set("lng", String(liveLng));
               qs.set("radiusKm", String(radiusKm));
@@ -289,9 +297,9 @@ module.exports = async function getEventsPage(req, res) {
           }).join("")}
         </div>
       </section>
-      <div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${hasLiveLocation ? (usingClosestAreaFallback ? `No local events yet — showing closest active area, ${escapeHtml(closestAreaFallback.areaName)}.` : "Categories are filtered to your live area.") : "Tap Enable Location so Tapzy can pull hot events around you only."}</div>
+      <div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${isHotNearbyMode ? (hasLiveLocation ? (usingClosestAreaFallback ? `No local events yet — showing closest active area, ${escapeHtml(closestAreaFallback.areaName)}.` : "Hot Nearby is filtered to your live area.") : "Tap Enable Location to unlock Hot Nearby. All Events and categories work without location.") : "Browsing does not need location. Use Hot Nearby when you want live local events."}</div>
 
-      ${!hasLiveLocation ? `
+      ${isHotNearbyMode && !hasLiveLocation ? `
         <section id="locationPromptCard" class="events-location-prompt">
           <div class="location-prompt-glow"></div>
           <div class="events-kicker">Live Location Required</div>
@@ -365,7 +373,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-      ${!events.length ? `<section class="events-section"><div class="empty muted">${hasLiveLocation ? "No hot sports, dance, or concert events were found nearby or in a closest active area yet." : "Enable location to start the live area search."}</div></section>` : ""}
+      ${!events.length ? `<section class="events-section"><div class="empty muted">${isHotNearbyMode ? (hasLiveLocation ? "No hot sports, dance, or concert events were found nearby or in a closest active area yet." : "Enable location to start the Hot Nearby search, or tap All Events to browse without location.") : "No events found for this section yet."}</div></section>` : ""}
 
       ${renderSection("Featured Events", featured, currentProfile, goingSet, goingCounts)}
 
@@ -1663,7 +1671,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    ${renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm, usingClosestAreaFallback, closestAreaFallback })}
+    ${renderEventsClientScript({ FEED_PAGE_SIZE, category: activeCategory, isHotNearbyMode, citySections, currentProfile, liveLat, liveLng, radiusKm, usingClosestAreaFallback, closestAreaFallback })}
 
 
 

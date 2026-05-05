@@ -18,7 +18,9 @@ module.exports = async function getEventsFeed(req, res) {
     const limit = Math.min(24, Math.max(1, Number(req.query.limit || FEED_PAGE_SIZE)));
     const skip = (page - 1) * limit;
     const city = String(req.query.city || "").trim();
-    const category = String(req.query.category || "").trim().toLowerCase();
+    const rawCategory = String(req.query.category || "").trim().toLowerCase();
+    const category = rawCategory === "all" ? "" : rawCategory;
+    const isHotNearbyMode = !rawCategory;
     const liveLat = Number(req.query.lat);
     const liveLng = Number(req.query.lng);
     const radiusKm = Math.max(25, Math.min(250, Number(req.query.radiusKm || 85)));
@@ -54,18 +56,23 @@ module.exports = async function getEventsFeed(req, res) {
       take: queryLimit,
     });
 
-    const localRanked = filterNearbyEvents(rawItems, { lat: liveLat, lng: liveLng, radiusKm })
-      .filter(isAllowedHotCategory);
-
+    const allHotItems = rawItems.filter(isAllowedHotCategory);
     const hasLiveLocation = Number.isFinite(liveLat) && Number.isFinite(liveLng);
-    const closestAreaFallback = hasLiveLocation && !localRanked.length
-      ? getClosestAreaEvents(rawItems.filter(isAllowedHotCategory), { lat: liveLat, lng: liveLng, limit: queryLimit })
+
+    const localRanked = isHotNearbyMode
+      ? filterNearbyEvents(allHotItems, { lat: liveLat, lng: liveLng, radiusKm })
+      : [];
+
+    const closestAreaFallback = isHotNearbyMode && hasLiveLocation && !localRanked.length
+      ? getClosestAreaEvents(allHotItems, { lat: liveLat, lng: liveLng, limit: queryLimit })
       : { events: [], areaName: '', distanceKm: null };
 
-    let ranked = localRanked.length ? localRanked : closestAreaFallback.events;
-    const usingClosestAreaFallback = hasLiveLocation && !localRanked.length && ranked.length > 0;
+    let ranked = isHotNearbyMode
+      ? (localRanked.length ? localRanked : closestAreaFallback.events)
+      : allHotItems;
+    const usingClosestAreaFallback = isHotNearbyMode && hasLiveLocation && !localRanked.length && ranked.length > 0;
 
-    if (category) {
+    if (!isHotNearbyMode && category) {
       const normalizedFilter = String(category).trim().toLowerCase();
       ranked = ranked.filter((event) => {
         const normalized = String(normalizeCategory(event) || "").trim().toLowerCase();
