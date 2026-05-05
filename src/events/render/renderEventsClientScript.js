@@ -17,7 +17,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         const HAS_LIVE_LOCATION = Number.isFinite(Number(LIVE_LAT)) && Number.isFinite(Number(LIVE_LNG));
         const USING_CLOSEST_AREA_FALLBACK = ${JSON.stringify(!!usingClosestAreaFallback)};
         const CLOSEST_AREA_NAME = ${JSON.stringify((closestAreaFallback && closestAreaFallback.areaName) || "")};
-        const IS_MOBILE_FEED = window.matchMedia && window.matchMedia("(max-width: 700px)").matches;
 
 
 
@@ -256,9 +255,11 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             <div class="event-card js-event-card">
 
-              <div class="event-media js-event-media" data-bg-url="\${escapeUnsafe(image)}" style="background-image:
+              <div class="event-media" style="background-image:
 
-                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94));"></div>
+                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
+
+                url('\${escapeUnsafe(image)}');"></div>
 
 
 
@@ -454,48 +455,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
 
-        const EVENT_MEDIA_GRADIENT = "linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94))";
-        let eventMediaObserver = null;
-
-        function setEventMediaImage(media, shouldLoad) {
-          if (!media) return;
-          const url = media.dataset.bgUrl || "";
-          if (!url) return;
-          if (shouldLoad) {
-            if (media.dataset.loaded === "1") return;
-            media.style.backgroundImage = EVENT_MEDIA_GRADIENT + ", url('" + url.replace(/'/g, "\\'") + "')";
-            media.dataset.loaded = "1";
-          } else if (IS_MOBILE_FEED && media.dataset.loaded === "1") {
-            media.style.backgroundImage = EVENT_MEDIA_GRADIENT;
-            media.dataset.loaded = "0";
-          }
-        }
-
-        function bindLazyEventMedia(scope) {
-          const root = scope || document;
-          const mediaNodes = root.querySelectorAll(".js-event-media");
-          if (!mediaNodes.length) return;
-
-          if (!("IntersectionObserver" in window)) {
-            mediaNodes.forEach((media) => setEventMediaImage(media, true));
-            return;
-          }
-
-          if (!eventMediaObserver) {
-            eventMediaObserver = new IntersectionObserver((entries) => {
-              entries.forEach((entry) => {
-                setEventMediaImage(entry.target, !!entry.isIntersecting);
-              });
-            }, { root: null, rootMargin: IS_MOBILE_FEED ? "900px 0px 900px 0px" : "500px 0px", threshold: 0.01 });
-          }
-
-          mediaNodes.forEach((media) => {
-            if (media.dataset.lazyBound === "1") return;
-            media.dataset.lazyBound = "1";
-            eventMediaObserver.observe(media);
-          });
-        }
-
         function bindCardMotion(scope) {
 
           const root = scope || document;
@@ -556,7 +515,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             card.addEventListener("pointermove", (e) => {
 
-              if (!IS_MOBILE_FEED && card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
+              if (card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
 
             }, { passive: true });
 
@@ -590,10 +549,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             card.addEventListener("touchmove", (e) => {
 
-              if (!IS_MOBILE_FEED) {
-                const touch = e.touches && e.touches[0];
-                if (touch) lightCard(touch.clientX, touch.clientY);
-              }
+              const touch = e.touches && e.touches[0];
+
+              if (touch) lightCard(touch.clientX, touch.clientY);
 
             }, { passive: true });
 
@@ -782,8 +740,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
         function enhance(scope) {
-
-          bindLazyEventMedia(scope);
 
           bindCardMotion(scope);
 
@@ -1088,119 +1044,76 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function setupMobileFeedInfinite() {
           const grid = document.getElementById("mobileFeedGrid");
+          const sentinel = document.getElementById("mobileFeedSentinel");
           const loader = document.getElementById("mobileFeedLoader");
           const end = document.getElementById("mobileFeedEnd");
-          const button = document.getElementById("mobileLoadMoreBtn");
+          const moreBtn = document.getElementById("mobileFeedMoreBtn");
 
-          if (!grid || !loader || !end) return;
+          if (!grid || !sentinel || !loader || !end) return;
 
           let page = 2;
           let loading = false;
-          let hasMore = loader.dataset.hasMore === "1";
-          let observer = null;
-          let lastLoadAt = 0;
-          let retryCount = 0;
+          let hasMore = loader.style.display !== "none";
 
-          function updateFooter() {
-            loader.style.display = hasMore ? "block" : "none";
-            loader.textContent = loading ? "Loading more events..." : "Scroll for more events";
-            end.style.display = hasMore ? "none" : "block";
-            if (button) button.style.display = "none";
-          }
-
-          function unlock() {
-            loading = false;
-            updateFooter();
-          }
-
-          async function loadMore(source) {
+          async function loadMore() {
             if (loading || !hasMore) return;
-
-            const now = Date.now();
-            if (now - lastLoadAt < 900) return;
-            lastLoadAt = now;
             loading = true;
-            updateFooter();
+            loader.style.display = "block";
 
             try {
-              const qs = new URLSearchParams({
-                page: String(page),
-                limit: String(Math.min(Number(FEED_PAGE_SIZE) || 6, 6)),
-                city: "",
-                category: category || "all"
-              });
-
+              const qs = new URLSearchParams({ page: String(page), limit: String(FEED_PAGE_SIZE), city: "", category });
               if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
                 qs.set("lat", String(LIVE_LAT));
                 qs.set("lng", String(LIVE_LNG));
                 qs.set("radiusKm", String(RADIUS_KM || 85));
               }
 
-              const res = await fetch("/events/feed?" + qs.toString(), {
-                cache: "no-store",
-                headers: { "X-Requested-With": "XMLHttpRequest" }
-              });
-
+              const res = await fetch("/events/feed?" + qs.toString(), { cache: "no-store" });
               const data = await res.json();
               if (!res.ok || !data.ok) throw new Error(data.error || "Could not load more events");
 
               const items = Array.isArray(data.items) ? data.items : [];
               if (!items.length) {
                 hasMore = false;
-                unlock();
+                loader.style.display = "none";
+                end.style.display = "block";
+                if (moreBtn) moreBtn.style.display = "none";
                 return;
               }
 
               const wrapper = document.createElement("div");
               wrapper.innerHTML = items.map(renderClientCard).join("");
-              const children = Array.from(wrapper.children);
-              const frag = document.createDocumentFragment();
-              children.forEach((node) => frag.appendChild(node));
-              grid.appendChild(frag);
-
-              // Bind premium touches after the DOM has settled. This avoids iPhone Safari
-              // doing heavy layout work while the user is still scrolling.
-              window.setTimeout(() => {
-                children.forEach((node) => enhance(node));
-              }, 60);
+              Array.from(wrapper.children).forEach((node) => grid.appendChild(node));
+              enhance(wrapper);
 
               page += 1;
-              retryCount = 0;
               hasMore = !!data.hasMore;
-              unlock();
-            } catch (err) {
-              console.error(err);
-              retryCount += 1;
-              if (retryCount >= 2) {
-                hasMore = false;
+              if (!hasMore) {
                 loader.style.display = "none";
                 end.style.display = "block";
-                end.textContent = "Could not load more events. Refresh and try again.";
-                loading = false;
-                return;
+                if (moreBtn) moreBtn.style.display = "none";
               }
-              window.setTimeout(unlock, 1000);
+            } catch (err) {
+              console.error(err);
+              loader.innerHTML = "Could not load more events";
+              if (moreBtn) moreBtn.style.display = "none";
+              hasMore = false;
+            } finally {
+              loading = false;
             }
           }
 
-          // Stable auto-infinite loading for mobile: observe the footer instead of
-          // running scroll-distance checks on every Safari scroll frame.
-          if ("IntersectionObserver" in window) {
-            observer = new IntersectionObserver((entries) => {
-              const first = entries && entries[0];
-              if (first && first.isIntersecting) loadMore("observer");
-            }, { root: null, rootMargin: "700px 0px 900px 0px", threshold: 0.01 });
-            observer.observe(loader);
-          } else {
-            window.addEventListener("scroll", () => {
-              if (!hasMore || loading) return;
-              const bottom = document.documentElement.getBoundingClientRect().bottom - window.innerHeight;
-              if (bottom < 900) loadMore("scroll");
-            }, { passive: true });
+          if (moreBtn) {
+            moreBtn.addEventListener("click", loadMore);
+            moreBtn.addEventListener("touchend", function(e){ e.preventDefault(); loadMore(); }, { passive:false });
           }
 
-          if (button) button.addEventListener("click", () => loadMore("button"));
-          updateFooter();
+          const observer = new IntersectionObserver((entries) => {
+            const first = entries[0];
+            if (first && first.isIntersecting) loadMore();
+          }, { rootMargin: "700px 0px" });
+
+          observer.observe(sentinel);
         }
 
         function requestTapzyLocation(ev) {
@@ -1265,7 +1178,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           const notice = document.getElementById("liveLocationNotice");
 
           if (!IS_HOT_NEARBY_MODE) {
-            if (notice) notice.textContent = "";
+            if (notice) notice.textContent = "Browsing does not need location. Use Hot Nearby when you want live local events.";
             return;
           }
 
@@ -1441,12 +1354,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         enhance(document);
 
         setupLiveLocationGate();
-        if (IS_MOBILE_FEED) {
-          setupMobileFeedInfinite();
-        } else {
-          setupMainFeedInfinite();
-          cities.forEach(setupCityInfinite);
-        }
+        setupMainFeedInfinite();
+        setupMobileFeedInfinite();
+        cities.forEach(setupCityInfinite);
 
       })();
 </script>`;

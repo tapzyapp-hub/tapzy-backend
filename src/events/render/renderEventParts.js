@@ -22,8 +22,9 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
   return `
     <div class="event-card js-event-card">
-      <div class="event-media js-event-media" data-bg-url="${escapeHtml(image)}" style="background-image:
-        linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94));"></div>
+      <div class="event-media" style="background-image:
+        linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
+        url('${escapeHtml(image)}');"></div>
       <div class="event-card-noise"></div>
       <div class="event-card-glow"></div>
       <div class="event-card-edge"></div>

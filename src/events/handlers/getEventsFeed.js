@@ -32,7 +32,7 @@ module.exports = async function getEventsFeed(req, res) {
     // Keep Tapzy's custom ranking, but do less work when the feed grows.
     // We only pull enough records to cover the requested page plus a small look-ahead,
     // instead of sorting the entire configured MAIN_QUERY_LIMIT on every request.
-    const queryLimit = MAIN_QUERY_LIMIT;
+    const queryLimit = Math.min(MAIN_QUERY_LIMIT, Math.max(skip + limit + 24, limit * 3));
 
     const rawItems = await prisma.eventFinderItem.findMany({
       where,
