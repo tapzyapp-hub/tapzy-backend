@@ -1052,12 +1052,128 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           if (!grid || !loader || !end) return;
 
+          const PRELOAD_AHEAD_PAGES = 8;
+          const CACHE_TTL_MS = 1000 * 60 * 60 * 8;
+          const MAX_STORED_PAGES = 80;
+          const feedBase = {
+            limit: String(FEED_PAGE_SIZE),
+            city: "",
+            category: category || "all"
+          };
+          if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
+            feedBase.lat = String(LIVE_LAT);
+            feedBase.lng = String(LIVE_LNG);
+            feedBase.radiusKm = String(RADIUS_KM || 85);
+          }
+
+          const feedCacheKey = "tapzy:events:mobile-feed:" + [
+            feedBase.category,
+            feedBase.city,
+            feedBase.lat || "",
+            feedBase.lng || "",
+            feedBase.radiusKm || ""
+          ].join(":");
+
           let page = 2;
           let loading = false;
           let hasMore = loader.dataset.hasMore === "1";
           let scrollTicking = false;
-          let cooldownUntil = 0;
-          let retryCount = 0;
+          let preloadRunning = false;
+          let lastLoadAt = 0;
+          let cachedPages = loadStoredFeedCache();
+
+          function readStoredJson(key) {
+            try {
+              const raw = window.localStorage && window.localStorage.getItem(key);
+              return raw ? JSON.parse(raw) : null;
+            } catch (_) {
+              return null;
+            }
+          }
+
+          function writeStoredJson(key, value) {
+            try {
+              if (!window.localStorage) return;
+              window.localStorage.setItem(key, JSON.stringify(value));
+            } catch (_) {}
+          }
+
+          function loadStoredFeedCache() {
+            const cached = readStoredJson(feedCacheKey);
+            if (!cached || !cached.pages || !cached.savedAt) return {};
+            if (Date.now() - Number(cached.savedAt) > CACHE_TTL_MS) return {};
+            return cached.pages || {};
+          }
+
+          function saveStoredFeedCache() {
+            const pageNumbers = Object.keys(cachedPages).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+            while (pageNumbers.length > MAX_STORED_PAGES) {
+              const remove = pageNumbers.shift();
+              delete cachedPages[String(remove)];
+            }
+            writeStoredJson(feedCacheKey, { savedAt: Date.now(), pages: cachedPages });
+          }
+
+          function cacheEventImages(items) {
+            if (!Array.isArray(items) || !("caches" in window)) return;
+            const urls = items
+              .map((event) => event && (event.imageUrl || pickFallbackImage(event)))
+              .filter(Boolean)
+              .slice(0, 24);
+            if (!urls.length) return;
+            window.caches.open("tapzy-events-images-v1").then((cache) => {
+              urls.forEach((url, index) => {
+                window.setTimeout(() => {
+                  fetch(url, { mode: "no-cors", cache: "force-cache" })
+                    .then((res) => cache.put(url, res.clone()).catch(() => null))
+                    .catch(() => null);
+                }, index * 80);
+              });
+            }).catch(() => null);
+          }
+
+          function setPageCache(pageNumber, data) {
+            if (!data || !Array.isArray(data.items)) return;
+            cachedPages[String(pageNumber)] = {
+              items: data.items,
+              hasMore: !!data.hasMore,
+              total: data.total || 0,
+              cachedAt: Date.now()
+            };
+            saveStoredFeedCache();
+            cacheEventImages(data.items);
+          }
+
+          function getPageCache(pageNumber) {
+            const cached = cachedPages[String(pageNumber)];
+            if (!cached || !Array.isArray(cached.items)) return null;
+            return cached;
+          }
+
+          function buildFeedUrl(pageNumber) {
+            const qs = new URLSearchParams(feedBase);
+            qs.set("page", String(pageNumber));
+            return "/events/feed?" + qs.toString();
+          }
+
+          async function fetchPage(pageNumber, preferCache) {
+            const cached = getPageCache(pageNumber);
+            if (preferCache && cached) return cached;
+
+            try {
+              const res = await fetch(buildFeedUrl(pageNumber), {
+                cache: "force-cache",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+              });
+              const data = await res.json();
+              if (!res.ok || !data.ok) throw new Error(data.error || "Could not load more events");
+              setPageCache(pageNumber, data);
+              return data;
+            } catch (err) {
+              if (cached) return cached;
+              throw err;
+            }
+          }
 
           function setLoading(value) {
             loading = value;
@@ -1079,80 +1195,79 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           }
 
           function shouldLoadSoon() {
-            return hasMore && !loading && getBottomDistance() < 1400;
+            return hasMore && !loading && getBottomDistance() < 1800;
+          }
+
+          function appendItems(items) {
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = items.map(renderClientCard).join("");
+            const children = Array.from(wrapper.children);
+            const frag = document.createDocumentFragment();
+            children.forEach((node) => frag.appendChild(node));
+            grid.appendChild(frag);
+            enhance(wrapper);
+          }
+
+          async function preloadPages(fromPage) {
+            if (preloadRunning || !hasMore) return;
+            preloadRunning = true;
+            try {
+              let preloadPage = fromPage;
+              for (let i = 0; i < PRELOAD_AHEAD_PAGES; i += 1) {
+                if (getPageCache(preloadPage)) {
+                  const cached = getPageCache(preloadPage);
+                  if (!cached.hasMore) break;
+                  preloadPage += 1;
+                  continue;
+                }
+                const data = await fetchPage(preloadPage, false);
+                if (!data || !data.hasMore) break;
+                preloadPage += 1;
+                await new Promise((resolve) => window.setTimeout(resolve, 120));
+              }
+            } catch (err) {
+              console.warn("Tapzy event preload paused", err);
+            } finally {
+              preloadRunning = false;
+            }
           }
 
           async function loadMore(source) {
             if (loading || !hasMore) return;
-            if (Date.now() < cooldownUntil) return;
-
+            if (Date.now() - lastLoadAt < 220) return;
+            lastLoadAt = Date.now();
             setLoading(true);
 
             try {
-              const qs = new URLSearchParams({
-                page: String(page),
-                limit: String(FEED_PAGE_SIZE),
-                city: "",
-                category: category || "all"
-              });
-
-              if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
-                qs.set("lat", String(LIVE_LAT));
-                qs.set("lng", String(LIVE_LNG));
-                qs.set("radiusKm", String(RADIUS_KM || 85));
-              }
-
-              const res = await fetch("/events/feed?" + qs.toString(), {
-                cache: "no-store",
-                headers: { "X-Requested-With": "XMLHttpRequest" }
-              });
-
-              const data = await res.json();
-              if (!res.ok || !data.ok) throw new Error(data.error || "Could not load more events");
-
+              const data = await fetchPage(page, true);
               const items = Array.isArray(data.items) ? data.items : [];
+
               if (!items.length) {
                 hasMore = false;
                 syncFooter();
                 return;
               }
 
-              const wrapper = document.createElement("div");
-              wrapper.innerHTML = items.map(renderClientCard).join("");
-              const children = Array.from(wrapper.children);
-
-              const frag = document.createDocumentFragment();
-              children.forEach((node) => frag.appendChild(node));
-              grid.appendChild(frag);
-              enhance(wrapper);
-
+              appendItems(items);
               page += 1;
-              retryCount = 0;
               hasMore = !!data.hasMore;
               syncFooter();
 
-              // If the next page still leaves the screen near the bottom, continue gently.
+              // Keep the next pages ready before the user reaches them.
+              window.setTimeout(() => preloadPages(page), 80);
+
+              // If cached/offline pages were appended and we are still near the bottom, keep flowing.
               if (hasMore && shouldLoadSoon()) {
-                cooldownUntil = Date.now() + 260;
-                window.setTimeout(() => loadMore("chain"), 280);
+                window.setTimeout(() => loadMore("chain"), 260);
               }
             } catch (err) {
               console.error(err);
-              retryCount += 1;
-              setLoading(false);
-
-              if (retryCount >= 2) {
-                hasMore = false;
-                loader.style.display = "none";
-                end.style.display = "block";
-                end.textContent = "Could not load more events. Refresh and try again.";
-                return;
-              }
-
-              cooldownUntil = Date.now() + 1200;
-              window.setTimeout(() => {
-                if (shouldLoadSoon()) loadMore("retry");
-              }, 1250);
+              hasMore = false;
+              loader.style.display = "none";
+              end.style.display = "block";
+              end.textContent = navigator.onLine === false
+                ? "Offline cache ended. Reconnect to refresh events."
+                : "Could not load more events. Refresh and try again.";
             } finally {
               loading = false;
               if (hasMore) loader.style.display = "block";
@@ -1171,11 +1286,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           window.addEventListener("scroll", scheduleCheck, { passive: true });
           window.addEventListener("resize", scheduleCheck, { passive: true });
           window.addEventListener("orientationchange", () => window.setTimeout(scheduleCheck, 350), { passive: true });
+          window.addEventListener("online", () => preloadPages(page), { passive: true });
 
           if (button) button.addEventListener("click", () => loadMore("button"));
 
           syncFooter();
-          window.setTimeout(scheduleCheck, 450);
+          window.setTimeout(() => preloadPages(page), 250);
+          window.setTimeout(scheduleCheck, 500);
         }
 
         function requestTapzyLocation(ev) {
