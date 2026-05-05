@@ -256,11 +256,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             <div class="event-card js-event-card">
 
-              <div class="event-media" style="background-image:
+              <div class="event-media js-event-media" data-bg-url="\${escapeUnsafe(image)}" style="background-image:
 
-                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
-
-                url('\${escapeUnsafe(image)}');"></div>
+                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94));"></div>
 
 
 
@@ -455,6 +453,48 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         }
 
 
+
+        const EVENT_MEDIA_GRADIENT = "linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94))";
+        let eventMediaObserver = null;
+
+        function setEventMediaImage(media, shouldLoad) {
+          if (!media) return;
+          const url = media.dataset.bgUrl || "";
+          if (!url) return;
+          if (shouldLoad) {
+            if (media.dataset.loaded === "1") return;
+            media.style.backgroundImage = EVENT_MEDIA_GRADIENT + ", url('" + url.replace(/'/g, "\\'") + "')";
+            media.dataset.loaded = "1";
+          } else if (IS_MOBILE_FEED && media.dataset.loaded === "1") {
+            media.style.backgroundImage = EVENT_MEDIA_GRADIENT;
+            media.dataset.loaded = "0";
+          }
+        }
+
+        function bindLazyEventMedia(scope) {
+          const root = scope || document;
+          const mediaNodes = root.querySelectorAll(".js-event-media");
+          if (!mediaNodes.length) return;
+
+          if (!("IntersectionObserver" in window)) {
+            mediaNodes.forEach((media) => setEventMediaImage(media, true));
+            return;
+          }
+
+          if (!eventMediaObserver) {
+            eventMediaObserver = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                setEventMediaImage(entry.target, !!entry.isIntersecting);
+              });
+            }, { root: null, rootMargin: IS_MOBILE_FEED ? "900px 0px 900px 0px" : "500px 0px", threshold: 0.01 });
+          }
+
+          mediaNodes.forEach((media) => {
+            if (media.dataset.lazyBound === "1") return;
+            media.dataset.lazyBound = "1";
+            eventMediaObserver.observe(media);
+          });
+        }
 
         function bindCardMotion(scope) {
 
@@ -742,6 +782,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
         function enhance(scope) {
+
+          bindLazyEventMedia(scope);
 
           bindCardMotion(scope);
 
@@ -1083,7 +1125,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             try {
               const qs = new URLSearchParams({
                 page: String(page),
-                limit: String(Math.min(Number(FEED_PAGE_SIZE) || 8, 8)),
+                limit: String(Math.min(Number(FEED_PAGE_SIZE) || 6, 6)),
                 city: "",
                 category: category || "all"
               });

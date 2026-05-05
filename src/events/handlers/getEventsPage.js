@@ -1640,8 +1640,8 @@ module.exports = async function getEventsPage(req, res) {
         .mobile-events-grid .event-card .event-content{
           min-height:520px;
           background:linear-gradient(180deg, rgba(8,12,20,.10), rgba(5,8,14,.28) 48%, rgba(1,3,8,.70));
-          backdrop-filter:blur(8px);
-          -webkit-backdrop-filter:blur(8px);
+          backdrop-filter:blur(3px);
+          -webkit-backdrop-filter:blur(3px);
         }
 
         .mobile-events-grid .event-card.is-touch-active{
@@ -1654,7 +1654,7 @@ module.exports = async function getEventsPage(req, res) {
 
         .mobile-events-grid .event-card.is-touch-active .event-media{
           transform:scale(1.085);
-          filter:saturate(1.28) contrast(1.08) blur(.6px);
+          filter:saturate(1.24) contrast(1.06) blur(.35px);
         }
 
         .mobile-events-grid .event-card.is-touch-active .event-content{
@@ -1708,7 +1708,10 @@ module.exports = async function getEventsPage(req, res) {
           width:100%;
           min-height:min(84svh, 760px);
           border-radius:34px;
-          contain:none;
+          contain:layout paint style;
+          content-visibility:auto;
+          contain-intrinsic-size:720px;
+          transform:translateZ(0);
         }
 
         .mobile-events-grid .event-card .event-content{
