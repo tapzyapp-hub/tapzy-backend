@@ -1055,43 +1055,35 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           let page = 2;
           let loading = false;
           let hasMore = loader.dataset.hasMore === "1";
-          let scrollTicking = false;
-          let cooldownUntil = 0;
+          let observer = null;
+          let lastLoadAt = 0;
           let retryCount = 0;
 
-          function setLoading(value) {
-            loading = value;
-            loader.style.display = value && hasMore ? "block" : "none";
-          }
-
-          function syncFooter() {
+          function updateFooter() {
             loader.style.display = hasMore ? "block" : "none";
+            loader.textContent = loading ? "Loading more events..." : "Scroll for more events";
             end.style.display = hasMore ? "none" : "block";
             if (button) button.style.display = "none";
           }
 
-          function getBottomDistance() {
-            const doc = document.documentElement;
-            const body = document.body;
-            const scrollTop = window.pageYOffset || doc.scrollTop || body.scrollTop || 0;
-            const height = Math.max(body.scrollHeight, doc.scrollHeight, body.offsetHeight, doc.offsetHeight);
-            return height - (scrollTop + window.innerHeight);
-          }
-
-          function shouldLoadSoon() {
-            return hasMore && !loading && getBottomDistance() < 1400;
+          function unlock() {
+            loading = false;
+            updateFooter();
           }
 
           async function loadMore(source) {
             if (loading || !hasMore) return;
-            if (Date.now() < cooldownUntil) return;
 
-            setLoading(true);
+            const now = Date.now();
+            if (now - lastLoadAt < 900) return;
+            lastLoadAt = now;
+            loading = true;
+            updateFooter();
 
             try {
               const qs = new URLSearchParams({
                 page: String(page),
-                limit: String(FEED_PAGE_SIZE),
+                limit: String(Math.min(Number(FEED_PAGE_SIZE) || 8, 8)),
                 city: "",
                 category: category || "all"
               });
@@ -1113,69 +1105,60 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               const items = Array.isArray(data.items) ? data.items : [];
               if (!items.length) {
                 hasMore = false;
-                syncFooter();
+                unlock();
                 return;
               }
 
               const wrapper = document.createElement("div");
               wrapper.innerHTML = items.map(renderClientCard).join("");
               const children = Array.from(wrapper.children);
-
               const frag = document.createDocumentFragment();
               children.forEach((node) => frag.appendChild(node));
               grid.appendChild(frag);
-              enhance(wrapper);
+
+              // Bind premium touches after the DOM has settled. This avoids iPhone Safari
+              // doing heavy layout work while the user is still scrolling.
+              window.setTimeout(() => {
+                children.forEach((node) => enhance(node));
+              }, 60);
 
               page += 1;
               retryCount = 0;
               hasMore = !!data.hasMore;
-              syncFooter();
-
-              // If the next page still leaves the screen near the bottom, continue gently.
-              if (hasMore && shouldLoadSoon()) {
-                cooldownUntil = Date.now() + 260;
-                window.setTimeout(() => loadMore("chain"), 280);
-              }
+              unlock();
             } catch (err) {
               console.error(err);
               retryCount += 1;
-              setLoading(false);
-
               if (retryCount >= 2) {
                 hasMore = false;
                 loader.style.display = "none";
                 end.style.display = "block";
                 end.textContent = "Could not load more events. Refresh and try again.";
+                loading = false;
                 return;
               }
-
-              cooldownUntil = Date.now() + 1200;
-              window.setTimeout(() => {
-                if (shouldLoadSoon()) loadMore("retry");
-              }, 1250);
-            } finally {
-              loading = false;
-              if (hasMore) loader.style.display = "block";
+              window.setTimeout(unlock, 1000);
             }
           }
 
-          function scheduleCheck() {
-            if (!hasMore || loading || scrollTicking) return;
-            scrollTicking = true;
-            window.requestAnimationFrame(() => {
-              scrollTicking = false;
-              if (shouldLoadSoon()) loadMore("scroll");
-            });
+          // Stable auto-infinite loading for mobile: observe the footer instead of
+          // running scroll-distance checks on every Safari scroll frame.
+          if ("IntersectionObserver" in window) {
+            observer = new IntersectionObserver((entries) => {
+              const first = entries && entries[0];
+              if (first && first.isIntersecting) loadMore("observer");
+            }, { root: null, rootMargin: "700px 0px 900px 0px", threshold: 0.01 });
+            observer.observe(loader);
+          } else {
+            window.addEventListener("scroll", () => {
+              if (!hasMore || loading) return;
+              const bottom = document.documentElement.getBoundingClientRect().bottom - window.innerHeight;
+              if (bottom < 900) loadMore("scroll");
+            }, { passive: true });
           }
 
-          window.addEventListener("scroll", scheduleCheck, { passive: true });
-          window.addEventListener("resize", scheduleCheck, { passive: true });
-          window.addEventListener("orientationchange", () => window.setTimeout(scheduleCheck, 350), { passive: true });
-
           if (button) button.addEventListener("click", () => loadMore("button"));
-
-          syncFooter();
-          window.setTimeout(scheduleCheck, 450);
+          updateFooter();
         }
 
         function requestTapzyLocation(ev) {
