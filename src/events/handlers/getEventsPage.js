@@ -128,6 +128,8 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
+    events = sortRanked(events);
+
     const mainFeedInitial = events.slice(0, FEED_PAGE_SIZE);
 
     const mainFeedTotal = events.length;
@@ -136,7 +138,6 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    events = sortRanked(events);
 
     const featured = events.slice(0, 6);
 
@@ -206,6 +207,19 @@ module.exports = async function getEventsPage(req, res) {
 
             </div>
 
+            ${
+
+              hasLiveLocation
+
+                ? usingClosestAreaFallback
+                  ? `<div class="muted" style="margin-top:10px;">No hot events were found within <b>${escapeHtml(radiusKm)} km</b>, so Tapzy switched to the closest active area: <b>${escapeHtml(closestAreaFallback.areaName)}</b>.</div>`
+                  : `<div class="muted" style="margin-top:10px;">Showing live nearby events within <b>${escapeHtml(radiusKm)} km</b>.</div>`
+
+                : isHotNearbyMode
+                  ? `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
+                  : ``
+
+            }
 
             ${
 
@@ -284,6 +298,7 @@ module.exports = async function getEventsPage(req, res) {
           }).join("")}
         </div>
       </section>
+      ${isHotNearbyMode ? `<div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${hasLiveLocation ? (usingClosestAreaFallback ? `No local events yet — showing closest active area, ${escapeHtml(closestAreaFallback.areaName)}.` : "Hot Nearby is filtered to your live area.") : "Tap Enable Location to unlock Hot Nearby."}</div>` : `<div id="liveLocationNotice" style="display:none;"></div>`}
 
       ${isHotNearbyMode && !hasLiveLocation ? `
         <section id="locationPromptCard" class="events-location-prompt">
@@ -300,10 +315,9 @@ module.exports = async function getEventsPage(req, res) {
         <div id="mobileFeedGrid" class="events-grid mobile-events-grid">
           ${mainFeedInitial.map((event) => renderEventCard(event, currentProfile, goingSet, goingCounts)).join("")}
         </div>
-        <div id="mobileFeedLoader" class="events-load-state" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
+        <div id="mobileFeedLoader" class="events-load-state" data-has-more="${mainFeedHasMore ? "1" : "0"}" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
+        <button id="mobileLoadMoreBtn" class="btn btnDark events-mobile-more" type="button" style="display:none;">Load more events</button>
         <div id="mobileFeedEnd" class="events-load-state" style="display:${mainFeedHasMore ? "none" : "block"};">No more events</div>
-        <div id="mobileFeedSentinel" style="height:1px;"></div>
-        <button id="mobileFeedMoreBtn" class="btn btnDark events-mobile-more" type="button" style="display:${mainFeedHasMore ? "inline-flex" : "none"};">Load More Events</button>
       </section>
 
       <section class="events-section desktop-only">
@@ -1626,8 +1640,8 @@ module.exports = async function getEventsPage(req, res) {
         .mobile-events-grid .event-card .event-content{
           min-height:520px;
           background:linear-gradient(180deg, rgba(8,12,20,.10), rgba(5,8,14,.28) 48%, rgba(1,3,8,.70));
-          backdrop-filter:blur(12px);
-          -webkit-backdrop-filter:blur(12px);
+          backdrop-filter:blur(8px);
+          -webkit-backdrop-filter:blur(8px);
         }
 
         .mobile-events-grid .event-card.is-touch-active{
@@ -1644,55 +1658,84 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .mobile-events-grid .event-card.is-touch-active .event-content{
-          backdrop-filter:blur(16px);
-          -webkit-backdrop-filter:blur(16px);
+          backdrop-filter:blur(10px);
+          -webkit-backdrop-filter:blur(10px);
         }
 
         .events-section.mobile-only{
-          padding-bottom:calc(130px + env(safe-area-inset-bottom));
+          padding-bottom:calc(170px + env(safe-area-inset-bottom));
+          overflow:visible;
+        }
+
+        .events-mobile-more-wrap{
+          display:flex;
+          justify-content:center;
+          padding:4px 0 28px;
         }
 
         .events-mobile-more{
           width:100%;
           justify-content:center;
-          margin:18px 0 6px;
-          min-height:54px;
+          margin:20px 0 8px;
+          min-height:56px;
           border-radius:999px;
         }
 
+        .events-chip-wrap{ overflow:hidden; }
+        .events-chip-row{
+          display:flex;
+          gap:14px;
+          overflow-x:auto;
+          overflow-y:hidden;
+          -webkit-overflow-scrolling:touch;
+          scroll-snap-type:x proximity;
+          padding-bottom:8px;
+        }
+        .events-chip{
+          flex:0 0 auto;
+          min-width:max-content;
+          scroll-snap-align:start;
+        }
+
+        .mobile-events-grid{
+          display:grid;
+          grid-template-columns:1fr;
+          gap:22px;
+        }
+
         .mobile-events-grid .event-card{
-          min-height:470px;
+          width:100%;
+          min-height:min(78svh, 720px);
+          border-radius:34px;
+          contain:layout paint;
+          content-visibility:auto;
+          contain-intrinsic-size:0 620px;
         }
 
         .mobile-events-grid .event-card .event-content{
-          min-height:470px;
-          padding:22px;
+          min-height:min(78svh, 720px);
+          padding:26px 22px 22px;
+          justify-content:flex-end;
         }
 
         .mobile-events-grid .event-title{
-          font-size:34px;
-          line-height:1.02;
-          letter-spacing:-1px;
+          font-size:clamp(34px, 10vw, 48px);
+          line-height:.98;
+          letter-spacing:-1.4px;
         }
 
         .mobile-events-grid .event-copy{
-          font-size:15px;
+          font-size:clamp(16px, 4.2vw, 20px);
           line-height:1.45;
           -webkit-line-clamp:2;
           max-width:100%;
         }
 
-        .mobile-events-grid .event-meta{
-          gap:8px;
-          margin-top:12px;
-        }
-
-        .mobile-events-grid .event-meta-value{
-          font-size:15px;
-        }
-
+        .mobile-events-grid .event-meta-label{ font-size:12px; }
+        .mobile-events-grid .event-meta-value{ font-size:16px; }
         .mobile-events-grid .event-actions-primary{
-          margin-top:16px;
+          grid-template-columns:1fr;
+          gap:12px;
         }
 
         .reel-title{ font-size:30px; }
