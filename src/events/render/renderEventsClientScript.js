@@ -1052,12 +1052,58 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           if (!grid || !loader || !end) return;
 
+          const section = grid.closest(".events-section") || grid.parentElement || document.body;
+          const topSpacer = document.createElement("div");
+          const bottomSpacer = document.createElement("div");
+          topSpacer.className = "mobile-feed-virtual-spacer mobile-feed-virtual-spacer-top";
+          bottomSpacer.className = "mobile-feed-virtual-spacer mobile-feed-virtual-spacer-bottom";
+          topSpacer.setAttribute("aria-hidden", "true");
+          bottomSpacer.setAttribute("aria-hidden", "true");
+          grid.parentNode.insertBefore(topSpacer, grid);
+          grid.parentNode.insertBefore(bottomSpacer, grid.nextSibling);
+
+          const records = Array.from(grid.children).map((node) => ({
+            html: node.outerHTML,
+            height: 0
+          }));
+
           let page = 2;
           let loading = false;
           let hasMore = loader.dataset.hasMore === "1";
-          let scrollTicking = false;
-          let cooldownUntil = 0;
-          let retryCount = 0;
+          let renderTicking = false;
+          let fetchCooldownUntil = 0;
+          let averageCardHeight = 620;
+          let currentStart = -1;
+          let currentEnd = -1;
+
+          const BEFORE_BUFFER = 5;
+          const AFTER_BUFFER = 10;
+          const MAX_RENDERED_CARDS = 18;
+          const LOAD_AHEAD_ITEMS = 8;
+
+          function measureAverageCardHeight() {
+            const first = grid.querySelector(".js-event-card");
+            if (!first) return averageCardHeight;
+            const rect = first.getBoundingClientRect();
+            const style = window.getComputedStyle(grid);
+            const gap = parseFloat(style.rowGap || style.gap || "16") || 16;
+            if (rect.height > 120) averageCardHeight = Math.round(rect.height + gap);
+            return averageCardHeight;
+          }
+
+          function getSectionTop() {
+            const rect = section.getBoundingClientRect();
+            return rect.top + (window.pageYOffset || document.documentElement.scrollTop || 0);
+          }
+
+          function estimateHeight(start, count) {
+            if (count <= 0) return 0;
+            let total = 0;
+            for (let i = start; i < start + count; i += 1) {
+              total += (records[i] && records[i].height) || averageCardHeight;
+            }
+            return total;
+          }
 
           function setLoading(value) {
             loading = value;
@@ -1065,33 +1111,92 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           }
 
           function syncFooter() {
-            loader.style.display = hasMore ? "block" : "none";
+            loader.style.display = loading && hasMore ? "block" : "none";
             end.style.display = hasMore ? "none" : "block";
             if (button) button.style.display = "none";
           }
 
-          function getBottomDistance() {
-            const doc = document.documentElement;
-            const body = document.body;
-            const scrollTop = window.pageYOffset || doc.scrollTop || body.scrollTop || 0;
-            const height = Math.max(body.scrollHeight, doc.scrollHeight, body.offsetHeight, doc.offsetHeight);
-            return height - (scrollTop + window.innerHeight);
+          function renderWindow(force) {
+            if (!records.length) {
+              topSpacer.style.height = "0px";
+              bottomSpacer.style.height = "0px";
+              syncFooter();
+              return;
+            }
+
+            measureAverageCardHeight();
+
+            const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+            const viewportH = window.innerHeight || document.documentElement.clientHeight || 700;
+            const sectionTop = getSectionTop();
+            const roughFirst = Math.max(0, Math.floor((scrollY - sectionTop) / averageCardHeight));
+            let startIndex = Math.max(0, roughFirst - BEFORE_BUFFER);
+            let endIndex = Math.min(records.length, roughFirst + AFTER_BUFFER);
+
+            if (endIndex - startIndex > MAX_RENDERED_CARDS) {
+              endIndex = startIndex + MAX_RENDERED_CARDS;
+            }
+            if (endIndex >= records.length) {
+              startIndex = Math.max(0, records.length - MAX_RENDERED_CARDS);
+              endIndex = records.length;
+            }
+
+            if (!force && startIndex === currentStart && endIndex === currentEnd) {
+              return;
+            }
+
+            currentStart = startIndex;
+            currentEnd = endIndex;
+
+            const topHeight = estimateHeight(0, startIndex);
+            const bottomHeight = estimateHeight(endIndex, records.length - endIndex);
+            topSpacer.style.height = topHeight + "px";
+            bottomSpacer.style.height = bottomHeight + "px";
+
+            grid.innerHTML = records.slice(startIndex, endIndex).map((record) => record.html).join("");
+            enhance(grid);
+
+            window.requestAnimationFrame(() => {
+              const nodes = Array.from(grid.children);
+              nodes.forEach((node, offset) => {
+                const index = startIndex + offset;
+                const rect = node.getBoundingClientRect();
+                const style = window.getComputedStyle(grid);
+                const gap = parseFloat(style.rowGap || style.gap || "16") || 16;
+                if (records[index] && rect.height > 120) {
+                  records[index].height = Math.round(rect.height + gap);
+                }
+              });
+              measureAverageCardHeight();
+            });
           }
 
-          function shouldLoadSoon() {
-            return hasMore && !loading && getBottomDistance() < 1400;
+          function scheduleRender() {
+            if (renderTicking) return;
+            renderTicking = true;
+            window.requestAnimationFrame(() => {
+              renderTicking = false;
+              renderWindow(false);
+              maybeLoadMore();
+            });
           }
 
-          async function loadMore(source) {
+          function shouldLoadMoreSoon() {
+            if (!hasMore || loading) return false;
+            const visibleEndIndex = currentEnd > 0 ? currentEnd : Math.ceil(((window.pageYOffset || 0) - getSectionTop() + (window.innerHeight || 700)) / averageCardHeight);
+            return records.length - visibleEndIndex <= LOAD_AHEAD_ITEMS;
+          }
+
+          async function loadMore() {
             if (loading || !hasMore) return;
-            if (Date.now() < cooldownUntil) return;
+            if (Date.now() < fetchCooldownUntil) return;
 
             setLoading(true);
 
             try {
               const qs = new URLSearchParams({
                 page: String(page),
-                limit: String(FEED_PAGE_SIZE),
+                limit: String(Math.min(FEED_PAGE_SIZE, 8)),
                 city: "",
                 category: category || "all"
               });
@@ -1114,68 +1219,49 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               if (!items.length) {
                 hasMore = false;
                 syncFooter();
+                renderWindow(true);
                 return;
               }
 
-              const wrapper = document.createElement("div");
-              wrapper.innerHTML = items.map(renderClientCard).join("");
-              const children = Array.from(wrapper.children);
-
-              const frag = document.createDocumentFragment();
-              children.forEach((node) => frag.appendChild(node));
-              grid.appendChild(frag);
-              enhance(wrapper);
+              items.forEach((event) => {
+                records.push({ html: renderClientCard(event), height: averageCardHeight });
+              });
 
               page += 1;
-              retryCount = 0;
               hasMore = !!data.hasMore;
               syncFooter();
+              renderWindow(true);
 
-              // If the next page still leaves the screen near the bottom, continue gently.
-              if (hasMore && shouldLoadSoon()) {
-                cooldownUntil = Date.now() + 260;
-                window.setTimeout(() => loadMore("chain"), 280);
+              if (shouldLoadMoreSoon()) {
+                fetchCooldownUntil = Date.now() + 220;
+                window.setTimeout(loadMore, 240);
               }
             } catch (err) {
               console.error(err);
-              retryCount += 1;
-              setLoading(false);
-
-              if (retryCount >= 2) {
-                hasMore = false;
-                loader.style.display = "none";
-                end.style.display = "block";
-                end.textContent = "Could not load more events. Refresh and try again.";
-                return;
-              }
-
-              cooldownUntil = Date.now() + 1200;
-              window.setTimeout(() => {
-                if (shouldLoadSoon()) loadMore("retry");
-              }, 1250);
+              fetchCooldownUntil = Date.now() + 1400;
+              loader.style.display = "none";
             } finally {
               loading = false;
-              if (hasMore) loader.style.display = "block";
+              syncFooter();
             }
           }
 
-          function scheduleCheck() {
-            if (!hasMore || loading || scrollTicking) return;
-            scrollTicking = true;
-            window.requestAnimationFrame(() => {
-              scrollTicking = false;
-              if (shouldLoadSoon()) loadMore("scroll");
-            });
+          function maybeLoadMore() {
+            if (shouldLoadMoreSoon()) loadMore();
           }
 
-          window.addEventListener("scroll", scheduleCheck, { passive: true });
-          window.addEventListener("resize", scheduleCheck, { passive: true });
-          window.addEventListener("orientationchange", () => window.setTimeout(scheduleCheck, 350), { passive: true });
+          window.addEventListener("scroll", scheduleRender, { passive: true });
+          window.addEventListener("resize", () => renderWindow(true), { passive: true });
+          window.addEventListener("orientationchange", () => window.setTimeout(() => renderWindow(true), 350), { passive: true });
 
-          if (button) button.addEventListener("click", () => loadMore("button"));
+          if (button) button.addEventListener("click", loadMore);
 
+          renderWindow(true);
           syncFooter();
-          window.setTimeout(scheduleCheck, 450);
+          window.setTimeout(() => {
+            renderWindow(true);
+            maybeLoadMore();
+          }, 350);
         }
 
         function requestTapzyLocation(ev) {
