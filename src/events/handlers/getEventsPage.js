@@ -128,6 +128,8 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
+    events = sortRanked(events);
+
     const mainFeedInitial = events.slice(0, FEED_PAGE_SIZE);
 
     const mainFeedTotal = events.length;
@@ -136,7 +138,6 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    events = sortRanked(events);
 
     const featured = events.slice(0, 6);
 
@@ -216,7 +217,7 @@ module.exports = async function getEventsPage(req, res) {
 
                 : isHotNearbyMode
                   ? `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
-                  : `<div class="muted" style="margin-top:10px;">Browse all hot sports, dances, and concerts. Location is only needed for Hot Nearby.</div>`
+                  : ``
 
             }
 
@@ -297,7 +298,7 @@ module.exports = async function getEventsPage(req, res) {
           }).join("")}
         </div>
       </section>
-      <div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${isHotNearbyMode ? (hasLiveLocation ? (usingClosestAreaFallback ? `No local events yet — showing closest active area, ${escapeHtml(closestAreaFallback.areaName)}.` : "Hot Nearby is filtered to your live area.") : "Tap Enable Location to unlock Hot Nearby. All Events and categories work without location.") : "Browsing does not need location. Use Hot Nearby when you want live local events."}</div>
+      ${isHotNearbyMode ? `<div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${hasLiveLocation ? (usingClosestAreaFallback ? `No local events yet — showing closest active area, ${escapeHtml(closestAreaFallback.areaName)}.` : "Hot Nearby is filtered to your live area.") : "Tap Enable Location to unlock Hot Nearby."}</div>` : `<div id="liveLocationNotice" style="display:none;"></div>`}
 
       ${isHotNearbyMode && !hasLiveLocation ? `
         <section id="locationPromptCard" class="events-location-prompt">
@@ -1659,6 +1660,72 @@ module.exports = async function getEventsPage(req, res) {
         .mobile-events-grid .event-card.is-touch-active .event-content{
           backdrop-filter:blur(16px);
           -webkit-backdrop-filter:blur(16px);
+        }
+
+        .events-section.mobile-only{
+          padding-bottom:calc(150px + env(safe-area-inset-bottom));
+        }
+
+        .events-mobile-more{
+          width:100%;
+          justify-content:center;
+          margin:20px 0 8px;
+          min-height:56px;
+          border-radius:999px;
+        }
+
+        .events-chip-wrap{ overflow:hidden; }
+        .events-chip-row{
+          display:flex;
+          gap:14px;
+          overflow-x:auto;
+          overflow-y:hidden;
+          -webkit-overflow-scrolling:touch;
+          scroll-snap-type:x proximity;
+          padding-bottom:8px;
+        }
+        .events-chip{
+          flex:0 0 auto;
+          min-width:max-content;
+          scroll-snap-align:start;
+        }
+
+        .mobile-events-grid{
+          display:grid;
+          grid-template-columns:1fr;
+          gap:22px;
+        }
+
+        .mobile-events-grid .event-card{
+          width:100%;
+          min-height:min(76vh, 720px);
+          border-radius:34px;
+        }
+
+        .mobile-events-grid .event-card .event-content{
+          min-height:min(76vh, 720px);
+          padding:26px 22px 22px;
+          justify-content:flex-end;
+        }
+
+        .mobile-events-grid .event-title{
+          font-size:clamp(34px, 10vw, 48px);
+          line-height:.98;
+          letter-spacing:-1.4px;
+        }
+
+        .mobile-events-grid .event-copy{
+          font-size:clamp(16px, 4.2vw, 20px);
+          line-height:1.45;
+          -webkit-line-clamp:2;
+          max-width:100%;
+        }
+
+        .mobile-events-grid .event-meta-label{ font-size:12px; }
+        .mobile-events-grid .event-meta-value{ font-size:16px; }
+        .mobile-events-grid .event-actions-primary{
+          grid-template-columns:1fr;
+          gap:12px;
         }
 
         .reel-title{ font-size:30px; }

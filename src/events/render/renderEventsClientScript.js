@@ -1169,7 +1169,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           const notice = document.getElementById("liveLocationNotice");
 
           if (!IS_HOT_NEARBY_MODE) {
-            if (notice) notice.textContent = "Browsing does not need location. Use Hot Nearby when you want live local events.";
+            if (notice) notice.textContent = "";
             return;
           }
 
