@@ -26,13 +26,10 @@ const TARGET_KEYWORDS = [
   "ufc",
   "mma",
   "party",
+  "dance",
   "nightlife",
   "dj",
   "club",
-  "convention",
-  "expo",
-  "fan expo",
-  "comic con",
 ];
 
 function normalizeText(value) {
@@ -218,11 +215,7 @@ function isRelevantEvent(event) {
     "party", "nightlife", "dj", "club", "dance", "afterparty", "rave",
   ];
 
-  const conventionTerms = [
-    "convention", "expo", "comic con", "fan expo", "summit",
-  ];
-
-  const buckets = [sportsTerms, concertTerms, nightlifeTerms, conventionTerms];
+  const buckets = [sportsTerms, concertTerms, nightlifeTerms];
 
   return matchesKeyword || buckets.some((list) => list.some((term) => haystack.includes(normalizeText(term))));
 }
@@ -365,7 +358,7 @@ async function fetchGoogleEventsBatches() {
   try {
     return await fetchGoogleEvents({
       cities: TOP_CITIES,
-      keywords: ["concerts", "sports", "nightlife", "conventions"],
+      keywords: ["concerts", "sports", "dance", "nightlife"],
     });
   } catch (err) {
     console.error("Google Events fetch error:", err?.message || err);

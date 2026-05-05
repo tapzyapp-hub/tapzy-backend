@@ -7,6 +7,8 @@ const {
   eventMatchesCategoryGroup,
   sortRanked,
   buildWhere,
+  filterNearbyEvents,
+  isAllowedHotCategory,
 } = require("../helpers/eventServerUtils");
 
 module.exports = async function getEventsFeed(req, res) {
@@ -15,7 +17,10 @@ module.exports = async function getEventsFeed(req, res) {
     const limit = Math.min(24, Math.max(1, Number(req.query.limit || FEED_PAGE_SIZE)));
     const skip = (page - 1) * limit;
     const city = String(req.query.city || "").trim();
-    const category = String(req.query.category || "").trim();
+    const category = String(req.query.category || "").trim().toLowerCase();
+    const liveLat = Number(req.query.lat);
+    const liveLng = Number(req.query.lng);
+    const radiusKm = Math.max(25, Math.min(250, Number(req.query.radiusKm || 85)));
     const now = new Date();
     const currentProfile = req.currentProfile || null;
 
@@ -42,11 +47,15 @@ module.exports = async function getEventsFeed(req, res) {
         ticketUrl: true,
         priceText: true,
         createdAt: true,
+        latitude: true,
+        longitude: true,
       },
       take: queryLimit,
     });
 
-    let ranked = sortRanked(rawItems);
+    let ranked = filterNearbyEvents(rawItems, { lat: liveLat, lng: liveLng, radiusKm })
+      .filter(isAllowedHotCategory);
+
     if (category) {
       const normalizedFilter = String(category).trim().toLowerCase();
       ranked = ranked.filter((event) => {
@@ -55,6 +64,8 @@ module.exports = async function getEventsFeed(req, res) {
         return eventMatchesCategoryGroup(event, normalizedFilter);
       });
     }
+
+    ranked = sortRanked(ranked);
 
     const slice = ranked.slice(skip, skip + limit);
     const eventIds = slice.map((x) => x.id);
@@ -99,7 +110,7 @@ module.exports = async function getEventsFeed(req, res) {
       page,
       limit,
       total: ranked.length,
-      hasMore: ranked.length > skip + items.length || rawItems.length === queryLimit,
+      hasMore: ranked.length > skip + items.length,
     });
   } catch (e) {
     console.error(e);

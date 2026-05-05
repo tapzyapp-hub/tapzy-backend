@@ -11,6 +11,8 @@ const {
   normalizeCategory,
   sortRanked,
   buildWhere,
+  filterNearbyEvents,
+  isAllowedHotCategory,
 } = require("../helpers/eventServerUtils");
 const {
   renderEventCard,
@@ -31,11 +33,14 @@ module.exports = async function getEventsPage(req, res) {
 
     const currentProfile = req.currentProfile || null;
 
-    const profileCity = String(currentProfile?.city || "").trim();
+    const liveLat = Number(req.query.lat);
+    const liveLng = Number(req.query.lng);
+    const hasLiveLocation = Number.isFinite(liveLat) && Number.isFinite(liveLng);
+    const radiusKm = Math.max(25, Math.min(250, Number(req.query.radiusKm || 85)));
 
-    const city = String(req.query.city || profileCity || "").trim();
+    const city = "";
 
-    const category = String(req.query.category || "").trim();
+    const category = String(req.query.category || "").trim().toLowerCase();
 
     const adminKey = String(req.query.key || "").trim();
 
@@ -62,7 +67,8 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    let events = sortRanked(rawEvents);
+    let events = filterNearbyEvents(rawEvents, { lat: liveLat, lng: liveLng, radiusKm })
+      .filter(isAllowedHotCategory);
 
     if (category) {
       const normalizedFilter = String(category).trim().toLowerCase();
@@ -114,6 +120,8 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
+    events = sortRanked(events);
+
     const featured = events.slice(0, 6);
 
     const tonight = sortRanked(events.filter((e) => isBetween(e.startAt, tonightMin, tonightMax))).slice(0, 8);
@@ -126,9 +134,7 @@ module.exports = async function getEventsPage(req, res) {
 
     const concerts = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "concerts"))).slice(0, 10);
 
-    const nightlife = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "nightlife"))).slice(0, 10);
-
-    const conventions = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "conventions"))).slice(0, 10);
+    const dances = sortRanked(events.filter((e) => eventMatchesCategoryGroup(e, "dances"))).slice(0, 10);
 
 
 
@@ -180,17 +186,17 @@ module.exports = async function getEventsPage(req, res) {
 
             <div class="muted events-hero-copy">
 
-              Premium discovery for sports, concerts, nightlife, and conventions across Canada’s biggest cities.
+              Live nearby discovery for the hottest sports, dances, and concerts around you.
 
             </div>
 
             ${
 
-              city
+              hasLiveLocation
 
-                ? `<div class="muted" style="margin-top:10px;">Showing events for: <b>${escapeHtml(city)}</b></div>`
+                ? `<div class="muted" style="margin-top:10px;">Showing live nearby events within <b>${escapeHtml(radiusKm)} km</b>.</div>`
 
-                : ""
+                : `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
 
             }
 
@@ -248,41 +254,37 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-      ${renderCitySwitcher(city, hasAdminKey, adminKey, category)}
-
-      <div class="muted" style="margin:8px 0 20px;">Tap a city to filter instantly.</div>
-
-
-
-      <section class="reel-wrap mobile-only">
-
-        <div class="reel-feed" id="reelFeed">
-
-          ${mainFeedInitial.map((event) => renderReelItem(event, currentProfile, goingSet, goingCounts)).join("")}
-
-          <div id="reelSentinel" class="reel-sentinel"></div>
-
+      <section class="events-chip-wrap">
+        <div class="events-chip-row">
+          ${[
+            ["", "Hot Nearby", events.length],
+            ["sports", "Sports", sports.length],
+            ["dances", "Dances", dances.length],
+            ["concerts", "Concerts", concerts.length],
+          ].map(([value, label, count]) => {
+            const qs = new URLSearchParams();
+            if (value) qs.set("category", value);
+            if (hasLiveLocation) {
+              qs.set("lat", String(liveLat));
+              qs.set("lng", String(liveLng));
+              qs.set("radiusKm", String(radiusKm));
+            }
+            if (hasAdminKey) qs.set("key", adminKey);
+            const href = `/events${qs.toString() ? `?${qs.toString()}` : ""}`;
+            return `<a class="events-chip${category === value ? " is-active" : ""}" href="${href}">${escapeHtml(label)} <span>${escapeHtml(count)}</span></a>`;
+          }).join("")}
         </div>
-
-
-
-        <div id="reelLoader" class="events-load-state" style="display:${mainFeedHasMore ? "block" : "none"};">
-
-          Loading more events...
-
-        </div>
-
-
-
-        <div id="reelEnd" class="events-load-state" style="display:${mainFeedHasMore ? "none" : "block"};">
-
-          No more events
-
-        </div>
-
       </section>
+      <div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${hasLiveLocation ? "Categories are filtered to your live area." : "Tap allow location when prompted so Tapzy can pull events around you only."}</div>
 
-
+      <section class="events-section mobile-only">
+        <div id="mobileFeedGrid" class="events-grid mobile-events-grid">
+          ${mainFeedInitial.map((event) => renderEventCard(event, currentProfile, goingSet, goingCounts)).join("")}
+        </div>
+        <div id="mobileFeedLoader" class="events-load-state" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
+        <div id="mobileFeedEnd" class="events-load-state" style="display:${mainFeedHasMore ? "none" : "block"};">No more events</div>
+        <div id="mobileFeedSentinel" style="height:1px;"></div>
+      </section>
 
       <section class="events-section desktop-only">
 
@@ -338,6 +340,8 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
+      ${!events.length ? `<section class="events-section"><div class="empty muted">${hasLiveLocation ? "No hot sports, dance, or concert events found close by yet." : "Location is required before events appear."}</div></section>` : ""}
+
       ${renderSection("Featured Events", featured, currentProfile, goingSet, goingCounts)}
 
       ${renderSection("Tonight", tonight, currentProfile, goingSet, goingCounts)}
@@ -348,9 +352,7 @@ module.exports = async function getEventsPage(req, res) {
 
       ${renderSection("Concerts", concerts, currentProfile, goingSet, goingCounts)}
 
-      ${renderSection("Nightlife", nightlife, currentProfile, goingSet, goingCounts)}
-
-      ${renderSection("Conventions", conventions, currentProfile, goingSet, goingCounts)}
+      ${renderSection("Dances", dances, currentProfile, goingSet, goingCounts)}
 
 
 
@@ -761,15 +763,49 @@ module.exports = async function getEventsPage(req, res) {
 
           radial-gradient(circle at var(--mx,50%) var(--my,50%),
 
-          rgba(127,210,255,.18), transparent 40%);
+          rgba(127,210,255,.34), rgba(92,154,255,.16) 18%, transparent 44%);
 
         opacity:0;
 
-        transition:opacity .25s ease;
+        transition:opacity .22s ease;
 
         z-index:2;
 
         pointer-events:none;
+
+      }
+
+
+
+      .event-card::before{
+
+        content:"";
+
+        position:absolute;
+
+        inset:-1px;
+
+        border-radius:inherit;
+
+        background:linear-gradient(135deg, rgba(137,218,255,.52), rgba(255,255,255,.10), rgba(120,150,255,.32));
+
+        opacity:0;
+
+        filter:blur(1px);
+
+        transition:opacity .22s ease;
+
+        z-index:2;
+
+        pointer-events:none;
+
+        -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+
+        -webkit-mask-composite:xor;
+
+        mask-composite:exclude;
+
+        padding:1px;
 
       }
 
@@ -796,6 +832,12 @@ module.exports = async function getEventsPage(req, res) {
       .event-card:hover::after,
 
       .event-card.is-touch-active::after{ opacity:1; }
+
+
+
+      .event-card:hover::before,
+
+      .event-card.is-touch-active::before{ opacity:1; }
 
 
 
@@ -883,7 +925,9 @@ module.exports = async function getEventsPage(req, res) {
 
         border-radius:32px;
 
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.10),
+          inset 0 0 0 1px rgba(127,210,255,.10);
 
         z-index:2;
 
@@ -938,6 +982,8 @@ module.exports = async function getEventsPage(req, res) {
         padding:26px;
 
         backdrop-filter:blur(5px);
+
+        -webkit-backdrop-filter:blur(5px);
 
       }
 
@@ -1533,6 +1579,48 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
+        .mobile-events-grid{
+          gap:18px;
+        }
+
+        .mobile-events-grid .event-card{
+          min-height:520px;
+          border-color:rgba(190,230,255,.18);
+          box-shadow:
+            0 24px 70px rgba(0,0,0,.52),
+            0 0 0 1px rgba(127,210,255,.10),
+            inset 0 1px 0 rgba(255,255,255,.08);
+        }
+
+        .mobile-events-grid .event-card .event-media{
+          filter:saturate(1.18) contrast(1.05);
+        }
+
+        .mobile-events-grid .event-card .event-content{
+          min-height:520px;
+          background:linear-gradient(180deg, rgba(8,12,20,.10), rgba(5,8,14,.28) 48%, rgba(1,3,8,.70));
+          backdrop-filter:blur(12px);
+          -webkit-backdrop-filter:blur(12px);
+        }
+
+        .mobile-events-grid .event-card.is-touch-active{
+          transform:translateY(-6px) scale(1.015);
+          box-shadow:
+            0 30px 82px rgba(0,0,0,.64),
+            0 0 0 1px rgba(135,220,255,.42),
+            0 0 34px rgba(78,178,255,.30);
+        }
+
+        .mobile-events-grid .event-card.is-touch-active .event-media{
+          transform:scale(1.085);
+          filter:saturate(1.28) contrast(1.08) blur(.6px);
+        }
+
+        .mobile-events-grid .event-card.is-touch-active .event-content{
+          backdrop-filter:blur(16px);
+          -webkit-backdrop-filter:blur(16px);
+        }
+
         .reel-title{ font-size:30px; }
 
         .reel-actions{ grid-template-columns:1fr; }
@@ -1543,7 +1631,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    ${renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile })}
+    ${renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm })}
 
 
 

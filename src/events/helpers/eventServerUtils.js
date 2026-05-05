@@ -121,7 +121,7 @@ function sampleEvents() {
 
       ticketUrl: "",
 
-      category: "Nightlife",
+      category: "Dances",
 
       startAt: new Date(now + 3 * d),
 
@@ -361,7 +361,7 @@ function normalizeCategory(event) {
 
       haystack.includes("lounge")
 
-    ) return "Nightlife";
+    ) return "Dances";
 
 
 
@@ -435,7 +435,7 @@ function normalizeCategory(event) {
 
   ) {
 
-    return "Nightlife";
+    return "Dances";
 
   }
 
@@ -505,7 +505,7 @@ function pickImage(event) {
 
   ) {
 
-    return "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1400&q=80";
+    return "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1600&q=88";
 
   }
 
@@ -521,7 +521,7 @@ function pickImage(event) {
 
   ) {
 
-    return "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80";
+    return "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1600&q=88";
 
   }
 
@@ -547,7 +547,7 @@ function pickImage(event) {
 
   ) {
 
-    return "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1400&q=80";
+    return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=88";
 
   }
 
@@ -597,7 +597,7 @@ function eventMatchesCategoryGroup(event, group) {
 
 
 
-  if (group === "sports") {
+  if (normalizedGroup === "sports") {
 
     return [
 
@@ -635,7 +635,7 @@ function eventMatchesCategoryGroup(event, group) {
 
 
 
-  if (group === "concerts") {
+  if (normalizedGroup === "concerts") {
 
     return [
 
@@ -661,7 +661,7 @@ function eventMatchesCategoryGroup(event, group) {
 
 
 
-  if (group === "nightlife") {
+  if (normalizedGroup === "nightlife" || normalizedGroup === "dances" || normalizedGroup === "dance") {
 
     return [
 
@@ -687,7 +687,7 @@ function eventMatchesCategoryGroup(event, group) {
 
 
 
-  if (group === "conventions") {
+  if (normalizedGroup === "conventions") {
 
     return [
 
@@ -791,6 +791,10 @@ function rankEvent(event) {
 
 
 
+  if (Number.isFinite(Number(event.distanceKm))) {
+    score += Math.max(0, 30 - Number(event.distanceKm) / 3);
+  }
+
   if (event.startAt) {
 
     const hoursAway = (new Date(event.startAt).getTime() - Date.now()) / 3600000;
@@ -889,5 +893,8 @@ module.exports = {
   rankEvent,
   getUrgencyBadge,
   sortRanked,
+  getDistanceKm,
+  filterNearbyEvents,
+  isAllowedHotCategory,
   buildWhere,
 };

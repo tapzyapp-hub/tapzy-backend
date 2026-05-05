@@ -1,4 +1,4 @@
-module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile }) {
+module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm }) {
   return `
 <script>
 (function () {
@@ -10,6 +10,10 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
         const cities = ${JSON.stringify(citySections.map((s) => s.cityName))};
 
         const HAS_CURRENT_PROFILE = ${JSON.stringify(!!currentProfile)};
+        const LIVE_LAT = ${JSON.stringify(liveLat)};
+        const LIVE_LNG = ${JSON.stringify(liveLng)};
+        const RADIUS_KM = ${JSON.stringify(radiusKm)};
+        const HAS_LIVE_LOCATION = Number.isFinite(Number(LIVE_LAT)) && Number.isFinite(Number(LIVE_LNG));
 
 
 
@@ -53,7 +57,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
             if (haystack.includes("sports") || haystack.includes("hockey") || haystack.includes("basketball") || haystack.includes("football") || haystack.includes("soccer") || haystack.includes("baseball") || haystack.includes("mma") || haystack.includes("ufc") || haystack.includes("game")) return "Sports";
 
-            if (haystack.includes("nightlife") || haystack.includes("party") || haystack.includes("club") || haystack.includes("dj") || haystack.includes("rave")) return "Nightlife";
+            if (haystack.includes("nightlife") || haystack.includes("party") || haystack.includes("club") || haystack.includes("dj") || haystack.includes("rave")) return "Dances";
 
             if (haystack.includes("convention") || haystack.includes("expo") || haystack.includes("comic con") || haystack.includes("fan expo") || haystack.includes("conference")) return "Conventions";
 
@@ -119,7 +123,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
           ) {
 
-            return "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1400&q=80";
+            return "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1600&q=88";
 
           }
 
@@ -135,7 +139,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
           ) {
 
-            return "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80";
+            return "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1600&q=88";
 
           }
 
@@ -161,7 +165,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
           ) {
 
-            return "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1400&q=80";
+            return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=88";
 
           }
 
@@ -480,9 +484,71 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
 
 
-            card.addEventListener("touchstart", () => {
+            const lightCard = (clientX, clientY) => {
+
+              const rect = card.getBoundingClientRect();
+
+              const x = ((clientX - rect.left) / rect.width) * 100;
+
+              const y = ((clientY - rect.top) / rect.height) * 100;
+
+              card.style.setProperty("--mx", Math.max(0, Math.min(100, x)) + "%");
+
+              card.style.setProperty("--my", Math.max(0, Math.min(100, y)) + "%");
 
               card.classList.add("is-touch-active");
+
+            };
+
+
+
+            card.addEventListener("pointerdown", (e) => {
+
+              lightCard(e.clientX, e.clientY);
+
+            }, { passive: true });
+
+
+
+            card.addEventListener("pointermove", (e) => {
+
+              if (card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
+
+            }, { passive: true });
+
+
+
+            card.addEventListener("pointerup", () => {
+
+              setTimeout(() => card.classList.remove("is-touch-active"), 170);
+
+            }, { passive: true });
+
+
+
+            card.addEventListener("pointercancel", () => {
+
+              card.classList.remove("is-touch-active");
+
+            }, { passive: true });
+
+
+
+            card.addEventListener("touchstart", (e) => {
+
+              const touch = e.touches && e.touches[0];
+
+              if (touch) lightCard(touch.clientX, touch.clientY);
+
+            }, { passive: true });
+
+
+
+            card.addEventListener("touchmove", (e) => {
+
+              const touch = e.touches && e.touches[0];
+
+              if (touch) lightCard(touch.clientX, touch.clientY);
 
             }, { passive: true });
 
@@ -490,7 +556,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
             card.addEventListener("touchend", () => {
 
-              setTimeout(() => card.classList.remove("is-touch-active"), 120);
+              setTimeout(() => card.classList.remove("is-touch-active"), 170);
 
             }, { passive: true });
 
@@ -725,10 +791,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
                 limit: String(FEED_PAGE_SIZE),
 
                 city: "",
-
                 category,
-
               });
+              if (HAS_LIVE_LOCATION) {
+                qs.set("lat", String(LIVE_LAT));
+                qs.set("lng", String(LIVE_LNG));
+                qs.set("radiusKm", String(RADIUS_KM || 85));
+              }
 
 
 
@@ -867,10 +936,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
                 limit: String(FEED_PAGE_SIZE),
 
                 city: cityName,
-
                 category,
-
               });
+              if (HAS_LIVE_LOCATION) {
+                qs.set("lat", String(LIVE_LAT));
+                qs.set("lng", String(LIVE_LNG));
+                qs.set("radiusKm", String(RADIUS_KM || 85));
+              }
 
 
 
@@ -966,6 +1038,86 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
 
 
+
+        function setupMobileFeedInfinite() {
+          const grid = document.getElementById("mobileFeedGrid");
+          const sentinel = document.getElementById("mobileFeedSentinel");
+          const loader = document.getElementById("mobileFeedLoader");
+          const end = document.getElementById("mobileFeedEnd");
+
+          if (!grid || !sentinel || !loader || !end) return;
+
+          let page = 2;
+          let loading = false;
+          let hasMore = loader.style.display !== "none";
+
+          async function loadMore() {
+            if (loading || !hasMore) return;
+            loading = true;
+            loader.style.display = "block";
+
+            try {
+              const qs = new URLSearchParams({ page: String(page), limit: String(FEED_PAGE_SIZE), city: "", category });
+              if (HAS_LIVE_LOCATION) {
+                qs.set("lat", String(LIVE_LAT));
+                qs.set("lng", String(LIVE_LNG));
+                qs.set("radiusKm", String(RADIUS_KM || 85));
+              }
+
+              const res = await fetch("/events/feed?" + qs.toString(), { cache: "no-store" });
+              const data = await res.json();
+              if (!res.ok || !data.ok) throw new Error(data.error || "Could not load more events");
+
+              const items = Array.isArray(data.items) ? data.items : [];
+              if (!items.length) {
+                hasMore = false;
+                loader.style.display = "none";
+                end.style.display = "block";
+                return;
+              }
+
+              const wrapper = document.createElement("div");
+              wrapper.innerHTML = items.map(renderClientCard).join("");
+              Array.from(wrapper.children).forEach((node) => grid.appendChild(node));
+              enhance(wrapper);
+
+              page += 1;
+              hasMore = !!data.hasMore;
+              if (!hasMore) {
+                loader.style.display = "none";
+                end.style.display = "block";
+              }
+            } catch (err) {
+              console.error(err);
+              loader.innerHTML = "Could not load more events";
+              hasMore = false;
+            } finally {
+              loading = false;
+            }
+          }
+
+          const observer = new IntersectionObserver((entries) => {
+            const first = entries[0];
+            if (first && first.isIntersecting) loadMore();
+          }, { rootMargin: "300px 0px" });
+
+          observer.observe(sentinel);
+        }
+
+        function setupLiveLocationGate() {
+          if (HAS_LIVE_LOCATION || !navigator.geolocation) return;
+          navigator.geolocation.getCurrentPosition((pos) => {
+            const url = new URL(window.location.href);
+            url.searchParams.set("lat", String(pos.coords.latitude));
+            url.searchParams.set("lng", String(pos.coords.longitude));
+            url.searchParams.set("radiusKm", String(RADIUS_KM || 85));
+            window.location.replace(url.toString());
+          }, () => {
+            const notice = document.getElementById("liveLocationNotice");
+            if (notice) notice.textContent = "Location is off, so Tapzy cannot show area-only events yet.";
+          }, { enableHighAccuracy: false, timeout: 7000, maximumAge: 300000 });
+        }
+
         function setupReelInfinite() {
 
           const feed = document.getElementById("reelFeed");
@@ -1009,10 +1161,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
                 limit: String(FEED_PAGE_SIZE),
 
                 city: "",
-
                 category,
-
               });
+              if (HAS_LIVE_LOCATION) {
+                qs.set("lat", String(LIVE_LAT));
+                qs.set("lng", String(LIVE_LNG));
+                qs.set("radiusKm", String(RADIUS_KM || 85));
+              }
 
 
 
@@ -1116,13 +1271,10 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
 
         enhance(document);
 
+        setupLiveLocationGate();
         setupMainFeedInfinite();
-
+        setupMobileFeedInfinite();
         cities.forEach(setupCityInfinite);
-
-        setupReelActiveState();
-
-        setupReelInfinite();
 
       })();
 </script>`;
