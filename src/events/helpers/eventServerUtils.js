@@ -843,6 +843,69 @@ function getUrgencyBadge(event) {
 
 
 
+
+function toFiniteNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function getDistanceKm(lat1, lng1, lat2, lng2) {
+  const aLat = toFiniteNumber(lat1);
+  const aLng = toFiniteNumber(lng1);
+  const bLat = toFiniteNumber(lat2);
+  const bLng = toFiniteNumber(lng2);
+
+  if (aLat === null || aLng === null || bLat === null || bLng === null) return Infinity;
+
+  const earthRadiusKm = 6371;
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+
+  const h =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+function isAllowedHotCategory(event) {
+  const category = String(normalizeCategory(event) || event?.category || "").trim().toLowerCase();
+  const haystack = `${event?.title || ""} ${event?.description || ""} ${event?.category || ""}`.toLowerCase();
+
+  return (
+    category === "sports" ||
+    category === "concerts" ||
+    category === "dances" ||
+    haystack.includes("sport") ||
+    haystack.includes("game day") ||
+    haystack.includes("concert") ||
+    haystack.includes("live music") ||
+    haystack.includes("dance") ||
+    haystack.includes("dj") ||
+    haystack.includes("party")
+  );
+}
+
+function filterNearbyEvents(events, { lat, lng, radiusKm } = {}) {
+  const userLat = toFiniteNumber(lat);
+  const userLng = toFiniteNumber(lng);
+  const maxRadius = Math.max(1, Math.min(500, Number(radiusKm || 85)));
+
+  // Event Finder is now live-location first: no browser location means no local feed.
+  if (userLat === null || userLng === null) return [];
+
+  return (events || [])
+    .map((event) => {
+      const distanceKm = getDistanceKm(userLat, userLng, event?.latitude, event?.longitude);
+      return { ...event, distanceKm };
+    })
+    .filter((event) => Number.isFinite(event.distanceKm) && event.distanceKm <= maxRadius)
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+}
+
 function sortRanked(events) {
 
   return [...events].sort((a, b) => {
