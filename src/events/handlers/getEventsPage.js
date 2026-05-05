@@ -315,9 +315,9 @@ module.exports = async function getEventsPage(req, res) {
         <div id="mobileFeedGrid" class="events-grid mobile-events-grid">
           ${mainFeedInitial.map((event) => renderEventCard(event, currentProfile, goingSet, goingCounts)).join("")}
         </div>
-        <div id="mobileFeedLoader" class="events-load-state" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
+        <div id="mobileFeedLoader" class="events-load-state" data-has-more="${mainFeedHasMore ? "1" : "0"}" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
+        <button id="mobileLoadMoreBtn" class="btn btnDark events-mobile-more" type="button" style="display:none;">Load more events</button>
         <div id="mobileFeedEnd" class="events-load-state" style="display:${mainFeedHasMore ? "none" : "block"};">No more events</div>
-        <div id="mobileFeedSentinel" style="height:1px;"></div>
       </section>
 
       <section class="events-section desktop-only">
@@ -1640,8 +1640,8 @@ module.exports = async function getEventsPage(req, res) {
         .mobile-events-grid .event-card .event-content{
           min-height:520px;
           background:linear-gradient(180deg, rgba(8,12,20,.10), rgba(5,8,14,.28) 48%, rgba(1,3,8,.70));
-          backdrop-filter:blur(12px);
-          -webkit-backdrop-filter:blur(12px);
+          backdrop-filter:blur(8px);
+          -webkit-backdrop-filter:blur(8px);
         }
 
         .mobile-events-grid .event-card.is-touch-active{
@@ -1658,12 +1658,19 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .mobile-events-grid .event-card.is-touch-active .event-content{
-          backdrop-filter:blur(16px);
-          -webkit-backdrop-filter:blur(16px);
+          backdrop-filter:blur(10px);
+          -webkit-backdrop-filter:blur(10px);
         }
 
         .events-section.mobile-only{
-          padding-bottom:calc(150px + env(safe-area-inset-bottom));
+          padding-bottom:calc(170px + env(safe-area-inset-bottom));
+          overflow:visible;
+        }
+
+        .events-mobile-more-wrap{
+          display:flex;
+          justify-content:center;
+          padding:4px 0 28px;
         }
 
         .events-mobile-more{
@@ -1698,12 +1705,15 @@ module.exports = async function getEventsPage(req, res) {
 
         .mobile-events-grid .event-card{
           width:100%;
-          min-height:min(76vh, 720px);
+          min-height:min(78svh, 720px);
           border-radius:34px;
+          contain:layout paint;
+          content-visibility:auto;
+          contain-intrinsic-size:0 620px;
         }
 
         .mobile-events-grid .event-card .event-content{
-          min-height:min(76vh, 720px);
+          min-height:min(78svh, 720px);
           padding:26px 22px 22px;
           justify-content:flex-end;
         }

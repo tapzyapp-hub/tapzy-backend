@@ -17,6 +17,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         const HAS_LIVE_LOCATION = Number.isFinite(Number(LIVE_LAT)) && Number.isFinite(Number(LIVE_LNG));
         const USING_CLOSEST_AREA_FALLBACK = ${JSON.stringify(!!usingClosestAreaFallback)};
         const CLOSEST_AREA_NAME = ${JSON.stringify((closestAreaFallback && closestAreaFallback.areaName) || "")};
+        const IS_MOBILE_FEED = window.matchMedia && window.matchMedia("(max-width: 700px)").matches;
 
 
 
@@ -515,7 +516,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             card.addEventListener("pointermove", (e) => {
 
-              if (card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
+              if (!IS_MOBILE_FEED && card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
 
             }, { passive: true });
 
@@ -549,9 +550,10 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             card.addEventListener("touchmove", (e) => {
 
-              const touch = e.touches && e.touches[0];
-
-              if (touch) lightCard(touch.clientX, touch.clientY);
+              if (!IS_MOBILE_FEED) {
+                const touch = e.touches && e.touches[0];
+                if (touch) lightCard(touch.clientX, touch.clientY);
+              }
 
             }, { passive: true });
 
@@ -1044,67 +1046,136 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function setupMobileFeedInfinite() {
           const grid = document.getElementById("mobileFeedGrid");
-          const sentinel = document.getElementById("mobileFeedSentinel");
           const loader = document.getElementById("mobileFeedLoader");
           const end = document.getElementById("mobileFeedEnd");
+          const button = document.getElementById("mobileLoadMoreBtn");
 
-          if (!grid || !sentinel || !loader || !end) return;
+          if (!grid || !loader || !end) return;
 
           let page = 2;
           let loading = false;
-          let hasMore = loader.style.display !== "none";
+          let hasMore = loader.dataset.hasMore === "1";
+          let scrollTicking = false;
+          let cooldownUntil = 0;
+          let retryCount = 0;
 
-          async function loadMore() {
+          function setLoading(value) {
+            loading = value;
+            loader.style.display = value && hasMore ? "block" : "none";
+          }
+
+          function syncFooter() {
+            loader.style.display = hasMore ? "block" : "none";
+            end.style.display = hasMore ? "none" : "block";
+            if (button) button.style.display = "none";
+          }
+
+          function getBottomDistance() {
+            const doc = document.documentElement;
+            const body = document.body;
+            const scrollTop = window.pageYOffset || doc.scrollTop || body.scrollTop || 0;
+            const height = Math.max(body.scrollHeight, doc.scrollHeight, body.offsetHeight, doc.offsetHeight);
+            return height - (scrollTop + window.innerHeight);
+          }
+
+          function shouldLoadSoon() {
+            return hasMore && !loading && getBottomDistance() < 1400;
+          }
+
+          async function loadMore(source) {
             if (loading || !hasMore) return;
-            loading = true;
-            loader.style.display = "block";
+            if (Date.now() < cooldownUntil) return;
+
+            setLoading(true);
 
             try {
-              const qs = new URLSearchParams({ page: String(page), limit: String(FEED_PAGE_SIZE), city: "", category });
+              const qs = new URLSearchParams({
+                page: String(page),
+                limit: String(FEED_PAGE_SIZE),
+                city: "",
+                category: category || "all"
+              });
+
               if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
                 qs.set("lat", String(LIVE_LAT));
                 qs.set("lng", String(LIVE_LNG));
                 qs.set("radiusKm", String(RADIUS_KM || 85));
               }
 
-              const res = await fetch("/events/feed?" + qs.toString(), { cache: "no-store" });
+              const res = await fetch("/events/feed?" + qs.toString(), {
+                cache: "no-store",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+              });
+
               const data = await res.json();
               if (!res.ok || !data.ok) throw new Error(data.error || "Could not load more events");
 
               const items = Array.isArray(data.items) ? data.items : [];
               if (!items.length) {
                 hasMore = false;
-                loader.style.display = "none";
-                end.style.display = "block";
+                syncFooter();
                 return;
               }
 
               const wrapper = document.createElement("div");
               wrapper.innerHTML = items.map(renderClientCard).join("");
-              Array.from(wrapper.children).forEach((node) => grid.appendChild(node));
+              const children = Array.from(wrapper.children);
+
+              const frag = document.createDocumentFragment();
+              children.forEach((node) => frag.appendChild(node));
+              grid.appendChild(frag);
               enhance(wrapper);
 
               page += 1;
+              retryCount = 0;
               hasMore = !!data.hasMore;
-              if (!hasMore) {
-                loader.style.display = "none";
-                end.style.display = "block";
+              syncFooter();
+
+              // If the next page still leaves the screen near the bottom, continue gently.
+              if (hasMore && shouldLoadSoon()) {
+                cooldownUntil = Date.now() + 260;
+                window.setTimeout(() => loadMore("chain"), 280);
               }
             } catch (err) {
               console.error(err);
-              loader.innerHTML = "Could not load more events";
-              hasMore = false;
+              retryCount += 1;
+              setLoading(false);
+
+              if (retryCount >= 2) {
+                hasMore = false;
+                loader.style.display = "none";
+                end.style.display = "block";
+                end.textContent = "Could not load more events. Refresh and try again.";
+                return;
+              }
+
+              cooldownUntil = Date.now() + 1200;
+              window.setTimeout(() => {
+                if (shouldLoadSoon()) loadMore("retry");
+              }, 1250);
             } finally {
               loading = false;
+              if (hasMore) loader.style.display = "block";
             }
           }
 
-          const observer = new IntersectionObserver((entries) => {
-            const first = entries[0];
-            if (first && first.isIntersecting) loadMore();
-          }, { rootMargin: "300px 0px" });
+          function scheduleCheck() {
+            if (!hasMore || loading || scrollTicking) return;
+            scrollTicking = true;
+            window.requestAnimationFrame(() => {
+              scrollTicking = false;
+              if (shouldLoadSoon()) loadMore("scroll");
+            });
+          }
 
-          observer.observe(sentinel);
+          window.addEventListener("scroll", scheduleCheck, { passive: true });
+          window.addEventListener("resize", scheduleCheck, { passive: true });
+          window.addEventListener("orientationchange", () => window.setTimeout(scheduleCheck, 350), { passive: true });
+
+          if (button) button.addEventListener("click", () => loadMore("button"));
+
+          syncFooter();
+          window.setTimeout(scheduleCheck, 450);
         }
 
         function requestTapzyLocation(ev) {
@@ -1345,9 +1416,12 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         enhance(document);
 
         setupLiveLocationGate();
-        setupMainFeedInfinite();
-        setupMobileFeedInfinite();
-        cities.forEach(setupCityInfinite);
+        if (IS_MOBILE_FEED) {
+          setupMobileFeedInfinite();
+        } else {
+          setupMainFeedInfinite();
+          cities.forEach(setupCityInfinite);
+        }
 
       })();
 </script>`;
