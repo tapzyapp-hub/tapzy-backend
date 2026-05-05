@@ -579,6 +579,8 @@ function pickImage(event) {
 
 function eventMatchesCategoryGroup(event, group) {
 
+  const normalizedGroup = String(group || "").trim().toLowerCase();
+
   const haystack = String(
 
     [
