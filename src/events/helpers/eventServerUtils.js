@@ -906,6 +906,46 @@ function filterNearbyEvents(events, { lat, lng, radiusKm } = {}) {
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
 
+function getClosestAreaEvents(events, { lat, lng, limit = 48 } = {}) {
+  const userLat = toFiniteNumber(lat);
+  const userLng = toFiniteNumber(lng);
+
+  if (userLat === null || userLng === null) {
+    return { events: [], areaName: '', distanceKm: null };
+  }
+
+  const withDistance = (events || [])
+    .map((event) => {
+      const distanceKm = getDistanceKm(userLat, userLng, event?.latitude, event?.longitude);
+      return { ...event, distanceKm };
+    })
+    .filter((event) => Number.isFinite(event.distanceKm));
+
+  if (!withDistance.length) {
+    return { events: [], areaName: '', distanceKm: null };
+  }
+
+  const areaMap = new Map();
+  for (const event of withDistance) {
+    const areaName = String(event.city || event.venueName || 'Closest Area').trim() || 'Closest Area';
+    const key = areaName.toLowerCase();
+    const current = areaMap.get(key);
+    if (!current || event.distanceKm < current.distanceKm) {
+      areaMap.set(key, { areaName, distanceKm: event.distanceKm });
+    }
+  }
+
+  const closest = Array.from(areaMap.values()).sort((a, b) => a.distanceKm - b.distanceKm)[0];
+  if (!closest) return { events: [], areaName: '', distanceKm: null };
+
+  const closestEvents = withDistance
+    .filter((event) => String(event.city || event.venueName || 'Closest Area').trim().toLowerCase() === closest.areaName.toLowerCase())
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, Math.max(1, Number(limit) || 48));
+
+  return { events: closestEvents, areaName: closest.areaName, distanceKm: closest.distanceKm };
+}
+
 function sortRanked(events) {
 
   return [...events].sort((a, b) => {
@@ -958,6 +998,7 @@ module.exports = {
   sortRanked,
   getDistanceKm,
   filterNearbyEvents,
+  getClosestAreaEvents,
   isAllowedHotCategory,
   buildWhere,
 };

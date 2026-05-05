@@ -12,6 +12,7 @@ const {
   sortRanked,
   buildWhere,
   filterNearbyEvents,
+  getClosestAreaEvents,
   isAllowedHotCategory,
 } = require("../helpers/eventServerUtils");
 const {
@@ -67,8 +68,15 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    let events = filterNearbyEvents(rawEvents, { lat: liveLat, lng: liveLng, radiusKm })
+    const localEvents = filterNearbyEvents(rawEvents, { lat: liveLat, lng: liveLng, radiusKm })
       .filter(isAllowedHotCategory);
+
+    const closestAreaFallback = hasLiveLocation && !localEvents.length
+      ? getClosestAreaEvents(rawEvents.filter(isAllowedHotCategory), { lat: liveLat, lng: liveLng, limit: MAIN_QUERY_LIMIT })
+      : { events: [], areaName: '', distanceKm: null };
+
+    let events = localEvents.length ? localEvents : closestAreaFallback.events;
+    const usingClosestAreaFallback = hasLiveLocation && !localEvents.length && events.length > 0;
 
     if (category) {
       const normalizedFilter = String(category).trim().toLowerCase();
@@ -194,7 +202,9 @@ module.exports = async function getEventsPage(req, res) {
 
               hasLiveLocation
 
-                ? `<div class="muted" style="margin-top:10px;">Showing live nearby events within <b>${escapeHtml(radiusKm)} km</b>.</div>`
+                ? usingClosestAreaFallback
+                  ? `<div class="muted" style="margin-top:10px;">No hot events were found within <b>${escapeHtml(radiusKm)} km</b>, so Tapzy switched to the closest active area: <b>${escapeHtml(closestAreaFallback.areaName)}</b>.</div>`
+                  : `<div class="muted" style="margin-top:10px;">Showing live nearby events within <b>${escapeHtml(radiusKm)} km</b>.</div>`
 
                 : `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
 
@@ -275,7 +285,18 @@ module.exports = async function getEventsPage(req, res) {
           }).join("")}
         </div>
       </section>
-      <div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${hasLiveLocation ? "Categories are filtered to your live area." : "Tap allow location when prompted so Tapzy can pull events around you only."}</div>
+      <div id="liveLocationNotice" class="muted" style="margin:8px 0 20px;">${hasLiveLocation ? (usingClosestAreaFallback ? `No local events yet — showing closest active area, ${escapeHtml(closestAreaFallback.areaName)}.` : "Categories are filtered to your live area.") : "Tap Enable Location so Tapzy can pull hot events around you only."}</div>
+
+      ${!hasLiveLocation ? `
+        <section id="locationPromptCard" class="events-location-prompt">
+          <div class="location-prompt-glow"></div>
+          <div class="events-kicker">Live Location Required</div>
+          <h2>Find what is hot around you</h2>
+          <p class="muted">Tapzy uses your live location to show nearby sports, dances, and concerts. If nothing is close enough, we automatically switch to the closest area with events.</p>
+          <button id="enableLocationBtn" class="btn btnLuxury" type="button">Enable Location</button>
+          <div id="locationPromptStatus" class="muted location-prompt-status">Your exact location is only used to build this event feed.</div>
+        </section>
+      ` : ""}
 
       <section class="events-section mobile-only">
         <div id="mobileFeedGrid" class="events-grid mobile-events-grid">
@@ -340,7 +361,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-      ${!events.length ? `<section class="events-section"><div class="empty muted">${hasLiveLocation ? "No hot sports, dance, or concert events found close by yet." : "Location is required before events appear."}</div></section>` : ""}
+      ${!events.length ? `<section class="events-section"><div class="empty muted">${hasLiveLocation ? "No hot sports, dance, or concert events were found nearby or in a closest active area yet." : "Enable location to start the live area search."}</div></section>` : ""}
 
       ${renderSection("Featured Events", featured, currentProfile, goingSet, goingCounts)}
 
@@ -428,6 +449,11 @@ module.exports = async function getEventsPage(req, res) {
       .events-chip-row::-webkit-scrollbar{ display:none; }
       .events-chip{ flex:0 0 auto; min-width:160px; text-align:center; padding:18px 26px; border-radius:999px; text-decoration:none; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
       .events-chip.is-active{ background:#eef3fb; color:#101626; border-color:rgba(255,255,255,.45); }
+      .events-location-prompt{ position:relative; overflow:hidden; margin:18px 0 24px; padding:24px; border-radius:28px; border:1px solid rgba(127,210,255,.22); background:linear-gradient(180deg, rgba(17,23,36,.82), rgba(7,9,14,.94)); box-shadow:0 24px 70px rgba(0,0,0,.36), 0 0 0 1px rgba(255,255,255,.04) inset; }
+      .events-location-prompt h2{ margin:8px 0 8px; font-size:28px; letter-spacing:-.04em; }
+      .events-location-prompt p{ max-width:680px; line-height:1.55; }
+      .location-prompt-glow{ position:absolute; width:280px; height:180px; right:-80px; top:-90px; border-radius:999px; background:radial-gradient(circle, rgba(127,210,255,.26), transparent 68%); filter:blur(12px); pointer-events:none; }
+      .location-prompt-status{ margin-top:12px; font-size:13px; }
 
 
 
@@ -1631,7 +1657,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    ${renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm })}
+    ${renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm, usingClosestAreaFallback, closestAreaFallback })}
 
 
 

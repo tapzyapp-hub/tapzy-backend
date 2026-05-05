@@ -1,4 +1,4 @@
-module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm }) {
+module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, citySections, currentProfile, liveLat, liveLng, radiusKm, usingClosestAreaFallback, closestAreaFallback }) {
   return `
 <script>
 (function () {
@@ -14,6 +14,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
         const LIVE_LNG = ${JSON.stringify(liveLng)};
         const RADIUS_KM = ${JSON.stringify(radiusKm)};
         const HAS_LIVE_LOCATION = Number.isFinite(Number(LIVE_LAT)) && Number.isFinite(Number(LIVE_LNG));
+        const USING_CLOSEST_AREA_FALLBACK = ${JSON.stringify(!!usingClosestAreaFallback)};
+        const CLOSEST_AREA_NAME = ${JSON.stringify((closestAreaFallback && closestAreaFallback.areaName) || "")};
 
 
 
@@ -1104,8 +1106,18 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
           observer.observe(sentinel);
         }
 
-        function setupLiveLocationGate() {
-          if (HAS_LIVE_LOCATION || !navigator.geolocation) return;
+        function requestTapzyLocation() {
+          const status = document.getElementById("locationPromptStatus");
+          const notice = document.getElementById("liveLocationNotice");
+
+          if (!navigator.geolocation) {
+            if (status) status.textContent = "This browser does not support location. Try Safari, Chrome, or enabling location in settings.";
+            if (notice) notice.textContent = "Location is not available in this browser.";
+            return;
+          }
+
+          if (status) status.textContent = "Opening location permission...";
+
           navigator.geolocation.getCurrentPosition((pos) => {
             const url = new URL(window.location.href);
             url.searchParams.set("lat", String(pos.coords.latitude));
@@ -1113,9 +1125,30 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, c
             url.searchParams.set("radiusKm", String(RADIUS_KM || 85));
             window.location.replace(url.toString());
           }, () => {
-            const notice = document.getElementById("liveLocationNotice");
+            if (status) status.textContent = "Location is off. Turn it on for this browser, then tap Enable Location again.";
             if (notice) notice.textContent = "Location is off, so Tapzy cannot show area-only events yet.";
-          }, { enableHighAccuracy: false, timeout: 7000, maximumAge: 300000 });
+          }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 });
+        }
+
+        function setupLiveLocationGate() {
+          const button = document.getElementById("enableLocationBtn");
+          const status = document.getElementById("locationPromptStatus");
+          const notice = document.getElementById("liveLocationNotice");
+
+          if (HAS_LIVE_LOCATION) {
+            if (notice && USING_CLOSEST_AREA_FALLBACK && CLOSEST_AREA_NAME) {
+              notice.textContent = "No local events yet — automatically showing the closest active area: " + CLOSEST_AREA_NAME + ".";
+            }
+            return;
+          }
+
+          if (button) {
+            button.addEventListener("click", requestTapzyLocation);
+          }
+
+          if (status) {
+            status.textContent = "Tap Enable Location and allow permission to unlock nearby events.";
+          }
         }
 
         function setupReelInfinite() {

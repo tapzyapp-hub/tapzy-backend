@@ -8,6 +8,7 @@ const {
   sortRanked,
   buildWhere,
   filterNearbyEvents,
+  getClosestAreaEvents,
   isAllowedHotCategory,
 } = require("../helpers/eventServerUtils");
 
@@ -53,8 +54,16 @@ module.exports = async function getEventsFeed(req, res) {
       take: queryLimit,
     });
 
-    let ranked = filterNearbyEvents(rawItems, { lat: liveLat, lng: liveLng, radiusKm })
+    const localRanked = filterNearbyEvents(rawItems, { lat: liveLat, lng: liveLng, radiusKm })
       .filter(isAllowedHotCategory);
+
+    const hasLiveLocation = Number.isFinite(liveLat) && Number.isFinite(liveLng);
+    const closestAreaFallback = hasLiveLocation && !localRanked.length
+      ? getClosestAreaEvents(rawItems.filter(isAllowedHotCategory), { lat: liveLat, lng: liveLng, limit: queryLimit })
+      : { events: [], areaName: '', distanceKm: null };
+
+    let ranked = localRanked.length ? localRanked : closestAreaFallback.events;
+    const usingClosestAreaFallback = hasLiveLocation && !localRanked.length && ranked.length > 0;
 
     if (category) {
       const normalizedFilter = String(category).trim().toLowerCase();
@@ -111,6 +120,8 @@ module.exports = async function getEventsFeed(req, res) {
       limit,
       total: ranked.length,
       hasMore: ranked.length > skip + items.length,
+      fallbackArea: usingClosestAreaFallback ? closestAreaFallback.areaName : "",
+      fallbackDistanceKm: usingClosestAreaFallback ? closestAreaFallback.distanceKm : null,
     });
   } catch (e) {
     console.error(e);
