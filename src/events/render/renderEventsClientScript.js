@@ -41,37 +41,33 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function getClientCategory(event) {
 
+          const group = getClientCategoryGroup(event);
+          if (group === "sports") return "Sports";
+          if (group === "concerts") return "Concerts";
+          if (group === "dances") return "Dances";
+          if (group === "conventions") return "Conventions";
+
           const raw = String(event.category || "").trim();
-
-          const value = raw.toLowerCase();
-
-
-
-          if (!raw || value === "undefined" || value === "miscellaneous" || value === "other") {
-
-            const haystack = String(
-
-              [event.title || "", event.description || "", event.venueName || ""].join(" ")
-
-            ).toLowerCase();
-
-
-
-            if (haystack.includes("concert") || haystack.includes("music") || haystack.includes("festival")) return "Concerts";
-
-            if (haystack.includes("sports") || haystack.includes("hockey") || haystack.includes("basketball") || haystack.includes("football") || haystack.includes("soccer") || haystack.includes("baseball") || haystack.includes("mma") || haystack.includes("ufc") || haystack.includes("game")) return "Sports";
-
-            if (haystack.includes("nightlife") || haystack.includes("party") || haystack.includes("club") || haystack.includes("dj") || haystack.includes("rave")) return "Dances";
-
-            if (haystack.includes("convention") || haystack.includes("expo") || haystack.includes("comic con") || haystack.includes("fan expo") || haystack.includes("conference")) return "Conventions";
-
-            return "Event";
-
-          }
-
-
-
+          if (!raw || raw.toLowerCase() === "undefined" || raw.toLowerCase() === "miscellaneous" || raw.toLowerCase() === "other") return "Event";
           return raw;
+
+        }
+
+        function getClientCategoryGroup(event) {
+
+          const rawCategory = String(event.category || "").trim().toLowerCase();
+          const text = String([event.title || "", event.description || "", event.venueName || "", event.city || ""].join(" ")).toLowerCase();
+          const categoryText = rawCategory && !["undefined", "miscellaneous", "other", "event", "events"].includes(rawCategory) ? rawCategory : "";
+          const haystack = (categoryText + " " + text).trim();
+          const hasAny = (terms, source) => terms.some((term) => String(source || haystack).includes(term));
+          const source = categoryText || haystack;
+
+          if (hasAny(["sports", "sport", "hockey", "basketball", "football", "soccer", "baseball", "mma", "ufc", "wrestling", "boxing", "tennis", "lacrosse", "volleyball", "rugby", "golf", "racing", "motorsport", "athletic", "tournament", "match"], source)) return "sports";
+          if (hasAny(["nightlife", "dance", "dances", "party", "club", "dj", "rave", "afterparty", "lounge", "social dance", "dancehall", "latin night", "salsa", "bachata"], source)) return "dances";
+          if (hasAny(["concert", "concerts", "live music", "music", "festival", "tour", "band", "artist", "singer", "performance", "orchestra", "opera", "gig"], source)) return "concerts";
+          if (hasAny(["convention", "expo", "comic con", "fan expo", "conference", "summit"], source)) return "conventions";
+
+          return "";
 
         }
 
