@@ -1712,6 +1712,30 @@ module.exports = async function getEventsPage(req, res) {
           contain-intrinsic-size:0 620px;
         }
 
+        .mobile-feed-virtual-spacer{
+          width:100%;
+          flex:0 0 auto;
+          pointer-events:none;
+        }
+
+        .mobile-events-grid .event-card.is-virtualized-card{
+          animation:none !important;
+          opacity:1 !important;
+        }
+
+        .mobile-events-grid .event-card{
+          transform:translateZ(0);
+          backface-visibility:hidden;
+          -webkit-backface-visibility:hidden;
+        }
+
+        @media (prefers-reduced-motion: no-preference){
+          .mobile-events-grid .event-card.is-virtualized-card{
+            transition:transform .24s cubic-bezier(.2,.8,.2,1), box-shadow .24s ease, border-color .24s ease;
+          }
+        }
+
+
         .mobile-events-grid .event-card .event-content{
           min-height:min(78svh, 720px);
           padding:26px 22px 22px;

@@ -1076,10 +1076,15 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           let currentStart = -1;
           let currentEnd = -1;
 
-          const BEFORE_BUFFER = 5;
-          const AFTER_BUFFER = 10;
-          const MAX_RENDERED_CARDS = 18;
-          const LOAD_AHEAD_ITEMS = 8;
+          // Mobile Safari was stable with virtualization, but the first version recycled
+          // cards too tightly. Keep a larger warm window mounted and only shift the
+          // window after the user moves several cards, which removes the visible
+          // flashing while still preventing the 50+ card memory crash.
+          const BEFORE_BUFFER = 10;
+          const AFTER_BUFFER = 18;
+          const MAX_RENDERED_CARDS = 32;
+          const LOAD_AHEAD_ITEMS = 12;
+          const WINDOW_SHIFT_THRESHOLD = 4;
 
           function measureAverageCardHeight() {
             const first = grid.querySelector(".js-event-card");
@@ -1141,8 +1146,12 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               endIndex = records.length;
             }
 
-            if (!force && startIndex === currentStart && endIndex === currentEnd) {
-              return;
+            if (!force && currentStart >= 0 && currentEnd >= 0) {
+              const moved = Math.abs(startIndex - currentStart);
+              const stillCovered = startIndex >= currentStart + 2 && endIndex <= currentEnd - 2;
+              if (moved < WINDOW_SHIFT_THRESHOLD || stillCovered) {
+                return;
+              }
             }
 
             currentStart = startIndex;
@@ -1154,6 +1163,14 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             bottomSpacer.style.height = bottomHeight + "px";
 
             grid.innerHTML = records.slice(startIndex, endIndex).map((record) => record.html).join("");
+
+            // Recycled cards should not replay the entrance animation every time
+            // they are mounted. That replay was the source of the flashing.
+            grid.querySelectorAll(".js-event-card").forEach((card) => {
+              card.classList.add("is-revealed", "is-virtualized-card");
+              card.dataset.revealBound = "1";
+            });
+
             enhance(grid);
 
             window.requestAnimationFrame(() => {
@@ -1196,7 +1213,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             try {
               const qs = new URLSearchParams({
                 page: String(page),
-                limit: String(Math.min(FEED_PAGE_SIZE, 8)),
+                limit: String(Math.min(FEED_PAGE_SIZE, 10)),
                 city: "",
                 category: category || "all"
               });
