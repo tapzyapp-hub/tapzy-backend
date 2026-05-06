@@ -1626,52 +1626,30 @@ module.exports = async function getEventsPage(req, res) {
 
         .mobile-events-grid .event-card{
           min-height:520px;
-          border-color:rgba(190,230,255,.22);
-          background:linear-gradient(180deg, rgba(9,14,24,.96), rgba(3,6,13,.98));
+          border-color:rgba(190,230,255,.18);
           box-shadow:
-            0 26px 78px rgba(0,0,0,.58),
-            0 0 0 1px rgba(127,210,255,.14),
-            inset 0 1px 0 rgba(255,255,255,.09);
+            0 24px 70px rgba(0,0,0,.52),
+            0 0 0 1px rgba(127,210,255,.10),
+            inset 0 1px 0 rgba(255,255,255,.08);
         }
 
         .mobile-events-grid .event-card .event-media{
           filter:saturate(1.18) contrast(1.05);
         }
 
-        .mobile-events-grid .event-card::after{
-          background:
-            radial-gradient(260px circle at var(--mx,50%) var(--my,50%),
-              rgba(130,220,255,.62),
-              rgba(71,166,255,.34) 24%,
-              rgba(38,108,255,.16) 42%,
-              transparent 68%);
-          mix-blend-mode:screen;
-        }
-
-        .mobile-events-grid .event-card.is-touch-active::after{
-          opacity:1;
-        }
-
-        .mobile-events-grid .event-card::before{
-          background:linear-gradient(135deg, rgba(150,230,255,.78), rgba(255,255,255,.18), rgba(80,156,255,.52));
-          filter:blur(1.5px);
-        }
-
-
         .mobile-events-grid .event-card .event-content{
           min-height:520px;
-          background:linear-gradient(180deg, rgba(5,9,18,.16), rgba(3,7,14,.42) 44%, rgba(0,2,7,.84));
-          backdrop-filter:blur(13px) saturate(1.18);
-          -webkit-backdrop-filter:blur(13px) saturate(1.18);
+          background:linear-gradient(180deg, rgba(8,12,20,.10), rgba(5,8,14,.28) 48%, rgba(1,3,8,.70));
+          backdrop-filter:blur(8px);
+          -webkit-backdrop-filter:blur(8px);
         }
 
         .mobile-events-grid .event-card.is-touch-active{
           transform:translateY(-6px) scale(1.015);
           box-shadow:
-            0 32px 88px rgba(0,0,0,.68),
-            0 0 0 1px rgba(135,220,255,.55),
-            0 0 48px rgba(78,178,255,.44),
-            0 0 96px rgba(48,138,255,.20);
+            0 30px 82px rgba(0,0,0,.64),
+            0 0 0 1px rgba(135,220,255,.42),
+            0 0 34px rgba(78,178,255,.30);
         }
 
         .mobile-events-grid .event-card.is-touch-active .event-media{
@@ -1680,9 +1658,8 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .mobile-events-grid .event-card.is-touch-active .event-content{
-          background:linear-gradient(180deg, rgba(4,8,17,.22), rgba(2,6,13,.50) 42%, rgba(0,2,8,.90));
-          backdrop-filter:blur(16px) saturate(1.25);
-          -webkit-backdrop-filter:blur(16px) saturate(1.25);
+          backdrop-filter:blur(10px);
+          -webkit-backdrop-filter:blur(10px);
         }
 
         .events-section.mobile-only{
