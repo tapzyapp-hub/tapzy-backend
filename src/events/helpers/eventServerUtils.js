@@ -291,70 +291,179 @@ function isBetween(date, min, max) {
 
 function normalizeCategory(event) {
 
-  const group = getEventCategoryGroup(event);
-  if (group === "sports") return "Sports";
-  if (group === "concerts") return "Concerts";
-  if (group === "dances") return "Dances";
-  if (group === "conventions") return "Conventions";
-
   const raw = String(event?.category || "").trim();
-  if (!raw || raw.toLowerCase() === "undefined" || raw.toLowerCase() === "miscellaneous" || raw.toLowerCase() === "other") {
+
+  const value = raw.toLowerCase();
+
+
+
+  if (!raw || value === "undefined" || value === "miscellaneous" || value === "other") {
+
+    const haystack = String(
+
+      [event?.title || "", event?.description || "", event?.venueName || ""].join(" ")
+
+    ).toLowerCase();
+
+
+
+    if (
+
+      haystack.includes("concert") ||
+
+      haystack.includes("music") ||
+
+      haystack.includes("festival") ||
+
+      haystack.includes("tour") ||
+
+      haystack.includes("band")
+
+    ) return "Concerts";
+
+
+
+    if (
+
+      haystack.includes("sport") ||
+
+      haystack.includes("hockey") ||
+
+      haystack.includes("basketball") ||
+
+      haystack.includes("football") ||
+
+      haystack.includes("soccer") ||
+
+      haystack.includes("baseball") ||
+
+      haystack.includes("mma") ||
+
+      haystack.includes("ufc") ||
+
+      haystack.includes("game")
+
+    ) return "Sports";
+
+
+
+    if (
+
+      haystack.includes("nightlife") ||
+
+      haystack.includes("party") ||
+
+      haystack.includes("club") ||
+
+      haystack.includes("dj") ||
+
+      haystack.includes("rave") ||
+
+      haystack.includes("lounge")
+
+    ) return "Dances";
+
+
+
+    if (
+
+      haystack.includes("convention") ||
+
+      haystack.includes("expo") ||
+
+      haystack.includes("comic con") ||
+
+      haystack.includes("fan expo") ||
+
+      haystack.includes("conference") ||
+
+      haystack.includes("summit")
+
+    ) return "Conventions";
+
+
+
     return "Event";
+
   }
+
+
+
+  if (value.includes("concert") || value.includes("music") || value.includes("festival")) {
+
+    return "Concerts";
+
+  }
+
+
+
+  if (
+
+    value.includes("sport") ||
+
+    value.includes("hockey") ||
+
+    value.includes("basketball") ||
+
+    value.includes("football") ||
+
+    value.includes("soccer") ||
+
+    value.includes("baseball") ||
+
+    value.includes("mma") ||
+
+    value.includes("ufc")
+
+  ) {
+
+    return "Sports";
+
+  }
+
+
+
+  if (
+
+    value.includes("nightlife") ||
+
+    value.includes("party") ||
+
+    value.includes("club") ||
+
+    value.includes("dj")
+
+  ) {
+
+    return "Dances";
+
+  }
+
+
+
+  if (
+
+    value.includes("convention") ||
+
+    value.includes("expo") ||
+
+    value.includes("comic") ||
+
+    value.includes("fan")
+
+  ) {
+
+    return "Conventions";
+
+  }
+
+
+
   return raw;
 
 }
 
-function getEventCategoryGroup(event) {
 
-  const rawCategory = String(event?.category || "").trim().toLowerCase();
-  const text = String([
-    event?.title || "",
-    event?.description || "",
-    event?.venueName || "",
-    event?.city || "",
-  ].join(" ")).toLowerCase();
-
-  const categoryText = rawCategory && !["undefined", "miscellaneous", "other", "event", "events"].includes(rawCategory)
-    ? rawCategory
-    : "";
-  const haystack = `${categoryText} ${text}`;
-
-  const hasAny = (terms, source = haystack) => terms.some((term) => source.includes(term));
-
-  // Keep category pills mutually exclusive. A card should belong to one group only.
-  // Prefer an explicit category when the source gives one, then infer from title/details.
-  if (hasAny([
-    "sports", "sport", "hockey", "basketball", "football", "soccer", "baseball",
-    "mma", "ufc", "wrestling", "boxing", "tennis", "lacrosse", "volleyball",
-    "rugby", "golf", "racing", "motorsport", "athletic", "tournament", "match",
-  ], categoryText || haystack)) {
-    return "sports";
-  }
-
-  if (hasAny([
-    "nightlife", "dance", "dances", "party", "club", "dj", "rave", "afterparty",
-    "lounge", "social dance", "dancehall", "latin night", "salsa", "bachata",
-  ], categoryText || haystack)) {
-    return "dances";
-  }
-
-  if (hasAny([
-    "concert", "concerts", "live music", "music", "festival", "tour", "band",
-    "artist", "singer", "performance", "orchestra", "opera", "gig",
-  ], categoryText || haystack)) {
-    return "concerts";
-  }
-
-  if (hasAny([
-    "convention", "expo", "comic con", "fan expo", "conference", "summit",
-  ], categoryText || haystack)) {
-    return "conventions";
-  }
-
-  return "";
-
-}
 
 function getShortDescription(event) {
 
@@ -471,16 +580,142 @@ function pickImage(event) {
 function eventMatchesCategoryGroup(event, group) {
 
   const normalizedGroup = String(group || "").trim().toLowerCase();
-  const eventGroup = getEventCategoryGroup(event);
 
-  if (!eventGroup) return false;
-  if (normalizedGroup === "dance" || normalizedGroup === "nightlife") return eventGroup === "dances";
-  if (normalizedGroup === "concert" || normalizedGroup === "music") return eventGroup === "concerts";
-  if (normalizedGroup === "sport") return eventGroup === "sports";
+  const haystack = String(
 
-  return eventGroup === normalizedGroup;
+    [
+
+      normalizeCategory(event),
+
+      event.title || "",
+
+      event.description || "",
+
+      event.venueName || "",
+
+    ].join(" ")
+
+  ).toLowerCase();
+
+
+
+  if (normalizedGroup === "sports") {
+
+    return [
+
+      "sports",
+
+      "sport",
+
+      "hockey",
+
+      "basketball",
+
+      "football",
+
+      "soccer",
+
+      "baseball",
+
+      "mma",
+
+      "ufc",
+
+      "wrestling",
+
+      "tennis",
+
+      "lacrosse",
+
+      "volleyball",
+
+      "game",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  if (normalizedGroup === "concerts") {
+
+    return [
+
+      "concert",
+
+      "music",
+
+      "live music",
+
+      "festival",
+
+      "tour",
+
+      "show",
+
+      "artist",
+
+      "band",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  if (normalizedGroup === "nightlife" || normalizedGroup === "dances" || normalizedGroup === "dance") {
+
+    return [
+
+      "nightlife",
+
+      "party",
+
+      "club",
+
+      "dj",
+
+      "dance",
+
+      "rave",
+
+      "afterparty",
+
+      "lounge",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  if (normalizedGroup === "conventions") {
+
+    return [
+
+      "convention",
+
+      "expo",
+
+      "comic con",
+
+      "fan expo",
+
+      "conference",
+
+      "summit",
+
+    ].some((term) => haystack.includes(term));
+
+  }
+
+
+
+  return false;
 
 }
+
+
 
 function rankEvent(event) {
 
@@ -639,7 +874,21 @@ function getDistanceKm(lat1, lng1, lat2, lng2) {
 }
 
 function isAllowedHotCategory(event) {
-  return ["sports", "concerts", "dances"].includes(getEventCategoryGroup(event));
+  const category = String(normalizeCategory(event) || event?.category || "").trim().toLowerCase();
+  const haystack = `${event?.title || ""} ${event?.description || ""} ${event?.category || ""}`.toLowerCase();
+
+  return (
+    category === "sports" ||
+    category === "concerts" ||
+    category === "dances" ||
+    haystack.includes("sport") ||
+    haystack.includes("game day") ||
+    haystack.includes("concert") ||
+    haystack.includes("live music") ||
+    haystack.includes("dance") ||
+    haystack.includes("dj") ||
+    haystack.includes("party")
+  );
 }
 
 function filterNearbyEvents(events, { lat, lng, radiusKm } = {}) {
