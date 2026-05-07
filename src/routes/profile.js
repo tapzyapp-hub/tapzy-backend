@@ -2588,7 +2588,7 @@ router.get("/edit/:username", async (req, res) => {
 
         <div class="tz-edit-photo-card">
 
-          <div class="tz-edit-photo-preview tz-edit-photo-empty">No photo</div>
+          <div class="tz-edit-photo-preview tz-edit-photo-empty" data-photo-empty-preview>No photo</div>
 
           <div class="tz-edit-photo-meta">
 
@@ -2729,7 +2729,7 @@ router.get("/edit/:username", async (req, res) => {
                 <div class="tz-photo-positioner" data-photo-positioner>
                   <div class="tz-photo-positioner-head">
                     <strong>Profile photo fitting</strong>
-                    <span>Drag the photo inside the box, then zoom until it sits exactly how you want.</span>
+                    <span>Move and zoom the photo until it sits exactly how you want.</span>
                   </div>
                   <input type="hidden" name="profilePhotoPositionX" value="${photoPositionX}" data-photo-position-x-value />
                   <input type="hidden" name="profilePhotoPositionY" value="${photoPositionY}" data-photo-position-y-value />
@@ -3813,7 +3813,7 @@ router.get("/edit/:username", async (req, res) => {
       (function(){
         const file = document.querySelector('[data-photo-position-file]');
         const cropFrame = document.querySelector('.tz-edit-photo-preview');
-        const img = document.querySelector('[data-photo-position-preview]');
+        let img = document.querySelector('[data-photo-position-preview]');
         const x = document.querySelector('[data-photo-position-x]');
         const y = document.querySelector('[data-photo-position-y]');
         const scale = document.querySelector('[data-photo-scale]');
@@ -3844,6 +3844,9 @@ router.get("/edit/:username", async (req, res) => {
           if (img) {
             img.style.objectPosition = nextX + '% ' + nextY + '%';
             img.style.transform = 'scale(' + (nextScale / 100) + ')';
+            img.dataset.photoX = String(nextX);
+            img.dataset.photoY = String(nextY);
+            img.dataset.photoScale = String(nextScale);
           }
           if (xv) xv.value = String(nextX);
           if (yv) yv.value = String(nextY);
@@ -3855,6 +3858,7 @@ router.get("/edit/:username", async (req, res) => {
         if (cropFrame) {
           cropFrame.addEventListener('pointerdown', function(e){
             if (!img) return;
+            e.preventDefault();
             dragging = true;
             lastX = e.clientX;
             lastY = e.clientY;
@@ -3869,8 +3873,8 @@ router.get("/edit/:username", async (req, res) => {
             lastY = e.clientY;
             setValues(numberValue(x, 50) - dx, numberValue(y, 50) - dy, numberValue(scale, 100));
           });
-          cropFrame.addEventListener('pointerup', function(){ dragging = false; });
-          cropFrame.addEventListener('pointercancel', function(){ dragging = false; });
+          cropFrame.addEventListener('pointerup', function(e){ dragging = false; try { cropFrame.releasePointerCapture && cropFrame.releasePointerCapture(e.pointerId); } catch(_) {} });
+          cropFrame.addEventListener('pointercancel', function(e){ dragging = false; try { cropFrame.releasePointerCapture && cropFrame.releasePointerCapture(e.pointerId); } catch(_) {} });
         }
 
         if (file) file.addEventListener('change', function(){
@@ -3878,6 +3882,14 @@ router.get("/edit/:username", async (req, res) => {
           if (!selected || !/^image\//.test(selected.type || '')) return;
           if (objectUrl) { try { URL.revokeObjectURL(objectUrl); } catch(e) {} }
           objectUrl = URL.createObjectURL(selected);
+          if (!img && cropFrame) {
+            cropFrame.classList.remove('tz-edit-photo-empty');
+            cropFrame.textContent = '';
+            img = document.createElement('img');
+            img.setAttribute('data-photo-position-preview', '');
+            img.alt = 'New profile photo preview';
+            cropFrame.appendChild(img);
+          }
           if (img) img.src = objectUrl;
           setValues(50, 50, 100);
         });

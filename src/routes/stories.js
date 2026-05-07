@@ -196,7 +196,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
         <div class="stories-video-crop" data-video-crop hidden>
           <div class="stories-video-crop-head">
-            <strong>TikTok-style video crop</strong>
+            <strong>Story video crop</strong>
             <span data-video-crop-label>Drag the start and end handles to choose the exact 30s clip.</span>
           </div>
           <div class="stories-trim-preview">
