@@ -357,7 +357,7 @@ router.get("/u/:username", async (req, res) => {
 
           <div class="profile-showcase-avatar-wrap">
 
-            <div class="profile-showcase-avatar">${photoHtml}</div>
+            <button type="button" class="profile-showcase-avatar" data-profile-photo-open aria-label="Open profile picture for ${escapeHtml(displayName)}">${photoHtml}</button>
 
           </div>
 
@@ -719,6 +719,19 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
+    </div>
+
+    <div class="profile-photo-viewer" id="profilePhotoViewer" aria-hidden="true">
+      <button type="button" class="profile-photo-viewer-backdrop" data-profile-photo-close aria-label="Close profile picture viewer"></button>
+      <div class="profile-photo-viewer-card" role="dialog" aria-modal="true" aria-label="Profile picture viewer">
+        <button type="button" class="profile-photo-viewer-close" data-profile-photo-close aria-label="Close profile picture viewer">×</button>
+        <div class="profile-photo-viewer-frame">
+          ${profile.photo
+            ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)} profile picture" />`
+            : `<div class="profile-photo-viewer-initial">${escapeHtml((displayName || "T").slice(0, 1).toUpperCase())}</div>`
+          }
+        </div>
+      </div>
     </div>
 
 
@@ -1123,6 +1136,8 @@ router.get("/u/:username", async (req, res) => {
 
         box-shadow:
 
+          0 0 0 1px rgba(115,194,255,.06),
+          0 0 42px rgba(87,170,255,.08),
           0 24px 70px rgba(0,0,0,.66),
 
           inset 0 1px 0 rgba(255,255,255,.03);
@@ -1174,7 +1189,28 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase-avatar-wrap{
 
         position:relative;
+        width:140px;
+        height:140px;
+      }
 
+      .profile-showcase-avatar-wrap::before{
+        content:"";
+        position:absolute;
+        inset:-8px;
+        border-radius:38px;
+        pointer-events:none;
+        background:
+          radial-gradient(circle at 50% 16%, rgba(115,194,255,.32), transparent 56%),
+          linear-gradient(180deg, rgba(115,194,255,.34), rgba(55,108,210,.16));
+        filter:blur(10px);
+        opacity:.76;
+        transition:opacity .22s ease, filter .22s ease, transform .22s ease;
+      }
+
+      .profile-showcase-avatar-wrap:hover::before{
+        opacity:1;
+        filter:blur(12px);
+        transform:scale(1.02);
       }
 
 
@@ -1189,6 +1225,12 @@ router.get("/u/:username", async (req, res) => {
 
         overflow:hidden;
 
+        appearance:none;
+        -webkit-appearance:none;
+        padding:0;
+        cursor:pointer;
+        position:relative;
+        z-index:1;
         display:flex;
 
         align-items:center;
@@ -1390,6 +1432,7 @@ router.get("/u/:username", async (req, res) => {
         max-width:100%;
 
         white-space:nowrap;
+        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
 
       }
 
@@ -1886,17 +1929,24 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-quick-btn:hover{
+      .profile-quick-btn:hover,
+      .profile-quick-btn:focus-visible{
 
         transform:translateY(-1px);
 
-        border-color:rgba(255,255,255,.12);
+        border-color:rgba(115,194,255,.92);
+
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
 
         box-shadow:
 
-          inset 0 1px 0 rgba(255,255,255,.05),
+          inset 0 1px 0 rgba(255,255,255,.08),
 
-          0 10px 22px rgba(0,0,0,.22);
+          0 0 18px rgba(87,170,255,.28),
+          0 0 44px rgba(48,110,255,.20),
+          0 10px 24px rgba(0,0,0,.24);
 
       }
 
@@ -1935,10 +1985,126 @@ router.get("/u/:username", async (req, res) => {
           inset 0 1px 0 rgba(255,255,255,.04),
 
           0 8px 18px rgba(0,0,0,.18);
+        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
 
       }
 
+      .profile-edit-btn:hover,
+      .profile-edit-btn:focus-visible{
+        transform:translateY(-1px);
+        border-color:rgba(115,194,255,.92);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 18px rgba(87,170,255,.28),
+          0 0 44px rgba(48,110,255,.20),
+          0 10px 24px rgba(0,0,0,.24);
+      }
 
+
+
+
+      .profile-photo-viewer{
+        position:fixed;
+        inset:0;
+        z-index:9999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:22px;
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        transition:opacity .22s ease, visibility .22s ease;
+      }
+
+      .profile-photo-viewer.is-open{
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+      }
+
+      .profile-photo-viewer-backdrop{
+        position:absolute;
+        inset:0;
+        border:0;
+        background:rgba(0,0,0,.74);
+        backdrop-filter:blur(14px);
+        -webkit-backdrop-filter:blur(14px);
+      }
+
+      .profile-photo-viewer-card{
+        position:relative;
+        width:min(88vw, 520px);
+        border-radius:34px;
+        padding:10px;
+        background:
+          linear-gradient(180deg, rgba(115,194,255,.95), rgba(55,108,210,.95));
+        box-shadow:
+          0 0 26px rgba(87,170,255,.34),
+          0 0 70px rgba(48,110,255,.24),
+          0 22px 60px rgba(0,0,0,.46);
+      }
+
+      .profile-photo-viewer-frame{
+        aspect-ratio:1 / 1;
+        border-radius:28px;
+        overflow:hidden;
+        background:linear-gradient(180deg, rgba(7,10,16,.98), rgba(0,0,0,1));
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+
+      .profile-photo-viewer-frame img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+      }
+
+      .profile-photo-viewer-initial{
+        color:#fff;
+        font-size:120px;
+        font-weight:900;
+      }
+
+      .profile-photo-viewer-close{
+        position:absolute;
+        top:-14px;
+        right:-14px;
+        width:44px;
+        height:44px;
+        border-radius:999px;
+        border:1px solid rgba(115,194,255,.52);
+        background:rgba(5,8,14,.92);
+        color:#fff;
+        font-size:30px;
+        line-height:1;
+        cursor:pointer;
+        box-shadow:0 0 20px rgba(87,170,255,.28);
+      }
+
+      .profile-edit-btn:hover,
+      .profile-edit-btn:focus-visible,
+      .profile-quick-btn:hover,
+      .profile-quick-btn:focus-visible,
+      .profile-pill-btn:hover,
+      .profile-pill-btn:focus-visible,
+      .profile-mini-action:hover,
+      .profile-mini-action:focus-visible,
+      .profile-showcase-actions .btn:hover,
+      .profile-showcase-actions .btn:focus-visible{
+        border-color:rgba(115,194,255,.92) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 18px rgba(87,170,255,.30),
+          0 0 46px rgba(48,110,255,.22),
+          0 10px 24px rgba(0,0,0,.24) !important;
+        transform:translateY(-1px);
+      }
 
       @media(max-width:700px){
 
@@ -2017,6 +2183,16 @@ router.get("/u/:username", async (req, res) => {
         }
 
 
+
+        .profile-showcase-avatar-wrap{
+          width:88px;
+          height:88px;
+        }
+
+        .profile-showcase-avatar-wrap::before{
+          inset:-7px;
+          border-radius:30px;
+        }
 
         .profile-showcase-avatar{
 
@@ -2238,6 +2414,27 @@ router.get("/u/:username", async (req, res) => {
 
     <script>
       (function(){
+        function initProfilePhotoViewer(){
+          const viewer = document.getElementById('profilePhotoViewer');
+          const openBtn = document.querySelector('[data-profile-photo-open]');
+          if (!viewer || !openBtn) return;
+          const closeBtns = viewer.querySelectorAll('[data-profile-photo-close]');
+          const openViewer = function(){
+            viewer.classList.add('is-open');
+            viewer.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+          };
+          const closeViewer = function(){
+            viewer.classList.remove('is-open');
+            viewer.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+          };
+          openBtn.addEventListener('click', openViewer);
+          closeBtns.forEach(function(btn){ btn.addEventListener('click', closeViewer); });
+          document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape' && viewer.classList.contains('is-open')) closeViewer();
+          });
+        }
         function initVideoPreviewFrames(root){
           (root || document).querySelectorAll('[data-video-frame]').forEach(function(frame){
             if (frame.dataset.videoReady === '1') return;
@@ -2277,8 +2474,9 @@ router.get("/u/:username", async (req, res) => {
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
         } else {
+          initProfilePhotoViewer();
           initVideoPreviewFrames(document);
         }
       })();
