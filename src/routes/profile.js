@@ -263,6 +263,10 @@ router.get("/u/:username", async (req, res) => {
 
     const isTapOpen = String(req.query.tap || "") === "1";
 
+    const photoPositionX = Number.isFinite(Number(profile.profilePhotoPositionX)) ? Number(profile.profilePhotoPositionX) : 50;
+    const photoPositionY = Number.isFinite(Number(profile.profilePhotoPositionY)) ? Number(profile.profilePhotoPositionY) : 50;
+    const photoScale = Number.isFinite(Number(profile.profilePhotoScale)) ? Math.max(100, Math.min(180, Number(profile.profilePhotoScale))) : 100;
+
     const displayName = profile.name || profile.username || "Tapzy User";
 
     const vcardUrl = `/vcard/${escapeHtml(profile.username || "")}`;
@@ -273,7 +277,7 @@ router.get("/u/:username", async (req, res) => {
 
     const photoHtml = profile.photo
 
-      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" loading="eager" decoding="async" />`
+      ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" loading="eager" decoding="async" style="object-position:${photoPositionX}% ${photoPositionY}%; transform:scale(${photoScale / 100});" />`
 
       : escapeHtml((displayName || "T").slice(0, 1).toUpperCase());
 
@@ -727,7 +731,7 @@ router.get("/u/:username", async (req, res) => {
         <button type="button" class="profile-photo-viewer-close" data-profile-photo-close aria-label="Close profile picture viewer">×</button>
         <div class="profile-photo-viewer-frame">
           ${profile.photo
-            ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)} profile picture" />`
+            ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)} profile picture" style="object-position:${photoPositionX}% ${photoPositionY}%; transform:scale(${photoScale / 100});" />`
             : `<div class="profile-photo-viewer-initial">${escapeHtml((displayName || "T").slice(0, 1).toUpperCase())}</div>`
           }
         </div>
@@ -1305,6 +1309,18 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
+      .profile-showcase-avatar-wrap::after{
+        content:"";
+        position:absolute;
+        inset:-15px;
+        border-radius:44px;
+        pointer-events:none;
+        background:radial-gradient(circle at 50% 50%, rgba(85,179,255,.34), transparent 62%);
+        filter:blur(18px);
+        opacity:.82;
+        z-index:0;
+      }
+
 
 
       .profile-showcase-main{
@@ -1384,6 +1400,9 @@ router.get("/u/:username", async (req, res) => {
         margin:0;
 
         flex:0 0 auto;
+        touch-action:none;
+        user-select:none;
+        cursor:grab;
 
       }
 
@@ -1749,6 +1768,9 @@ router.get("/u/:username", async (req, res) => {
         text-decoration:none;
 
         flex:0 0 auto;
+        touch-action:none;
+        user-select:none;
+        cursor:grab;
 
       }
 
@@ -2532,6 +2554,10 @@ router.get("/edit/:username", async (req, res) => {
 
     const keyQuery = ownerKeyQuery(req, profile);
 
+    const photoPositionX = Number.isFinite(Number(profile.profilePhotoPositionX)) ? Number(profile.profilePhotoPositionX) : 50;
+    const photoPositionY = Number.isFinite(Number(profile.profilePhotoPositionY)) ? Number(profile.profilePhotoPositionY) : 50;
+    const photoScale = Number.isFinite(Number(profile.profilePhotoScale)) ? Math.max(100, Math.min(180, Number(profile.profilePhotoScale))) : 100;
+
 
 
     const currentPhotoHtml = profile.photo
@@ -2542,7 +2568,7 @@ router.get("/edit/:username", async (req, res) => {
 
           <div class="tz-edit-photo-preview">
 
-            <img src="${escapeHtml(profile.photo)}" alt="Current profile photo" />
+            <img src="${escapeHtml(profile.photo)}" alt="Current profile photo" data-photo-position-preview style="object-position:${photoPositionX}% ${photoPositionY}%; transform:scale(${photoScale / 100});" />
 
           </div>
 
@@ -2698,7 +2724,29 @@ router.get("/edit/:username", async (req, res) => {
 
                 <label class="tz-field">Upload New Profile Photo</label>
 
-                <input class="tz-upload-input" type="file" name="photo" accept="image/png,image/jpeg,image/webp" />
+                <input class="tz-upload-input" type="file" name="photo" accept="image/png,image/jpeg,image/webp" data-photo-position-file />
+
+                <div class="tz-photo-positioner" data-photo-positioner>
+                  <div class="tz-photo-positioner-head">
+                    <strong>Profile photo fitting</strong>
+                    <span>Drag the photo inside the box, then zoom until it sits exactly how you want.</span>
+                  </div>
+                  <input type="hidden" name="profilePhotoPositionX" value="${photoPositionX}" data-photo-position-x-value />
+                  <input type="hidden" name="profilePhotoPositionY" value="${photoPositionY}" data-photo-position-y-value />
+                  <input type="hidden" name="profilePhotoScale" value="${photoScale}" data-photo-scale-value />
+                  <label class="tz-range-field">
+                    <span>Move left / right</span>
+                    <input type="range" min="0" max="100" value="${photoPositionX}" data-photo-position-x />
+                  </label>
+                  <label class="tz-range-field">
+                    <span>Move up / down</span>
+                    <input type="range" min="0" max="100" value="${photoPositionY}" data-photo-position-y />
+                  </label>
+                  <label class="tz-range-field">
+                    <span>Zoom / fit</span>
+                    <input type="range" min="100" max="180" value="${photoScale}" data-photo-scale />
+                  </label>
+                </div>
 
 
 
@@ -3413,6 +3461,9 @@ router.get("/edit/:username", async (req, res) => {
         font-weight:800;
 
         flex:0 0 auto;
+        touch-action:none;
+        user-select:none;
+        cursor:grab;
 
       }
 
@@ -3425,8 +3476,28 @@ router.get("/edit/:username", async (req, res) => {
         height:100%;
 
         object-fit:cover;
+        transform-origin:center center;
+        transition:transform .16s ease, object-position .08s linear;
+        pointer-events:none;
 
       }
+      .tz-edit-photo-preview:active{cursor:grabbing;}
+
+      .tz-photo-positioner{
+        margin-top:14px;
+        padding:14px;
+        border-radius:22px;
+        border:1px solid rgba(115,194,255,.18);
+        background:rgba(6,10,18,.66);
+        box-shadow:0 0 30px rgba(87,170,255,.08);
+      }
+      .tz-photo-positioner-head{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+      .tz-photo-positioner-head strong{font-size:15px;color:#fff;}
+      .tz-photo-positioner-head span{font-size:13px;color:rgba(225,235,255,.66);}
+      .tz-range-field{display:grid;gap:8px;margin-top:10px;color:rgba(255,255,255,.82);font-weight:800;}
+      .tz-range-field input[type=range]{width:100%;accent-color:#73c2ff;}
+      .tz-photo-crop-note{font-size:12px;color:rgba(225,235,255,.62);margin:6px 0 2px;}
+
 
 
 
@@ -3527,6 +3598,9 @@ router.get("/edit/:username", async (req, res) => {
       .tz-check-wrap{
 
         flex:0 0 auto;
+        touch-action:none;
+        user-select:none;
+        cursor:grab;
 
       }
 
@@ -3589,6 +3663,9 @@ router.get("/edit/:username", async (req, res) => {
         height:20px;
 
         flex:0 0 auto;
+        touch-action:none;
+        user-select:none;
+        cursor:grab;
 
       }
 
@@ -3732,6 +3809,82 @@ router.get("/edit/:username", async (req, res) => {
 
     </style>
 
+    <script>
+      (function(){
+        const file = document.querySelector('[data-photo-position-file]');
+        const cropFrame = document.querySelector('.tz-edit-photo-preview');
+        const img = document.querySelector('[data-photo-position-preview]');
+        const x = document.querySelector('[data-photo-position-x]');
+        const y = document.querySelector('[data-photo-position-y]');
+        const scale = document.querySelector('[data-photo-scale]');
+        const xv = document.querySelector('[data-photo-position-x-value]');
+        const yv = document.querySelector('[data-photo-position-y-value]');
+        const sv = document.querySelector('[data-photo-scale-value]');
+        let objectUrl = null;
+        let dragging = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function numberValue(el, fallback){
+          const n = Number(el && el.value);
+          return Number.isFinite(n) ? n : fallback;
+        }
+
+        function setValues(nextX, nextY, nextScale){
+          if (x) x.value = String(Math.max(0, Math.min(100, Math.round(nextX))));
+          if (y) y.value = String(Math.max(0, Math.min(100, Math.round(nextY))));
+          if (scale) scale.value = String(Math.max(100, Math.min(180, Math.round(nextScale))));
+          apply();
+        }
+
+        function apply(){
+          const nextX = numberValue(x, 50);
+          const nextY = numberValue(y, 50);
+          const nextScale = numberValue(scale, 100);
+          if (img) {
+            img.style.objectPosition = nextX + '% ' + nextY + '%';
+            img.style.transform = 'scale(' + (nextScale / 100) + ')';
+          }
+          if (xv) xv.value = String(nextX);
+          if (yv) yv.value = String(nextY);
+          if (sv) sv.value = String(nextScale);
+        }
+
+        [x, y, scale].forEach(function(el){ if (el) el.addEventListener('input', apply); });
+
+        if (cropFrame) {
+          cropFrame.addEventListener('pointerdown', function(e){
+            if (!img) return;
+            dragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            cropFrame.setPointerCapture && cropFrame.setPointerCapture(e.pointerId);
+          });
+          cropFrame.addEventListener('pointermove', function(e){
+            if (!dragging) return;
+            const rect = cropFrame.getBoundingClientRect();
+            const dx = ((e.clientX - lastX) / Math.max(rect.width, 1)) * 100;
+            const dy = ((e.clientY - lastY) / Math.max(rect.height, 1)) * 100;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            setValues(numberValue(x, 50) - dx, numberValue(y, 50) - dy, numberValue(scale, 100));
+          });
+          cropFrame.addEventListener('pointerup', function(){ dragging = false; });
+          cropFrame.addEventListener('pointercancel', function(){ dragging = false; });
+        }
+
+        if (file) file.addEventListener('change', function(){
+          const selected = file.files && file.files[0];
+          if (!selected || !/^image\//.test(selected.type || '')) return;
+          if (objectUrl) { try { URL.revokeObjectURL(objectUrl); } catch(e) {} }
+          objectUrl = URL.createObjectURL(selected);
+          if (img) img.src = objectUrl;
+          setValues(50, 50, 100);
+        });
+        apply();
+      })();
+    </script>
+
     `;
 
 
@@ -3804,6 +3957,12 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
     const bool = (name) => !!req.body[name];
 
+    const clampPercent = (value, fallback = 50) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.max(0, Math.min(100, Math.round(n)));
+    };
+
 
 
     await prisma.userProfile.update({
@@ -3819,6 +3978,10 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
         bio: String(req.body.bio || "").trim() || null,
 
         photo,
+
+        profilePhotoPositionX: clampPercent(req.body.profilePhotoPositionX, 50),
+        profilePhotoPositionY: clampPercent(req.body.profilePhotoPositionY, 50),
+        profilePhotoScale: Math.max(100, Math.min(180, Math.round(Number(req.body.profilePhotoScale || 100) || 100))),
 
 
 

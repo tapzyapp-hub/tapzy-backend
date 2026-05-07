@@ -804,7 +804,7 @@ module.exports = async function getEventsPage(req, res) {
 
           radial-gradient(circle at var(--mx,50%) var(--my,50%),
 
-          rgba(127,210,255,.34), rgba(92,154,255,.16) 18%, transparent 44%);
+          rgba(127,220,255,.58), rgba(64,155,255,.28) 20%, transparent 50%);
 
         opacity:0;
 
@@ -828,7 +828,7 @@ module.exports = async function getEventsPage(req, res) {
 
         border-radius:inherit;
 
-        background:linear-gradient(135deg, rgba(137,218,255,.52), rgba(255,255,255,.10), rgba(120,150,255,.32));
+        background:linear-gradient(135deg, rgba(137,226,255,.82), rgba(255,255,255,.16), rgba(75,154,255,.58));
 
         opacity:0;
 
@@ -862,9 +862,10 @@ module.exports = async function getEventsPage(req, res) {
 
           0 30px 80px rgba(0,0,0,.55),
 
-          0 0 0 1px rgba(127,210,255,.25);
+          0 0 0 1px rgba(127,220,255,.42),
+          0 0 42px rgba(78,178,255,.28);
 
-        border-color:rgba(127,210,255,.35);
+        border-color:rgba(127,220,255,.56);
 
       }
 
@@ -946,9 +947,9 @@ module.exports = async function getEventsPage(req, res) {
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(86,156,255,.18), transparent 68%);
+        background:radial-gradient(circle, rgba(100,190,255,.38), rgba(58,128,255,.18) 36%, transparent 70%);
 
-        filter:blur(16px);
+        filter:blur(20px);
 
         z-index:1;
 
@@ -1274,6 +1275,24 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
+
+
+      .btnGhost:hover,
+      .btnGhost:focus-visible,
+      .btnGhost.is-going{
+        border-color:rgba(127,220,255,.64);
+        background:rgba(64,148,255,.16);
+        box-shadow:
+          0 0 0 1px rgba(127,220,255,.22),
+          0 0 30px rgba(75,170,255,.34),
+          inset 0 1px 0 rgba(255,255,255,.14);
+        transform:translateY(-2px);
+      }
+
+      .js-save-btn.is-animating{
+        box-shadow:0 0 36px rgba(75,170,255,.48);
+      }
+
       .events-load-state{
 
         color:#95a5bf;
@@ -1430,9 +1449,9 @@ module.exports = async function getEventsPage(req, res) {
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(86,156,255,.20), transparent 68%);
+        background:radial-gradient(circle, rgba(100,190,255,.42), rgba(58,128,255,.20) 36%, transparent 70%);
 
-        filter:blur(18px);
+        filter:blur(22px);
 
         z-index:1;
 
@@ -1649,7 +1668,8 @@ module.exports = async function getEventsPage(req, res) {
           box-shadow:
             0 30px 82px rgba(0,0,0,.64),
             0 0 0 1px rgba(135,220,255,.42),
-            0 0 34px rgba(78,178,255,.30);
+            0 0 52px rgba(78,178,255,.46),
+            0 0 96px rgba(64,128,255,.20);
         }
 
         .mobile-events-grid .event-card.is-touch-active .event-media{

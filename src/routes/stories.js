@@ -191,6 +191,27 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
         <input type="hidden" name="type" value="text" />
+        <input type="hidden" name="videoStart" value="0" data-video-crop-start-value />
+        <input type="hidden" name="videoEnd" value="" data-video-crop-end-value />
+
+        <div class="stories-video-crop" data-video-crop hidden>
+          <div class="stories-video-crop-head">
+            <strong>TikTok-style video crop</strong>
+            <span data-video-crop-label>Drag the start and end handles to choose the exact 30s clip.</span>
+          </div>
+          <div class="stories-trim-preview">
+            <div class="stories-trim-track">
+              <div class="stories-trim-window" data-video-crop-window></div>
+              <input class="stories-trim-range stories-trim-start" type="range" min="0" max="0" step="0.1" value="0" data-video-crop-start aria-label="Video crop start" />
+              <input class="stories-trim-range stories-trim-end" type="range" min="0" max="30" step="0.1" value="30" data-video-crop-end aria-label="Video crop end" />
+            </div>
+            <div class="stories-trim-times">
+              <span data-video-start-time>0.0s</span>
+              <strong>Max 30s</strong>
+              <span data-video-end-time>30.0s</span>
+            </div>
+          </div>
+        </div>
 
 
 
@@ -1064,6 +1085,19 @@ router.get("/stories", async (req, res) => {
       }
 
       .stories-preview-card img,
+      .stories-video-crop{grid-column:1/-1;border:1px solid rgba(115,194,255,.18);border-radius:24px;padding:14px;background:rgba(6,10,18,.68);box-shadow:0 0 28px rgba(87,170,255,.08);}
+      .stories-video-crop-head{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+      .stories-video-crop-head strong{color:#fff;font-size:15px;}
+      .stories-video-crop-head span{color:rgba(225,235,255,.68);font-size:13px;}
+      .stories-trim-preview{border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.34);padding:14px;}
+      .stories-trim-track{--start:0%;--end:100%;position:relative;height:54px;border-radius:18px;overflow:hidden;background:repeating-linear-gradient(90deg, rgba(115,194,255,.20) 0 8px, rgba(255,255,255,.06) 8px 14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+      .stories-trim-window{position:absolute;top:5px;bottom:5px;left:var(--start);right:calc(100% - var(--end));border:2px solid rgba(115,194,255,.95);border-radius:15px;box-shadow:0 0 24px rgba(87,170,255,.32), inset 0 0 24px rgba(87,170,255,.12);pointer-events:none;}
+      .stories-trim-range{position:absolute;inset:0;width:100%;height:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;pointer-events:none;}
+      .stories-trim-range::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:24px;height:48px;border-radius:13px;background:#73c2ff;border:2px solid rgba(255,255,255,.92);box-shadow:0 0 22px rgba(87,170,255,.45);pointer-events:auto;}
+      .stories-trim-range::-moz-range-thumb{width:24px;height:48px;border-radius:13px;background:#73c2ff;border:2px solid rgba(255,255,255,.92);box-shadow:0 0 22px rgba(87,170,255,.45);pointer-events:auto;}
+      .stories-trim-times{display:flex;justify-content:space-between;gap:10px;margin-top:10px;color:rgba(225,235,255,.76);font-size:12px;font-weight:800;}
+      .stories-trim-times strong{color:#fff;}
+
       .stories-preview-card video{
         width:100%;
         height:100%;
@@ -1206,6 +1240,15 @@ router.get("/stories", async (req, res) => {
         const file = form.querySelector('input[name="storyMedia"]');
         const label = form.querySelector('[data-upload-label]');
         const preview = form.querySelector('[data-story-preview]');
+        const cropBox = form.querySelector('[data-video-crop]');
+        const cropStart = form.querySelector('[data-video-crop-start]');
+        const cropEnd = form.querySelector('[data-video-crop-end]');
+        const cropStartValue = form.querySelector('[data-video-crop-start-value]');
+        const cropEndValue = form.querySelector('[data-video-crop-end-value]');
+        const cropLabel = form.querySelector('[data-video-crop-label]');
+        const cropWindow = form.querySelector('[data-video-crop-window]');
+        const cropStartTime = form.querySelector('[data-video-start-time]');
+        const cropEndTime = form.querySelector('[data-video-end-time]');
         const status = form.querySelector('[data-story-status]');
         const submit = form.querySelector('[data-story-submit]');
         const eventSelect = form.querySelector('[data-story-event-select]');
@@ -1234,6 +1277,35 @@ router.get("/stories", async (req, res) => {
           activePreviewUrl = null;
         }
 
+        function syncCropValues(){
+          if (!cropStart || !cropEnd) return;
+          const max = Number(cropEnd.max || cropStart.max || 30) || 30;
+          let start = Number(cropStart.value || 0);
+          let end = Number(cropEnd.value || 0);
+          if (end <= start) end = start + 1;
+          if (end - start > 30) {
+            if (document.activeElement === cropStart) start = Math.max(0, end - 30);
+            else end = Math.min(max, start + 30);
+          }
+          start = Math.max(0, Math.min(start, Math.max(0, max - 1)));
+          end = Math.max(start + 1, Math.min(end, max));
+          cropStart.value = String(start);
+          cropEnd.value = String(end);
+          if (cropStartValue) cropStartValue.value = String(start);
+          if (cropEndValue) cropEndValue.value = String(end);
+          if (cropLabel) cropLabel.textContent = 'Selected ' + start.toFixed(1) + 's to ' + end.toFixed(1) + 's';
+          if (cropStartTime) cropStartTime.textContent = start.toFixed(1) + 's';
+          if (cropEndTime) cropEndTime.textContent = end.toFixed(1) + 's';
+          if (cropWindow) {
+            cropWindow.style.setProperty('--start', ((start / Math.max(max, 1)) * 100).toFixed(2) + '%');
+            cropWindow.style.setProperty('--end', ((end / Math.max(max, 1)) * 100).toFixed(2) + '%');
+          }
+          const v = preview ? preview.querySelector('video') : null;
+          if (v && Math.abs((Number(v.currentTime) || 0) - start) > .35) { try { v.currentTime = start; } catch(e) {} }
+        }
+        if (cropStart) cropStart.addEventListener('input', syncCropValues);
+        if (cropEnd) cropEnd.addEventListener('input', syncCropValues);
+
         function renderPreview(selected){
           if (!preview || !selected) return;
           clearPreviewUrl();
@@ -1246,9 +1318,24 @@ router.get("/stories", async (req, res) => {
             activePreviewUrl = URL.createObjectURL(selected);
             preview.innerHTML = '<video src="' + activePreviewUrl + '" muted playsinline webkit-playsinline preload="metadata" controls></video>';
             const video = preview.querySelector('video');
-            if (video && video.load) video.load();
+            if (cropBox) cropBox.hidden = false;
+            if (video) {
+              video.addEventListener('loadedmetadata', function(){
+                const d = Number.isFinite(video.duration) ? video.duration : 0;
+                const maxStart = Math.max(0, d - 1);
+                const defaultEnd = Math.min(d || 30, 30);
+                if (cropStart) { cropStart.max = String(maxStart); cropStart.value = '0'; }
+                if (cropEnd) { cropEnd.max = String(d || 30); cropEnd.value = String(defaultEnd); }
+                syncCropValues();
+              }, { once:true });
+              if (video.load) video.load();
+            }
             return;
           }
+
+          if (cropBox) cropBox.hidden = true;
+          if (cropStartValue) cropStartValue.value = '0';
+          if (cropEndValue) cropEndValue.value = '';
 
           const reader = new FileReader();
           reader.onload = function(e){
@@ -1428,6 +1515,11 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
 
 
+    const cropStartRaw = Number(req.body.videoStart || 0);
+    const cropEndRaw = Number(req.body.videoEnd || 0);
+    const videoStart = type === "video" && Number.isFinite(cropStartRaw) && cropStartRaw > 0 ? cropStartRaw : null;
+    const videoEnd = type === "video" && Number.isFinite(cropEndRaw) && cropEndRaw > 0 ? cropEndRaw : null;
+
     const createdStory = await prisma.story.create({
 
       data: {
@@ -1439,6 +1531,9 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
         type,
 
         mediaUrl,
+
+        videoStart,
+        videoEnd,
 
         text,
 
@@ -1707,7 +1802,7 @@ router.get("/stories/:username", async (req, res) => {
 
           ? isVideoStory
 
-            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline webkit-playsinline preload="metadata"></video>`
+            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" data-video-start="${story.videoStart ?? 0}" data-video-end="${story.videoEnd ?? ''}" autoplay muted playsinline webkit-playsinline preload="metadata"></video>`
 
             : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" loading="eager" decoding="async" />`
 
@@ -2659,9 +2754,14 @@ router.get("/stories/:username", async (req, res) => {
             return Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
           }
 
+          const cropStart = Number(video.dataset.videoStart || 0);
+          const cropEnd = Number(video.dataset.videoEnd || 0);
+          function activeEnd(){ const d = duration(); return cropEnd > cropStart ? Math.min(cropEnd, d || cropEnd) : d; }
           function tick(){
-            const d = duration();
-            if (d > 0) paintProgress((video.currentTime / d) * 100);
+            const end = activeEnd();
+            const start = Number.isFinite(cropStart) ? cropStart : 0;
+            if (end > start) paintProgress(((video.currentTime - start) / (end - start)) * 100);
+            if (end > start && video.currentTime >= end) return goNext();
             raf = requestAnimationFrame(tick);
           }
 
@@ -2670,11 +2770,12 @@ router.get("/stories/:username", async (req, res) => {
           };
           video.onended = goNext;
           video.ontimeupdate = function(){
-            const d = duration();
-            if (d > 0) paintProgress((video.currentTime / d) * 100);
+            const end = activeEnd();
+            const start = Number.isFinite(cropStart) ? cropStart : 0;
+            if (end > start) paintProgress(((video.currentTime - start) / (end - start)) * 100);
           };
 
-          try { video.currentTime = 0; } catch(e) {}
+          try { video.currentTime = Number.isFinite(cropStart) ? cropStart : 0; } catch(e) {}
           video.play().catch(function(){});
           raf = requestAnimationFrame(tick);
         }

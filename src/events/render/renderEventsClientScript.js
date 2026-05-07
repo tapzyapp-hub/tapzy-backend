@@ -218,11 +218,11 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           }
 
           const isGoing = !!event.isGoing;
-          const label = isGoing ? "I'm Going" : "Going";
+          const label = isGoing ? "Going ✓" : "Going";
 
           return \`
 
-            <form method="POST" action="/events/\${escapeUnsafe(event.id)}/save" class="js-save-form" data-event-id="\${escapeUnsafe(event.id)}" style="margin:0;">
+            <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form" data-event-id="\${escapeUnsafe(event.id)}" style="margin:0;">
 
               <button class="btn btnGhost js-save-btn\${isGoing ? " is-going" : ""}" data-event-id="\${escapeUnsafe(event.id)}" type="submit">\${label}</button>
 
@@ -349,6 +349,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
                 <div class="event-actions-secondary">
 
                   \${renderClientGoing(event)}
+                  <div class="event-going-count muted js-going-count" data-event-id="\${escapeUnsafe(event.id)}">\${Number(event.goingCount || 0) ? Number(event.goingCount || 0) + " going" : ""}</div>
 
                 </div>
 
@@ -439,6 +440,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
                     \${renderClientGoing(event)}
 
                   </div>
+                  <div class="event-going-count muted js-going-count" data-event-id="\${escapeUnsafe(event.id)}">\${Number(event.goingCount || 0) ? Number(event.goingCount || 0) + " going" : ""}</div>
 
                 </div>
 
@@ -512,7 +514,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             card.addEventListener("pointermove", (e) => {
 
-              if (!IS_MOBILE_FEED && card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
+              if (card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
 
             }, { passive: true });
 
@@ -546,10 +548,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             card.addEventListener("touchmove", (e) => {
 
-              if (!IS_MOBILE_FEED) {
-                const touch = e.touches && e.touches[0];
-                if (touch) lightCard(touch.clientX, touch.clientY);
-              }
+              const touch = e.touches && e.touches[0];
+              if (touch) lightCard(touch.clientX, touch.clientY);
 
             }, { passive: true });
 
@@ -655,8 +655,12 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
               const isGoing = !!data.going;
               document.querySelectorAll(\`.js-save-form[data-event-id="\${CSS.escape(eventId)}"] .js-save-btn\`).forEach((node) => {
-                node.textContent = isGoing ? "I'm Going" : "Going";
+                node.textContent = isGoing ? "Going ✓" : "Going";
                 node.classList.toggle("is-going", isGoing);
+              });
+              document.querySelectorAll(\`.js-going-count[data-event-id="\${CSS.escape(eventId)}"]\`).forEach((countNode) => {
+                const count = Number(data.goingCount || 0);
+                countNode.textContent = count ? String(count) + " going" : "";
               });
             } catch (err) {
               console.error(err);

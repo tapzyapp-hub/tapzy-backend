@@ -4,9 +4,9 @@ const { normalizeCategory, getShortDescription, getUrgencyBadge, pickImage } = r
 function renderGoingButton(event, currentProfile, goingSet) {
   if (!currentProfile) return '';
   const isGoing = goingSet && goingSet.has(event.id);
-  const label = isGoing ? "I'm Going" : 'Going';
+  const label = isGoing ? "Going ✓" : 'Going';
   return `
-    <form method="POST" action="/events/${encodeURIComponent(event.id)}/save" class="js-save-form" data-event-id="${escapeHtml(event.id)}" style="margin:0;">
+    <form method="POST" action="/events/${encodeURIComponent(event.id)}/going" class="js-save-form" data-event-id="${escapeHtml(event.id)}" style="margin:0;">
       <button class="btn btnGhost js-save-btn${isGoing ? ' is-going' : ''}" data-event-id="${escapeHtml(event.id)}" type="submit">${escapeHtml(label)}</button>
     </form>
   `;
@@ -55,7 +55,7 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
         <div class="event-actions-secondary">
           ${renderGoingButton(event, currentProfile, goingSet)}
-          ${goingCount ? `<div class="event-going-count muted">${goingCount} going</div>` : ''}
+          <div class="event-going-count muted js-going-count" data-event-id="${escapeHtml(event.id)}">${goingCount ? `${goingCount} going` : ""}</div>
         </div>
       </div>
     </div>
@@ -100,7 +100,7 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
             ${event.ticketUrl ? `<a class="btn btnDark" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.ticketUrl)}">Tickets</a>` : ''}
             ${renderGoingButton(event, currentProfile, goingSet)}
           </div>
-          ${goingCount ? `<div class="event-going-count muted">${goingCount} going</div>` : ''}
+          <div class="event-going-count muted js-going-count" data-event-id="${escapeHtml(event.id)}">${goingCount ? `${goingCount} going` : ""}</div>
         </div>
       </div>
     </section>
