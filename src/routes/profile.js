@@ -3977,11 +3977,13 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
 
 
-    await prisma.userProfile.update({
+    const profilePhotoFitData = {
+      profilePhotoPositionX: clampPercent(req.body.profilePhotoPositionX, 50),
+      profilePhotoPositionY: clampPercent(req.body.profilePhotoPositionY, 50),
+      profilePhotoScale: Math.max(100, Math.min(180, Math.round(Number(req.body.profilePhotoScale || 100) || 100))),
+    };
 
-      where: { id: profile.id },
-
-      data: {
+    const profileUpdateData = {
 
         name: String(req.body.name || "").trim() || null,
 
@@ -3990,12 +3992,6 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
         bio: String(req.body.bio || "").trim() || null,
 
         photo,
-
-        profilePhotoPositionX: clampPercent(req.body.profilePhotoPositionX, 50),
-        profilePhotoPositionY: clampPercent(req.body.profilePhotoPositionY, 50),
-        profilePhotoScale: Math.max(100, Math.min(180, Math.round(Number(req.body.profilePhotoScale || 100) || 100))),
-
-
 
         phone: String(req.body.phone || "").trim() || null,
 
@@ -4055,9 +4051,23 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
         shareTelegramEnabled: bool("shareTelegramEnabled"),
 
-      },
+      };
 
-    });
+    try {
+      await prisma.userProfile.update({
+        where: { id: profile.id },
+        data: { ...profileUpdateData, ...profilePhotoFitData },
+      });
+    } catch (fitUpdateError) {
+      const message = String(fitUpdateError && fitUpdateError.message || "");
+      const canRetryWithoutFit = message.includes("profilePhotoPositionX") || message.includes("profilePhotoPositionY") || message.includes("profilePhotoScale") || message.includes("Unknown argument");
+      if (!canRetryWithoutFit) throw fitUpdateError;
+      console.warn("Profile photo fitting columns/client not ready yet; saving profile without fit data. Run prisma migrate/generate to enable saved fitting.", fitUpdateError);
+      await prisma.userProfile.update({
+        where: { id: profile.id },
+        data: profileUpdateData,
+      });
+    }
 
 
 
