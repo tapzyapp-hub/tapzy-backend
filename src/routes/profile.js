@@ -1201,7 +1201,7 @@ router.get("/u/:username", async (req, res) => {
 
         color:#ffffff;
 
-        border:1px solid rgba(255,255,255,.08);
+        border:3px solid rgba(115,194,255,.92);
 
         background:
 
@@ -1215,7 +1215,39 @@ router.get("/u/:username", async (req, res) => {
 
           0 0 0 1px rgba(255,255,255,.02),
 
+          0 0 22px rgba(87,170,255,.22),
+
+          0 0 42px rgba(48,110,255,.16),
+
           0 12px 30px rgba(0,0,0,.28);
+
+        transition:
+
+          border-color .22s ease,
+
+          box-shadow .22s ease,
+
+          transform .22s ease;
+
+      }
+
+
+
+      .profile-showcase-avatar:hover{
+
+        border-color:rgba(145,214,255,.98);
+
+        box-shadow:
+
+          inset 0 1px 0 rgba(255,255,255,.05),
+
+          0 0 28px rgba(87,170,255,.32),
+
+          0 0 56px rgba(48,110,255,.24),
+
+          0 14px 34px rgba(0,0,0,.32);
+
+        transform:translateY(-1px);
 
       }
 
@@ -1416,6 +1448,30 @@ router.get("/u/:username", async (req, res) => {
       }
 
 
+
+
+
+      .profile-pill-btn:hover,
+
+      .profile-mini-action:hover,
+
+      .profile-showcase-actions .btn:hover,
+
+      .tapzy-contact-btn:hover{
+
+        border-color:rgba(115,194,255,.92);
+
+        box-shadow:
+
+          0 0 18px rgba(87,170,255,.24),
+
+          0 0 42px rgba(48,110,255,.18),
+
+          inset 0 1px 0 rgba(255,255,255,.08);
+
+        transform:translateY(-1px);
+
+      }
 
       .profile-showcase-actions form .btn:not(.btnDark),
 
