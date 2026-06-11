@@ -22,11 +22,14 @@ const {
   renderCitySwitcher,
 } = require("../render/renderEventParts");
 const renderEventsClientScript = require("../render/renderEventsClientScript");
+const { triggerEventAutoRefreshIfDue } = require("../../services/eventAutoRefreshScheduler");
 
 module.exports = async function getEventsPage(req, res) {
 
 
   try {
+
+    triggerEventAutoRefreshIfDue("events-page-catch-up");
 
     await seedEventsIfEmpty(prisma);
 

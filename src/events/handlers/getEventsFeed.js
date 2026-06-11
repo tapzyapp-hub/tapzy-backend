@@ -1,5 +1,6 @@
 const prisma = require("../../prisma");
 const { MAIN_QUERY_LIMIT, FEED_PAGE_SIZE } = require("../config");
+const { triggerEventAutoRefreshIfDue } = require("../../services/eventAutoRefreshScheduler");
 const {
   normalizeCategory,
   getShortDescription,
@@ -14,6 +15,8 @@ const {
 
 module.exports = async function getEventsFeed(req, res) {
   try {
+    triggerEventAutoRefreshIfDue("events-feed-catch-up");
+
     const page = Math.max(1, Number(req.query.page || 1));
     const limit = Math.min(24, Math.max(1, Number(req.query.limit || FEED_PAGE_SIZE)));
     const skip = (page - 1) * limit;

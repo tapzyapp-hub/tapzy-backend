@@ -1,12 +1,19 @@
-const { syncRealEvents } = require("./eventSyncService");
-
 const DEFAULT_TIME_ZONE = "America/Toronto";
 const DEFAULT_HOUR = 0;
 const DEFAULT_MINUTE = 0;
 
 let timer = null;
+let safetyInterval = null;
 let running = false;
 let started = false;
+let lastSuccessfulLocalDateKey = "";
+let lastAttemptLocalDateKey = "";
+
+function envFlag(name, fallback = true) {
+  const raw = process.env[name];
+  if (raw == null || raw === "") return fallback;
+  return !["false", "0", "no", "off"].includes(String(raw).trim().toLowerCase());
+}
 
 function numberEnv(name, fallback) {
   const value = Number(process.env[name]);
@@ -38,6 +45,11 @@ function getZonedParts(date, timeZone) {
     minute: Number(parts.minute),
     second: Number(parts.second),
   };
+}
+
+function getLocalDateKey(date = new Date(), timeZone = DEFAULT_TIME_ZONE) {
+  const parts = getZonedParts(date, timeZone);
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
 }
 
 function getTimeZoneOffsetMs(date, timeZone) {
@@ -119,22 +131,65 @@ function getNextDailyRunDate(now = new Date(), options = {}) {
   return candidate;
 }
 
-async function runScheduledEventSync() {
+async function runScheduledEventSync(reason = "scheduled") {
   if (running) {
     console.log("Daily event auto-refresh skipped because a sync is already running.");
-    return;
+    return 0;
   }
 
+  const timeZone = process.env.EVENT_AUTO_REFRESH_TIME_ZONE || DEFAULT_TIME_ZONE;
+  const todayKey = getLocalDateKey(new Date(), timeZone);
+
   running = true;
+  lastAttemptLocalDateKey = todayKey;
+
   try {
-    console.log("Daily event auto-refresh started.");
+    console.log(`Daily event auto-refresh started (${reason}).`);
+    const { syncRealEvents } = require("./eventSyncService");
     const count = await syncRealEvents();
+    lastSuccessfulLocalDateKey = todayKey;
     console.log(`Daily event auto-refresh complete. Synced ${count} events.`);
+    return count;
   } catch (err) {
     console.error("Daily event auto-refresh failed:", err?.message || err);
+    return 0;
   } finally {
     running = false;
   }
+}
+
+function shouldCatchUpAfterMissedTimer(now = new Date()) {
+  const timeZone = process.env.EVENT_AUTO_REFRESH_TIME_ZONE || DEFAULT_TIME_ZONE;
+  const hour = numberEnv("EVENT_AUTO_REFRESH_HOUR", DEFAULT_HOUR);
+  const minute = numberEnv("EVENT_AUTO_REFRESH_MINUTE", DEFAULT_MINUTE);
+  const localNow = getZonedParts(now, timeZone);
+  const todayKey = getLocalDateKey(now, timeZone);
+
+  const scheduledTimeHasPassed =
+    localNow.hour > hour || (localNow.hour === hour && localNow.minute >= minute);
+
+  return (
+    scheduledTimeHasPassed &&
+    lastSuccessfulLocalDateKey !== todayKey &&
+    lastAttemptLocalDateKey !== todayKey &&
+    !running
+  );
+}
+
+function triggerEventAutoRefreshIfDue(reason = "request-catch-up") {
+  const disabled = String(process.env.EVENT_AUTO_REFRESH_ENABLED || "true").toLowerCase() === "false";
+  if (disabled) return false;
+
+  if (!shouldCatchUpAfterMissedTimer()) return false;
+
+  // Do not block the page/feed request. The next refresh/page load will see new events.
+  setImmediate(() => {
+    runScheduledEventSync(reason).catch((err) => {
+      console.error("Daily event auto-refresh catch-up failed:", err?.message || err);
+    });
+  });
+
+  return true;
 }
 
 function scheduleNextRun() {
@@ -151,7 +206,7 @@ function scheduleNextRun() {
   );
 
   timer = setTimeout(async () => {
-    await runScheduledEventSync();
+    await runScheduledEventSync("timer");
     scheduleNextRun();
   }, delayMs);
 
@@ -159,7 +214,10 @@ function scheduleNextRun() {
 }
 
 function startEventAutoRefreshScheduler() {
-  if (started) return;
+  if (started) {
+    console.log("Daily event auto-refresh scheduler already started.");
+    return;
+  }
 
   const disabled = String(process.env.EVENT_AUTO_REFRESH_ENABLED || "true").toLowerCase() === "false";
   if (disabled) {
@@ -168,10 +226,43 @@ function startEventAutoRefreshScheduler() {
   }
 
   started = true;
+
+  const timeZone = process.env.EVENT_AUTO_REFRESH_TIME_ZONE || DEFAULT_TIME_ZONE;
+  const hour = numberEnv("EVENT_AUTO_REFRESH_HOUR", DEFAULT_HOUR);
+  const minute = numberEnv("EVENT_AUTO_REFRESH_MINUTE", DEFAULT_MINUTE);
+  console.log(
+    `Daily event auto-refresh scheduler started (${timeZone} ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}).`
+  );
+
   scheduleNextRun();
+
+  // Hosting providers can sleep/restart apps and miss the exact midnight timer.
+  // Run once on startup by default so Events is fresh after deploys/wakeups too.
+  if (envFlag("EVENT_AUTO_REFRESH_ON_STARTUP", true)) {
+    setImmediate(() => {
+      runScheduledEventSync("startup").catch((err) => {
+        console.error("Daily event auto-refresh startup failed:", err?.message || err);
+      });
+    });
+  }
+
+  // Safety net: Render/free hosts can pause, restart, or miss long setTimeout timers.
+  // This small check makes the auto-refresh self-healing without waiting for a request.
+  const checkMinutes = Math.max(1, numberEnv("EVENT_AUTO_REFRESH_CHECK_MINUTES", 15));
+  safetyInterval = setInterval(() => {
+    if (!shouldCatchUpAfterMissedTimer()) return;
+    runScheduledEventSync("safety-check").catch((err) => {
+      console.error("Daily event auto-refresh safety check failed:", err?.message || err);
+    });
+  }, checkMinutes * 60 * 1000);
+
+  if (typeof safetyInterval.unref === "function") safetyInterval.unref();
 }
 
 module.exports = {
   startEventAutoRefreshScheduler,
+  triggerEventAutoRefreshIfDue,
+  runScheduledEventSync,
   getNextDailyRunDate,
+  getLocalDateKey,
 };
