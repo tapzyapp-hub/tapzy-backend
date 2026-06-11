@@ -1,0 +1,543 @@
+const router = require("express").Router();
+
+
+
+const {
+
+  renderShell,
+
+  renderTapzyAssistant,
+
+  escapeHtml,
+
+} = require("../utils");
+
+
+
+router.get("/", async (req, res) => {
+
+  try {
+
+    const currentProfile = req.currentProfile || null;
+
+    const signedIn = !!currentProfile;
+
+    const username = currentProfile?.username || "";
+
+
+
+    const primaryHref = signedIn ? `/u/${username}` : "/auth";
+
+    const primaryLabel = signedIn ? "Open My Profile" : "Get Started";
+
+
+
+    const body = `
+
+    <div class="wrap home-wrap">
+
+      <section class="home-hero-card">
+
+        <div class="home-kicker">Luxury Digital Identity</div>
+
+
+
+        <div class="home-logo-wrap">
+
+          <img src="/images/tapzy-logo-white.png" alt="Tapzy" class="home-logo-img" />
+
+        </div>
+
+
+
+        <div class="home-actions">
+
+          <a class="home-btn home-btn-dark home-btn-glow-1" href="${primaryHref}">
+
+            ${escapeHtml(primaryLabel)}
+
+          </a>
+
+
+
+          <a class="home-btn home-btn-dark home-btn-glow-2" href="${signedIn ? `/discovery/${username}?tab=search` : "/auth"}">
+
+            Search Users
+
+          </a>
+
+
+
+          <a class="home-btn home-btn-dark home-btn-glow-3 home-btn-center" href="${signedIn ? "/messages" : "/auth"}">
+
+            Messages
+
+          </a>
+
+        </div>
+
+      </section>
+
+    </div>
+
+
+
+<style>
+
+  .home-wrap{
+
+    max-width:1100px;
+
+  }
+
+
+
+  .home-hero-card{
+
+    margin-top:28px;
+
+    min-height:620px;
+
+    border-radius:34px;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    background:
+
+      radial-gradient(700px 260px at 50% -5%, rgba(127,210,255,.08), transparent 48%),
+
+      linear-gradient(180deg, rgba(10,12,18,.98), rgba(6,6,8,1));
+
+    box-shadow:
+
+      inset 0 1px 0 rgba(255,255,255,.03),
+
+      0 30px 80px rgba(0,0,0,.42);
+
+    padding:80px 28px 120px;
+
+    text-align:center;
+
+    position:relative;
+
+    overflow:hidden;
+
+    transition:
+
+      box-shadow .22s ease,
+
+      border-color .22s ease,
+
+      transform .22s ease;
+
+  }
+
+
+
+  .home-kicker{
+
+    color:#8f93a3;
+
+    text-transform:uppercase;
+
+    letter-spacing:5px;
+
+    font-size:18px;
+
+    margin-bottom:40px;
+
+  }
+
+
+
+  .home-logo-wrap{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin-bottom:40px;
+
+  }
+
+
+
+  .home-logo-img{
+
+    width:100%;
+
+    max-width:300px;
+
+    height:auto;
+
+    object-fit:contain;
+
+    animation:logoPulse 2.8s ease-in-out infinite;
+
+    transform-origin:center center;
+
+  }
+
+
+
+  .home-actions{
+
+    display:grid;
+
+    grid-template-columns:repeat(2, minmax(230px, 290px));
+
+    justify-content:center;
+
+    justify-items:center;
+
+    gap:18px 18px;
+
+  }
+
+
+
+  .home-btn{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-height:70px;
+
+    padding:16px 22px;
+
+    border-radius:26px;
+
+    text-decoration:none;
+
+    font-size:18px;
+
+    font-weight:800;
+
+    transition:
+
+      transform .18s ease,
+
+      box-shadow .18s ease,
+
+      border-color .18s ease,
+
+      background .18s ease,
+
+      filter .18s ease;
+
+    position:relative;
+
+    isolation:isolate;
+
+    width:100%;
+
+  }
+
+
+
+  .home-btn:hover{
+
+    transform:translateY(-2px);
+
+  }
+
+
+
+  .home-btn-dark{
+
+    color:#fff;
+
+    background:linear-gradient(180deg, rgba(22,23,31,.98), rgba(14,15,22,.98));
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+
+      inset 0 1px 0 rgba(255,255,255,.03),
+
+      0 12px 26px rgba(0,0,0,.22);
+
+  }
+
+
+
+  .home-btn::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:-3px;
+
+    border-radius:30px;
+
+    z-index:-1;
+
+    opacity:.85;
+
+    pointer-events:none;
+
+    filter:blur(12px);
+
+    background:
+
+      radial-gradient(circle, rgba(78,156,255,.42) 0%, rgba(78,156,255,.18) 36%, rgba(78,156,255,0) 72%);
+
+    animation:buttonBluePulse 3.2s ease-in-out infinite;
+
+  }
+
+
+
+  .home-btn-glow-1::after{
+
+    animation-delay:0s;
+
+  }
+
+
+
+  .home-btn-glow-2::after{
+
+    animation-delay:1.05s;
+
+  }
+
+
+
+  .home-btn-glow-3::after{
+
+    animation-delay:2.1s;
+
+  }
+
+
+
+  .home-btn:hover::after{
+
+    opacity:1;
+
+    filter:blur(14px);
+
+  }
+
+
+
+  .home-btn-dark:hover{
+
+    border-color:rgba(110,170,255,.35);
+
+    box-shadow:
+
+      inset 0 1px 0 rgba(255,255,255,.04),
+
+      0 14px 30px rgba(0,0,0,.26),
+
+      0 0 0 1px rgba(95,165,255,.18),
+
+      0 0 24px rgba(65,135,255,.20);
+
+  }
+
+
+
+  .home-btn-center{
+
+    grid-column:1 / -1;
+
+    max-width:190px;
+
+    margin:0 auto;
+
+  }
+
+
+
+  @media (max-width: 640px){
+
+    .home-hero-card{
+
+      margin-top:18px;
+
+      min-height:calc(100vh - 220px);
+
+      padding:50px 18px 100px;
+
+      border-radius:24px;
+
+    }
+
+
+
+    .home-kicker{
+
+      font-size:12px;
+
+      letter-spacing:4px;
+
+      margin-bottom:34px;
+
+    }
+
+
+
+    .home-logo-wrap{
+
+      margin-bottom:42px;
+
+    }
+
+
+
+    .home-logo-img{
+
+      max-width:330px;
+
+    }
+
+
+
+    .home-actions{
+
+      grid-template-columns:1fr 1fr;
+
+      gap:14px;
+
+    }
+
+
+
+    .home-btn{
+
+      font-size:14px;
+
+      min-height:64px;
+
+      padding:14px 10px;
+
+      border-radius:22px;
+
+    }
+
+
+
+    .home-btn::after{
+
+      inset:-2px;
+
+      border-radius:26px;
+
+      opacity:.95;
+
+      filter:blur(11px);
+
+    }
+
+
+
+    .home-btn-center{
+
+      max-width:190px;
+
+      width:100%;
+
+    }
+
+  }
+
+
+
+  @keyframes logoPulse{
+
+    0%, 100%{
+
+      transform:scale(1);
+
+    }
+
+    50%{
+
+      transform:scale(1.018);
+
+    }
+
+  }
+
+
+
+  @keyframes buttonBluePulse{
+
+    0%{
+
+      opacity:.30;
+
+      transform:scale(.985);
+
+    }
+
+    50%{
+
+      opacity:.95;
+
+      transform:scale(1.02);
+
+    }
+
+    100%{
+
+      opacity:.30;
+
+      transform:scale(.985);
+
+    }
+
+  }
+
+</style>
+
+
+
+${renderTapzyAssistant({
+
+  username: currentProfile?.username || "User",
+
+  pageType: "home",
+
+})}
+
+`;
+
+
+
+    return res.send(
+
+      renderShell("Tapzy", body, "", {
+
+        currentProfile,
+
+        pageTitle: "Home",
+
+        pageType: "home",
+
+      })
+
+    );
+
+  } catch (e) {
+
+    console.error(e);
+
+    return res.status(500).send("Home page error");
+
+  }
+
+});
+
+
+
+module.exports = router;
