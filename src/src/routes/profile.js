@@ -3336,11 +3336,17 @@ router.get("/edit/:username", async (req, res) => {
       .tz-edit-wrap{
 
         width:100%;
-        max-width:920px;
+        max-width:1180px;
         margin-left:auto;
         margin-right:auto;
         overflow-x:hidden;
+        box-sizing:border-box;
 
+      }
+
+      .tz-edit-wrap,
+      .tz-edit-wrap *{
+        box-sizing:border-box;
       }
 
 
@@ -4170,6 +4176,31 @@ router.get("/edit/:username", async (req, res) => {
 
 
       @media(max-width:700px){
+
+        .wrap.tz-edit-wrap{
+          width:100%;
+          max-width:100%;
+          margin-left:auto;
+          margin-right:auto;
+          padding:18px 12px 120px;
+          box-sizing:border-box;
+          overflow-x:hidden;
+        }
+
+        .tz-edit-shell{
+          margin:0;
+          padding:0;
+          gap:16px;
+        }
+
+        .tz-edit-shell,
+        .tz-edit-form,
+        .tz-edit-hero,
+        .tz-edit-section{
+          width:100%;
+          max-width:100%;
+          box-sizing:border-box;
+        }
 
         .tz-edit-hero{
 
