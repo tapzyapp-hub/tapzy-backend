@@ -3031,12 +3031,31 @@ router.get("/edit/:username", async (req, res) => {
 
                 <label class="tz-field">Upload New Profile Photo</label>
 
-                <input class="tz-upload-input" type="file" name="photo" accept="image/png,image/jpeg,image/webp" data-photo-position-file />
+                <input id="tzPhotoFileInput" class="tz-upload-input tz-upload-input-hidden" type="file" name="photo" accept="image/png,image/jpeg,image/webp" data-photo-position-file />
 
                 <input type="hidden" name="profilePhotoPositionX" value="${photoPositionX}" data-photo-position-x data-photo-position-x-value />
                 <input type="hidden" name="profilePhotoPositionY" value="${photoPositionY}" data-photo-position-y data-photo-position-y-value />
                 <input type="hidden" name="profilePhotoScale" value="${photoScale}" data-photo-scale data-photo-scale-value />
-                <div class="tz-photo-crop-note">Drag the photo preview to reposition it. Pinch or scroll to zoom.</div>
+
+                <label class="tz-photo-pick-btn" for="tzPhotoFileInput" data-photo-pick-trigger>
+                  <span class="tz-photo-pick-icon">＋</span>
+                  <span>Choose photo</span>
+                </label>
+                <div class="tz-photo-crop-note">After choosing a photo, a full-screen Move and scale editor opens automatically.</div>
+
+                <div class="tz-photo-crop-modal" data-photo-crop-modal aria-hidden="true">
+                  <div class="tz-photo-crop-topbar">
+                    <button type="button" class="tz-photo-crop-textbtn" data-photo-crop-cancel>Cancel</button>
+                    <div class="tz-photo-crop-title">Move and scale</div>
+                    <button type="button" class="tz-photo-crop-done" data-photo-crop-done>Done</button>
+                  </div>
+                  <div class="tz-photo-crop-stage" data-photo-crop-stage>
+                    <img data-photo-crop-img alt="Selected profile photo" />
+                    <div class="tz-photo-crop-mask"></div>
+                    <div class="tz-photo-crop-ring"></div>
+                  </div>
+                  <div class="tz-photo-crop-hint">Drag to move • pinch to zoom</div>
+                </div>
 
 
 
@@ -3784,6 +3803,147 @@ router.get("/edit/:username", async (req, res) => {
         line-height:1.35;
       }
 
+      .tz-upload-input-hidden{
+        position:absolute;
+        width:1px;
+        height:1px;
+        opacity:0;
+        pointer-events:none;
+      }
+
+      .tz-photo-pick-btn{
+        margin-top:12px;
+        min-height:52px;
+        border-radius:20px;
+        border:1px solid rgba(255,255,255,.12);
+        background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        font-weight:900;
+        cursor:pointer;
+        box-shadow:0 18px 50px rgba(0,0,0,.25);
+      }
+
+      .tz-photo-pick-icon{
+        width:28px;
+        height:28px;
+        border-radius:999px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(115,194,255,.14);
+        border:1px solid rgba(115,194,255,.22);
+        color:#73c2ff;
+        font-size:20px;
+        line-height:1;
+      }
+
+      .tz-photo-crop-modal{
+        position:fixed;
+        inset:0;
+        z-index:9999;
+        background:#05060a;
+        display:none;
+        flex-direction:column;
+        color:#fff;
+        touch-action:none;
+      }
+
+      .tz-photo-crop-modal.is-open{display:flex;}
+
+      .tz-photo-crop-topbar{
+        height:72px;
+        padding:14px 18px;
+        padding-top:max(14px, env(safe-area-inset-top));
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        border-bottom:1px solid rgba(255,255,255,.08);
+        background:rgba(5,6,10,.86);
+        backdrop-filter:blur(16px);
+      }
+
+      .tz-photo-crop-title{
+        font-weight:900;
+        letter-spacing:.01em;
+      }
+
+      .tz-photo-crop-textbtn,
+      .tz-photo-crop-done{
+        border:0;
+        background:transparent;
+        color:#fff;
+        font:inherit;
+        font-weight:850;
+        padding:10px 8px;
+        cursor:pointer;
+      }
+
+      .tz-photo-crop-done{
+        color:#73c2ff;
+      }
+
+      .tz-photo-crop-stage{
+        position:relative;
+        flex:1;
+        overflow:hidden;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:radial-gradient(circle at center, rgba(115,194,255,.12), transparent 44%), #05060a;
+        touch-action:none;
+        user-select:none;
+      }
+
+      .tz-photo-crop-stage img{
+        position:absolute;
+        left:50%;
+        top:50%;
+        width:82vw;
+        max-width:520px;
+        height:auto;
+        transform:translate(-50%, -50%) scale(1);
+        transform-origin:center center;
+        will-change:transform;
+        user-select:none;
+        -webkit-user-drag:none;
+      }
+
+      .tz-photo-crop-mask{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:radial-gradient(circle at center, transparent 0 32vw, rgba(0,0,0,.58) calc(32vw + 2px));
+      }
+
+      .tz-photo-crop-ring{
+        position:absolute;
+        left:50%;
+        top:50%;
+        width:64vw;
+        height:64vw;
+        max-width:420px;
+        max-height:420px;
+        transform:translate(-50%, -50%);
+        border-radius:50%;
+        border:2px solid rgba(255,255,255,.92);
+        box-shadow:0 0 0 999px rgba(0,0,0,.34), 0 0 36px rgba(115,194,255,.20);
+        pointer-events:none;
+      }
+
+      .tz-photo-crop-hint{
+        padding:16px 18px max(22px, env(safe-area-inset-bottom));
+        text-align:center;
+        color:rgba(255,255,255,.72);
+        font-size:14px;
+        background:rgba(5,6,10,.92);
+        border-top:1px solid rgba(255,255,255,.08);
+      }
+
 
 
 
@@ -4098,122 +4258,174 @@ router.get("/edit/:username", async (req, res) => {
     <script>
       (function(){
         const file = document.querySelector('[data-photo-position-file]');
-        const cropFrame = document.querySelector('.tz-edit-photo-preview');
-        let img = document.querySelector('[data-photo-position-preview]');
+        const pickTriggers = document.querySelectorAll('[data-photo-pick-trigger]');
+        const previewFrame = document.querySelector('.tz-edit-photo-preview');
+        let previewImg = document.querySelector('[data-photo-position-preview]');
         const x = document.querySelector('[data-photo-position-x]');
         const y = document.querySelector('[data-photo-position-y]');
         const scale = document.querySelector('[data-photo-scale]');
-        const xv = document.querySelector('[data-photo-position-x-value]');
-        const yv = document.querySelector('[data-photo-position-y-value]');
-        const sv = document.querySelector('[data-photo-scale-value]');
-        let objectUrl = null;
-        let dragging = false;
-        let lastX = 0;
-        let lastY = 0;
-        const activePointers = new Map();
+        const modal = document.querySelector('[data-photo-crop-modal]');
+        const stage = document.querySelector('[data-photo-crop-stage]');
+        const cropImg = document.querySelector('[data-photo-crop-img]');
+        const doneBtn = document.querySelector('[data-photo-crop-done]');
+        const cancelBtn = document.querySelector('[data-photo-crop-cancel]');
+        let selectedUrl = null;
+        let dragStart = null;
+        let state = { tx:0, ty:0, scale:1 };
+        let lastState = { tx:0, ty:0, scale:1 };
+        const pointers = new Map();
         let lastPinchDistance = 0;
 
-        function numberValue(el, fallback){
-          const n = Number(el && el.value);
-          return Number.isFinite(n) ? n : fallback;
+        function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+        function pctFromTransform(){
+          const px = clamp(50 - (state.tx / 3.2), 0, 100);
+          const py = clamp(50 - (state.ty / 3.2), 0, 100);
+          const ps = clamp(state.scale * 100, 100, 240);
+          return { px:Math.round(px), py:Math.round(py), ps:Math.round(ps) };
         }
-
-        function setValues(nextX, nextY, nextScale){
-          if (x) x.value = String(Math.max(0, Math.min(100, Math.round(nextX))));
-          if (y) y.value = String(Math.max(0, Math.min(100, Math.round(nextY))));
-          if (scale) scale.value = String(Math.max(100, Math.min(220, Math.round(nextScale))));
-          apply();
+        function writeHidden(){
+          const vals = pctFromTransform();
+          if (x) x.value = String(vals.px);
+          if (y) y.value = String(vals.py);
+          if (scale) scale.value = String(vals.ps);
         }
-
-        function apply(){
-          const nextX = numberValue(x, 50);
-          const nextY = numberValue(y, 50);
-          const nextScale = numberValue(scale, 100);
-          if (img) {
-            img.style.objectPosition = nextX + '% ' + nextY + '%';
-            img.style.transform = 'scale(' + (nextScale / 100) + ')';
-            img.dataset.photoX = String(nextX);
-            img.dataset.photoY = String(nextY);
-            img.dataset.photoScale = String(nextScale);
+        function applyCropTransform(){
+          if (!cropImg) return;
+          cropImg.style.transform = 'translate(calc(-50% + ' + state.tx + 'px), calc(-50% + ' + state.ty + 'px)) scale(' + state.scale + ')';
+          writeHidden();
+        }
+        function ensurePreviewImg(){
+          if (!previewImg && previewFrame) {
+            previewFrame.classList.remove('tz-edit-photo-empty');
+            previewFrame.innerHTML = '';
+            previewImg = document.createElement('img');
+            previewImg.setAttribute('data-photo-position-preview', '');
+            previewImg.alt = 'New profile photo preview';
+            previewFrame.appendChild(previewImg);
           }
-          if (xv) xv.value = String(nextX);
-          if (yv) yv.value = String(nextY);
-          if (sv) sv.value = String(nextScale);
+          return previewImg;
         }
-
-        [x, y, scale].forEach(function(el){ if (el) el.addEventListener('input', apply); });
-
-        if (cropFrame) {
-          function pinchDistance(){
-            const pts = Array.from(activePointers.values());
-            if (pts.length < 2) return 0;
-            const dx = pts[0].x - pts[1].x;
-            const dy = pts[0].y - pts[1].y;
-            return Math.sqrt(dx * dx + dy * dy);
+        function applyPreview(){
+          const vals = pctFromTransform();
+          const img = ensurePreviewImg();
+          if (img && selectedUrl) {
+            img.src = selectedUrl;
+            img.style.objectPosition = vals.px + '% ' + vals.py + '%';
+            img.style.transform = 'scale(' + (vals.ps / 100) + ')';
           }
-          cropFrame.addEventListener('wheel', function(e){
-            if (!img) return;
-            e.preventDefault();
-            const delta = e.deltaY < 0 ? 6 : -6;
-            setValues(numberValue(x, 50), numberValue(y, 50), numberValue(scale, 100) + delta);
-          }, { passive:false });
-          cropFrame.addEventListener('pointerdown', function(e){
-            if (!img) return;
-            e.preventDefault();
-            activePointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-            dragging = activePointers.size === 1;
-            lastPinchDistance = pinchDistance();
-            lastX = e.clientX;
-            lastY = e.clientY;
-            cropFrame.setPointerCapture && cropFrame.setPointerCapture(e.pointerId);
-          });
-          cropFrame.addEventListener('pointermove', function(e){
-            if (!img || !activePointers.has(e.pointerId)) return;
-            activePointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-            if (activePointers.size >= 2) {
-              const dist = pinchDistance();
-              if (lastPinchDistance > 0 && dist > 0) {
-                const nextScale = numberValue(scale, 100) + ((dist - lastPinchDistance) / 2.4);
-                setValues(numberValue(x, 50), numberValue(y, 50), nextScale);
-              }
-              lastPinchDistance = dist;
-              return;
-            }
-            if (!dragging) return;
-            const rect = cropFrame.getBoundingClientRect();
-            const dx = ((e.clientX - lastX) / Math.max(rect.width, 1)) * 100;
-            const dy = ((e.clientY - lastY) / Math.max(rect.height, 1)) * 100;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            setValues(numberValue(x, 50) - dx, numberValue(y, 50) - dy, numberValue(scale, 100));
-          });
-          function endPointer(e){
-            activePointers.delete(e.pointerId);
-            dragging = false;
-            lastPinchDistance = pinchDistance();
-            try { cropFrame.releasePointerCapture && cropFrame.releasePointerCapture(e.pointerId); } catch(_) {}
-          }
-          cropFrame.addEventListener('pointerup', endPointer);
-          cropFrame.addEventListener('pointercancel', endPointer);
         }
+        function openModal(){
+          if (!modal) return;
+          modal.classList.add('is-open');
+          modal.setAttribute('aria-hidden', 'false');
+          document.documentElement.style.overflow = 'hidden';
+          document.body.style.overflow = 'hidden';
+        }
+        function closeModal(){
+          if (!modal) return;
+          modal.classList.remove('is-open');
+          modal.setAttribute('aria-hidden', 'true');
+          document.documentElement.style.overflow = '';
+          document.body.style.overflow = '';
+          pointers.clear();
+          dragStart = null;
+        }
+        function distance(){
+          const pts = Array.from(pointers.values());
+          if (pts.length < 2) return 0;
+          const dx = pts[0].x - pts[1].x;
+          const dy = pts[0].y - pts[1].y;
+          return Math.sqrt(dx * dx + dy * dy);
+        }
+        function openPicker(){ if (file) file.click(); }
+
+        if (previewFrame) previewFrame.addEventListener('click', openPicker);
+        pickTriggers.forEach(function(btn){ btn.addEventListener('click', function(){ setTimeout(openPicker, 0); }); });
 
         if (file) file.addEventListener('change', function(){
           const selected = file.files && file.files[0];
           if (!selected || !/^image\//.test(selected.type || '')) return;
-          if (objectUrl) { try { URL.revokeObjectURL(objectUrl); } catch(e) {} }
-          objectUrl = URL.createObjectURL(selected);
-          if (!img && cropFrame) {
-            cropFrame.classList.remove('tz-edit-photo-empty');
-            cropFrame.textContent = '';
-            img = document.createElement('img');
-            img.setAttribute('data-photo-position-preview', '');
-            img.alt = 'New profile photo preview';
-            cropFrame.appendChild(img);
-          }
-          if (img) img.src = objectUrl;
-          setValues(50, 50, 100);
+
+          state = { tx:0, ty:0, scale:1 };
+          lastState = { tx:0, ty:0, scale:1 };
+          pointers.clear();
+          dragStart = null;
+
+          const reader = new FileReader();
+          reader.onload = function(ev){
+            selectedUrl = ev.target && ev.target.result ? String(ev.target.result) : '';
+            if (!selectedUrl) return;
+            if (cropImg) {
+              cropImg.onload = function(){
+                applyCropTransform();
+                requestAnimationFrame(openModal);
+              };
+              cropImg.src = selectedUrl;
+            } else {
+              requestAnimationFrame(openModal);
+            }
+            applyPreview();
+          };
+          reader.readAsDataURL(selected);
         });
-        apply();
+
+        if (stage) {
+          stage.addEventListener('pointerdown', function(e){
+            if (!selectedUrl) return;
+            e.preventDefault();
+            pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+            if (pointers.size === 1) {
+              dragStart = { x:e.clientX, y:e.clientY, tx:state.tx, ty:state.ty };
+            } else {
+              lastPinchDistance = distance();
+              lastState = { tx:state.tx, ty:state.ty, scale:state.scale };
+            }
+            try { stage.setPointerCapture(e.pointerId); } catch(_) {}
+          }, { passive:false });
+          stage.addEventListener('pointermove', function(e){
+            if (!pointers.has(e.pointerId) || !selectedUrl) return;
+            e.preventDefault();
+            pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+            if (pointers.size >= 2) {
+              const d = distance();
+              if (lastPinchDistance > 0 && d > 0) {
+                state.scale = clamp(lastState.scale * (d / lastPinchDistance), 1, 2.4);
+                applyCropTransform();
+              }
+              return;
+            }
+            if (!dragStart) return;
+            state.tx = dragStart.tx + (e.clientX - dragStart.x);
+            state.ty = dragStart.ty + (e.clientY - dragStart.y);
+            applyCropTransform();
+          }, { passive:false });
+          function end(e){
+            pointers.delete(e.pointerId);
+            dragStart = null;
+            lastState = { tx:state.tx, ty:state.ty, scale:state.scale };
+            lastPinchDistance = distance();
+            try { stage.releasePointerCapture(e.pointerId); } catch(_) {}
+          }
+          stage.addEventListener('pointerup', end);
+          stage.addEventListener('pointercancel', end);
+          stage.addEventListener('wheel', function(e){
+            if (!selectedUrl) return;
+            e.preventDefault();
+            state.scale = clamp(state.scale + (e.deltaY < 0 ? .06 : -.06), 1, 2.4);
+            lastState = { tx:state.tx, ty:state.ty, scale:state.scale };
+            applyCropTransform();
+          }, { passive:false });
+        }
+
+        if (doneBtn) doneBtn.addEventListener('click', function(){
+          applyPreview();
+          writeHidden();
+          closeModal();
+        });
+        if (cancelBtn) cancelBtn.addEventListener('click', function(){
+          if (file) file.value = '';
+          closeModal();
+        });
       })();
     </script>
 
