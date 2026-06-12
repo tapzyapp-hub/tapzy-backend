@@ -3033,27 +3033,10 @@ router.get("/edit/:username", async (req, res) => {
 
                 <input class="tz-upload-input" type="file" name="photo" accept="image/png,image/jpeg,image/webp" data-photo-position-file />
 
-                <div class="tz-photo-positioner" data-photo-positioner>
-                  <div class="tz-photo-positioner-head">
-                    <strong>Profile photo fitting</strong>
-                    <span>Move and zoom the photo until it sits exactly how you want.</span>
-                  </div>
-                  <input type="hidden" name="profilePhotoPositionX" value="${photoPositionX}" data-photo-position-x-value />
-                  <input type="hidden" name="profilePhotoPositionY" value="${photoPositionY}" data-photo-position-y-value />
-                  <input type="hidden" name="profilePhotoScale" value="${photoScale}" data-photo-scale-value />
-                  <label class="tz-range-field">
-                    <span>Move left / right</span>
-                    <input type="range" min="0" max="100" value="${photoPositionX}" data-photo-position-x />
-                  </label>
-                  <label class="tz-range-field">
-                    <span>Move up / down</span>
-                    <input type="range" min="0" max="100" value="${photoPositionY}" data-photo-position-y />
-                  </label>
-                  <label class="tz-range-field">
-                    <span>Zoom / fit</span>
-                    <input type="range" min="100" max="180" value="${photoScale}" data-photo-scale />
-                  </label>
-                </div>
+                <input type="hidden" name="profilePhotoPositionX" value="${photoPositionX}" data-photo-position-x data-photo-position-x-value />
+                <input type="hidden" name="profilePhotoPositionY" value="${photoPositionY}" data-photo-position-y data-photo-position-y-value />
+                <input type="hidden" name="profilePhotoScale" value="${photoScale}" data-photo-scale data-photo-scale-value />
+                <div class="tz-photo-crop-note">Drag the photo preview to reposition it. Pinch or scroll to zoom.</div>
 
 
 
@@ -3790,20 +3773,16 @@ router.get("/edit/:username", async (req, res) => {
       }
       .tz-edit-photo-preview:active{cursor:grabbing;}
 
-      .tz-photo-positioner{
-        margin-top:14px;
-        padding:14px;
-        border-radius:22px;
-        border:1px solid rgba(115,194,255,.18);
-        background:rgba(6,10,18,.66);
-        box-shadow:0 0 30px rgba(87,170,255,.08);
+      .tz-photo-crop-note{
+        margin-top:10px;
+        padding:10px 12px;
+        border-radius:16px;
+        border:1px solid rgba(115,194,255,.16);
+        background:rgba(115,194,255,.07);
+        color:rgba(225,235,255,.72);
+        font-size:12px;
+        line-height:1.35;
       }
-      .tz-photo-positioner-head{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
-      .tz-photo-positioner-head strong{font-size:15px;color:#fff;}
-      .tz-photo-positioner-head span{font-size:13px;color:rgba(225,235,255,.66);}
-      .tz-range-field{display:grid;gap:8px;margin-top:10px;color:rgba(255,255,255,.82);font-weight:800;}
-      .tz-range-field input[type=range]{width:100%;accent-color:#73c2ff;}
-      .tz-photo-crop-note{font-size:12px;color:rgba(225,235,255,.62);margin:6px 0 2px;}
 
 
 
@@ -4131,6 +4110,8 @@ router.get("/edit/:username", async (req, res) => {
         let dragging = false;
         let lastX = 0;
         let lastY = 0;
+        const activePointers = new Map();
+        let lastPinchDistance = 0;
 
         function numberValue(el, fallback){
           const n = Number(el && el.value);
@@ -4140,7 +4121,7 @@ router.get("/edit/:username", async (req, res) => {
         function setValues(nextX, nextY, nextScale){
           if (x) x.value = String(Math.max(0, Math.min(100, Math.round(nextX))));
           if (y) y.value = String(Math.max(0, Math.min(100, Math.round(nextY))));
-          if (scale) scale.value = String(Math.max(100, Math.min(180, Math.round(nextScale))));
+          if (scale) scale.value = String(Math.max(100, Math.min(220, Math.round(nextScale))));
           apply();
         }
 
@@ -4163,15 +4144,41 @@ router.get("/edit/:username", async (req, res) => {
         [x, y, scale].forEach(function(el){ if (el) el.addEventListener('input', apply); });
 
         if (cropFrame) {
+          function pinchDistance(){
+            const pts = Array.from(activePointers.values());
+            if (pts.length < 2) return 0;
+            const dx = pts[0].x - pts[1].x;
+            const dy = pts[0].y - pts[1].y;
+            return Math.sqrt(dx * dx + dy * dy);
+          }
+          cropFrame.addEventListener('wheel', function(e){
+            if (!img) return;
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 6 : -6;
+            setValues(numberValue(x, 50), numberValue(y, 50), numberValue(scale, 100) + delta);
+          }, { passive:false });
           cropFrame.addEventListener('pointerdown', function(e){
             if (!img) return;
             e.preventDefault();
-            dragging = true;
+            activePointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+            dragging = activePointers.size === 1;
+            lastPinchDistance = pinchDistance();
             lastX = e.clientX;
             lastY = e.clientY;
             cropFrame.setPointerCapture && cropFrame.setPointerCapture(e.pointerId);
           });
           cropFrame.addEventListener('pointermove', function(e){
+            if (!img || !activePointers.has(e.pointerId)) return;
+            activePointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+            if (activePointers.size >= 2) {
+              const dist = pinchDistance();
+              if (lastPinchDistance > 0 && dist > 0) {
+                const nextScale = numberValue(scale, 100) + ((dist - lastPinchDistance) / 2.4);
+                setValues(numberValue(x, 50), numberValue(y, 50), nextScale);
+              }
+              lastPinchDistance = dist;
+              return;
+            }
             if (!dragging) return;
             const rect = cropFrame.getBoundingClientRect();
             const dx = ((e.clientX - lastX) / Math.max(rect.width, 1)) * 100;
@@ -4180,8 +4187,14 @@ router.get("/edit/:username", async (req, res) => {
             lastY = e.clientY;
             setValues(numberValue(x, 50) - dx, numberValue(y, 50) - dy, numberValue(scale, 100));
           });
-          cropFrame.addEventListener('pointerup', function(e){ dragging = false; try { cropFrame.releasePointerCapture && cropFrame.releasePointerCapture(e.pointerId); } catch(_) {} });
-          cropFrame.addEventListener('pointercancel', function(e){ dragging = false; try { cropFrame.releasePointerCapture && cropFrame.releasePointerCapture(e.pointerId); } catch(_) {} });
+          function endPointer(e){
+            activePointers.delete(e.pointerId);
+            dragging = false;
+            lastPinchDistance = pinchDistance();
+            try { cropFrame.releasePointerCapture && cropFrame.releasePointerCapture(e.pointerId); } catch(_) {}
+          }
+          cropFrame.addEventListener('pointerup', endPointer);
+          cropFrame.addEventListener('pointercancel', endPointer);
         }
 
         if (file) file.addEventListener('change', function(){
