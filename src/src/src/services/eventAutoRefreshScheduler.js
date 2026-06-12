@@ -3,7 +3,6 @@ const DEFAULT_HOUR = 0;
 const DEFAULT_MINUTE = 0;
 
 let timer = null;
-let safetyInterval = null;
 let running = false;
 let started = false;
 let lastSuccessfulLocalDateKey = "";
@@ -214,10 +213,7 @@ function scheduleNextRun() {
 }
 
 function startEventAutoRefreshScheduler() {
-  if (started) {
-    console.log("Daily event auto-refresh scheduler already started.");
-    return;
-  }
+  if (started) return;
 
   const disabled = String(process.env.EVENT_AUTO_REFRESH_ENABLED || "true").toLowerCase() === "false";
   if (disabled) {
@@ -226,14 +222,6 @@ function startEventAutoRefreshScheduler() {
   }
 
   started = true;
-
-  const timeZone = process.env.EVENT_AUTO_REFRESH_TIME_ZONE || DEFAULT_TIME_ZONE;
-  const hour = numberEnv("EVENT_AUTO_REFRESH_HOUR", DEFAULT_HOUR);
-  const minute = numberEnv("EVENT_AUTO_REFRESH_MINUTE", DEFAULT_MINUTE);
-  console.log(
-    `Daily event auto-refresh scheduler started (${timeZone} ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}).`
-  );
-
   scheduleNextRun();
 
   // Hosting providers can sleep/restart apps and miss the exact midnight timer.
@@ -245,18 +233,6 @@ function startEventAutoRefreshScheduler() {
       });
     });
   }
-
-  // Safety net: Render/free hosts can pause, restart, or miss long setTimeout timers.
-  // This small check makes the auto-refresh self-healing without waiting for a request.
-  const checkMinutes = Math.max(1, numberEnv("EVENT_AUTO_REFRESH_CHECK_MINUTES", 15));
-  safetyInterval = setInterval(() => {
-    if (!shouldCatchUpAfterMissedTimer()) return;
-    runScheduledEventSync("safety-check").catch((err) => {
-      console.error("Daily event auto-refresh safety check failed:", err?.message || err);
-    });
-  }, checkMinutes * 60 * 1000);
-
-  if (typeof safetyInterval.unref === "function") safetyInterval.unref();
 }
 
 module.exports = {
