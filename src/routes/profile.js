@@ -3031,7 +3031,7 @@ router.get("/edit/:username", async (req, res) => {
 
                 <label class="tz-field">Upload New Profile Photo</label>
 
-                <input id="tzPhotoFileInput" class="tz-upload-input tz-upload-input-hidden" type="file" name="photo" accept="image/png,image/jpeg,image/webp" data-photo-position-file />
+                <input id="tzPhotoFileInput" class="tz-upload-input tz-upload-input-hidden" type="file" name="photo" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" data-photo-position-file onchange="window.tapzyHandlePhotoFile && window.tapzyHandlePhotoFile(this)" />
 
                 <input type="hidden" name="profilePhotoPositionX" value="${photoPositionX}" data-photo-position-x data-photo-position-x-value />
                 <input type="hidden" name="profilePhotoPositionY" value="${photoPositionY}" data-photo-position-y data-photo-position-y-value />
@@ -4257,67 +4257,66 @@ router.get("/edit/:username", async (req, res) => {
 
     <script>
       (function(){
-        const file = document.querySelector('[data-photo-position-file]');
-        const pickTriggers = document.querySelectorAll('[data-photo-pick-trigger]');
-        const previewFrame = document.querySelector('.tz-edit-photo-preview');
-        let previewImg = document.querySelector('[data-photo-position-preview]');
-        const x = document.querySelector('[data-photo-position-x]');
-        const y = document.querySelector('[data-photo-position-y]');
-        const scale = document.querySelector('[data-photo-scale]');
-        const modal = document.querySelector('[data-photo-crop-modal]');
-        const stage = document.querySelector('[data-photo-crop-stage]');
-        const cropImg = document.querySelector('[data-photo-crop-img]');
-        const doneBtn = document.querySelector('[data-photo-crop-done]');
-        const cancelBtn = document.querySelector('[data-photo-crop-cancel]');
-        let selectedUrl = null;
-        let dragStart = null;
-        let state = { tx:0, ty:0, scale:1 };
-        let lastState = { tx:0, ty:0, scale:1 };
-        const pointers = new Map();
-        let lastPinchDistance = 0;
+        var file = document.querySelector('[data-photo-position-file]');
+        var previewFrame = document.querySelector('.tz-edit-photo-preview');
+        var previewImg = document.querySelector('[data-photo-position-preview]');
+        var x = document.querySelector('[data-photo-position-x]');
+        var y = document.querySelector('[data-photo-position-y]');
+        var scaleInput = document.querySelector('[data-photo-scale]');
+        var modal = document.querySelector('[data-photo-crop-modal]');
+        var stage = document.querySelector('[data-photo-crop-stage]');
+        var cropImg = document.querySelector('[data-photo-crop-img]');
+        var doneBtn = document.querySelector('[data-photo-crop-done]');
+        var cancelBtn = document.querySelector('[data-photo-crop-cancel]');
+        var selectedUrl = '';
+        var dragging = false;
+        var lastX = 0;
+        var lastY = 0;
+        var state = { tx:0, ty:0, scale:1 };
+        var pointers = {};
+        var lastDistance = 0;
 
-        function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-        function pctFromTransform(){
-          const px = clamp(50 - (state.tx / 3.2), 0, 100);
-          const py = clamp(50 - (state.ty / 3.2), 0, 100);
-          const ps = clamp(state.scale * 100, 100, 240);
-          return { px:Math.round(px), py:Math.round(py), ps:Math.round(ps) };
+        function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+        function syncHidden(){
+          var px = Math.round(clamp(50 - state.tx / 3.2, 0, 100));
+          var py = Math.round(clamp(50 - state.ty / 3.2, 0, 100));
+          var ps = Math.round(clamp(state.scale * 100, 100, 240));
+          if (x) x.value = String(px);
+          if (y) y.value = String(py);
+          if (scaleInput) scaleInput.value = String(ps);
+          return { px:px, py:py, ps:ps };
         }
-        function writeHidden(){
-          const vals = pctFromTransform();
-          if (x) x.value = String(vals.px);
-          if (y) y.value = String(vals.py);
-          if (scale) scale.value = String(vals.ps);
-        }
-        function applyCropTransform(){
-          if (!cropImg) return;
-          cropImg.style.transform = 'translate(calc(-50% + ' + state.tx + 'px), calc(-50% + ' + state.ty + 'px)) scale(' + state.scale + ')';
-          writeHidden();
-        }
-        function ensurePreviewImg(){
+        function ensurePreview(){
           if (!previewImg && previewFrame) {
             previewFrame.classList.remove('tz-edit-photo-empty');
             previewFrame.innerHTML = '';
             previewImg = document.createElement('img');
             previewImg.setAttribute('data-photo-position-preview', '');
-            previewImg.alt = 'New profile photo preview';
+            previewImg.alt = 'Selected profile photo preview';
             previewFrame.appendChild(previewImg);
           }
           return previewImg;
         }
-        function applyPreview(){
-          const vals = pctFromTransform();
-          const img = ensurePreviewImg();
+        function applyTransforms(){
+          var vals = syncHidden();
+          if (cropImg) {
+            cropImg.style.transform = 'translate(calc(-50% + ' + state.tx + 'px), calc(-50% + ' + state.ty + 'px)) scale(' + state.scale + ')';
+          }
+          var img = ensurePreview();
           if (img && selectedUrl) {
             img.src = selectedUrl;
             img.style.objectPosition = vals.px + '% ' + vals.py + '%';
             img.style.transform = 'scale(' + (vals.ps / 100) + ')';
           }
         }
-        function openModal(){
+        function forceOpenModal(){
           if (!modal) return;
           modal.classList.add('is-open');
           modal.setAttribute('aria-hidden', 'false');
+          modal.style.setProperty('display', 'flex', 'important');
+          modal.style.setProperty('position', 'fixed', 'important');
+          modal.style.setProperty('inset', '0', 'important');
+          modal.style.setProperty('z-index', '999999', 'important');
           document.documentElement.style.overflow = 'hidden';
           document.body.style.overflow = 'hidden';
         }
@@ -4325,107 +4324,115 @@ router.get("/edit/:username", async (req, res) => {
           if (!modal) return;
           modal.classList.remove('is-open');
           modal.setAttribute('aria-hidden', 'true');
+          modal.style.display = '';
           document.documentElement.style.overflow = '';
           document.body.style.overflow = '';
-          pointers.clear();
-          dragStart = null;
+          pointers = {};
+          dragging = false;
         }
-        function distance(){
-          const pts = Array.from(pointers.values());
-          if (pts.length < 2) return 0;
-          const dx = pts[0].x - pts[1].x;
-          const dy = pts[0].y - pts[1].y;
-          return Math.sqrt(dx * dx + dy * dy);
+        function isImage(f){
+          if (!f) return false;
+          var type = String(f.type || '').toLowerCase();
+          var name = String(f.name || '').toLowerCase();
+          return type.indexOf('image/') === 0 || /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(name);
         }
-        function openPicker(){ if (file) file.click(); }
-
-        if (previewFrame) previewFrame.addEventListener('click', openPicker);
-        pickTriggers.forEach(function(btn){ btn.addEventListener('click', function(){ setTimeout(openPicker, 0); }); });
-
-        if (file) file.addEventListener('change', function(){
-          const selected = file.files && file.files[0];
-          if (!selected || !/^image\//.test(selected.type || '')) return;
-
+        function loadSelectedFile(input){
+          var f = input && input.files && input.files[0];
+          if (!isImage(f)) return;
           state = { tx:0, ty:0, scale:1 };
-          lastState = { tx:0, ty:0, scale:1 };
-          pointers.clear();
-          dragStart = null;
-
-          const reader = new FileReader();
-          reader.onload = function(ev){
-            selectedUrl = ev.target && ev.target.result ? String(ev.target.result) : '';
-            if (!selectedUrl) return;
-            if (cropImg) {
-              cropImg.onload = function(){
-                applyCropTransform();
-                requestAnimationFrame(openModal);
-              };
-              cropImg.src = selectedUrl;
-            } else {
-              requestAnimationFrame(openModal);
-            }
-            applyPreview();
-          };
-          reader.readAsDataURL(selected);
-        });
-
-        if (stage) {
-          stage.addEventListener('pointerdown', function(e){
-            if (!selectedUrl) return;
-            e.preventDefault();
-            pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-            if (pointers.size === 1) {
-              dragStart = { x:e.clientX, y:e.clientY, tx:state.tx, ty:state.ty };
-            } else {
-              lastPinchDistance = distance();
-              lastState = { tx:state.tx, ty:state.ty, scale:state.scale };
-            }
-            try { stage.setPointerCapture(e.pointerId); } catch(_) {}
-          }, { passive:false });
-          stage.addEventListener('pointermove', function(e){
-            if (!pointers.has(e.pointerId) || !selectedUrl) return;
-            e.preventDefault();
-            pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-            if (pointers.size >= 2) {
-              const d = distance();
-              if (lastPinchDistance > 0 && d > 0) {
-                state.scale = clamp(lastState.scale * (d / lastPinchDistance), 1, 2.4);
-                applyCropTransform();
-              }
-              return;
-            }
-            if (!dragStart) return;
-            state.tx = dragStart.tx + (e.clientX - dragStart.x);
-            state.ty = dragStart.ty + (e.clientY - dragStart.y);
-            applyCropTransform();
-          }, { passive:false });
-          function end(e){
-            pointers.delete(e.pointerId);
-            dragStart = null;
-            lastState = { tx:state.tx, ty:state.ty, scale:state.scale };
-            lastPinchDistance = distance();
-            try { stage.releasePointerCapture(e.pointerId); } catch(_) {}
+          pointers = {};
+          var opened = false;
+          function useUrl(url){
+            if (!url) return;
+            selectedUrl = url;
+            if (cropImg) cropImg.src = selectedUrl;
+            applyTransforms();
+            forceOpenModal();
+            opened = true;
+            setTimeout(forceOpenModal, 50);
+            setTimeout(forceOpenModal, 250);
           }
-          stage.addEventListener('pointerup', end);
-          stage.addEventListener('pointercancel', end);
+          try {
+            var reader = new FileReader();
+            reader.onload = function(e){ useUrl(e && e.target ? e.target.result : ''); };
+            reader.onerror = function(){
+              try { useUrl(URL.createObjectURL(f)); } catch(_) {}
+            };
+            reader.readAsDataURL(f);
+          } catch(e) {
+            try { useUrl(URL.createObjectURL(f)); } catch(_) {}
+          }
+          setTimeout(function(){
+            if (!opened) {
+              try { useUrl(URL.createObjectURL(f)); } catch(_) {}
+            }
+          }, 400);
+        }
+
+        window.tapzyHandlePhotoFile = loadSelectedFile;
+
+        if (file) {
+          file.onchange = function(){ loadSelectedFile(file); };
+          file.addEventListener('change', function(){ loadSelectedFile(file); });
+          file.addEventListener('input', function(){ loadSelectedFile(file); });
+        }
+
+        function getDistance(){
+          var ids = Object.keys(pointers);
+          if (ids.length < 2) return 0;
+          var a = pointers[ids[0]], b = pointers[ids[1]];
+          var dx = a.x - b.x, dy = a.y - b.y;
+          return Math.sqrt(dx*dx + dy*dy);
+        }
+        if (stage) {
+          stage.addEventListener('mousedown', function(e){
+            if (!selectedUrl) return;
+            dragging = true; lastX = e.clientX; lastY = e.clientY; e.preventDefault();
+          });
+          window.addEventListener('mousemove', function(e){
+            if (!dragging || !selectedUrl) return;
+            state.tx += e.clientX - lastX;
+            state.ty += e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            applyTransforms();
+          });
+          window.addEventListener('mouseup', function(){ dragging = false; });
+          stage.addEventListener('touchstart', function(e){
+            if (!selectedUrl) return;
+            e.preventDefault();
+            for (var i=0;i<e.changedTouches.length;i++) pointers[e.changedTouches[i].identifier] = {x:e.changedTouches[i].clientX,y:e.changedTouches[i].clientY};
+            if (e.touches.length === 1) { lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }
+            if (e.touches.length >= 2) lastDistance = getDistance();
+          }, {passive:false});
+          stage.addEventListener('touchmove', function(e){
+            if (!selectedUrl) return;
+            e.preventDefault();
+            for (var i=0;i<e.changedTouches.length;i++) pointers[e.changedTouches[i].identifier] = {x:e.changedTouches[i].clientX,y:e.changedTouches[i].clientY};
+            if (e.touches.length >= 2) {
+              var d = getDistance();
+              if (lastDistance > 0 && d > 0) state.scale = clamp(state.scale * (d / lastDistance), 1, 2.4);
+              lastDistance = d;
+            } else if (e.touches.length === 1) {
+              var t = e.touches[0];
+              state.tx += t.clientX - lastX;
+              state.ty += t.clientY - lastY;
+              lastX = t.clientX; lastY = t.clientY;
+            }
+            applyTransforms();
+          }, {passive:false});
+          stage.addEventListener('touchend', function(e){
+            for (var i=0;i<e.changedTouches.length;i++) delete pointers[e.changedTouches[i].identifier];
+            lastDistance = getDistance();
+          });
           stage.addEventListener('wheel', function(e){
             if (!selectedUrl) return;
             e.preventDefault();
-            state.scale = clamp(state.scale + (e.deltaY < 0 ? .06 : -.06), 1, 2.4);
-            lastState = { tx:state.tx, ty:state.ty, scale:state.scale };
-            applyCropTransform();
-          }, { passive:false });
+            state.scale = clamp(state.scale + (e.deltaY < 0 ? .08 : -.08), 1, 2.4);
+            applyTransforms();
+          }, {passive:false});
         }
-
-        if (doneBtn) doneBtn.addEventListener('click', function(){
-          applyPreview();
-          writeHidden();
-          closeModal();
-        });
-        if (cancelBtn) cancelBtn.addEventListener('click', function(){
-          if (file) file.value = '';
-          closeModal();
-        });
+        if (doneBtn) doneBtn.onclick = function(){ applyTransforms(); closeModal(); };
+        if (cancelBtn) cancelBtn.onclick = function(){ if (file) file.value = ''; closeModal(); };
       })();
     </script>
 
