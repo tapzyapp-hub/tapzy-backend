@@ -301,21 +301,46 @@ router.get("/u/:username", async (req, res) => {
 
           ? `
 
-          <div id="tapzyTapOverlay" class="tapzy-tap-overlay">
+          <div id="tapzyTapOverlay" class="tapzy-tap-overlay" role="status" aria-live="polite">
 
-            <div class="tapzy-tap-glow"></div>
+            <div class="tapzy-tap-aurora tapzy-tap-aurora-one"></div>
+
+            <div class="tapzy-tap-aurora tapzy-tap-aurora-two"></div>
+
+            <div class="tapzy-tap-orbit tapzy-tap-orbit-one"></div>
+
+            <div class="tapzy-tap-orbit tapzy-tap-orbit-two"></div>
 
             <div class="tapzy-tap-card">
 
-              <div class="tapzy-tap-badge">Powered by Tapzy Network™</div>
+              <div class="tapzy-tap-badge">Tapzy Network™</div>
 
-              <div class="tapzy-tap-pulse-ring"></div>
+              <div class="tapzy-tap-device">
 
-              <div class="tapzy-tap-pulse-dot"></div>
+                <div class="tapzy-tap-signal tapzy-tap-signal-one"></div>
+
+                <div class="tapzy-tap-signal tapzy-tap-signal-two"></div>
+
+                <div class="tapzy-tap-signal tapzy-tap-signal-three"></div>
+
+                <div class="tapzy-tap-avatar">
+
+                  ${profile.photo
+                    ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(displayName)}" />`
+                    : `<span>${escapeHtml((displayName || "T").slice(0, 1).toUpperCase())}</span>`
+                  }
+
+                </div>
+
+              </div>
 
               <div class="tapzy-tap-title">Tap detected</div>
 
-              <div class="tapzy-tap-subtitle">Opening ${escapeHtml(displayName)}</div>
+              <div class="tapzy-tap-subtitle">Opening ${escapeHtml(displayName)}'s profile</div>
+
+              <div class="tapzy-tap-progress" aria-hidden="true"><span></span></div>
+
+              <div class="tapzy-tap-status">Secure NFC handoff in progress</div>
 
             </div>
 
@@ -790,33 +815,141 @@ router.get("/u/:username", async (req, res) => {
 
         justify-content:center;
 
+        min-height:100svh;
+
+        overflow:hidden;
+
         background:
 
-          radial-gradient(circle at 50% 30%, rgba(77,169,255,.12), transparent 35%),
+          radial-gradient(circle at 50% 18%, rgba(85,180,255,.20), transparent 34%),
 
-          rgba(0,0,0,.92);
+          radial-gradient(circle at 18% 82%, rgba(56,98,255,.14), transparent 30%),
 
-        backdrop-filter:blur(10px);
+          linear-gradient(180deg, #050814 0%, #02030a 48%, #000 100%);
+
+        backdrop-filter:blur(18px);
 
       }
 
 
 
-      .tapzy-tap-glow{
+      .tapzy-tap-overlay::before{
+
+        content:"";
 
         position:absolute;
 
-        width:340px;
+        inset:0;
 
-        height:340px;
+        background:
+
+          linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+
+          linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+
+        background-size:42px 42px;
+
+        mask-image:radial-gradient(circle at 50% 42%, #000 0%, transparent 68%);
+
+        opacity:.45;
+
+        animation:tapzyGridDrift 6s linear infinite;
+
+      }
+
+
+
+      .tapzy-tap-aurora{
+
+        position:absolute;
+
+        width:360px;
+
+        height:360px;
 
         border-radius:999px;
 
-        background:radial-gradient(circle, rgba(87,194,255,.28) 0%, rgba(87,194,255,.09) 35%, transparent 72%);
+        filter:blur(24px);
 
-        filter:blur(14px);
+        opacity:.62;
 
-        animation:tapzyGlowPulse 1.8s ease-in-out infinite;
+        pointer-events:none;
+
+      }
+
+
+
+      .tapzy-tap-aurora-one{
+
+        background:radial-gradient(circle, rgba(85,198,255,.34), rgba(53,108,255,.10) 44%, transparent 72%);
+
+        top:10%;
+
+        left:50%;
+
+        transform:translateX(-50%);
+
+        animation:tapzyAuroraOne 3.2s ease-in-out infinite alternate;
+
+      }
+
+
+
+      .tapzy-tap-aurora-two{
+
+        width:300px;
+
+        height:300px;
+
+        background:radial-gradient(circle, rgba(149,224,255,.22), rgba(85,120,255,.10) 48%, transparent 75%);
+
+        bottom:8%;
+
+        right:8%;
+
+        animation:tapzyAuroraTwo 3.8s ease-in-out infinite alternate;
+
+      }
+
+
+
+      .tapzy-tap-orbit{
+
+        position:absolute;
+
+        border-radius:999px;
+
+        border:1px solid rgba(125,208,255,.12);
+
+        box-shadow:0 0 42px rgba(74,170,255,.10);
+
+        pointer-events:none;
+
+      }
+
+
+
+      .tapzy-tap-orbit-one{
+
+        width:520px;
+
+        height:520px;
+
+        animation:tapzyOrbit 12s linear infinite;
+
+      }
+
+
+
+      .tapzy-tap-orbit-two{
+
+        width:380px;
+
+        height:380px;
+
+        border-style:dashed;
+
+        animation:tapzyOrbit 9s linear infinite reverse;
 
       }
 
@@ -828,29 +961,33 @@ router.get("/u/:username", async (req, res) => {
 
         z-index:2;
 
-        width:min(92vw, 360px);
+        width:min(92vw, 382px);
 
-        padding:28px 22px;
+        padding:30px 24px 24px;
 
-        border-radius:28px;
+        border-radius:34px;
 
         text-align:center;
 
-        border:1px solid rgba(140,220,255,.16);
+        border:1px solid rgba(152,220,255,.22);
 
         background:
 
-          radial-gradient(circle at 50% 0%, rgba(140,220,255,.14), transparent 48%),
+          radial-gradient(circle at 50% 0%, rgba(130,217,255,.18), transparent 52%),
 
-          linear-gradient(180deg, rgba(6,10,18,.98), rgba(0,0,0,1));
+          linear-gradient(180deg, rgba(12,18,32,.92), rgba(2,4,10,.98));
 
         box-shadow:
 
-          0 0 34px rgba(75,165,255,.12),
+          0 0 52px rgba(67,164,255,.18),
 
-          0 18px 44px rgba(0,0,0,.36),
+          0 24px 70px rgba(0,0,0,.48),
 
-          inset 0 1px 0 rgba(255,255,255,.05);
+          inset 0 1px 0 rgba(255,255,255,.08);
+
+        transform:translateY(0);
+
+        animation:tapzyCardEnter .62s cubic-bezier(.2,.9,.2,1) both;
 
       }
 
@@ -858,71 +995,107 @@ router.get("/u/:username", async (req, res) => {
 
       .tapzy-tap-badge{
 
-        color:#dff0ff;
+        color:#eaf7ff;
 
         font-size:12px;
 
-        font-weight:800;
+        font-weight:900;
 
-        letter-spacing:2.8px;
+        letter-spacing:3.6px;
 
         text-transform:uppercase;
 
-        text-shadow:0 0 12px rgba(103,196,255,.35);
+        text-shadow:0 0 18px rgba(103,196,255,.42);
 
       }
 
 
 
-      .tapzy-tap-pulse-ring{
+      .tapzy-tap-device{
 
-        width:112px;
+        position:relative;
 
-        height:112px;
+        width:148px;
 
-        margin:18px auto 0;
+        height:148px;
 
-        border-radius:999px;
+        margin:22px auto 0;
 
-        border:2px solid rgba(98,196,255,.40);
+        display:grid;
 
-        box-shadow:
-
-          0 0 18px rgba(72,160,255,.22),
-
-          inset 0 0 18px rgba(72,160,255,.12);
-
-        animation:tapzyRingPulse 1.3s ease-in-out infinite;
+        place-items:center;
 
       }
 
 
 
-      .tapzy-tap-pulse-dot{
+      .tapzy-tap-signal{
 
         position:absolute;
 
-        left:50%;
-
-        top:106px;
-
-        transform:translateX(-50%);
-
-        width:16px;
-
-        height:16px;
+        inset:0;
 
         border-radius:999px;
 
-        background:#66d5ff;
+        border:1px solid rgba(119,211,255,.26);
 
-        box-shadow:
+        box-shadow:0 0 24px rgba(78,172,255,.15), inset 0 0 18px rgba(78,172,255,.08);
 
-          0 0 16px rgba(102,213,255,.95),
+        animation:tapzySignal 1.65s ease-out infinite;
 
-          0 0 34px rgba(78,159,255,.45);
+      }
 
-        animation:tapzyDotPulse 1.3s ease-in-out infinite;
+
+
+      .tapzy-tap-signal-two{ animation-delay:.28s; }
+
+      .tapzy-tap-signal-three{ animation-delay:.56s; }
+
+
+
+      .tapzy-tap-avatar{
+
+        position:relative;
+
+        z-index:2;
+
+        width:86px;
+
+        height:86px;
+
+        border-radius:28px;
+
+        overflow:hidden;
+
+        display:grid;
+
+        place-items:center;
+
+        color:#fff;
+
+        font-size:34px;
+
+        font-weight:950;
+
+        background:linear-gradient(145deg, rgba(20,34,58,.98), rgba(0,0,0,.98));
+
+        border:1px solid rgba(172,229,255,.28);
+
+        box-shadow:0 0 30px rgba(87,190,255,.22), inset 0 1px 0 rgba(255,255,255,.12);
+
+      }
+
+
+
+      .tapzy-tap-avatar img{
+
+        width:100%;
+
+        height:100%;
+
+        object-fit:cover;
+
+        display:block;
 
       }
 
@@ -930,15 +1103,15 @@ router.get("/u/:username", async (req, res) => {
 
       .tapzy-tap-title{
 
-        margin-top:18px;
+        margin-top:20px;
 
         color:#fff;
 
-        font-size:28px;
+        font-size:30px;
 
-        font-weight:900;
+        font-weight:950;
 
-        letter-spacing:-.7px;
+        letter-spacing:-.9px;
 
       }
 
@@ -948,11 +1121,145 @@ router.get("/u/:username", async (req, res) => {
 
         margin-top:8px;
 
-        color:#dbe6f3;
+        color:#dbe8f7;
 
         font-size:15px;
 
-        line-height:1.6;
+        line-height:1.55;
+
+      }
+
+
+
+      .tapzy-tap-progress{
+
+        height:7px;
+
+        margin:22px auto 0;
+
+        border-radius:999px;
+
+        overflow:hidden;
+
+        background:rgba(255,255,255,.08);
+
+        border:1px solid rgba(255,255,255,.08);
+
+      }
+
+
+
+      .tapzy-tap-progress span{
+
+        display:block;
+
+        height:100%;
+
+        width:100%;
+
+        transform-origin:left center;
+
+        transform:scaleX(0);
+
+        border-radius:999px;
+
+        background:linear-gradient(90deg, #65d7ff, #f6fbff);
+
+        box-shadow:0 0 18px rgba(101,215,255,.55);
+
+        animation:tapzyLoadBar 1.75s ease-out forwards;
+
+      }
+
+
+
+      .tapzy-tap-status{
+
+        margin-top:12px;
+
+        color:#98b9d7;
+
+        font-size:12px;
+
+        font-weight:750;
+
+        letter-spacing:.9px;
+
+        text-transform:uppercase;
+
+      }
+
+
+
+      @keyframes tapzyCardEnter{
+
+        from{ opacity:0; transform:translateY(18px) scale(.965); }
+
+        to{ opacity:1; transform:translateY(0) scale(1); }
+
+      }
+
+
+
+      @keyframes tapzySignal{
+
+        0%{ transform:scale(.62); opacity:.95; }
+
+        70%{ opacity:.16; }
+
+        100%{ transform:scale(1.18); opacity:0; }
+
+      }
+
+
+
+      @keyframes tapzyLoadBar{
+
+        0%{ transform:scaleX(0); }
+
+        72%{ transform:scaleX(.86); }
+
+        100%{ transform:scaleX(1); }
+
+      }
+
+
+
+      @keyframes tapzyGridDrift{
+
+        from{ background-position:0 0, 0 0; }
+
+        to{ background-position:42px 42px, 42px 42px; }
+
+      }
+
+
+
+      @keyframes tapzyAuroraOne{
+
+        from{ transform:translateX(-50%) translateY(0) scale(.96); opacity:.48; }
+
+        to{ transform:translateX(-50%) translateY(18px) scale(1.08); opacity:.72; }
+
+      }
+
+
+
+      @keyframes tapzyAuroraTwo{
+
+        from{ transform:translateY(0) scale(1); opacity:.38; }
+
+        to{ transform:translateY(-18px) scale(1.12); opacity:.58; }
+
+      }
+
+
+
+      @keyframes tapzyOrbit{
+
+        from{ transform:rotate(0deg); }
+
+        to{ transform:rotate(360deg); }
 
       }
 
@@ -2410,7 +2717,7 @@ router.get("/u/:username", async (req, res) => {
 
               if (prompt) prompt.style.display = "block";
 
-            }, 1500);
+            }, 1900);
 
 
 
