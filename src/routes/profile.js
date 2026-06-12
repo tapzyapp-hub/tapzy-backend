@@ -1,10 +1,11 @@
 const router = require("express").Router();
-
-
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 
 const prisma = require("../prisma");
 
-const { upload } = require("../upload");
+const { upload, uploadsDir } = require("../upload");
 
 const {
 
@@ -3036,6 +3037,7 @@ router.get("/edit/:username", async (req, res) => {
                 <input type="hidden" name="profilePhotoPositionX" value="${photoPositionX}" data-photo-position-x data-photo-position-x-value />
                 <input type="hidden" name="profilePhotoPositionY" value="${photoPositionY}" data-photo-position-y data-photo-position-y-value />
                 <input type="hidden" name="profilePhotoScale" value="${photoScale}" data-photo-scale data-photo-scale-value />
+                <input type="hidden" name="croppedPhotoData" value="" data-cropped-photo-data />
 
                 <label class="tz-photo-pick-btn" for="tzPhotoFileInput" data-photo-pick-trigger>
                   <span class="tz-photo-pick-icon">＋</span>
@@ -4268,6 +4270,7 @@ router.get("/edit/:username", async (req, res) => {
         var cropImg = document.querySelector('[data-photo-crop-img]');
         var doneBtn = document.querySelector('[data-photo-crop-done]');
         var cancelBtn = document.querySelector('[data-photo-crop-cancel]');
+        var croppedPhotoData = document.querySelector('[data-cropped-photo-data]');
         var selectedUrl = '';
         var dragging = false;
         var lastX = 0;
@@ -4431,8 +4434,47 @@ router.get("/edit/:username", async (req, res) => {
             applyTransforms();
           }, {passive:false});
         }
-        if (doneBtn) doneBtn.onclick = function(){ applyTransforms(); closeModal(); };
-        if (cancelBtn) cancelBtn.onclick = function(){ if (file) file.value = ''; closeModal(); };
+        function saveCroppedPhotoThenClose(){
+          applyTransforms();
+          try {
+            if (!cropImg || !selectedUrl || !cropImg.naturalWidth || !stage) { closeModal(); return; }
+            var ring = document.querySelector('.tz-photo-crop-ring');
+            var ringRect = ring ? ring.getBoundingClientRect() : stage.getBoundingClientRect();
+            var imgRect = cropImg.getBoundingClientRect();
+            var out = 900;
+            var canvas = document.createElement('canvas');
+            canvas.width = out;
+            canvas.height = out;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#05060a';
+            ctx.fillRect(0, 0, out, out);
+            var ratio = out / Math.max(1, ringRect.width);
+            var dx = (imgRect.left - ringRect.left) * ratio;
+            var dy = (imgRect.top - ringRect.top) * ratio;
+            var dw = imgRect.width * ratio;
+            var dh = imgRect.height * ratio;
+            ctx.drawImage(cropImg, dx, dy, dw, dh);
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+            if (croppedPhotoData) croppedPhotoData.value = dataUrl;
+            if (file && window.DataTransfer) {
+              canvas.toBlob(function(blob){
+                try {
+                  if (blob) {
+                    var dt = new DataTransfer();
+                    var croppedFile = new File([blob], 'tapzy-profile-photo.jpg', { type:'image/jpeg' });
+                    dt.items.add(croppedFile);
+                    file.files = dt.files;
+                  }
+                } catch(_) {}
+                closeModal();
+              }, 'image/jpeg', 0.92);
+              return;
+            }
+          } catch(e) {}
+          closeModal();
+        }
+        if (doneBtn) doneBtn.onclick = saveCroppedPhotoThenClose;
+        if (cancelBtn) cancelBtn.onclick = function(){ if (file) file.value = ''; if (croppedPhotoData) croppedPhotoData.value = ''; closeModal(); };
       })();
     </script>
 
@@ -4492,15 +4534,31 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
     let photo = profile.photo;
 
-
+    function saveCroppedPhotoData(dataUrl) {
+      const value = String(dataUrl || "");
+      const match = value.match(/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i);
+      if (!match) return null;
+      const mimeExt = match[1].toLowerCase() === "png" ? "png" : match[1].toLowerCase() === "webp" ? "webp" : "jpg";
+      const buffer = Buffer.from(match[2], "base64");
+      if (!buffer.length || buffer.length > 8 * 1024 * 1024) return null;
+      fs.mkdirSync(uploadsDir, { recursive: true });
+      const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}-cropped.${mimeExt}`;
+      fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+      return publicAbsoluteUrl(req, `/uploads/${filename}`);
+    }
 
     if (removePhoto) {
 
       photo = null;
 
-    } else if (req.file) {
+    } else {
 
-      photo = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
+      const croppedPhotoUrl = saveCroppedPhotoData(req.body.croppedPhotoData);
+      if (croppedPhotoUrl) {
+        photo = croppedPhotoUrl;
+      } else if (req.file) {
+        photo = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
+      }
 
     }
 
