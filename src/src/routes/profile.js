@@ -2680,7 +2680,63 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
-    </style>
+    
+
+      /* TAPZY MOBILE LAYOUT MATCH FIX: force Edit Profile to use the same full-width mobile layout as the rest of the app. */
+      @media(max-width:700px){
+        html,
+        body{
+          width:100% !important;
+          max-width:100% !important;
+          overflow-x:hidden !important;
+        }
+
+        .wrap.tz-edit-wrap{
+          width:100vw !important;
+          max-width:100vw !important;
+          min-width:0 !important;
+          margin-left:calc(50% - 50vw) !important;
+          margin-right:0 !important;
+          padding:18px 22px 120px !important;
+          overflow-x:hidden !important;
+          box-sizing:border-box !important;
+        }
+
+        .tz-edit-shell,
+        .tz-edit-form{
+          width:100% !important;
+          max-width:100% !important;
+          min-width:0 !important;
+          margin:0 !important;
+          padding:0 !important;
+          overflow:visible !important;
+          box-sizing:border-box !important;
+        }
+
+        .tz-edit-hero,
+        .tz-edit-section,
+        .tz-edit-upload-box,
+        .tz-edit-photo-card{
+          width:100% !important;
+          max-width:100% !important;
+          min-width:0 !important;
+          margin-left:0 !important;
+          margin-right:0 !important;
+          box-sizing:border-box !important;
+        }
+
+        .tz-edit-section{
+          overflow:hidden !important;
+        }
+
+        .tz-field input,
+        .tz-field textarea,
+        .tz-edit-savebtn{
+          max-width:100% !important;
+          box-sizing:border-box !important;
+        }
+      }
+</style>
 
 
 

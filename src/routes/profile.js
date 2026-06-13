@@ -2680,7 +2680,63 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
-    </style>
+    
+
+      /* TAPZY MOBILE LAYOUT MATCH FIX: force Edit Profile to use the same full-width mobile layout as the rest of the app. */
+      @media(max-width:700px){
+        html,
+        body{
+          width:100% !important;
+          max-width:100% !important;
+          overflow-x:hidden !important;
+        }
+
+        .wrap.tz-edit-wrap{
+          width:100vw !important;
+          max-width:100vw !important;
+          min-width:0 !important;
+          margin-left:calc(50% - 50vw) !important;
+          margin-right:0 !important;
+          padding:18px 22px 120px !important;
+          overflow-x:hidden !important;
+          box-sizing:border-box !important;
+        }
+
+        .tz-edit-shell,
+        .tz-edit-form{
+          width:100% !important;
+          max-width:100% !important;
+          min-width:0 !important;
+          margin:0 !important;
+          padding:0 !important;
+          overflow:visible !important;
+          box-sizing:border-box !important;
+        }
+
+        .tz-edit-hero,
+        .tz-edit-section,
+        .tz-edit-upload-box,
+        .tz-edit-photo-card{
+          width:100% !important;
+          max-width:100% !important;
+          min-width:0 !important;
+          margin-left:0 !important;
+          margin-right:0 !important;
+          box-sizing:border-box !important;
+        }
+
+        .tz-edit-section{
+          overflow:hidden !important;
+        }
+
+        .tz-field input,
+        .tz-field textarea,
+        .tz-edit-savebtn{
+          max-width:100% !important;
+          box-sizing:border-box !important;
+        }
+      }
+</style>
 
 
 
@@ -3335,14 +3391,27 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-wrap{
 
-        max-width:920px;
+        width:100%;
+        max-width:1180px;
+        margin-left:auto;
+        margin-right:auto;
+        overflow-x:hidden;
+        box-sizing:border-box;
 
+      }
+
+      .tz-edit-wrap,
+      .tz-edit-wrap *{
+        box-sizing:border-box;
       }
 
 
 
       .tz-edit-shell{
 
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
         display:flex;
 
         flex-direction:column;
@@ -3355,6 +3424,8 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-hero{
 
+        width:100%;
+        max-width:100%;
         position:relative;
 
         overflow:hidden;
@@ -3529,6 +3600,9 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-edit-section{
 
+        width:100%;
+        max-width:100%;
+        overflow:hidden;
         border-radius:34px;
 
         padding:24px;
@@ -4159,6 +4233,31 @@ router.get("/edit/:username", async (req, res) => {
 
       @media(max-width:700px){
 
+        .wrap.tz-edit-wrap{
+          width:100%;
+          max-width:100%;
+          margin-left:auto;
+          margin-right:auto;
+          padding:18px 12px 120px;
+          box-sizing:border-box;
+          overflow-x:hidden;
+        }
+
+        .tz-edit-shell{
+          margin:0;
+          padding:0;
+          gap:16px;
+        }
+
+        .tz-edit-shell,
+        .tz-edit-form,
+        .tz-edit-hero,
+        .tz-edit-section{
+          width:100%;
+          max-width:100%;
+          box-sizing:border-box;
+        }
+
         .tz-edit-hero{
 
           padding:20px;
@@ -4329,7 +4428,10 @@ router.get("/edit/:username", async (req, res) => {
           modal.setAttribute('aria-hidden', 'true');
           modal.style.display = '';
           document.documentElement.style.overflow = '';
+          document.documentElement.style.overflowX = 'hidden';
           document.body.style.overflow = '';
+          document.body.style.overflowX = 'hidden';
+          window.scrollTo(0, window.scrollY);
           pointers = {};
           dragging = false;
         }

@@ -1009,7 +1009,12 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       *{box-sizing:border-box}
 
-      html{scroll-behavior:smooth}
+      html{
+        scroll-behavior:smooth;
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+      }
 
       body{
 
@@ -1028,6 +1033,10 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         margin:0;
 
         min-height:100vh;
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+        position:relative;
 
       }
 
@@ -1044,6 +1053,9 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       .tz-topbar{
 
         position:sticky;
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
 
         top:0;
 
@@ -1064,6 +1076,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       .tz-topbar-inner{
 
         max-width:1180px;
+        width:100%;
 
         margin:0 auto;
 
@@ -1515,7 +1528,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
 
 
-      .wrap{max-width:1180px;margin:0 auto;padding:24px 16px 120px}
+      .wrap{max-width:1180px;width:100%;margin:0 auto;padding:24px 16px 120px;overflow-x:hidden}
 
       .card{
 
@@ -2611,7 +2624,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         }
 
-        .wrap{padding:18px 12px 120px}
+        .wrap{width:100%;max-width:100%;padding:18px 12px 120px;overflow-x:hidden}
 
         .card{padding:16px;border-radius:22px}
 
