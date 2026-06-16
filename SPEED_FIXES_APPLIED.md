@@ -45,3 +45,4 @@ npm start
 - Removed the duplicated nested `src/src` source tree from the deployable app.
 - Replaced the placeholder test script with `npm run check && npx prisma validate`.
 - Ran `npm audit fix`; `npm audit --audit-level=moderate` now reports 0 vulnerabilities.
+- Updated the profile photo cropper overlay from a circle to the same rounded-square shape used by the profile image.

@@ -3993,21 +3993,23 @@ router.get("/edit/:username", async (req, res) => {
         position:absolute;
         inset:0;
         pointer-events:none;
-        background:radial-gradient(circle at center, transparent 0 32vw, rgba(0,0,0,.58) calc(32vw + 2px));
+        background:transparent;
       }
 
       .tz-photo-crop-ring{
         position:absolute;
         left:50%;
         top:50%;
-        width:64vw;
-        height:64vw;
+        width:min(64vw, 420px);
+        aspect-ratio:1 / 1;
         max-width:420px;
-        max-height:420px;
         transform:translate(-50%, -50%);
-        border-radius:50%;
+        border-radius:clamp(24px, 7vw, 36px);
         border:2px solid rgba(255,255,255,.92);
-        box-shadow:0 0 0 999px rgba(0,0,0,.34), 0 0 36px rgba(115,194,255,.20);
+        box-shadow:
+          0 0 0 999px rgba(0,0,0,.54),
+          0 0 36px rgba(115,194,255,.20),
+          inset 0 1px 0 rgba(255,255,255,.16);
         pointer-events:none;
       }
 
