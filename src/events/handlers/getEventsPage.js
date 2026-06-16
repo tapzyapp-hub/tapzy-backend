@@ -943,19 +943,20 @@ module.exports = async function getEventsPage(req, res) {
         position:absolute;
         left:var(--mx,72%);
         top:var(--my,22%);
-        width:min(62vw, 340px);
-        height:min(62vw, 340px);
+        width:min(78vw, 430px);
+        height:min(78vw, 430px);
         border-radius:999px;
         background:radial-gradient(circle,
-          rgba(120,210,255,.42) 0%,
-          rgba(58,128,255,.22) 32%,
-          rgba(58,128,255,.08) 54%,
-          transparent 72%);
+          rgba(150,225,255,.72) 0%,
+          rgba(76,169,255,.42) 24%,
+          rgba(46,112,255,.22) 48%,
+          transparent 74%);
         transform:translate(-50%, -50%);
-        filter:blur(16px);
-        opacity:.84;
+        filter:blur(18px);
+        opacity:.96;
+        mix-blend-mode:screen;
 
-        z-index:1;
+        z-index:2;
 
         pointer-events:none;
         transition:opacity .22s ease, filter .22s ease, left .08s linear, top .08s linear;
@@ -965,7 +966,7 @@ module.exports = async function getEventsPage(req, res) {
       .event-card:hover .event-card-glow,
       .event-card.is-touch-active .event-card-glow{
         opacity:1;
-        filter:blur(20px);
+        filter:blur(21px);
       }
 
 
