@@ -760,6 +760,8 @@ module.exports = async function getEventsPage(req, res) {
       .event-card{
 
         position:relative;
+        --mx:72%;
+        --my:22%;
 
         min-height:450px;
 
@@ -939,25 +941,28 @@ module.exports = async function getEventsPage(req, res) {
       .event-card-glow{
 
         position:absolute;
-
-        width:220px;
-
-        height:220px;
-
-        right:-60px;
-
-        top:-30px;
-
-        border-radius:999px;
-
-        background:radial-gradient(circle, rgba(100,190,255,.38), rgba(58,128,255,.18) 36%, transparent 70%);
-
-        filter:blur(20px);
+        inset:-18%;
+        border-radius:inherit;
+        background:
+          radial-gradient(circle at var(--mx,72%) var(--my,22%),
+            rgba(120,210,255,.48),
+            rgba(58,128,255,.24) 18%,
+            rgba(58,128,255,.08) 36%,
+            transparent 58%);
+        filter:blur(18px);
+        opacity:.92;
 
         z-index:1;
 
         pointer-events:none;
+        transition:opacity .22s ease, filter .22s ease;
 
+      }
+
+      .event-card:hover .event-card-glow,
+      .event-card.is-touch-active .event-card-glow{
+        opacity:1;
+        filter:blur(20px);
       }
 
 

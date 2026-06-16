@@ -467,6 +467,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             if (card.dataset.motionBound === "1") return;
 
             card.dataset.motionBound = "1";
+            if (!card.style.getPropertyValue("--mx")) card.style.setProperty("--mx", "72%");
+            if (!card.style.getPropertyValue("--my")) card.style.setProperty("--my", "22%");
 
 
 

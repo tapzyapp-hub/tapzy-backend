@@ -47,3 +47,4 @@ npm start
 - Ran `npm audit fix`; `npm audit --audit-level=moderate` now reports 0 vulnerabilities.
 - Updated the profile photo cropper overlay from a circle to the same rounded-square shape used by the profile image.
 - Reset saved profile photo fit values after creating a cropped image so the rendered profile photo matches the crop view exactly.
+- Updated event cards so the blue glow uses the same pointer-position variables on initial and loaded cards instead of staying pinned to one corner.
