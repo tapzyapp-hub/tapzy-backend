@@ -760,8 +760,6 @@ module.exports = async function getEventsPage(req, res) {
       .event-card{
 
         position:relative;
-        --mx:72%;
-        --my:22%;
 
         min-height:450px;
 
@@ -809,7 +807,7 @@ module.exports = async function getEventsPage(req, res) {
 
           radial-gradient(circle at var(--mx,50%) var(--my,50%),
 
-          rgba(127,220,255,.36), rgba(64,155,255,.16) 18%, transparent 38%);
+          rgba(127,220,255,.58), rgba(64,155,255,.28) 20%, transparent 50%);
 
         opacity:0;
 
@@ -941,32 +939,25 @@ module.exports = async function getEventsPage(req, res) {
       .event-card-glow{
 
         position:absolute;
-        left:var(--mx,72%);
-        top:var(--my,22%);
-        width:min(78vw, 430px);
-        height:min(78vw, 430px);
-        border-radius:999px;
-        background:radial-gradient(circle,
-          rgba(150,225,255,.72) 0%,
-          rgba(76,169,255,.42) 24%,
-          rgba(46,112,255,.22) 48%,
-          transparent 74%);
-        transform:translate(-50%, -50%);
-        filter:blur(18px);
-        opacity:.96;
-        mix-blend-mode:screen;
 
-        z-index:2;
+        width:220px;
+
+        height:220px;
+
+        right:-60px;
+
+        top:-30px;
+
+        border-radius:999px;
+
+        background:radial-gradient(circle, rgba(100,190,255,.38), rgba(58,128,255,.18) 36%, transparent 70%);
+
+        filter:blur(20px);
+
+        z-index:1;
 
         pointer-events:none;
-        transition:opacity .22s ease, filter .22s ease, left .08s linear, top .08s linear;
 
-      }
-
-      .event-card:hover .event-card-glow,
-      .event-card.is-touch-active .event-card-glow{
-        opacity:1;
-        filter:blur(21px);
       }
 
 
@@ -1739,9 +1730,9 @@ module.exports = async function getEventsPage(req, res) {
           width:100%;
           min-height:min(78svh, 720px);
           border-radius:34px;
+          contain:layout paint;
+          content-visibility:auto;
           contain-intrinsic-size:0 620px;
-          backface-visibility:hidden;
-          -webkit-backface-visibility:hidden;
         }
 
         .mobile-feed-virtual-spacer{
@@ -1755,8 +1746,10 @@ module.exports = async function getEventsPage(req, res) {
           opacity:1 !important;
         }
 
-        .mobile-events-grid .event-card:not(.is-touch-active){
+        .mobile-events-grid .event-card{
           transform:translateZ(0);
+          backface-visibility:hidden;
+          -webkit-backface-visibility:hidden;
         }
 
         @media (prefers-reduced-motion: no-preference){
