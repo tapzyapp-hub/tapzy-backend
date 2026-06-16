@@ -1,4 +1,4 @@
-const router = require("express").Router();
+﻿const router = require("express").Router();
 
 const prisma = require("../prisma");
 
@@ -286,9 +286,7 @@ router.get("/discovery/:username", async (req, res) => {
 
       if (isConnected) {
 
-        actionHtml = `<span class="td-badge td-badge-connected">In network</span>`;
-
-        actionHtml = `<span class="td-badge td-badge-connected">In network</span>`;
+        actionHtml = `<span class="td-badge td-badge-connected">Connected</span>`;
 
       } else if (currentProfile && currentProfile.id !== p.id) {
 
@@ -296,7 +294,7 @@ router.get("/discovery/:username", async (req, res) => {
 
           ? `<form method="POST" action="/unfollow/${escapeHtml(p.username || "")}" style="margin:0;">
 
-              <button class="btn btnDark td-follow-btn" type="submit">Following ✓</button>
+              <button class="btn btnDark td-follow-btn" type="submit">Following âœ“</button>
 
             </form>`
 
@@ -314,7 +312,7 @@ router.get("/discovery/:username", async (req, res) => {
 
         p,
 
-        `${escapeHtml(String(p.connections || 0))} network tap${Number(p.connections || 0) === 1 ? "" : "s"}`,
+        `${escapeHtml(String(p.connections || 0))} connection${Number(p.connections || 0) === 1 ? "" : "s"}`,
 
         actionHtml
 
@@ -334,13 +332,13 @@ router.get("/discovery/:username", async (req, res) => {
 
         isConnected
 
-          ? "In your network"
+          ? "Connected"
 
           : `Following since ${escapeHtml(formatPrettyLocal(f.createdAt))}`,
 
         "",
 
-        isConnected ? `<span class="td-badge td-badge-connected">In network</span>` : ""
+        isConnected ? `<span class="td-badge td-badge-connected">Connected</span>` : ""
 
       );
 
@@ -362,13 +360,13 @@ router.get("/discovery/:username", async (req, res) => {
 
         isConnected
 
-          ? "In your network"
+          ? "Connected"
 
           : `Follower since ${escapeHtml(formatPrettyLocal(f.createdAt))}`,
 
         "",
 
-        isConnected ? `<span class="td-badge td-badge-connected">In network</span>` : ""
+        isConnected ? `<span class="td-badge td-badge-connected">Connected</span>` : ""
 
       );
 
@@ -426,7 +424,7 @@ router.get("/discovery/:username", async (req, res) => {
 
               <div class="td-empty td-empty-search">
 
-                <div class="td-empty-icon">⌕</div>
+                <div class="td-empty-icon">âŒ•</div>
 
                 <h3 style="margin:0 0 8px 0;">Start building your network</h3>
 
@@ -1656,7 +1654,7 @@ router.get("/discovery/:username", async (req, res) => {
 
           toast.className = "td-toast";
 
-          toast.textContent = "⚡ You’re now connected";
+          toast.textContent = "âš¡ Youâ€™re now connected";
 
           document.body.appendChild(toast);
 
@@ -1694,7 +1692,7 @@ router.get("/discovery/:username", async (req, res) => {
 
     res.send(
 
-      renderShell(`Discovery • ${profile.username}`, body, "", {
+      renderShell(`Discovery â€¢ ${profile.username}`, body, "", {
 
         currentProfile,
 
@@ -1719,4 +1717,6 @@ router.get("/discovery/:username", async (req, res) => {
 
 
 module.exports = router;
+
+
 

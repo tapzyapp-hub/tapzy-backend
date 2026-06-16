@@ -1,4 +1,4 @@
-function getInitials(profile) {
+﻿function getInitials(profile) {
   const source = String(profile?.name || profile?.username || "T").trim();
   const parts = source.split(/\s+/).filter(Boolean).slice(0, 2);
 
@@ -27,7 +27,7 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
     : `<span>${escapeHtml(getInitials(other))}</span>`;
 
   const connectedBadge = row.isConnected
-    ? `<div class="tz-msg-thread-badge">In network</div>`
+    ? `<div class="tz-msg-thread-badge">Connected</div>`
     : "";
   const pinnedBadge = row.isPinned ? `<div class="tz-msg-thread-badge">Pinned</div>` : "";
   const mutedBadge = row.isMuted ? `<div class="tz-msg-thread-badge">Muted</div>` : "";
@@ -68,7 +68,9 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
         <div class="tz-msg-thread-preview">${escapeHtml(preview)}</div>
       </div>
 
-      <div class="tz-msg-thread-arrow" aria-hidden="true">›</div>
+      <div class="tz-msg-thread-arrow" aria-hidden="true">â€º</div>
     </a>
   `;
 };
+
+
