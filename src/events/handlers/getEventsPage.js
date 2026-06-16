@@ -809,7 +809,7 @@ module.exports = async function getEventsPage(req, res) {
 
           radial-gradient(circle at var(--mx,50%) var(--my,50%),
 
-          rgba(127,220,255,.58), rgba(64,155,255,.28) 20%, transparent 50%);
+          rgba(127,220,255,.36), rgba(64,155,255,.16) 18%, transparent 38%);
 
         opacity:0;
 
@@ -941,21 +941,24 @@ module.exports = async function getEventsPage(req, res) {
       .event-card-glow{
 
         position:absolute;
-        inset:-18%;
-        border-radius:inherit;
-        background:
-          radial-gradient(circle at var(--mx,72%) var(--my,22%),
-            rgba(120,210,255,.48),
-            rgba(58,128,255,.24) 18%,
-            rgba(58,128,255,.08) 36%,
-            transparent 58%);
-        filter:blur(18px);
-        opacity:.92;
+        left:var(--mx,72%);
+        top:var(--my,22%);
+        width:min(62vw, 340px);
+        height:min(62vw, 340px);
+        border-radius:999px;
+        background:radial-gradient(circle,
+          rgba(120,210,255,.42) 0%,
+          rgba(58,128,255,.22) 32%,
+          rgba(58,128,255,.08) 54%,
+          transparent 72%);
+        transform:translate(-50%, -50%);
+        filter:blur(16px);
+        opacity:.84;
 
         z-index:1;
 
         pointer-events:none;
-        transition:opacity .22s ease, filter .22s ease;
+        transition:opacity .22s ease, filter .22s ease, left .08s linear, top .08s linear;
 
       }
 
