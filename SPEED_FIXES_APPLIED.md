@@ -34,3 +34,14 @@ npm install
 npx prisma migrate deploy
 npm start
 ```
+
+## Final polish pass
+
+- Added `compression` as a real production dependency instead of an optional missing module.
+- Replaced hardcoded service/admin key defaults with environment-only configuration.
+- Shared CORS origin checks between Express and Socket.IO.
+- Made production admin access fail closed when `ADMIN_KEY` is not configured.
+- Removed password reset URL logging when email delivery is not configured.
+- Removed the duplicated nested `src/src` source tree from the deployable app.
+- Replaced the placeholder test script with `npm run check && npx prisma validate`.
+- Ran `npm audit fix`; `npm audit --audit-level=moderate` now reports 0 vulnerabilities.

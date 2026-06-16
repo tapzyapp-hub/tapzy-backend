@@ -344,7 +344,6 @@ router.post("/auth/forgot-password", async (req, res) => {
       });
     } else {
       console.warn("Password reset requested but RESEND_API_KEY is missing.");
-      console.log("Reset URL:", resetUrl);
     }
 
     return res.redirect("/auth/forgot-password?success=If%20that%20email%20exists,%20a%20reset%20link%20has%20been%20sent");

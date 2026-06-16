@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 
 const app = require("./src/app");
 const prisma = require("./src/prisma");
-const { PORT, WEB_BASE } = require("./src/config");
+const { PORT, WEB_BASE, isAllowedOrigin } = require("./src/config");
 const { uploadsDir } = require("./src/upload");
 const { cleanUsername } = require("./src/utils");
 
@@ -16,7 +16,12 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: true,
+    origin(origin, cb) {
+      if (isAllowedOrigin(origin)) {
+        return cb(null, true);
+      }
+      return cb(new Error("Not allowed by Socket.IO CORS"));
+    },
     credentials: true,
   },
 });

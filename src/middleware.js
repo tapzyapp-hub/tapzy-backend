@@ -1,6 +1,6 @@
 const rateLimit = require("express-rate-limit");
 const prisma = require("./prisma");
-const { SESSION_COOKIE, ADMIN_KEY } = require("./config");
+const { SESSION_COOKIE, ADMIN_KEY, IS_PROD } = require("./config");
 
 function makeLimiter(max) {
   return rateLimit({
@@ -51,7 +51,11 @@ function setCachedSession(token, value) {
 }
 
 function requireAdmin(req, res) {
-  if (!ADMIN_KEY) return true;
+  if (!ADMIN_KEY) {
+    if (!IS_PROD) return true;
+    res.status(503).send("Admin access is not configured");
+    return false;
+  }
 
   const key = String(req.query?.key || req.headers["x-admin-key"] || "").trim();
 
