@@ -1735,9 +1735,9 @@ module.exports = async function getEventsPage(req, res) {
           width:100%;
           min-height:min(78svh, 720px);
           border-radius:34px;
-          contain:layout paint;
-          content-visibility:auto;
           contain-intrinsic-size:0 620px;
+          backface-visibility:hidden;
+          -webkit-backface-visibility:hidden;
         }
 
         .mobile-feed-virtual-spacer{
@@ -1751,10 +1751,8 @@ module.exports = async function getEventsPage(req, res) {
           opacity:1 !important;
         }
 
-        .mobile-events-grid .event-card{
+        .mobile-events-grid .event-card:not(.is-touch-active){
           transform:translateZ(0);
-          backface-visibility:hidden;
-          -webkit-backface-visibility:hidden;
         }
 
         @media (prefers-reduced-motion: no-preference){

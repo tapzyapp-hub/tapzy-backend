@@ -575,6 +575,35 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         }
 
+        function refreshAmbientCardGlow(scope) {
+          const root = scope || document;
+          const cards = root.querySelectorAll(".js-event-card");
+          const viewportY = (window.innerHeight || document.documentElement.clientHeight || 700) * 0.48;
+
+          cards.forEach((card) => {
+            if (card.classList.contains("is-touch-active")) return;
+
+            const rect = card.getBoundingClientRect();
+            if (rect.bottom <= 0 || rect.top >= (window.innerHeight || document.documentElement.clientHeight || 700)) return;
+
+            const focusY = Math.max(rect.top, Math.min(rect.bottom, viewportY));
+            const y = Math.max(18, Math.min(82, ((focusY - rect.top) / Math.max(1, rect.height)) * 100));
+
+            card.style.setProperty("--mx", "58%");
+            card.style.setProperty("--my", y.toFixed(2) + "%");
+          });
+        }
+
+        let ambientGlowTicking = false;
+        function scheduleAmbientGlowRefresh() {
+          if (ambientGlowTicking) return;
+          ambientGlowTicking = true;
+          window.requestAnimationFrame(() => {
+            ambientGlowTicking = false;
+            refreshAmbientCardGlow(document);
+          });
+        }
+
 
 
         function bindCardReveal(scope) {
@@ -750,6 +779,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           bindCardReveal(scope);
 
           bindGoingActions(scope);
+
+          refreshAmbientCardGlow(scope);
 
         }
 
@@ -1519,6 +1550,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
         enhance(document);
+        window.addEventListener("scroll", scheduleAmbientGlowRefresh, { passive: true });
+        window.addEventListener("resize", scheduleAmbientGlowRefresh, { passive: true });
+        scheduleAmbientGlowRefresh();
 
         setupLiveLocationGate();
         if (IS_MOBILE_FEED) {
