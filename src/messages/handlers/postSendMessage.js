@@ -72,6 +72,34 @@ module.exports = async function postSendMessage(req, res) {
       return res.status(403).send("Forbidden");
     }
 
+    const otherMemberIdsForBlockCheck = conversation.members
+      .map((member) => member.profileId)
+      .filter((profileId) => profileId && profileId !== currentProfile.id);
+
+    if (otherMemberIdsForBlockCheck.length) {
+      try {
+        const block = await prisma.userBlock.findFirst({
+          where: {
+            OR: [
+              { blockerId: currentProfile.id, blockedId: { in: otherMemberIdsForBlockCheck } },
+              { blockerId: { in: otherMemberIdsForBlockCheck }, blockedId: currentProfile.id },
+            ],
+          },
+          select: { id: true },
+        });
+
+        if (block) {
+          if (req.xhr || req.get("X-Requested-With") === "XMLHttpRequest") {
+            return res.status(403).json({ ok: false, error: "Messaging is unavailable with this user" });
+          }
+          return res.redirect(`/messages/${id}`);
+        }
+      } catch (blockCheckError) {
+        const message = String(blockCheckError?.message || blockCheckError || "");
+        if (!/(userBlock|UserBlock|P2021|P2022|does not exist|column)/i.test(message)) throw blockCheckError;
+      }
+    }
+
     try {
       await prisma.conversationMember.update({
         where: { id: myMembership.id },

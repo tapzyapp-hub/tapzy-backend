@@ -66,11 +66,11 @@ router.get("/discovery/:username", async (req, res) => {
 
 
 
-    const activeTabRaw = String(req.query.tab || "connections").trim().toLowerCase();
+    const activeTabRaw = String(req.query.tab || "search").trim().toLowerCase();
 
-    const allowedTabs = new Set(["connections", "following", "followers", "search"]);
+    const allowedTabs = new Set(["following", "followers", "search"]);
 
-    const activeTab = allowedTabs.has(activeTabRaw) ? activeTabRaw : "connections";
+    const activeTab = allowedTabs.has(activeTabRaw) ? activeTabRaw : "search";
 
 
 
@@ -272,7 +272,7 @@ router.get("/discovery/:username", async (req, res) => {
 
 
 
-    const connectionIds = new Set(networkRows.map((row) => row.other.id));
+    const networkIds = new Set(networkRows.map((row) => row.other.id));
 
 
 
@@ -280,13 +280,15 @@ router.get("/discovery/:username", async (req, res) => {
 
       let actionHtml = "";
 
-      const isConnected = connectionIds.has(p.id);
+      const isConnected = networkIds.has(p.id);
 
 
 
       if (isConnected) {
 
-        actionHtml = `<span class="td-badge td-badge-connected">⚡ Connected</span>`;
+        actionHtml = `<span class="td-badge td-badge-connected">In network</span>`;
+
+        actionHtml = `<span class="td-badge td-badge-connected">In network</span>`;
 
       } else if (currentProfile && currentProfile.id !== p.id) {
 
@@ -312,7 +314,7 @@ router.get("/discovery/:username", async (req, res) => {
 
         p,
 
-        `${escapeHtml(String(p.connections || 0))} connection${Number(p.connections || 0) === 1 ? "" : "s"}`,
+        `${escapeHtml(String(p.connections || 0))} network tap${Number(p.connections || 0) === 1 ? "" : "s"}`,
 
         actionHtml
 
@@ -338,7 +340,7 @@ router.get("/discovery/:username", async (req, res) => {
 
         "",
 
-        isConnected ? `<span class="td-badge td-badge-connected">⚡ Connected</span>` : ""
+        isConnected ? `<span class="td-badge td-badge-connected">In network</span>` : ""
 
       );
 
@@ -366,31 +368,11 @@ router.get("/discovery/:username", async (req, res) => {
 
         "",
 
-        isConnected ? `<span class="td-badge td-badge-connected">⚡ Connected</span>` : ""
+        isConnected ? `<span class="td-badge td-badge-connected">In network</span>` : ""
 
       );
 
     });
-
-
-
-    const connectionCards = networkRows.map((row, index) =>
-
-      personCard(
-
-        row.other,
-
-        "In your network",
-
-        "",
-
-        `<span class="td-badge td-badge-connected">⚡ Connected</span>`,
-
-        justConnected && index === 0 ? "td-person-card-pulse" : ""
-
-      )
-
-    );
 
 
 
@@ -486,18 +468,6 @@ router.get("/discovery/:username", async (req, res) => {
 
 
 
-    if (activeTab === "connections") {
-
-      contentHtml = connectionCards.length
-
-        ? `<div class="td-results-list">${connectionCards.join("")}</div>`
-
-        : `<div class="td-empty"><b>No connections yet</b><div style="margin-top:8px;">When two people follow each other back, they become a connection.</div></div>`;
-
-    }
-
-
-
     const body = `
 
     <div class="wrap">
@@ -511,8 +481,6 @@ router.get("/discovery/:username", async (req, res) => {
             <div class="td-tabs-wrap">
 
               <div class="td-tabs">
-
-                ${renderTab("Connections", "connections", networkRows.length)}
 
                 ${renderTab("Following", "following", profile.following.length)}
 
@@ -546,7 +514,7 @@ router.get("/discovery/:username", async (req, res) => {
 
                           ? "Followers"
 
-                          : "Connections"
+                          : "Search"
 
                   }
 
@@ -574,7 +542,7 @@ router.get("/discovery/:username", async (req, res) => {
 
                           ? `${profile.followers.length} total`
 
-                          : `${networkRows.length} total`
+                          : "Search the network"
 
                   }
 

@@ -27,7 +27,7 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
     : `<span>${escapeHtml(getInitials(other))}</span>`;
 
   const connectedBadge = row.isConnected
-    ? `<div class="tz-msg-thread-badge">⚡ Connected</div>`
+    ? `<div class="tz-msg-thread-badge">In network</div>`
     : "";
   const pinnedBadge = row.isPinned ? `<div class="tz-msg-thread-badge">Pinned</div>` : "";
   const mutedBadge = row.isMuted ? `<div class="tz-msg-thread-badge">Muted</div>` : "";

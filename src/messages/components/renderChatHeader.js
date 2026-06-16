@@ -6,7 +6,7 @@ function getInitials(profile) {
   return parts.map((part) => part.charAt(0).toUpperCase()).join("");
 }
 
-module.exports = function renderChatHeader({ other, escapeHtml, conversationId, memberSettings = {} }) {
+module.exports = function renderChatHeader({ other, escapeHtml, conversationId, memberSettings = {}, blockState = {} }) {
   const name = other?.name || other?.username || "Conversation";
   const username = other?.username || "user";
   const profileHref = other?.username ? `/u/${escapeHtml(username)}` : "#";
@@ -15,6 +15,8 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
   const mutedUntil = memberSettings.mutedUntil ? new Date(memberSettings.mutedUntil) : null;
   const isMuted = mutedUntil && mutedUntil.getTime() > Date.now();
   const isArchived = !!memberSettings.archivedAt;
+  const iBlockedThem = !!blockState.iBlockedThem;
+  const theyBlockedMe = !!blockState.theyBlockedMe;
 
   const avatarInnerHtml = other?.photo
     ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" loading="lazy" decoding="async" />`
@@ -38,6 +40,8 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
               <div class="tz-chat-partner-badge">Private</div>
               ${isPinned ? `<div class="tz-chat-partner-badge">Pinned</div>` : ""}
               ${isMuted ? `<div class="tz-chat-partner-badge">Muted</div>` : ""}
+              ${iBlockedThem ? `<div class="tz-chat-partner-badge">Blocked</div>` : ""}
+              ${theyBlockedMe ? `<div class="tz-chat-partner-badge">Unavailable</div>` : ""}
             </div>
           </div>
         </div>
@@ -75,6 +79,13 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
               <input type="hidden" name="action" value="${isArchived ? "unarchive" : "archive"}" />
               <button type="submit">${isArchived ? "Move to inbox" : "Archive chat"}</button>
             </form>
+
+            ${other?.id ? `
+              <form method="POST" action="/messages/block/${escapeHtml(String(other.id))}" onsubmit="return confirm('${iBlockedThem ? "Unblock this Tapzy user?" : "Block this Tapzy user? They will not be able to message you."}');">
+                <input type="hidden" name="action" value="${iBlockedThem ? "unblock" : "block"}" />
+                <button class="tz-chat-setting-danger" type="submit">${iBlockedThem ? "Unblock user" : "Block user"}</button>
+              </form>
+            ` : ""}
           </div>
         </details>
         <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">

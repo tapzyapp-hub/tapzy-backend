@@ -289,6 +289,7 @@ module.exports = function renderConversationPage({
   other,
 
   memberSettings = {},
+  blockState = {},
 
   escapeHtml,
 
@@ -350,7 +351,7 @@ module.exports = function renderConversationPage({
 
       <div class="tz-chat-shell">
 
-        ${renderChatHeader({ other, escapeHtml, conversationId: conversation.id, memberSettings })}
+        ${renderChatHeader({ other, escapeHtml, conversationId: conversation.id, memberSettings, blockState })}
 
 
 
@@ -362,7 +363,11 @@ module.exports = function renderConversationPage({
 
 
 
-        ${renderChatComposer({ conversationId: conversation.id })}
+        ${
+          blockState.iBlockedThem || blockState.theyBlockedMe
+            ? `<div class="tz-chat-block-notice">${blockState.iBlockedThem ? "You blocked this user. Unblock them from Settings to send messages." : "Messaging is unavailable with this user."}</div>`
+            : renderChatComposer({ conversationId: conversation.id })
+        }
 
       </div>
 
@@ -403,7 +408,7 @@ module.exports = function renderConversationPage({
 
     backdrop-filter: blur(8px);
 
-    overflow:hidden;
+    overflow:visible;
 
   }
 
@@ -461,7 +466,7 @@ module.exports = function renderConversationPage({
 
     position:relative;
 
-    z-index:2;
+    z-index:40;
 
     display:flex;
 
@@ -801,7 +806,7 @@ module.exports = function renderConversationPage({
     position:absolute;
     right:0;
     top:calc(100% + 10px);
-    z-index:20;
+    z-index:90;
     width:min(280px, calc(100vw - 32px));
     padding:10px;
     border-radius:20px;
@@ -846,6 +851,26 @@ module.exports = function renderConversationPage({
   .tz-chat-setting-link:hover{
     background:rgba(120,190,255,.10);
     color:#fff;
+  }
+
+  .tz-chat-settings-panel .tz-chat-setting-danger{
+    color:#ffd7df;
+  }
+
+  .tz-chat-settings-panel .tz-chat-setting-danger:hover{
+    background:rgba(255,80,120,.10);
+  }
+
+  .tz-chat-block-notice{
+    position:relative;
+    z-index:3;
+    border-radius:22px;
+    border:1px solid rgba(255,120,150,.20);
+    background:rgba(255,80,120,.08);
+    color:#ffdce3;
+    padding:16px;
+    text-align:center;
+    font-weight:800;
   }
 
 
@@ -964,7 +989,7 @@ module.exports = function renderConversationPage({
 
     position:relative;
 
-    z-index:2;
+    z-index:1;
 
     min-height:440px;
 

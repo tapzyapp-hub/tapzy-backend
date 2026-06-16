@@ -547,6 +547,36 @@ router.get("/settings", async (req, res) => {
     const profileHref = `/u/${encodeURIComponent(username)}`;
     const editHref = `/edit/${encodeURIComponent(username)}`;
     const discoveryHref = `/discovery/${encodeURIComponent(username)}?tab=search`;
+    let blockedRows = [];
+
+    try {
+      blockedRows = await req.app.locals?.prisma?.userBlock?.findMany?.({
+        where: { blockerId: currentProfile.id },
+        include: { blocked: true },
+        orderBy: { createdAt: "desc" },
+      }) || [];
+    } catch (_) {
+      try {
+        const prisma = require("../prisma");
+        blockedRows = await prisma.userBlock.findMany({
+          where: { blockerId: currentProfile.id },
+          include: { blocked: true },
+          orderBy: { createdAt: "desc" },
+        });
+      } catch (_) {
+        blockedRows = [];
+      }
+    }
+
+    const blockedUsersHtml = blockedRows.length
+      ? blockedRows.map((row) => `
+          <form class="settings-blocked-row" method="POST" action="/messages/block/${escapeHtml(String(row.blockedId || row.blocked?.id || ""))}">
+            <input type="hidden" name="action" value="unblock" />
+            <span>${escapeHtml(row.blocked?.name || row.blocked?.username || "Tapzy user")}</span>
+            <button type="submit">Unblock</button>
+          </form>
+        `).join("")
+      : `<div class="settings-empty">No blocked users.</div>`;
 
     const body = `
       <div class="wrap settings-wrap">
@@ -596,11 +626,20 @@ router.get("/settings", async (req, res) => {
           <div class="settings-card">
             <div class="settings-label">Privacy</div>
             <h2>Sharing</h2>
-            <p>Control what Tapzy shares when someone taps or connects with you.</p>
+            <p>Control what Tapzy shares when someone taps or interacts with your profile.</p>
             <div class="settings-actions">
               <a href="${editHref}#quick-share">Quick share fields</a>
-              <a href="/connections/${encodeURIComponent(username)}">Connections</a>
-              <a href="/vault/${encodeURIComponent(username)}">Private vault</a>
+              <a href="/messages">Message privacy</a>
+              <a href="/settings#blocked-users">Blocked users</a>
+            </div>
+          </div>
+
+          <div class="settings-card" id="blocked-users">
+            <div class="settings-label">Privacy</div>
+            <h2>Blocked users</h2>
+            <p>People you block cannot message you on Tapzy.</p>
+            <div class="settings-blocked-list">
+              ${blockedUsersHtml}
             </div>
           </div>
 
@@ -762,6 +801,53 @@ router.get("/settings", async (req, res) => {
           display:grid;
           gap:9px;
           margin-top:16px;
+        }
+
+        .settings-blocked-list{
+          display:grid;
+          gap:10px;
+          margin-top:16px;
+        }
+
+        .settings-blocked-row{
+          margin:0;
+          min-height:48px;
+          border-radius:16px;
+          border:1px solid rgba(255,255,255,.08);
+          background:rgba(255,255,255,.04);
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:10px;
+          padding:8px 10px 8px 14px;
+        }
+
+        .settings-blocked-row span{
+          color:#f3f8ff;
+          font-weight:800;
+          min-width:0;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          white-space:nowrap;
+        }
+
+        .settings-blocked-row button{
+          min-height:34px;
+          border-radius:999px;
+          border:1px solid rgba(255,255,255,.10);
+          background:rgba(255,255,255,.06);
+          color:#fff;
+          padding:0 12px;
+          font-weight:800;
+          cursor:pointer;
+        }
+
+        .settings-empty{
+          margin-top:16px;
+          color:#9daabd;
+          border-radius:16px;
+          border:1px dashed rgba(255,255,255,.10);
+          padding:14px;
         }
 
         .settings-actions a{

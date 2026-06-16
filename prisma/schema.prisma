@@ -89,6 +89,8 @@ model UserProfile {
   notificationsReceived   Notification[]      @relation("NotificationRecipient")
   notificationsSent       Notification[]      @relation("NotificationActor")
   pushSubscriptions       PushSubscription[]
+  blockedUsers            UserBlock[]       @relation("UserBlockBlocker")
+  blockedByUsers          UserBlock[]       @relation("UserBlockBlocked")
 
   eventAttendances EventAttendance[]
   stories          Story[]
@@ -239,6 +241,21 @@ model Follow {
   @@index([followerProfileId, createdAt], map: "follow_follower_createdAt_idx")
   @@index([followingProfileId, createdAt], map: "follow_following_createdAt_idx")
   @@index([createdAt], map: "follow_createdAt_idx")
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker UserProfile @relation("UserBlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked UserProfile @relation("UserBlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId], map: "userblock_blockerId_blockedId_key")
+  @@index([blockerId], map: "userblock_blockerId_idx")
+  @@index([blockedId], map: "userblock_blockedId_idx")
+  @@index([createdAt], map: "userblock_createdAt_idx")
 }
 
 model Conversation {

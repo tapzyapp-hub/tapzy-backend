@@ -91,12 +91,36 @@ module.exports = async function getConversationPage(req, res) {
     const refreshedMemberRecord = refreshedConversation.members.find(
       (member) => member.profileId === currentProfile.id
     );
+    let blockState = { iBlockedThem: false, theyBlockedMe: false };
+
+    if (other?.id) {
+      try {
+        const blocks = await prisma.userBlock.findMany({
+          where: {
+            OR: [
+              { blockerId: currentProfile.id, blockedId: other.id },
+              { blockerId: other.id, blockedId: currentProfile.id },
+            ],
+          },
+          select: { blockerId: true, blockedId: true },
+        });
+
+        blockState = {
+          iBlockedThem: blocks.some((row) => row.blockerId === currentProfile.id && row.blockedId === other.id),
+          theyBlockedMe: blocks.some((row) => row.blockerId === other.id && row.blockedId === currentProfile.id),
+        };
+      } catch (blockError) {
+        const message = String(blockError?.message || blockError || "");
+        if (!/(userBlock|UserBlock|P2021|P2022|does not exist|column)/i.test(message)) throw blockError;
+      }
+    }
 
     const body = renderConversationPage({
       currentProfile,
       conversation: refreshedConversation,
       other,
       memberSettings: refreshedMemberRecord || {},
+      blockState,
       escapeHtml,
       renderTapzyAssistant,
     });

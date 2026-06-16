@@ -3074,8 +3074,6 @@ async function sendActivationOwnerEmail(profile, activationRow) {
 
       `Secure edit URL: ${WEB_BASE}/edit/${profile.username}?key=${profile.editSecret || ""}`,
 
-      `Connections: ${WEB_BASE}/connections/${profile.username}?key=${profile.editSecret || ""}`,
-
     ].join("\n"),
 
   });
