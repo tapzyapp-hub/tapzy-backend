@@ -36,28 +36,46 @@ module.exports = async function getMessagesPage(req, res) {
   try {
     const currentProfile = req.currentProfile;
     if (!currentProfile) return res.redirect("/auth");
+    const view = String(req.query.view || "inbox").trim().toLowerCase() === "archived" ? "archived" : "inbox";
 
-    const conversations = await prisma.conversation.findMany({
-      where: {
-        members: {
-          some: {
-            profileId: currentProfile.id,
-            hiddenAt: null,
+    async function findConversations(withSettings = true) {
+      const memberWhere = {
+        profileId: currentProfile.id,
+        hiddenAt: null,
+      };
+
+      if (withSettings) {
+        memberWhere.archivedAt = view === "archived" ? { not: null } : null;
+      }
+
+      return prisma.conversation.findMany({
+        where: {
+          members: {
+            some: memberWhere,
           },
         },
-      },
-      include: {
-        members: {
-          include: { profile: true },
+        include: {
+          members: {
+            include: { profile: true },
+          },
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            include: { sender: true },
+          },
         },
-        messages: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          include: { sender: true },
-        },
-      },
-      orderBy: { updatedAt: "desc" },
-    });
+        orderBy: { updatedAt: "desc" },
+      });
+    }
+
+    let conversations;
+    try {
+      conversations = await findConversations(true);
+    } catch (settingsQueryError) {
+      const message = String(settingsQueryError?.message || settingsQueryError || "");
+      if (!/(archivedAt|Unknown arg|P2022|column)/i.test(message)) throw settingsQueryError;
+      conversations = await findConversations(false);
+    }
 
     const otherProfileIds = conversations
       .map((conversation) => {
@@ -116,11 +134,16 @@ module.exports = async function getMessagesPage(req, res) {
       const otherMember = conversation.members.find(
         (member) => member.profileId !== currentProfile.id
       );
+      const myMember = conversation.members.find(
+        (member) => member.profileId === currentProfile.id
+      );
 
       const other = otherMember?.profile || null;
       const lastMessage = conversation.messages[0] || null;
       const preview = cleanPreview(lastMessage);
       const time = lastMessage ? formatPrettyLocal(lastMessage.createdAt) : "";
+      const mutedUntil = myMember?.mutedUntil ? new Date(myMember.mutedUntil) : null;
+      const isMuted = mutedUntil && mutedUntil.getTime() > Date.now();
 
       return {
         id: conversation.id,
@@ -129,7 +152,14 @@ module.exports = async function getMessagesPage(req, res) {
         time,
         unreadCount: unreadMap.get(conversation.id) || 0,
         isConnected: !!(other?.id && mutualConnectionIds.has(other.id)),
+        isPinned: !!myMember?.pinnedAt,
+        isMuted: !!isMuted,
+        isArchived: !!myMember?.archivedAt,
+        pinnedAt: myMember?.pinnedAt || null,
       };
+    }).sort((a, b) => {
+      if (!!a.isPinned !== !!b.isPinned) return a.isPinned ? -1 : 1;
+      return 0;
     });
 
     const unreadNotificationCount = await getUnreadNotificationCount(currentProfile.id);
@@ -140,6 +170,7 @@ module.exports = async function getMessagesPage(req, res) {
       conversationCount: conversations.length,
       renderTapzyAssistant,
       unreadNotificationCount,
+      view,
     });
 
     res.send(

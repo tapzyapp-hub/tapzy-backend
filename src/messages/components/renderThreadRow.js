@@ -29,6 +29,9 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
   const connectedBadge = row.isConnected
     ? `<div class="tz-msg-thread-badge">⚡ Connected</div>`
     : "";
+  const pinnedBadge = row.isPinned ? `<div class="tz-msg-thread-badge">Pinned</div>` : "";
+  const mutedBadge = row.isMuted ? `<div class="tz-msg-thread-badge">Muted</div>` : "";
+  const archivedBadge = row.isArchived ? `<div class="tz-msg-thread-badge">Archived</div>` : "";
 
   const unreadBadge = row.unreadCount
     ? `<div class="tz-msg-thread-unread">${escapeHtml(String(row.unreadCount))}</div>`
@@ -49,6 +52,9 @@ module.exports = function renderThreadRow({ row, escapeHtml }) {
             <div class="tz-msg-thread-name-row">
               <div class="tz-msg-thread-name">${escapeHtml(name)}</div>
               ${connectedBadge}
+              ${pinnedBadge}
+              ${mutedBadge}
+              ${archivedBadge}
             </div>
             <div class="tz-msg-thread-user">@${escapeHtml(username)}</div>
           </div>

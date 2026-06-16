@@ -151,6 +151,10 @@ module.exports = async function postSendMessage(req, res) {
     };
 
     const otherMemberIds = conversation.members
+      .filter((member) => {
+        const mutedUntil = member?.mutedUntil ? new Date(member.mutedUntil) : null;
+        return !(mutedUntil && mutedUntil.getTime() > Date.now());
+      })
       .map((member) => member.profileId)
       .filter((profileId) => profileId && profileId !== currentProfile.id);
 

@@ -88,11 +88,15 @@ module.exports = async function getConversationPage(req, res) {
       (member) => member.profileId !== currentProfile.id
     );
     const other = otherMember?.profile || null;
+    const refreshedMemberRecord = refreshedConversation.members.find(
+      (member) => member.profileId === currentProfile.id
+    );
 
     const body = renderConversationPage({
       currentProfile,
       conversation: refreshedConversation,
       other,
+      memberSettings: refreshedMemberRecord || {},
       escapeHtml,
       renderTapzyAssistant,
     });

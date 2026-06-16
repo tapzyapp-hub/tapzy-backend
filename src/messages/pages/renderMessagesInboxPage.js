@@ -7,6 +7,7 @@ module.exports = function renderMessagesInboxPage({
   conversationCount,
   renderTapzyAssistant,
   unreadNotificationCount = 0,
+  view = "inbox",
 }) {
   const { escapeHtml } = require("../../utils");
 
@@ -17,6 +18,7 @@ module.exports = function renderMessagesInboxPage({
   const threadsHtml = rows.length
     ? rows.map((row) => renderThreadRow({ row, escapeHtml })).join("")
     : renderEmptyInbox({ currentProfile });
+  const isArchived = view === "archived";
 
   return `
     <div class="wrap">
@@ -38,9 +40,14 @@ module.exports = function renderMessagesInboxPage({
               </div>
             </div>
 
+            <div class="tz-msg-tabs" role="tablist" aria-label="Message views">
+              <a class="tz-msg-tab${!isArchived ? " is-active" : ""}" href="/messages">Inbox</a>
+              <a class="tz-msg-tab${isArchived ? " is-active" : ""}" href="/messages?view=archived">Archived</a>
+            </div>
+
             <div class="tz-msg-content">
               <div class="tz-msg-section-head">
-                <h2 class="tz-msg-section-title">Inbox</h2>
+                <h2 class="tz-msg-section-title">${isArchived ? "Archived" : "Inbox"}</h2>
                 <div class="tz-msg-section-meta">
                   ${conversationCount} conversation${conversationCount === 1 ? "" : "s"}
                 </div>
@@ -196,6 +203,39 @@ module.exports = function renderMessagesInboxPage({
         position:relative;
         z-index:2;
         margin-top:18px;
+      }
+
+      .tz-msg-tabs{
+        position:relative;
+        z-index:2;
+        display:flex;
+        gap:10px;
+        margin-top:18px;
+        padding:6px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.08);
+        background:rgba(255,255,255,.035);
+        width:max-content;
+        max-width:100%;
+      }
+
+      .tz-msg-tab{
+        min-height:38px;
+        padding:0 16px;
+        border-radius:999px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        color:#aebbd0;
+        text-decoration:none;
+        font-size:13px;
+        font-weight:800;
+      }
+
+      .tz-msg-tab.is-active{
+        color:#08111d;
+        background:linear-gradient(180deg,#f9fcff,#dceeff);
+        box-shadow:0 10px 24px rgba(0,0,0,.22);
       }
 
       .tz-msg-section-head{

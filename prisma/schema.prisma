@@ -261,6 +261,9 @@ model ConversationMember {
   joinedAt       DateTime @default(now())
   hiddenAt       DateTime?
   lastReadAt     DateTime?
+  mutedUntil     DateTime?
+  pinnedAt       DateTime?
+  archivedAt     DateTime?
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   profile      UserProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
@@ -269,6 +272,8 @@ model ConversationMember {
   @@index([profileId], map: "conversationmember_profileId_idx")
   @@index([conversationId], map: "conversationmember_conversationId_idx")
   @@index([profileId, hiddenAt], map: "conversationmember_profileId_hiddenAt_idx")
+  @@index([profileId, archivedAt], map: "conversationmember_profileId_archivedAt_idx")
+  @@index([profileId, pinnedAt], map: "conversationmember_profileId_pinnedAt_idx")
 }
 
 model DirectMessage {

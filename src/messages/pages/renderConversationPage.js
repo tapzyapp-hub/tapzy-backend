@@ -288,6 +288,8 @@ module.exports = function renderConversationPage({
 
   other,
 
+  memberSettings = {},
+
   escapeHtml,
 
   renderTapzyAssistant,
@@ -348,7 +350,7 @@ module.exports = function renderConversationPage({
 
       <div class="tz-chat-shell">
 
-        ${renderChatHeader({ other, escapeHtml, conversationId: conversation.id })}
+        ${renderChatHeader({ other, escapeHtml, conversationId: conversation.id, memberSettings })}
 
 
 
@@ -777,6 +779,73 @@ module.exports = function renderConversationPage({
 
     display:flex;
 
+  }
+
+  .tz-chat-settings-menu{
+    position:relative;
+  }
+
+  .tz-chat-settings-menu summary{
+    list-style:none;
+    cursor:pointer;
+    color:#fff;
+    border:1px solid rgba(127,210,255,.18);
+    background:linear-gradient(180deg, rgba(22,28,40,.98), rgba(10,15,24,.98));
+  }
+
+  .tz-chat-settings-menu summary::-webkit-details-marker{
+    display:none;
+  }
+
+  .tz-chat-settings-panel{
+    position:absolute;
+    right:0;
+    top:calc(100% + 10px);
+    z-index:20;
+    width:min(280px, calc(100vw - 32px));
+    padding:10px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,.10);
+    background:linear-gradient(180deg, rgba(18,22,32,.98), rgba(7,9,14,.995));
+    box-shadow:0 24px 70px rgba(0,0,0,.46), 0 0 30px rgba(80,160,255,.10);
+  }
+
+  .tz-chat-settings-title{
+    padding:8px 10px 10px;
+    color:#f8fbff;
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+
+  .tz-chat-settings-panel form{
+    display:block;
+  }
+
+  .tz-chat-settings-panel button,
+  .tz-chat-setting-link{
+    width:100%;
+    min-height:42px;
+    border:0;
+    border-radius:14px;
+    background:transparent;
+    color:#dce8f8;
+    display:flex;
+    align-items:center;
+    padding:0 12px;
+    text-align:left;
+    text-decoration:none;
+    font:inherit;
+    font-size:14px;
+    font-weight:750;
+    cursor:pointer;
+  }
+
+  .tz-chat-settings-panel button:hover,
+  .tz-chat-setting-link:hover{
+    background:rgba(120,190,255,.10);
+    color:#fff;
   }
 
 

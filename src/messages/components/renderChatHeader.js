@@ -6,11 +6,15 @@ function getInitials(profile) {
   return parts.map((part) => part.charAt(0).toUpperCase()).join("");
 }
 
-module.exports = function renderChatHeader({ other, escapeHtml, conversationId }) {
+module.exports = function renderChatHeader({ other, escapeHtml, conversationId, memberSettings = {} }) {
   const name = other?.name || other?.username || "Conversation";
   const username = other?.username || "user";
   const profileHref = other?.username ? `/u/${escapeHtml(username)}` : "#";
   const avatarLabel = other?.username ? `Open ${name}'s profile` : `${name} avatar`;
+  const isPinned = !!memberSettings.pinnedAt;
+  const mutedUntil = memberSettings.mutedUntil ? new Date(memberSettings.mutedUntil) : null;
+  const isMuted = mutedUntil && mutedUntil.getTime() > Date.now();
+  const isArchived = !!memberSettings.archivedAt;
 
   const avatarInnerHtml = other?.photo
     ? `<img src="${escapeHtml(other.photo)}" alt="${escapeHtml(username)}" loading="lazy" decoding="async" />`
@@ -32,12 +36,47 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId }
             <div class="tz-chat-partner-name-row">
               <div class="tz-chat-partner-name">${escapeHtml(name)}</div>
               <div class="tz-chat-partner-badge">Private</div>
+              ${isPinned ? `<div class="tz-chat-partner-badge">Pinned</div>` : ""}
+              ${isMuted ? `<div class="tz-chat-partner-badge">Muted</div>` : ""}
             </div>
           </div>
         </div>
       </div>
 
       <div class="tz-chat-topbar-actions">
+        <details class="tz-chat-settings-menu">
+          <summary class="tz-chat-pill" aria-label="Open chat settings">Settings</summary>
+          <div class="tz-chat-settings-panel">
+            <div class="tz-chat-settings-title">Chat Settings</div>
+            <a class="tz-chat-setting-link" href="${profileHref}">View profile</a>
+
+            <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/settings">
+              <input type="hidden" name="action" value="${isPinned ? "unpin" : "pin"}" />
+              <button type="submit">${isPinned ? "Unpin chat" : "Pin chat"}</button>
+            </form>
+
+            <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/settings">
+              <input type="hidden" name="action" value="${isMuted ? "unmute" : "mute-8h"}" />
+              <button type="submit">${isMuted ? "Unmute notifications" : "Mute for 8 hours"}</button>
+            </form>
+
+            ${!isMuted ? `
+              <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/settings">
+                <input type="hidden" name="action" value="mute-1w" />
+                <button type="submit">Mute for 1 week</button>
+              </form>
+              <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/settings">
+                <input type="hidden" name="action" value="mute-always" />
+                <button type="submit">Mute always</button>
+              </form>
+            ` : ""}
+
+            <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/settings">
+              <input type="hidden" name="action" value="${isArchived ? "unarchive" : "archive"}" />
+              <button type="submit">${isArchived ? "Move to inbox" : "Archive chat"}</button>
+            </form>
+          </div>
+        </details>
         <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">
           <button class="tz-chat-pill tz-chat-pill-danger" type="submit">Remove</button>
         </form>

@@ -10,16 +10,6 @@ module.exports = function renderChatComposer({ conversationId }) {
       class="tz-chat-composer"
     >
       <div class="tz-chat-composer-inner">
-        <div class="tz-chat-input-wrap">
-          <textarea
-            class="tz-chat-input"
-            id="tzMessageInput"
-            name="text"
-            placeholder="Message on Tapzy"
-            rows="1"
-          ></textarea>
-        </div>
-
         <label
           class="tz-chat-upload-pill"
           for="tzMediaInput"
@@ -27,13 +17,23 @@ module.exports = function renderChatComposer({ conversationId }) {
           title="Upload image, video, or voice note"
         >+</label>
 
+        <div class="tz-chat-input-wrap">
+          <textarea
+            class="tz-chat-input"
+            id="tzMessageInput"
+            name="text"
+            placeholder="Message"
+            rows="1"
+          ></textarea>
+        </div>
+
         <button
           class="tz-chat-upload-pill"
           id="tzRecordBtn"
           type="button"
           aria-label="Record voice message"
           title="Record voice message"
-        >🎤</button>
+        >Mic</button>
 
         <input
           id="tzMediaInput"
@@ -43,7 +43,7 @@ module.exports = function renderChatComposer({ conversationId }) {
           accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime,video/webm,video/x-m4v,audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/webm,audio/mp4,audio/x-m4a,audio/aac"
         />
 
-        <button class="tz-chat-send" id="tzSendBtn" type="submit">Send</button>
+        <button class="tz-chat-send" id="tzSendBtn" type="submit" aria-label="Send message">Send</button>
       </div>
 
       <div class="tz-chat-composer-subrow">
