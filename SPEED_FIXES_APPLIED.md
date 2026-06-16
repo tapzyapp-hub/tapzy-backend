@@ -49,3 +49,4 @@ npm start
 - Reset saved profile photo fit values after creating a cropped image so the rendered profile photo matches the crop view exactly.
 - Updated event cards so the blue glow uses the same pointer-position variables on initial and loaded cards instead of staying pinned to one corner.
 - Added WhatsApp-style messaging settings: pin/unpin, mute/unmute, archive/unarchive, archived inbox tab, chat settings menu, and mute-aware message notifications.
+- Added a dedicated `/settings` app settings hub with phone-first layout, account/profile/message/privacy/notification shortcuts, and local device preferences for compact layout, reduced motion, and stronger contrast.

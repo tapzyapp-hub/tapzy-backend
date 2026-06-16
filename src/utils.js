@@ -758,6 +758,7 @@ function renderTopBar({ currentProfile = null, pageTitle = "Tapzy Network™", p
 
     { key: "stories", label: "Stories", href: "/stories" },
 
+    { key: "settings", label: "Settings", href: signedIn ? "/settings" : "/auth" },
 
     { key: "admin", label: "Admin", href: "/admin" },
 
@@ -917,6 +918,17 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
     <meta name="twitter:description" content="${escapeHtml(resolvedDescription)}" />
 
+    <script>
+      (function(){
+        try {
+          var root = document.documentElement;
+          root.setAttribute("data-tapzy-compact", localStorage.getItem("tapzy_pref_compact") === "1" ? "1" : "0");
+          root.setAttribute("data-tapzy-reduce-motion", localStorage.getItem("tapzy_pref_reduce_motion") === "1" ? "1" : "0");
+          root.setAttribute("data-tapzy-contrast", localStorage.getItem("tapzy_pref_contrast") === "1" ? "1" : "0");
+        } catch (_) {}
+      })();
+    </script>
+
     ${extraHead}
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script defer src="/js/tapzy-performance.js"></script>
@@ -1008,6 +1020,32 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
 
       *{box-sizing:border-box}
+
+      html[data-tapzy-reduce-motion="1"] *,
+      html[data-tapzy-reduce-motion="1"] *::before,
+      html[data-tapzy-reduce-motion="1"] *::after{
+        animation-duration:.001ms !important;
+        animation-iteration-count:1 !important;
+        scroll-behavior:auto !important;
+        transition-duration:.001ms !important;
+      }
+
+      html[data-tapzy-contrast="1"]{
+        --muted:#d5deea;
+        --muted-2:#b7c5d8;
+        --border:#3a536f;
+        --border-soft:#2d425d;
+      }
+
+      html[data-tapzy-compact="1"] .wrap{
+        padding-top:14px;
+      }
+
+      html[data-tapzy-compact="1"] .card,
+      html[data-tapzy-compact="1"] .panel{
+        border-radius:18px;
+        padding:14px;
+      }
 
       html{
         scroll-behavior:smooth;
