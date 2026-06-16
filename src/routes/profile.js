@@ -4560,6 +4560,17 @@ router.get("/edit/:username", async (req, res) => {
             ctx.drawImage(cropImg, dx, dy, dw, dh);
             var dataUrl = canvas.toDataURL('image/jpeg', 0.92);
             if (croppedPhotoData) croppedPhotoData.value = dataUrl;
+            selectedUrl = dataUrl;
+            state = { tx:0, ty:0, scale:1 };
+            if (x) x.value = '50';
+            if (y) y.value = '50';
+            if (scaleInput) scaleInput.value = '100';
+            var preview = ensurePreview();
+            if (preview) {
+              preview.src = dataUrl;
+              preview.style.objectPosition = '50% 50%';
+              preview.style.transform = 'scale(1)';
+            }
             if (file && window.DataTransfer) {
               canvas.toBlob(function(blob){
                 try {
@@ -4637,6 +4648,7 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
 
     let photo = profile.photo;
+    let savedCroppedPhoto = false;
 
     function saveCroppedPhotoData(dataUrl) {
       const value = String(dataUrl || "");
@@ -4660,6 +4672,7 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
       const croppedPhotoUrl = saveCroppedPhotoData(req.body.croppedPhotoData);
       if (croppedPhotoUrl) {
         photo = croppedPhotoUrl;
+        savedCroppedPhoto = true;
       } else if (req.file) {
         photo = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
       }
@@ -4679,9 +4692,9 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
 
     const profilePhotoFitData = {
-      profilePhotoPositionX: clampPercent(req.body.profilePhotoPositionX, 50),
-      profilePhotoPositionY: clampPercent(req.body.profilePhotoPositionY, 50),
-      profilePhotoScale: Math.max(100, Math.min(180, Math.round(Number(req.body.profilePhotoScale || 100) || 100))),
+      profilePhotoPositionX: savedCroppedPhoto ? 50 : clampPercent(req.body.profilePhotoPositionX, 50),
+      profilePhotoPositionY: savedCroppedPhoto ? 50 : clampPercent(req.body.profilePhotoPositionY, 50),
+      profilePhotoScale: savedCroppedPhoto ? 100 : Math.max(100, Math.min(180, Math.round(Number(req.body.profilePhotoScale || 100) || 100))),
     };
 
     const profileUpdateData = {
