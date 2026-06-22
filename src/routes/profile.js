@@ -2058,12 +2058,20 @@ router.get("/u/:username", async (req, res) => {
         gap:14px;
 
         overflow-x:auto;
+        overflow-y:hidden;
 
-        padding-top:16px;
+        padding:16px 2px 8px;
 
         -webkit-overflow-scrolling:touch;
+        scroll-snap-type:x proximity;
+        scroll-padding-inline:2px;
+        overscroll-behavior-x:contain;
+        touch-action:pan-x pan-y;
+        scrollbar-width:none;
 
       }
+
+      .profile-stories-tray::-webkit-scrollbar{display:none;}
 
 
 
@@ -2076,9 +2084,11 @@ router.get("/u/:username", async (req, res) => {
         text-decoration:none;
 
         flex:0 0 auto;
-        touch-action:none;
+        touch-action:pan-x pan-y;
+        scroll-snap-align:start;
+        scroll-snap-stop:normal;
         user-select:none;
-        cursor:grab;
+        cursor:pointer;
 
       }
 
