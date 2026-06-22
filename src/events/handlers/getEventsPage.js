@@ -2370,7 +2370,27 @@ module.exports = async function getEventsPage(req, res) {
           overflow-y:auto !important;
           background:#05070c;
         }
-        body > .tz-topbar{display:block !important;}
+        body > .tz-topbar{
+          display:block !important;
+          position:sticky;
+          top:0;
+          z-index:9000;
+        }
+        body > .tz-menu-overlay{
+          display:block !important;
+          z-index:9050 !important;
+        }
+        body > .tz-menu-panel{
+          display:block !important;
+          z-index:9100 !important;
+          visibility:visible !important;
+        }
+        body > .tz-menu-panel:not(.open){
+          pointer-events:none;
+        }
+        body > .tz-menu-panel.open{
+          pointer-events:auto;
+        }
         .events-wrap{
           width:auto !important;
           height:auto !important;
