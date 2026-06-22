@@ -18,7 +18,7 @@ function toIso(value) {
 
 function pickBestImage(performers = []) {
   for (const performer of performers || []) {
-    const img = text(performer?.image || performer?.images?.huge || performer?.images?.large);
+    const img = text(performer?.images?.huge || performer?.images?.large || performer?.image);
     if (img) return img;
   }
   return "";

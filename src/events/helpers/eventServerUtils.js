@@ -374,13 +374,36 @@ function getShortDescription(event) {
 
 
 
+function isHeroQualityImage(url) {
+  const value = String(url || "").trim();
+  if (!/^https?:\/\//i.test(value)) return false;
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+    const combined = `${parsed.pathname}${parsed.search}`.toLowerCase();
+
+    // Search/event thumbnails are often only 100–400px wide and become visibly
+    // soft when stretched into a full-screen card.
+    if (host.includes("gstatic.com") || host.includes("googleusercontent.com")) {
+      const sizeMatch = combined.match(/(?:w|width|sz|s)[=_-]?(\d{2,4})/i);
+      if (!sizeMatch || Number(sizeMatch[1]) < 900) return false;
+    }
+
+    const explicitWidth = parsed.searchParams.get("w") || parsed.searchParams.get("width");
+    const explicitHeight = parsed.searchParams.get("h") || parsed.searchParams.get("height");
+    if (explicitWidth && Number(explicitWidth) > 0 && Number(explicitWidth) < 900) return false;
+    if (explicitHeight && Number(explicitHeight) > 0 && Number(explicitHeight) < 700) return false;
+    if (/(?:thumb|thumbnail|small|tiny|100x|200x|300x|400x)/i.test(combined)) return false;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function pickImage(event) {
-
-  if (event.imageUrl) return event.imageUrl;
-
-
-
   const category = normalizeCategory(event).toLowerCase();
+  if (isHeroQualityImage(event?.imageUrl)) return String(event.imageUrl).trim();
 
 
 
@@ -396,7 +419,7 @@ function pickImage(event) {
 
   ) {
 
-    return "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1600&q=88";
+    return "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=2000&q=92";
 
   }
 
@@ -412,7 +435,7 @@ function pickImage(event) {
 
   ) {
 
-    return "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1600&q=88";
+    return "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=2000&q=92";
 
   }
 
@@ -438,7 +461,7 @@ function pickImage(event) {
 
   ) {
 
-    return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=88";
+    return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=2000&q=92";
 
   }
 
@@ -456,13 +479,13 @@ function pickImage(event) {
 
   ) {
 
-    return "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1400&q=80";
+    return "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=2000&q=92";
 
   }
 
 
 
-  return "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80";
+  return "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=2000&q=92";
 
 }
 
@@ -745,6 +768,7 @@ module.exports = {
   normalizeCategory,
   getShortDescription,
   pickImage,
+  isHeroQualityImage,
   eventMatchesCategoryGroup,
   rankEvent,
   getUrgencyBadge,

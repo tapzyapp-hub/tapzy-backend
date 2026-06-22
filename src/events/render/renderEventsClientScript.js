@@ -123,7 +123,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           ) {
 
-            return "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1600&q=88";
+            return "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=2000&q=92";
 
           }
 
@@ -139,7 +139,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           ) {
 
-            return "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1600&q=88";
+            return "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=2000&q=92";
 
           }
 
@@ -165,7 +165,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           ) {
 
-            return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=88";
+            return "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=2000&q=92";
 
           }
 
@@ -183,13 +183,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           ) {
 
-            return "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1400&q=80";
+            return "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=2000&q=92";
 
           }
 
 
 
-          return "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80";
+          return "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=2000&q=92";
 
         }
 
@@ -452,6 +452,61 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         }
 
+        function renderClientReelV2(event) {
+          const image = event.imageUrl || pickFallbackImage(event);
+          const when = formatClientDate(event.startAt);
+          const date = event.startAt ? new Date(event.startAt) : null;
+          const validDate = date && !Number.isNaN(date.getTime());
+          const dateMonth = validDate ? date.toLocaleString("en-US", { month: "short" }).toUpperCase() : "SOON";
+          const dateDay = validDate ? date.getDate() : "•";
+          const categoryText = getClientCategory(event);
+          const shortDescription = getClientDescription(event);
+          const badge = event.urgencyBadge || getClientBadge(event);
+          const goingCount = Number(event.goingCount || 0);
+
+          return \`
+            <section class="reel-item js-reel-item" data-event-id="\${escapeUnsafe(event.id)}">
+              <div class="reel-bg" style="background-image:url('\${escapeUnsafe(image)}');"></div>
+              <div class="reel-ambient" style="background-image:url('\${escapeUnsafe(image)}');"></div>
+              <div class="reel-vignette"></div>
+              <div class="reel-grain"></div>
+              <div class="reel-content">
+                <div class="reel-top">
+                  <div class="reel-date"><span>\${escapeUnsafe(dateMonth)}</span><strong>\${escapeUnsafe(dateDay)}</strong></div>
+                  <div class="reel-top-pills">
+                    <span class="reel-chip">\${escapeUnsafe(categoryText)}</span>
+                    \${event.priceText ? \`<span class="reel-chip reel-chip-price">\${escapeUnsafe(event.priceText)}</span>\` : ""}
+                  </div>
+                </div>
+                <aside class="reel-action-rail" aria-label="Event actions">
+                  \${HAS_CURRENT_PROFILE ? \`
+                    <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form reel-rail-form" data-event-id="\${escapeUnsafe(event.id)}">
+                      <button class="reel-rail-action js-save-btn\${event.isGoing ? " is-going" : ""}" data-event-id="\${escapeUnsafe(event.id)}" type="submit" aria-label="\${event.isGoing ? "Remove Going" : "Mark Going"}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="m8 14 2.4 2.4L16 11"/></svg><span>\${event.isGoing ? "Going" : "Join"}</span>
+                      </button>
+                    </form>
+                  \` : \`<a class="reel-rail-action" href="/auth"><svg viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg><span>Join</span></a>\`}
+                  <button class="reel-rail-action" type="button" data-event-share="/events/view/\${escapeUnsafe(event.id)}" aria-label="Share event">
+                    <svg viewBox="0 0 24 24"><path d="m4 12 16-8-6 16-3-6-7-2Zm7 2 9-10"/></svg><span>Share</span>
+                  </button>
+                  \${event.ticketUrl ? \`<a class="reel-rail-action" target="_blank" rel="noopener noreferrer" href="\${escapeUnsafe(event.ticketUrl)}"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 0 0 4v6h16v-6a2 2 0 0 0 0-4V5H4v2Z"/><path d="M13 5v12"/></svg><span>Tickets</span></a>\` : ""}
+                </aside>
+                <div class="reel-body">
+                  <div class="reel-eyebrow"><span class="reel-live-dot"></span>\${escapeUnsafe(badge)}</div>
+                  <h2 class="reel-title">\${escapeUnsafe(event.title)}</h2>
+                  <div class="reel-sub">\${escapeUnsafe(shortDescription)}</div>
+                  <div class="reel-location"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>\${escapeUnsafe(event.venueName || event.address || event.city || "Location coming soon")}</span></div>
+                  <div class="reel-time">\${escapeUnsafe(when)}</div>
+                  <div class="reel-footer-row">
+                    <a class="reel-open-btn" href="/events/view/\${escapeUnsafe(event.id)}">View event <span>→</span></a>
+                    <div class="reel-attendance js-going-count" data-event-id="\${escapeUnsafe(event.id)}">\${goingCount ? goingCount + " going" : "Be the first to join"}</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          \`;
+        }
+
 
 
         function bindCardMotion(scope) {
@@ -686,12 +741,15 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
               const isGoing = !!data.going;
               document.querySelectorAll(\`.js-save-form[data-event-id="\${CSS.escape(eventId)}"] .js-save-btn\`).forEach((node) => {
-                node.textContent = isGoing ? "Going ✓" : "Going";
+                const label = node.querySelector("span");
+                if (label) label.textContent = isGoing ? "Going" : "Join";
+                else node.textContent = isGoing ? "Going ✓" : "Going";
                 node.classList.toggle("is-going", isGoing);
+                node.setAttribute("aria-label", isGoing ? "Remove Going" : "Mark Going");
               });
               document.querySelectorAll(\`.js-going-count[data-event-id="\${CSS.escape(eventId)}"]\`).forEach((countNode) => {
                 const count = Number(data.goingCount || 0);
-                countNode.textContent = count ? String(count) + " going" : "";
+                countNode.textContent = count ? String(count) + " going" : "Be the first to join";
               });
             } catch (err) {
               console.error(err);
@@ -706,6 +764,64 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
 
+        function setupEventSharing() {
+          if (document.body.dataset.eventSharingBound === "1") return;
+          document.body.dataset.eventSharingBound = "1";
+          document.addEventListener("click", async (event) => {
+            const button = event.target.closest("[data-event-share]");
+            if (!button) return;
+            const url = new URL(button.dataset.eventShare || "/events", window.location.origin).href;
+            try {
+              if (navigator.share) {
+                await navigator.share({ title: "Tapzy Event", url });
+              } else {
+                await navigator.clipboard.writeText(url);
+                const label = button.querySelector("span");
+                if (label) {
+                  const original = label.textContent;
+                  label.textContent = "Copied";
+                  window.setTimeout(() => { label.textContent = original; }, 1400);
+                }
+              }
+            } catch (_) {}
+          });
+        }
+
+        function enforceReelImageQuality(scope) {
+          const root = scope || document;
+          root.querySelectorAll(".js-reel-item").forEach((item) => {
+            if (item.dataset.imageQualityBound === "1") return;
+            item.dataset.imageQualityBound = "1";
+            const background = item.querySelector(".reel-bg");
+            const ambient = item.querySelector(".reel-ambient");
+            if (!background) return;
+            const match = String(background.style.backgroundImage || "").match(/url\\([\"']?(.*?)[\"']?\\)/i);
+            const source = match && match[1] ? match[1] : "";
+            const categoryNode = item.querySelector(".reel-chip");
+            const fallback = pickFallbackImage({
+              category: categoryNode ? categoryNode.textContent : "Event",
+              title: item.querySelector(".reel-title")?.textContent || "Event",
+            });
+            function useFallback() {
+              background.style.backgroundImage = "url('" + fallback.replace(/'/g, "%27") + "')";
+              if (ambient) ambient.style.backgroundImage = background.style.backgroundImage;
+              item.classList.add("is-fallback-image");
+            }
+            if (!source) {
+              useFallback();
+              return;
+            }
+            const probe = new Image();
+            probe.onload = function() {
+              // Full-screen artwork needs enough source pixels to stay crisp on
+              // high-density phones. Tiny thumbnails are replaced automatically.
+              if ((probe.naturalWidth || 0) < 900 || (probe.naturalHeight || 0) < 600) useFallback();
+            };
+            probe.onerror = useFallback;
+            probe.src = source;
+          });
+        }
+
         function setupReelActiveState() {
 
           const feed = document.getElementById("reelFeed");
@@ -713,6 +829,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           if (!feed || feed.dataset.activeBound === "1") return;
 
           feed.dataset.activeBound = "1";
+          enforceReelImageQuality(feed);
 
 
 
@@ -1483,11 +1600,12 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
 
-              const html = items.map(renderClientReel).join("");
+              const html = items.map(renderClientReelV2).join("");
 
               sentinel.insertAdjacentHTML("beforebegin", html);
 
               bindGoingActions(feed);
+              enforceReelImageQuality(feed);
 
 
 
@@ -1555,6 +1673,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         scheduleAmbientGlowRefresh();
 
         setupLiveLocationGate();
+        setupEventSharing();
         if (IS_MOBILE_FEED) {
           setupReelActiveState();
           setupReelInfinite();

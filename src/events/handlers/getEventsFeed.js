@@ -11,6 +11,7 @@ const {
   filterNearbyEvents,
   getClosestAreaEvents,
   isAllowedHotCategory,
+  pickImage,
 } = require("../helpers/eventServerUtils");
 
 module.exports = async function getEventsFeed(req, res) {
@@ -116,6 +117,7 @@ module.exports = async function getEventsFeed(req, res) {
 
     const items = slice.map((event) => ({
       ...event,
+      imageUrl: pickImage(event),
       category: normalizeCategory(event),
       description: getShortDescription(event),
       urgencyBadge: getUrgencyBadge(event),

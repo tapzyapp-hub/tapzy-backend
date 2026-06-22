@@ -65,42 +65,76 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 function renderReelItem(event, currentProfile, goingSet, goingCounts) {
   const image = pickImage(event);
   const when = event.startAt ? new Date(event.startAt).toLocaleString() : 'Date coming soon';
+  const date = event.startAt ? new Date(event.startAt) : null;
+  const dateMonth = date ? date.toLocaleString('en-US', { month: 'short' }).toUpperCase() : 'SOON';
+  const dateDay = date ? date.getDate() : '•';
   const categoryText = normalizeCategory(event) || 'Event';
   const shortDescription = getShortDescription(event);
   const badge = getUrgencyBadge(event);
   const goingCount = goingCounts?.get(event.id) || 0;
+  const isGoing = !!(goingSet && goingSet.has(event.id));
 
   return `
-    <section class="reel-item js-reel-item">
-      <div class="reel-bg" style="background-image:
-        linear-gradient(180deg, rgba(6,8,14,.12), rgba(6,8,14,.18) 18%, rgba(3,5,10,.50) 48%, rgba(0,0,0,.96)),
-        url('${escapeHtml(image)}');"></div>
-      <div class="reel-noise"></div>
-      <div class="reel-glow"></div>
+    <section class="reel-item js-reel-item" data-event-id="${escapeHtml(event.id)}">
+      <div class="reel-bg" style="background-image:url('${escapeHtml(image)}');"></div>
+      <div class="reel-ambient" style="background-image:url('${escapeHtml(image)}');"></div>
+      <div class="reel-vignette"></div>
+      <div class="reel-grain"></div>
 
       <div class="reel-content">
         <div class="reel-top">
-          <div class="event-pill-stack">
-            <span class="event-pill">${escapeHtml(categoryText)}</span>
-            <span class="event-pill event-pill-urgency">${escapeHtml(badge)}</span>
+          <div class="reel-date">
+            <span>${escapeHtml(dateMonth)}</span>
+            <strong>${escapeHtml(dateDay)}</strong>
           </div>
-          ${event.priceText ? `<span class="event-pill event-pill-soft">${escapeHtml(event.priceText)}</span>` : ''}
+          <div class="reel-top-pills">
+            <span class="reel-chip">${escapeHtml(categoryText)}</span>
+            ${event.priceText ? `<span class="reel-chip reel-chip-price">${escapeHtml(event.priceText)}</span>` : ''}
+          </div>
         </div>
 
+        <aside class="reel-action-rail" aria-label="Event actions">
+          ${currentProfile ? `
+            <form method="POST" action="/events/${encodeURIComponent(event.id)}/going" class="js-save-form reel-rail-form" data-event-id="${escapeHtml(event.id)}">
+              <button class="reel-rail-action js-save-btn${isGoing ? ' is-going' : ''}" data-event-id="${escapeHtml(event.id)}" type="submit" aria-label="${isGoing ? 'Remove Going' : 'Mark Going'}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="m8 14 2.4 2.4L16 11"/></svg>
+                <span>${isGoing ? 'Going' : 'Join'}</span>
+              </button>
+            </form>
+          ` : `
+            <a class="reel-rail-action" href="/auth" aria-label="Sign in to mark going">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>
+              <span>Join</span>
+            </a>
+          `}
+          <button class="reel-rail-action" type="button" data-event-share="/events/view/${encodeURIComponent(event.id)}" aria-label="Share event">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 16-8-6 16-3-6-7-2Zm7 2 9-10"/></svg>
+            <span>Share</span>
+          </button>
+          ${event.ticketUrl ? `
+            <a class="reel-rail-action" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.ticketUrl)}" aria-label="Buy tickets">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 0 0 4v6h16v-6a2 2 0 0 0 0-4V5H4v2Z"/><path d="M13 5v12"/></svg>
+              <span>Tickets</span>
+            </a>
+          ` : ''}
+        </aside>
+
         <div class="reel-body">
+          <div class="reel-eyebrow">
+            <span class="reel-live-dot"></span>
+            ${escapeHtml(badge)}
+          </div>
           <h2 class="reel-title">${escapeHtml(event.title || 'Untitled Event')}</h2>
           <div class="reel-sub">${escapeHtml(shortDescription)}</div>
-          <div class="reel-meta">
-            <div>${escapeHtml(when)}</div>
-            <div>${escapeHtml(event.venueName || event.city || 'Location coming soon')}</div>
-            ${event.city ? `<div>${escapeHtml(event.city)}</div>` : ''}
+          <div class="reel-location">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            <span>${escapeHtml(event.venueName || event.address || event.city || 'Location coming soon')}</span>
           </div>
-          <div class="reel-actions">
-            <a class="btn btnLuxury" href="/events/view/${encodeURIComponent(event.id)}">Open Event</a>
-            ${event.ticketUrl ? `<a class="btn btnDark" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.ticketUrl)}">Tickets</a>` : ''}
-            ${renderGoingButton(event, currentProfile, goingSet)}
+          <div class="reel-time">${escapeHtml(when)}</div>
+          <div class="reel-footer-row">
+            <a class="reel-open-btn" href="/events/view/${encodeURIComponent(event.id)}">View event <span>→</span></a>
+            <div class="reel-attendance js-going-count" data-event-id="${escapeHtml(event.id)}">${goingCount ? `${goingCount} going` : 'Be the first to join'}</div>
           </div>
-          <div class="event-going-count muted js-going-count" data-event-id="${escapeHtml(event.id)}">${goingCount ? `${goingCount} going` : ""}</div>
         </div>
       </div>
     </section>
