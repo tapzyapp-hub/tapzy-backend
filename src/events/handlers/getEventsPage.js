@@ -314,13 +314,46 @@ module.exports = async function getEventsPage(req, res) {
         </section>
       ` : ""}
 
-      <section class="events-section mobile-only">
-        <div id="mobileFeedGrid" class="events-grid mobile-events-grid">
-          ${mainFeedInitial.map((event) => renderEventCard(event, currentProfile, goingSet, goingCounts)).join("")}
+      <section class="event-feed-mobile mobile-only">
+        <header class="event-feed-top">
+          <a class="event-feed-brand" href="/" aria-label="Tapzy home">T</a>
+          <nav class="event-feed-tabs" aria-label="Event feed filters">
+            ${[
+              ["nearby", "Nearby"],
+              ["all", "Discover"],
+              ["concerts", "Music"],
+              ["sports", "Sports"],
+            ].map(([value, label]) => {
+              const qs = new URLSearchParams();
+              qs.set("category", value);
+              if (value === "nearby" && hasLiveLocation) {
+                qs.set("lat", String(liveLat));
+                qs.set("lng", String(liveLng));
+                qs.set("radiusKm", String(radiusKm));
+              }
+              return `<a class="event-feed-tab${activeCategory === value ? " is-active" : ""}" href="/events?${qs.toString()}">${escapeHtml(label)}</a>`;
+            }).join("")}
+          </nav>
+        </header>
+
+        <div id="reelFeed" class="reel-feed">
+          ${mainFeedInitial.map((event) => renderReelItem(event, currentProfile, goingSet, goingCounts)).join("")}
+          <div id="reelLoader" class="event-reel-status" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
+          <div id="reelEnd" class="event-reel-status" style="display:${mainFeedHasMore ? "none" : "block"};">You’re all caught up</div>
+          <div id="reelSentinel" class="reel-sentinel"></div>
         </div>
-        <div id="mobileFeedLoader" class="events-load-state" data-has-more="${mainFeedHasMore ? "1" : "0"}" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
-        <button id="mobileLoadMoreBtn" class="btn btnDark events-mobile-more" type="button" style="display:none;">Load more events</button>
-        <div id="mobileFeedEnd" class="events-load-state" style="display:${mainFeedHasMore ? "none" : "block"};">No more events</div>
+
+        <nav class="event-feed-bottom" aria-label="Primary navigation">
+          <a class="event-feed-nav is-active" href="/">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3V11Z"></path></svg>
+            <span>Home</span>
+          </a>
+          <a class="event-feed-create" href="${currentProfile ? "/stories" : "/auth"}" aria-label="Create story">+</a>
+          <a class="event-feed-nav" href="${currentProfile?.username ? `/u/${escapeHtml(currentProfile.username)}` : "/auth"}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 22c0-5 3-8 8-8s8 3 8 8"></path></svg>
+            <span>Profile</span>
+          </a>
+        </nav>
       </section>
 
       <section class="events-section desktop-only">
@@ -1796,6 +1829,230 @@ module.exports = async function getEventsPage(req, res) {
 
         .reel-actions{ grid-template-columns:1fr; }
 
+      }
+
+      @media(max-width:700px){
+        html,body{height:100%;overflow:hidden;background:#000;}
+        body > .tz-topbar,
+        body > .tz-menu-overlay,
+        body > .tz-menu-panel,
+        .events-wrap > .events-hero,
+        .events-wrap > .events-chip-wrap,
+        .events-wrap > #liveLocationNotice,
+        .events-wrap > .events-location-prompt,
+        .tz-assistant-launcher,
+        .tz-assistant-panel{display:none !important;}
+
+        .events-wrap{
+          width:100%;
+          height:100dvh;
+          margin:0;
+          padding:0;
+          overflow:hidden;
+        }
+
+        .event-feed-mobile{
+          position:relative;
+          display:block !important;
+          width:100%;
+          height:100dvh;
+          margin:0;
+          overflow:hidden;
+          background:#000;
+        }
+
+        .event-feed-top{
+          position:fixed;
+          z-index:40;
+          top:0;
+          left:0;
+          right:0;
+          min-height:74px;
+          padding:calc(env(safe-area-inset-top) + 14px) 54px 13px;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          background:linear-gradient(180deg,rgba(0,0,0,.68),rgba(0,0,0,.08),transparent);
+          pointer-events:none;
+        }
+
+        .event-feed-brand{
+          position:absolute;
+          left:15px;
+          top:calc(env(safe-area-inset-top) + 13px);
+          width:40px;
+          height:40px;
+          display:grid;
+          place-items:center;
+          border:2px solid rgba(255,255,255,.9);
+          border-radius:12px;
+          color:#fff;
+          text-decoration:none;
+          font-size:17px;
+          font-weight:950;
+          pointer-events:auto;
+        }
+
+        .event-feed-tabs{
+          display:flex;
+          align-items:center;
+          gap:16px;
+          max-width:100%;
+          overflow-x:auto;
+          scrollbar-width:none;
+          pointer-events:auto;
+        }
+        .event-feed-tabs::-webkit-scrollbar{display:none;}
+        .event-feed-tab{
+          position:relative;
+          flex:0 0 auto;
+          padding:8px 0;
+          color:rgba(255,255,255,.7);
+          text-decoration:none;
+          font-size:14px;
+          font-weight:780;
+          text-shadow:0 2px 10px rgba(0,0,0,.72);
+        }
+        .event-feed-tab.is-active{color:#fff;}
+        .event-feed-tab.is-active::after{
+          content:"";
+          position:absolute;
+          left:50%;
+          bottom:-3px;
+          width:26px;
+          height:3px;
+          border-radius:4px;
+          background:#fff;
+          transform:translateX(-50%);
+        }
+
+        .event-feed-mobile .reel-feed{
+          width:100%;
+          height:100dvh;
+          margin:0;
+          border-radius:0;
+          background:#000;
+          scrollbar-width:none;
+        }
+        .event-feed-mobile .reel-feed::-webkit-scrollbar{display:none;}
+        .event-feed-mobile .reel-item{
+          min-height:100dvh;
+          height:100dvh;
+          transform:none;
+          scroll-snap-stop:always;
+        }
+        .event-feed-mobile .reel-bg{
+          background-position:center;
+          transform:none;
+        }
+        .event-feed-mobile .reel-item.is-active .reel-bg{transform:scale(1.035);}
+        .event-feed-mobile .reel-content{
+          min-height:100dvh;
+          padding:calc(env(safe-area-inset-top) + 82px) 84px calc(env(safe-area-inset-bottom) + 82px) 17px;
+          background:linear-gradient(180deg,rgba(0,0,0,.1) 22%,transparent 45%,rgba(0,0,0,.84) 88%,rgba(0,0,0,.98));
+        }
+        .event-feed-mobile .reel-top{display:flex;justify-content:space-between;gap:10px;}
+        .event-feed-mobile .reel-title{
+          font-size:clamp(31px,9vw,44px);
+          line-height:.98;
+          letter-spacing:-1.3px;
+          text-shadow:0 3px 18px rgba(0,0,0,.72);
+        }
+        .event-feed-mobile .reel-sub{
+          margin-top:9px;
+          font-size:14px;
+          line-height:1.4;
+          display:-webkit-box;
+          -webkit-box-orient:vertical;
+          -webkit-line-clamp:2;
+          overflow:hidden;
+          text-shadow:0 2px 12px rgba(0,0,0,.8);
+        }
+        .event-feed-mobile .reel-meta{
+          gap:4px;
+          margin-top:10px;
+          font-size:13px;
+          text-shadow:0 2px 10px rgba(0,0,0,.85);
+        }
+        .event-feed-mobile .reel-actions{
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+          margin-top:14px;
+        }
+        .event-feed-mobile .reel-actions .btn{
+          min-height:40px;
+          padding:0 14px;
+          border-radius:12px;
+          font-size:13px;
+        }
+        .event-feed-mobile .reel-actions .js-save-form{flex:0 0 auto;}
+        .event-feed-mobile .event-going-count{
+          margin-top:8px;
+          color:rgba(255,255,255,.78);
+          font-size:12px;
+        }
+        .event-reel-status{
+          min-height:100dvh;
+          display:grid;
+          place-items:center;
+          padding:100px 24px;
+          scroll-snap-align:start;
+          color:#aeb8ca;
+          text-align:center;
+          background:#08090d;
+        }
+
+        .event-feed-bottom{
+          position:fixed;
+          z-index:40;
+          left:0;
+          right:0;
+          bottom:0;
+          height:calc(64px + env(safe-area-inset-bottom));
+          padding:7px 36px env(safe-area-inset-bottom);
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          background:#030303;
+          border-top:1px solid rgba(255,255,255,.09);
+        }
+        .event-feed-nav{
+          min-width:56px;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          gap:2px;
+          color:rgba(255,255,255,.72);
+          text-decoration:none;
+          font-size:10px;
+          font-weight:700;
+        }
+        .event-feed-nav.is-active{color:#fff;}
+        .event-feed-nav svg{
+          width:25px;
+          height:25px;
+          fill:none;
+          stroke:currentColor;
+          stroke-width:2;
+          stroke-linecap:round;
+          stroke-linejoin:round;
+        }
+        .event-feed-create{
+          width:56px;
+          height:38px;
+          display:grid;
+          place-items:center;
+          border:2px solid #fff;
+          border-radius:11px;
+          background:linear-gradient(145deg,#2f76ff,#1145ad);
+          color:#fff;
+          text-decoration:none;
+          font-size:29px;
+          font-weight:900;
+          line-height:1;
+          box-shadow:0 5px 18px rgba(35,102,231,.42);
+        }
       }
 
     </style>
