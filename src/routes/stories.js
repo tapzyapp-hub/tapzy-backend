@@ -174,7 +174,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
             <span class="stories-upload-title">Add photo or video</span>
 
-            <span class="stories-upload-subtitle" data-upload-label>Tap to choose media</span>
+            <span class="stories-upload-subtitle" data-upload-label>Photos or videos · duration is not limited</span>
 
           </label>
 

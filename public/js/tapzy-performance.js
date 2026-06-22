@@ -227,11 +227,10 @@
             setUploadStatus(form, "Image optimized — sending…");
           } else if (/^video\//i.test(file.type)) {
             return getVideoDuration(file).then(function (seconds) {
-              if (seconds && seconds > 45 && /storyMedia|media/i.test(input.name || "")) {
-                setUploadStatus(form, "Sending video… shorter clips upload fastest.");
-              } else {
-                setUploadStatus(form, "Sending media…");
-              }
+              var durationLabel = seconds > 0
+                ? " (" + Math.max(1, Math.round(seconds / 60)) + " min)"
+                : "";
+              setUploadStatus(form, "Uploading video" + durationLabel + "… keep this page open.");
             });
           } else {
             setUploadStatus(form, "Sending…");

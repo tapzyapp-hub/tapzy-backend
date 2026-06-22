@@ -2880,7 +2880,8 @@ module.exports = function renderConversationPage({
 
             xhr.ontimeout = function() { reject(new Error("Upload timed out")); };
 
-            xhr.timeout = 120000;
+            // Long-form videos can take several minutes on mobile connections.
+            xhr.timeout = 30 * 60 * 1000;
 
             xhr.send(formData);
 
@@ -2905,16 +2906,6 @@ module.exports = function renderConversationPage({
           const hasMedia = !!selectedFile;
 
           if (!text && !hasMedia) return;
-
-
-
-          if (selectedFile && selectedFile.type && selectedFile.type.startsWith("video/") && selectedFile.size > 30 * 1024 * 1024) {
-
-            alert("This video is too large for fast mobile sending. Please trim it or choose a shorter clip under 30 MB.");
-
-            return;
-
-          }
 
 
 

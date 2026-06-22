@@ -21,7 +21,9 @@ router.post("/messages/:id", (req, res, next) => {
     if (!err) return next();
 
     const isAjax = req.xhr || req.get("X-Requested-With") === "XMLHttpRequest";
-    const message = err.message || "Upload failed";
+    const message = err.code === "LIMIT_FILE_SIZE"
+      ? "This file is over Tapzy's 50 MB upload limit. Try a compressed MP4 version."
+      : (err.message || "Upload failed");
 
     if (isAjax) return res.status(400).json({ ok: false, error: message });
     return res.status(400).send(message);
