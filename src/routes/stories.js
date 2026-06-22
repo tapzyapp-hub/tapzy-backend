@@ -1654,7 +1654,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-nav{min-width:55px;display:flex;flex-direction:column;align-items:center;gap:2px;color:rgba(255,255,255,.72);text-decoration:none;font-size:10px;font-weight:650}
         .sf-nav.is-active{color:#fff}
         .sf-nav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-        .sf-create{width:52px;height:34px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(90deg,#25e3e7 0 24%,#fff 24% 76%,#ff315f 76%);color:#050505;text-decoration:none;font-size:27px;font-weight:900;line-height:1}
+        .sf-create{width:56px;height:38px;display:grid;place-items:center;border:2px solid #fff;border-radius:11px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;text-decoration:none;font-size:29px;font-weight:900;line-height:1;box-shadow:0 5px 18px rgba(35,102,231,.42)}
         .sf-empty{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;text-align:center;background:radial-gradient(circle at 50% 30%,#172753,#07080c 54%,#000)}
         .sf-empty-mark{display:grid;place-items:center;width:74px;height:74px;border-radius:24px;background:#1f55d5;font-size:42px;font-weight:950}
         .sf-empty h1{margin:20px 0 6px}.sf-empty p{margin:0;color:#b8bfd0}.sf-empty a{margin-top:20px;padding:12px 18px;border-radius:12px;background:#1f55d5;color:#fff;text-decoration:none;font-weight:800}
@@ -1674,7 +1674,7 @@ router.get("/stories/feed", async (req, res) => {
           <nav class="sf-tabs" aria-label="Story feed filters">
             <button class="sf-tab" type="button" data-filter="event">Events</button>
             <button class="sf-tab" type="button" data-filter="following">Following</button>
-            <button class="sf-tab is-active" type="button" data-filter="all">For You</button>
+            <button class="sf-tab is-active" type="button" data-filter="all">Discover</button>
           </nav>
           <button class="sf-search" type="button" data-search aria-label="Search Tapzy">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
@@ -1688,13 +1688,7 @@ router.get("/stories/feed", async (req, res) => {
           <a class="sf-nav is-active" href="/">
             <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3V11Z"></path></svg><span>Home</span>
           </a>
-          <a class="sf-nav" href="${currentProfile ? `/discovery/${escapeHtml(currentProfile.username || "")}?tab=search` : "/auth"}">
-            <svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"></circle><circle cx="17" cy="9" r="3"></circle><path d="M2 21c0-4 2-7 6-7s6 3 6 7m0-6c4 0 7 2 7 6"></path></svg><span>Discover</span>
-          </a>
           <a class="sf-create" href="${currentProfile ? "/stories" : "/auth"}" aria-label="Create story">+</a>
-          <a class="sf-nav" href="${currentProfile ? "/messages" : "/auth"}">
-            <svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4V4Z"></path><path d="M8 9h8m-8 4h5"></path></svg><span>Messages</span>
-          </a>
           <a class="sf-nav" href="${profileHref}">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 22c0-5 3-8 8-8s8 3 8 8"></path></svg><span>Profile</span>
           </a>
