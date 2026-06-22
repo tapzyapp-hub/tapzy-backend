@@ -1759,7 +1759,9 @@ router.get("/stories/feed", async (req, res) => {
               });
               return;
             }
-            if (event.target.closest('[data-search]')) location.href = '/search';
+            if (event.target.closest('[data-search]')) {
+              location.href = '${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}';
+            }
           });
 
           document.querySelectorAll('[data-save]').forEach(function(save){
