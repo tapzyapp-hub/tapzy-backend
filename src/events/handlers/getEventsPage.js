@@ -314,7 +314,23 @@ module.exports = async function getEventsPage(req, res) {
         </section>
       ` : ""}
 
-      <section class="event-feed-mobile mobile-only">
+      <section class="events-section mobile-only events-mobile-feed">
+        <div class="events-mobile-feed-head">
+          <div>
+            <div class="events-kicker">Discover</div>
+            <h2 class="events-section-title">Live Event Feed</h2>
+          </div>
+          <div class="muted">${mainFeedTotal} events</div>
+        </div>
+        <div id="mobileFeedGrid" class="events-grid mobile-events-grid">
+          ${mainFeedInitial.map((event) => renderEventCard(event, currentProfile, goingSet, goingCounts)).join("")}
+        </div>
+        <div id="mobileFeedLoader" class="events-load-state" data-has-more="${mainFeedHasMore ? "1" : "0"}" style="display:${mainFeedHasMore ? "block" : "none"};">Loading more events...</div>
+        <button id="mobileLoadMoreBtn" class="btn btnDark events-mobile-more" type="button" style="display:none;">Load more events</button>
+        <div id="mobileFeedEnd" class="events-load-state" style="display:${mainFeedHasMore ? "none" : "block"};">You’re all caught up</div>
+      </section>
+
+      <section class="event-feed-mobile mobile-only" hidden>
         <header class="event-feed-top">
           <a class="event-feed-brand" href="/" aria-label="Tapzy home">T</a>
           <nav class="event-feed-tabs" aria-label="Event feed filters">
@@ -2343,6 +2359,183 @@ module.exports = async function getEventsPage(req, res) {
           .event-feed-mobile .reel-body,
           .reel-action-rail{transition:none !important;}
           .reel-live-dot{animation:none;}
+        }
+      }
+
+      @media(max-width:700px){
+        html,body{
+          height:auto !important;
+          min-height:100%;
+          overflow-x:hidden !important;
+          overflow-y:auto !important;
+          background:#05070c;
+        }
+        body > .tz-topbar{display:block !important;}
+        .events-wrap{
+          width:auto !important;
+          height:auto !important;
+          max-width:none;
+          margin:0 auto !important;
+          padding:16px 14px calc(80px + env(safe-area-inset-bottom)) !important;
+          overflow:visible !important;
+        }
+        .events-wrap > .events-hero,
+        .events-wrap > .events-chip-wrap,
+        .events-wrap > #liveLocationNotice,
+        .events-wrap > .events-location-prompt{
+          display:block !important;
+        }
+        .event-feed-mobile[hidden]{display:none !important;}
+        .events-mobile-feed{
+          display:block !important;
+          margin-top:22px;
+          padding-bottom:40px !important;
+          overflow:visible;
+        }
+        .events-mobile-feed-head{
+          display:flex;
+          align-items:flex-end;
+          justify-content:space-between;
+          gap:16px;
+          margin:0 2px 15px;
+        }
+        .events-mobile-feed-head .events-section-title{
+          margin:3px 0 0;
+          font-size:28px;
+          line-height:1;
+          letter-spacing:-1px;
+        }
+        .mobile-events-grid{
+          display:grid !important;
+          grid-template-columns:1fr !important;
+          gap:22px !important;
+          overflow:visible !important;
+        }
+        .mobile-events-grid .event-card{
+          min-height:min(76svh,680px);
+          border-radius:30px;
+          border-color:rgba(166,215,255,.2);
+          background:#080b12;
+          box-shadow:
+            0 24px 70px rgba(0,0,0,.52),
+            0 0 0 1px rgba(81,151,255,.09),
+            inset 0 1px 0 rgba(255,255,255,.08);
+          contain:layout paint style;
+          contain-intrinsic-size:0 620px;
+          touch-action:pan-y;
+          -webkit-tap-highlight-color:transparent;
+        }
+        .mobile-events-grid .event-card::after{
+          background:radial-gradient(circle at var(--mx,50%) var(--my,50%),
+            rgba(184,235,255,.62) 0,
+            rgba(80,174,255,.38) 13%,
+            rgba(42,105,255,.18) 31%,
+            transparent 54%);
+          mix-blend-mode:screen;
+        }
+        .mobile-events-grid .event-card .event-card-glow{
+          width:min(92vw,480px);
+          height:min(92vw,480px);
+          opacity:.7;
+          filter:blur(22px);
+          transition:opacity .18s ease,left .06s linear,top .06s linear,filter .18s ease;
+        }
+        .mobile-events-grid .event-card.is-touch-active{
+          transform:translateY(-4px) scale(1.012);
+          border-color:rgba(151,221,255,.62);
+          box-shadow:
+            0 30px 82px rgba(0,0,0,.64),
+            0 0 0 1px rgba(145,220,255,.46),
+            0 0 46px rgba(68,164,255,.4);
+        }
+        .mobile-events-grid .event-card.is-touch-active::after{opacity:1;}
+        .mobile-events-grid .event-card.is-touch-active .event-card-glow{
+          opacity:1;
+          filter:blur(17px);
+        }
+        .mobile-events-grid .event-media{
+          filter:saturate(1.12) contrast(1.06) brightness(.92);
+          transform:scale(1.025);
+        }
+        .mobile-events-grid .event-card.is-touch-active .event-media{
+          transform:scale(1.055);
+          filter:saturate(1.2) contrast(1.08) brightness(.97);
+        }
+        .mobile-events-grid .event-content{
+          min-height:min(76svh,680px);
+          padding:24px 20px 21px;
+          justify-content:flex-end;
+          background:linear-gradient(180deg,
+            rgba(4,7,13,.03) 16%,
+            rgba(4,7,13,.2) 44%,
+            rgba(2,4,9,.86) 76%,
+            rgba(1,2,6,.97) 100%);
+          backdrop-filter:none;
+          -webkit-backdrop-filter:none;
+        }
+        .mobile-events-grid .event-title{
+          max-width:94%;
+          margin-top:11px;
+          font-size:clamp(31px,9vw,44px);
+          line-height:.97;
+          letter-spacing:-1.5px;
+          text-wrap:balance;
+        }
+        .mobile-events-grid .event-copy{
+          margin-top:9px;
+          font-size:14px;
+          line-height:1.42;
+          -webkit-line-clamp:2;
+          color:rgba(241,247,255,.82);
+        }
+        .mobile-events-grid .event-divider{
+          margin:15px 0 13px;
+          opacity:.55;
+        }
+        .mobile-events-grid .event-meta{gap:7px;}
+        .mobile-events-grid .event-meta-row{
+          display:grid;
+          grid-template-columns:52px 1fr;
+          gap:9px;
+        }
+        .mobile-events-grid .event-meta-label{
+          color:#86b4ff;
+          font-size:10px;
+          font-weight:900;
+          letter-spacing:1.1px;
+          text-transform:uppercase;
+        }
+        .mobile-events-grid .event-meta-value{
+          color:#fff;
+          font-size:13px;
+          font-weight:700;
+        }
+        .mobile-events-grid .event-actions-primary{
+          grid-template-columns:1fr 1fr;
+          gap:9px;
+          margin-top:16px;
+        }
+        .mobile-events-grid .event-actions-primary .btn{
+          min-height:45px;
+          border-radius:14px;
+          font-size:12px;
+        }
+        .mobile-events-grid .event-actions-secondary{
+          margin-top:9px;
+          min-height:36px;
+        }
+        .mobile-feed-virtual-spacer{
+          width:100%;
+          pointer-events:none;
+        }
+        .mobile-events-grid .event-card.is-virtualized-card{
+          animation:none !important;
+          opacity:1 !important;
+        }
+        .events-load-state{
+          padding:22px 0;
+          text-align:center;
+          color:#8391a7;
         }
       }
 

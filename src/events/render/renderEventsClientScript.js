@@ -1675,8 +1675,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         setupLiveLocationGate();
         setupEventSharing();
         if (IS_MOBILE_FEED) {
-          setupReelActiveState();
-          setupReelInfinite();
+          setupMobileFeedInfinite();
         } else {
           setupMainFeedInfinite();
           cities.forEach(setupCityInfinite);
