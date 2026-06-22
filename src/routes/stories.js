@@ -332,6 +332,13 @@ function profileStoryCard(profile, stories, currentProfile) {
 
 }
 
+function compactFeedCount(value) {
+  const count = Math.max(0, Number(value) || 0);
+  if (count >= 1000000) return `${(count / 1000000).toFixed(count >= 10000000 ? 0 : 1)}M`;
+  if (count >= 1000) return `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}K`;
+  return String(count);
+}
+
 
 
 router.get("/stories", async (req, res) => {
@@ -459,6 +466,8 @@ router.get("/stories", async (req, res) => {
             <div class="stories-subtitle">View Tapzy stories from people, places, and events happening now.</div>
 
           </div>
+
+          <a class="stories-btn stories-btn-bright" href="/stories/feed">Open story feed</a>
 
         </div>
 
@@ -1483,6 +1492,297 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
   }
 
+});
+
+router.get("/stories/feed", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile || null;
+    const now = new Date();
+    const followingIds = new Set();
+
+    if (currentProfile) {
+      const following = await prisma.follow.findMany({
+        where: { followerProfileId: currentProfile.id },
+        select: { followingProfileId: true },
+      });
+      following.forEach((row) => followingIds.add(row.followingProfileId));
+    }
+
+    const stories = await prisma.story.findMany({
+      where: { expiresAt: { gt: now } },
+      include: {
+        profile: true,
+        event: true,
+        _count: { select: { likes: true, replies: true, views: true } },
+        likes: currentProfile
+          ? { where: { profileId: currentProfile.id }, select: { id: true } }
+          : false,
+      },
+      orderBy: [{ createdAt: "desc" }],
+      take: 100,
+    });
+
+    if (currentProfile && stories.length) {
+      const unseen = await prisma.storyView.findMany({
+        where: {
+          viewerId: currentProfile.id,
+          storyId: { in: stories.map((story) => story.id) },
+        },
+        select: { storyId: true },
+      });
+      const seenIds = new Set(unseen.map((row) => row.storyId));
+      const viewRows = stories
+        .filter((story) => !seenIds.has(story.id))
+        .map((story) => ({ storyId: story.id, viewerId: currentProfile.id }));
+      if (viewRows.length) {
+        await prisma.storyView.createMany({ data: viewRows, skipDuplicates: true });
+      }
+    }
+
+    const slides = stories.map((story, index) => {
+      const profile = story.profile || {};
+      const username = profile.username || "tapzy";
+      const displayName = profile.name || `@${username}`;
+      const isVideo = story.mediaUrl && isVideoUrl(story.mediaUrl);
+      const isFollowing =
+        currentProfile &&
+        (currentProfile.id === story.profileId || followingIds.has(story.profileId));
+      const liked = !!(currentProfile && story.likes && story.likes.length);
+      const avatar = profile.photo
+        ? `<img src="${escapeHtml(profile.photo)}" alt="" />`
+        : `<span>${escapeHtml((displayName[0] || "T").toUpperCase())}</span>`;
+      const media = story.mediaUrl
+        ? isVideo
+          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" muted loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
+          : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
+        : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
+      const eventLabel = story.event?.title
+        ? `<a class="sf-event" href="/events#event-${escapeHtml(story.event.id)}">${escapeHtml(story.event.title)}</a>`
+        : "";
+      const ageHours = Math.max(0, Math.floor((Date.now() - new Date(story.createdAt).getTime()) / 3600000));
+      const age = ageHours < 1 ? "Just now" : `${ageHours}h`;
+
+      return `
+      <article class="sf-slide" data-story="${escapeHtml(story.id)}" data-following="${isFollowing ? "1" : "0"}" data-event="${story.event ? "1" : "0"}">
+        <div class="sf-media-wrap">${media}<div class="sf-shade"></div></div>
+
+        <div class="sf-copy">
+          ${eventLabel}
+          <a class="sf-author" href="/u/${escapeHtml(username)}">${escapeHtml(displayName)}</a>
+          ${story.text ? `<p>${escapeHtml(story.text)}</p>` : ""}
+          <div class="sf-meta">${escapeHtml(age)} · Tapzy Story</div>
+        </div>
+
+        <aside class="sf-actions" aria-label="Story actions">
+          <a class="sf-avatar" href="/u/${escapeHtml(username)}">${avatar}</a>
+          <form method="POST" action="/stories/${escapeHtml(story.id)}/like" class="sf-action-form">
+            <button class="sf-action ${liked ? "is-active" : ""}" type="submit" aria-label="${liked ? "Unlike" : "Like"} story">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.7-9C.7 8.8 2.2 5 6 4.4c2.2-.3 4.1.8 5 2.2.9-1.4 2.8-2.5 5-2.2 3.8.6 5.3 4.4 3.7 7.6C17.5 16.4 12 21 12 21Z"/></svg>
+              <span>${compactFeedCount(story._count.likes)}</span>
+            </button>
+          </form>
+          <a class="sf-action" href="/stories/${escapeHtml(username)}#reply" aria-label="Reply to story">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-6a3 3 0 0 1-1-2V7a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3v8Z"/></svg>
+            <span>${compactFeedCount(story._count.replies)}</span>
+          </a>
+          <button class="sf-action sf-save" type="button" data-save="${escapeHtml(story.id)}" aria-label="Save story">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>
+            <span>Save</span>
+          </button>
+          <button class="sf-action" type="button" data-share="/stories/${escapeHtml(username)}" aria-label="Share story">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 16-8-6 16-3-6-7-2Zm7 2 9-10"/></svg>
+            <span>Share</span>
+          </button>
+          ${isVideo ? `
+          <button class="sf-sound" type="button" data-sound aria-label="Turn sound on">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12-1c1.4 1.2 1.4 6.8 0 8m3-11c3 3 3 11 0 14"/></svg>
+          </button>` : ""}
+        </aside>
+      </article>`;
+    }).join("");
+
+    const profileHref = currentProfile?.username ? `/u/${currentProfile.username}` : "/auth";
+    const emptyMessage = stories.length
+      ? ""
+      : `<div class="sf-empty"><div class="sf-empty-mark">T</div><h1>No live stories yet</h1><p>Be the first to share what is happening.</p><a href="/stories">Post a story</a></div>`;
+
+    res.send(`<!doctype html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      <meta name="theme-color" content="#000000" />
+      <title>Story Feed · Tapzy</title>
+      <style>
+        :root{color-scheme:dark;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+        *{box-sizing:border-box}
+        html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+        button,a{font:inherit;-webkit-tap-highlight-color:transparent}
+        button{color:inherit}
+        .sf-app{position:relative;width:100%;height:100%;background:#000;overflow:hidden}
+        .sf-feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;scrollbar-width:none}
+        .sf-feed::-webkit-scrollbar{display:none}
+        .sf-slide{position:relative;width:100%;height:100%;min-height:100%;scroll-snap-align:start;scroll-snap-stop:always;background:#090909;overflow:hidden}
+        .sf-slide[hidden]{display:none}
+        .sf-media-wrap,.sf-media,.sf-shade{position:absolute;inset:0;width:100%;height:100%}
+        .sf-media{object-fit:cover;background:#111}
+        .sf-shade{pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.42) 0,transparent 24%,transparent 54%,rgba(0,0,0,.12) 65%,rgba(0,0,0,.9) 100%)}
+        .sf-text-story{position:absolute;inset:0;display:grid;place-items:center;padding:52px 44px 180px;background:radial-gradient(circle at 30% 20%,#27376b 0,#14172a 35%,#06070c 78%);font-size:clamp(28px,7vw,48px);font-weight:850;line-height:1.08;text-align:center}
+        .sf-top{position:fixed;z-index:20;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(var(--safe-top) + 18px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.54),transparent)}
+        .sf-brand{position:absolute;left:16px;top:calc(var(--safe-top) + 16px);display:grid;place-items:center;width:38px;height:38px;border:2px solid rgba(255,255,255,.9);border-radius:12px;color:#fff;text-decoration:none;font-weight:950;letter-spacing:-2px}
+        .sf-tabs{display:flex;gap:22px;align-items:center}
+        .sf-tab{position:relative;border:0;background:none;padding:8px 0;color:rgba(255,255,255,.68);font-weight:750;font-size:15px;cursor:pointer}
+        .sf-tab.is-active{color:#fff}
+        .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-5px;width:26px;height:3px;border-radius:5px;background:#fff;transform:translateX(-50%)}
+        .sf-search{position:absolute;right:15px;top:calc(var(--safe-top) + 16px);width:40px;height:40px;border:0;background:none;padding:7px;cursor:pointer}
+        .sf-search svg,.sf-action svg,.sf-sound svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+        .sf-copy{position:absolute;z-index:4;left:18px;right:92px;bottom:calc(var(--safe-bottom) + 82px);text-shadow:0 2px 12px rgba(0,0,0,.7)}
+        .sf-author{display:block;width:max-content;max-width:100%;margin-bottom:8px;color:#fff;text-decoration:none;font-size:17px;font-weight:850}
+        .sf-copy p{margin:0 0 8px;font-size:15px;line-height:1.35}
+        .sf-meta{font-size:13px;color:rgba(255,255,255,.8)}
+        .sf-event{display:inline-flex;margin-bottom:11px;padding:7px 10px;border-radius:9px;background:rgba(12,18,35,.64);backdrop-filter:blur(12px);color:#fff;text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.18)}
+        .sf-actions{position:absolute;z-index:5;right:10px;bottom:calc(var(--safe-bottom) + 76px);display:flex;flex-direction:column;align-items:center;gap:16px;width:62px}
+        .sf-avatar{width:48px;height:48px;border:2px solid #fff;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#1f55d5;color:#fff;text-decoration:none;font-weight:900}
+        .sf-avatar img{width:100%;height:100%;object-fit:cover}
+        .sf-action-form{margin:0}
+        .sf-action{display:flex;flex-direction:column;align-items:center;gap:3px;width:58px;padding:0;border:0;background:none;color:#fff;text-decoration:none;font-size:12px;font-weight:700;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+        .sf-action svg{width:34px;height:34px;fill:#fff;stroke:#fff}
+        .sf-action.is-active svg{fill:#ff315f;stroke:#ff315f}
+        .sf-save.is-saved svg{fill:#2f76ff;stroke:#fff}
+        .sf-sound{width:43px;height:43px;border-radius:50%;border:2px solid rgba(255,255,255,.65);background:rgba(0,0,0,.4);padding:10px;cursor:pointer}
+        .sf-bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;height:calc(64px + var(--safe-bottom));padding:7px 10px var(--safe-bottom);display:flex;align-items:center;justify-content:space-around;background:#030303;border-top:1px solid rgba(255,255,255,.08)}
+        .sf-nav{min-width:55px;display:flex;flex-direction:column;align-items:center;gap:2px;color:rgba(255,255,255,.72);text-decoration:none;font-size:10px;font-weight:650}
+        .sf-nav.is-active{color:#fff}
+        .sf-nav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+        .sf-create{width:52px;height:34px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(90deg,#25e3e7 0 24%,#fff 24% 76%,#ff315f 76%);color:#050505;text-decoration:none;font-size:27px;font-weight:900;line-height:1}
+        .sf-empty{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;text-align:center;background:radial-gradient(circle at 50% 30%,#172753,#07080c 54%,#000)}
+        .sf-empty-mark{display:grid;place-items:center;width:74px;height:74px;border-radius:24px;background:#1f55d5;font-size:42px;font-weight:950}
+        .sf-empty h1{margin:20px 0 6px}.sf-empty p{margin:0;color:#b8bfd0}.sf-empty a{margin-top:20px;padding:12px 18px;border-radius:12px;background:#1f55d5;color:#fff;text-decoration:none;font-weight:800}
+        .sf-no-results{position:fixed;z-index:12;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:#090909;color:#c8ccda}
+        .sf-no-results.is-visible{display:grid}
+        @media(min-width:760px){
+          .sf-app{max-width:520px;margin:0 auto;box-shadow:0 0 80px rgba(0,0,0,.8)}
+          body{background:#111}
+        }
+        @media(max-width:390px){.sf-tabs{gap:14px}.sf-tab{font-size:14px}.sf-top{padding-left:50px;padding-right:50px}.sf-copy{left:14px}}
+      </style>
+    </head>
+    <body>
+      <main class="sf-app">
+        <header class="sf-top">
+          <a class="sf-brand" href="/stories" aria-label="Back to Stories">T</a>
+          <nav class="sf-tabs" aria-label="Story feed filters">
+            <button class="sf-tab" type="button" data-filter="event">Events</button>
+            <button class="sf-tab" type="button" data-filter="following">Following</button>
+            <button class="sf-tab is-active" type="button" data-filter="all">For You</button>
+          </nav>
+          <button class="sf-search" type="button" data-search aria-label="Search Tapzy">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
+          </button>
+        </header>
+
+        <section class="sf-feed" aria-label="Tapzy story feed">${slides || emptyMessage}</section>
+        <div class="sf-no-results">No stories in this section yet.</div>
+
+        <nav class="sf-bottom" aria-label="Primary navigation">
+          <a class="sf-nav is-active" href="/">
+            <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3V11Z"></path></svg><span>Home</span>
+          </a>
+          <a class="sf-nav" href="${currentProfile ? `/discovery/${escapeHtml(currentProfile.username || "")}?tab=search` : "/auth"}">
+            <svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"></circle><circle cx="17" cy="9" r="3"></circle><path d="M2 21c0-4 2-7 6-7s6 3 6 7m0-6c4 0 7 2 7 6"></path></svg><span>Discover</span>
+          </a>
+          <a class="sf-create" href="${currentProfile ? "/stories" : "/auth"}" aria-label="Create story">+</a>
+          <a class="sf-nav" href="${currentProfile ? "/messages" : "/auth"}">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4V4Z"></path><path d="M8 9h8m-8 4h5"></path></svg><span>Messages</span>
+          </a>
+          <a class="sf-nav" href="${profileHref}">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 22c0-5 3-8 8-8s8 3 8 8"></path></svg><span>Profile</span>
+          </a>
+        </nav>
+      </main>
+      <script>
+        (function(){
+          var feed = document.querySelector('.sf-feed');
+          var slides = Array.prototype.slice.call(document.querySelectorAll('.sf-slide'));
+          var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab'));
+          var empty = document.querySelector('.sf-no-results');
+          var observer = new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+              var video = entry.target.querySelector('video');
+              if (!video) return;
+              if (entry.isIntersecting && entry.intersectionRatio > .65) {
+                video.play().catch(function(){});
+              } else {
+                video.pause();
+              }
+            });
+          }, { root: feed, threshold: [.2,.65] });
+          slides.forEach(function(slide){ observer.observe(slide); });
+
+          tabs.forEach(function(tab){
+            tab.addEventListener('click', function(){
+              var filter = tab.getAttribute('data-filter');
+              var visible = 0;
+              tabs.forEach(function(item){ item.classList.toggle('is-active', item === tab); });
+              slides.forEach(function(slide){
+                var show = filter === 'all' || slide.getAttribute('data-' + filter) === '1';
+                slide.hidden = !show;
+                if (show) visible += 1;
+              });
+              empty.classList.toggle('is-visible', visible === 0);
+              feed.scrollTop = 0;
+            });
+          });
+
+          document.addEventListener('click', function(event){
+            var sound = event.target.closest('[data-sound]');
+            if (sound) {
+              var video = sound.closest('.sf-slide').querySelector('video');
+              if (video) {
+                video.muted = !video.muted;
+                sound.classList.toggle('is-active', !video.muted);
+                sound.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Mute story');
+              }
+              return;
+            }
+            var save = event.target.closest('[data-save]');
+            if (save) {
+              var key = 'tapzy_saved_story_' + save.getAttribute('data-save');
+              var next = localStorage.getItem(key) !== '1';
+              localStorage.setItem(key, next ? '1' : '0');
+              save.classList.toggle('is-saved', next);
+              save.querySelector('span').textContent = next ? 'Saved' : 'Save';
+              return;
+            }
+            var share = event.target.closest('[data-share]');
+            if (share) {
+              var url = location.origin + share.getAttribute('data-share');
+              if (navigator.share) navigator.share({ title: 'Tapzy Story', url: url }).catch(function(){});
+              else navigator.clipboard.writeText(url).then(function(){
+                var label = share.querySelector('span');
+                label.textContent = 'Copied';
+                setTimeout(function(){ label.textContent = 'Share'; }, 1400);
+              });
+              return;
+            }
+            if (event.target.closest('[data-search]')) location.href = '/search';
+          });
+
+          document.querySelectorAll('[data-save]').forEach(function(save){
+            var saved = localStorage.getItem('tapzy_saved_story_' + save.getAttribute('data-save')) === '1';
+            if (saved) {
+              save.classList.add('is-saved');
+              save.querySelector('span').textContent = 'Saved';
+            }
+          });
+        })();
+      </script>
+    </body>
+    </html>`);
+  } catch (error) {
+    console.error("Story feed error:", error);
+    res.status(500).send("Story feed error");
+  }
 });
 
 
@@ -2993,4 +3293,3 @@ router.post("/stories/:id/like", async (req, res) => {
 });
 
 module.exports = router;
-
