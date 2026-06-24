@@ -188,104 +188,14 @@ module.exports = async function getEventsPage(req, res) {
 
     <div class="wrap events-wrap">
 
-      <section class="events-hero">
-
-        <div class="events-hero-glow"></div>
-
-        <div class="events-hero-glow-b"></div>
-
-
-
-        <div class="row-between events-hero-top">
-
-          <div>
-
-            <div class="events-kicker">Tapzy Discovery</div>
-
-            <h1 class="events-main-title">Event Finder</h1>
-
-            <div class="muted events-hero-copy">
-
-              Live nearby discovery for the hottest sports, dances, and concerts around you.
-
-            </div>
-
-            ${
-
-              hasLiveLocation
-
-                ? usingClosestAreaFallback
-                  ? `<div class="muted" style="margin-top:10px;">No hot events were found within <b>${escapeHtml(radiusKm)} km</b>, so Tapzy switched to the closest active area: <b>${escapeHtml(closestAreaFallback.areaName)}</b>.</div>`
-                  : `<div class="muted" style="margin-top:10px;">Showing live nearby events within <b>${escapeHtml(radiusKm)} km</b>.</div>`
-
-                : isHotNearbyMode
-                  ? `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
-                  : ``
-
-            }
-
-            ${
-
-              req.query.synced
-
-                ? `<div class="success" style="margin-top:14px;">Real events synced: ${escapeHtml(req.query.synced)}</div>`
-
-                : ""
-
-            }
-
-          </div>
-
-
-
-          <div class="row desktop-only">
-
-            ${
-
-              currentProfile
-
-                ? `<a class="btn btnDark" href="/events/saved">My Saved Events</a>`
-
-                : `<a class="btn btnDark" href="/auth">Sign in</a>`
-
-            }
-
-            ${
-
-              hasAdminKey
-
-                ? `
-
-                  <form method="POST" action="/events/admin/sync?key=${encodeURIComponent(adminKey)}" style="margin:0;">
-
-                    <button class="btn btnLuxury" type="submit">Refresh Feed</button>
-
-                  </form>
-
-                `
-
-                : ""
-
-            }
-
-          </div>
-
-        </div>
-
-
-
-      </section>
-
-
-
       <section class="events-chip-wrap">
         <div class="events-chip-row">
           ${[
-            ["nearby", "Hot Nearby", hasLiveLocation ? (localEvents.length || closestAreaFallback.events.length) : ""],
             ["all", "All Events", allHotEvents.length],
             ["sports", "Sports", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "sports")).length],
             ["dances", "Dances", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "dances")).length],
             ["concerts", "Concerts", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "concerts")).length],
+            ["nearby", "Hot Nearby", hasLiveLocation ? (localEvents.length || closestAreaFallback.events.length) : ""],
           ].map(([value, label, count]) => {
             const qs = new URLSearchParams();
             if (value) qs.set("category", value);
@@ -509,7 +419,7 @@ module.exports = async function getEventsPage(req, res) {
       .mobile-only{ display:none; }
 
       .desktop-only{ display:block; }
-      .events-chip-wrap{ display:grid; gap:12px; margin:18px 0 12px; }
+      .events-chip-wrap{ display:grid; gap:12px; margin:6px 0 26px; }
       .events-chip-row{ display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
       .events-chip-row::-webkit-scrollbar{ display:none; }
       .events-chip{ flex:0 0 auto; min-width:160px; text-align:center; padding:18px 26px; border-radius:999px; text-decoration:none; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
@@ -2556,6 +2466,97 @@ module.exports = async function getEventsPage(req, res) {
           padding:22px 0;
           text-align:center;
           color:#8391a7;
+        }
+      }
+
+      @media(max-width:700px){
+        html,body{
+          height:auto !important;
+          min-height:100% !important;
+          overflow-x:hidden !important;
+          overflow-y:auto !important;
+          background:#000 !important;
+        }
+
+        .event-feed-mobile,
+        .event-feed-mobile.mobile-only{
+          display:none !important;
+        }
+
+        .events-wrap{
+          width:auto !important;
+          height:auto !important;
+          margin:0 auto !important;
+          padding:16px 14px calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+          overflow:visible !important;
+        }
+
+        .events-wrap > .events-hero{
+          display:none !important;
+        }
+
+        .events-chip-wrap{
+          display:block !important;
+          margin:4px -14px 28px !important;
+          padding:0 14px;
+          overflow:hidden;
+        }
+
+        .events-chip-row{
+          gap:12px;
+          padding:0 0 8px;
+        }
+
+        .events-chip{
+          min-width:auto;
+          padding:16px 22px;
+          border-radius:999px;
+          font-size:13px;
+          letter-spacing:.09em;
+          white-space:nowrap;
+          background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.03));
+          border:1px solid rgba(255,255,255,.12);
+          box-shadow:0 10px 30px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+        }
+
+        .events-chip.is-active{
+          background:#eef3fb;
+          color:#101626;
+          border-color:rgba(255,255,255,.45);
+        }
+
+        .events-mobile-feed{
+          display:block !important;
+          margin-top:0 !important;
+          padding-bottom:40px !important;
+          overflow:visible !important;
+        }
+
+        .events-mobile-feed-head{
+          display:flex !important;
+          align-items:flex-end;
+          justify-content:space-between;
+          gap:16px;
+          margin:0 2px 15px;
+        }
+
+        .events-mobile-feed-head .events-section-title{
+          margin:3px 0 0;
+          font-size:30px;
+          line-height:1;
+          letter-spacing:-1px;
+        }
+
+        .mobile-events-grid{
+          display:grid !important;
+          grid-template-columns:1fr !important;
+          gap:22px !important;
+          overflow:visible !important;
+        }
+
+        .mobile-events-grid .event-card{
+          min-height:min(76svh,680px);
+          border-radius:30px;
         }
       }
 
