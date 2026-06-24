@@ -2446,6 +2446,145 @@ router.get("/u/:username", async (req, res) => {
         transform:translateY(-1px);
       }
 
+      /* Match the public profile surface to the Discovery page UI. */
+      .profile-wrap{
+        max-width:1120px;
+      }
+
+      .profile-showcase,
+      .profile-panel{
+        border-radius:30px;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          radial-gradient(900px 300px at 80% 0%, rgba(90,165,255,.12), transparent 42%),
+          radial-gradient(600px 280px at 10% 20%, rgba(60,120,255,.08), transparent 46%),
+          linear-gradient(180deg, rgba(15,18,28,.98), rgba(9,11,16,.995));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 24px 60px rgba(0,0,0,.30),
+          0 0 0 1px rgba(120,170,255,.03);
+        backdrop-filter:blur(8px);
+      }
+
+      .profile-showcase{
+        padding:16px;
+      }
+
+      .profile-panel{
+        padding:16px;
+      }
+
+      .profile-showcase::before,
+      .profile-panel::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        opacity:.04;
+        background-image:radial-gradient(rgba(255,255,255,.92) .6px, transparent .6px);
+        background-size:10px 10px;
+        z-index:0;
+      }
+
+      .profile-showcase > *,
+      .profile-panel > *{
+        position:relative;
+        z-index:1;
+      }
+
+      .profile-showcase-bg{
+        inset:0;
+        border-radius:30px;
+        background:
+          radial-gradient(900px 300px at 80% 0%, rgba(90,165,255,.12), transparent 42%),
+          radial-gradient(600px 280px at 10% 20%, rgba(60,120,255,.08), transparent 46%);
+        opacity:1;
+      }
+
+      .profile-showcase-avatar-wrap{
+        width:132px;
+        height:132px;
+      }
+
+      .profile-showcase-avatar{
+        width:132px;
+        height:132px;
+        border-radius:22px;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(130,200,255,.14), transparent 55%),
+          linear-gradient(180deg,#162033,#0d1118);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 0 18px rgba(127,210,255,.11),
+          0 12px 28px rgba(0,0,0,.24);
+      }
+
+      .profile-showcase-avatar-wrap::before,
+      .profile-showcase-avatar-wrap::after{
+        border-radius:26px;
+        opacity:.45;
+        filter:blur(14px);
+      }
+
+      .profile-showcase-name{
+        font-size:clamp(36px, 7vw, 52px);
+        letter-spacing:-1.25px;
+      }
+
+      .profile-showcase-handle{
+        color:#d9e4f2;
+      }
+
+      .profile-panel-heading{
+        font-size:28px;
+        line-height:1.02;
+        letter-spacing:-.9px;
+      }
+
+      .profile-panel-subheading,
+      .profile-section-text{
+        color:#bcc8d8;
+        line-height:1.55;
+      }
+
+      .profile-section-title{
+        letter-spacing:-.55px;
+      }
+
+      .profile-pill-btn,
+      .profile-mini-action,
+      .profile-quick-btn,
+      .profile-showcase-actions .btn,
+      .profile-showcase-actions form .btn{
+        min-height:48px;
+        border-radius:16px;
+        border:1px solid rgba(255,255,255,.08);
+        background:linear-gradient(180deg, rgba(18,20,28,.95), rgba(10,12,16,.98));
+        color:#fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.03),
+          0 8px 20px rgba(0,0,0,.10);
+      }
+
+      .profile-pill-btn:hover,
+      .profile-pill-btn:focus-visible,
+      .profile-mini-action:hover,
+      .profile-mini-action:focus-visible,
+      .profile-quick-btn:hover,
+      .profile-quick-btn:focus-visible,
+      .profile-showcase-actions .btn:hover,
+      .profile-showcase-actions .btn:focus-visible{
+        border-color:rgba(127,210,255,.20) !important;
+        background:
+          radial-gradient(220px 90px at 50% 0%, rgba(111,210,255,.14), transparent 60%),
+          linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99));
+        box-shadow:
+          inset 0 0 0 1px rgba(127,210,255,.08),
+          0 0 22px rgba(127,210,255,.11),
+          0 8px 20px rgba(0,0,0,.18) !important;
+      }
+
       @media(max-width:700px){
 
         .tapzy-tap-card{
@@ -2494,9 +2633,9 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase{
 
-          padding:20px;
+          padding:16px;
 
-          border-radius:28px;
+          border-radius:30px;
 
         }
 
@@ -2504,7 +2643,7 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-bg{
 
-          border-radius:28px;
+          border-radius:30px;
 
         }
 
@@ -2642,9 +2781,9 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-panel{
 
-          padding:20px;
+          padding:16px;
 
-          border-radius:28px;
+          border-radius:30px;
 
         }
 
