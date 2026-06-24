@@ -2453,25 +2453,24 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase,
       .profile-panel{
-        border-radius:30px;
+        border-radius:34px;
         border:1px solid rgba(255,255,255,.08);
         background:
-          radial-gradient(760px 280px at 70% 0%, rgba(255,255,255,.035), transparent 44%),
-          linear-gradient(180deg, rgba(5,6,9,.995), rgba(0,0,0,1));
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
         box-shadow:
+          0 18px 40px rgba(0,0,0,.28),
           inset 0 1px 0 rgba(255,255,255,.04),
-          inset 0 -1px 0 rgba(0,0,0,.36),
-          0 24px 60px rgba(0,0,0,.30),
-          0 0 0 1px rgba(255,255,255,.025);
+          0 0 0 1px rgba(115,194,255,.03);
         backdrop-filter:blur(8px);
       }
 
       .profile-showcase{
-        padding:16px;
+        padding:28px;
       }
 
       .profile-panel{
-        padding:16px;
+        padding:24px;
       }
 
       .profile-showcase::before,
@@ -2491,11 +2490,11 @@ router.get("/u/:username", async (req, res) => {
         content:"";
         position:absolute;
         inset:1px;
-        border-radius:29px;
+        border-radius:33px;
         pointer-events:none;
         background:
-          linear-gradient(180deg, rgba(255,255,255,.028), transparent 34%),
-          radial-gradient(420px 180px at 50% 0%, rgba(255,255,255,.03), transparent 62%);
+          linear-gradient(180deg, rgba(255,255,255,.018), transparent 34%),
+          radial-gradient(420px 180px at 72% 14%, rgba(115,194,255,.035), transparent 62%);
         z-index:0;
       }
 
@@ -2507,9 +2506,10 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase-bg{
         inset:0;
-        border-radius:30px;
+        border-radius:34px;
         background:
-          radial-gradient(760px 280px at 70% 0%, rgba(255,255,255,.035), transparent 44%);
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
         opacity:1;
       }
 
@@ -2570,13 +2570,13 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase-actions .btn,
       .profile-showcase-actions form .btn{
         min-height:48px;
-        border-radius:16px;
+        border-radius:20px;
         border:1px solid rgba(255,255,255,.08);
-        background:linear-gradient(180deg, rgba(18,20,28,.95), rgba(10,12,16,.98));
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
         color:#fff;
         box-shadow:
-          inset 0 1px 0 rgba(255,255,255,.03),
-          0 8px 20px rgba(0,0,0,.10);
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 8px 16px rgba(0,0,0,.16);
         transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
       }
 
@@ -2589,14 +2589,15 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase-actions .btn:hover,
       .profile-showcase-actions .btn:focus-visible{
         transform:translateY(-1px);
-        border-color:rgba(127,210,255,.34) !important;
+        border-color:rgba(115,194,255,.92) !important;
         background:
-          radial-gradient(220px 90px at 50% 0%, rgba(111,210,255,.14), transparent 60%),
-          linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99));
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
         box-shadow:
-          inset 0 0 0 1px rgba(127,210,255,.08),
-          0 0 22px rgba(127,210,255,.11),
-          0 8px 20px rgba(0,0,0,.18) !important;
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 18px rgba(87,170,255,.30),
+          0 0 46px rgba(48,110,255,.22),
+          0 10px 24px rgba(0,0,0,.24) !important;
       }
 
       .profile-pill-btn:active,
@@ -2694,9 +2695,9 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase{
 
-          padding:16px;
+          padding:20px;
 
-          border-radius:30px;
+          border-radius:28px;
 
         }
 
@@ -2704,7 +2705,7 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-showcase-bg{
 
-          border-radius:30px;
+          border-radius:28px;
 
         }
 
@@ -2842,9 +2843,9 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-panel{
 
-          padding:16px;
+          padding:20px;
 
-          border-radius:30px;
+          border-radius:28px;
 
         }
 
