@@ -1691,7 +1691,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-meta{font-size:13px;color:rgba(255,255,255,.8)}
         .sf-event{display:inline-flex;margin-bottom:11px;padding:7px 10px;border-radius:9px;background:rgba(12,18,35,.64);backdrop-filter:blur(12px);color:#fff;text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.18)}
         .sf-actions{position:absolute;z-index:5;right:10px;bottom:calc(var(--safe-bottom) + 76px);display:flex;flex-direction:column;align-items:center;gap:16px;width:62px}
-        .sf-avatar{width:48px;height:48px;border:2px solid #fff;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#1f55d5;color:#fff;text-decoration:none;font-weight:900}
+        .sf-avatar{width:48px;height:48px;border:2px solid #fff;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:linear-gradient(180deg,#111827,#02040a);color:#fff;text-decoration:none;font-weight:900}
         .sf-avatar img{width:100%;height:100%;object-fit:cover}
         .sf-action-form{margin:0}
         .sf-action{display:flex;flex-direction:column;align-items:center;gap:3px;width:58px;padding:0;border:0;background:none;color:#fff;text-decoration:none;font-size:12px;font-weight:700;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
@@ -1701,6 +1701,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-sound{width:43px;height:43px;border-radius:50%;border:2px solid rgba(255,255,255,.65);background:rgba(0,0,0,.4);padding:10px;cursor:pointer}
         .sf-bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;height:calc(64px + var(--safe-bottom));padding:7px 10px var(--safe-bottom);display:flex;align-items:center;justify-content:space-around;background:#030303;border-top:1px solid rgba(255,255,255,.08)}
         .sf-nav{min-width:55px;display:flex;flex-direction:column;align-items:center;gap:2px;color:rgba(255,255,255,.72);text-decoration:none;font-size:10px;font-weight:650}
+        button.sf-nav{border:0;background:none;padding:0;cursor:default}
         .sf-nav.is-active{color:#fff}
         .sf-nav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
         .sf-create{width:56px;height:38px;display:grid;place-items:center;border:2px solid #fff;border-radius:11px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;text-decoration:none;font-size:29px;font-weight:900;line-height:1;box-shadow:0 5px 18px rgba(35,102,231,.42)}
@@ -1741,9 +1742,9 @@ router.get("/stories/feed", async (req, res) => {
         <div class="sf-no-results">No stories in this section yet.</div>
 
         <nav class="sf-bottom" aria-label="Primary navigation">
-          <a class="sf-nav is-active" href="/">
+          <button class="sf-nav is-active" type="button" aria-current="page">
             <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3V11Z"></path></svg><span>Home</span>
-          </a>
+          </button>
           <a class="sf-create" href="${currentProfile ? "/stories" : "/auth"}" aria-label="Create story">+</a>
           <a class="sf-nav" href="${profileHref}">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 22c0-5 3-8 8-8s8 3 8 8"></path></svg><span>Profile</span>
