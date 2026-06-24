@@ -1601,7 +1601,7 @@ router.get("/stories/feed", async (req, res) => {
         : `<span>${escapeHtml((displayName[0] || "T").toUpperCase())}</span>`;
       const media = story.mediaUrl
         ? isVideo
-          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" muted loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
+          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
@@ -1642,7 +1642,7 @@ router.get("/stories/feed", async (req, res) => {
             <span>Share</span>
           </button>
           ${isVideo ? `
-          <button class="sf-sound" type="button" data-sound aria-label="Turn sound on">
+          <button class="sf-sound is-active" type="button" data-sound aria-label="Mute story">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12-1c1.4 1.2 1.4 6.8 0 8m3-11c3 3 3 11 0 14"/></svg>
           </button>` : ""}
         </aside>
@@ -1762,6 +1762,13 @@ router.get("/stories/feed", async (req, res) => {
               var video = entry.target.querySelector('video');
               if (!video) return;
               if (entry.isIntersecting && entry.intersectionRatio > .65) {
+                video.muted = false;
+                video.volume = 1;
+                var sound = entry.target.querySelector('[data-sound]');
+                if (sound) {
+                  sound.classList.add('is-active');
+                  sound.setAttribute('aria-label', 'Mute story');
+                }
                 video.play().catch(function(){});
               } else {
                 video.pause();
@@ -2060,7 +2067,7 @@ router.get("/stories/:username", async (req, res) => {
 
           ? isVideoStory
 
-            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted playsinline webkit-playsinline preload="metadata"></video>`
+            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay playsinline webkit-playsinline preload="metadata"></video>`
 
             : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" loading="eager" decoding="async" />`
 
@@ -2164,7 +2171,7 @@ router.get("/stories/:username", async (req, res) => {
                 <div class="story-metric">${escapeHtml(String(likeCount))} like${likeCount === 1 ? "" : "s"}</div>
                 <div class="story-metric">${escapeHtml(String(viewCount))} view${viewCount === 1 ? "" : "s"}</div>
                 <div class="story-social-spacer"></div>
-                ${isVideoStory ? `<button class="story-sound-btn" type="button" data-story-sound>Tap for sound</button>` : ""}
+                ${isVideoStory ? `<button class="story-sound-btn" type="button" data-story-sound>Mute</button>` : ""}
               </div>
 
             </div>
@@ -3028,6 +3035,10 @@ router.get("/stories/:username", async (req, res) => {
           };
 
           try { video.currentTime = 0; } catch(e) {}
+          video.muted = false;
+          video.volume = 1;
+          const soundButton = currentPanel() ? currentPanel().querySelector("[data-story-sound]") : null;
+          if (soundButton) soundButton.textContent = "Mute";
           video.play().catch(function(){});
           raf = requestAnimationFrame(tick);
         }
@@ -3058,7 +3069,7 @@ router.get("/stories/:username", async (req, res) => {
             if (video) {
               video.muted = !video.muted;
               video.play().catch(function(){});
-              soundButton.textContent = video.muted ? "Tap for sound" : "Sound on";
+              soundButton.textContent = video.muted ? "Sound on" : "Mute";
             }
             return;
           }
