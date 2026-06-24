@@ -4446,6 +4446,91 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
+      /* Match Edit Profile to the final public profile page treatment. */
+      .tz-edit-hero,
+      .tz-edit-section{
+        border-radius:34px;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
+        box-shadow:
+          0 18px 40px rgba(0,0,0,.28),
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 0 0 1px rgba(115,194,255,.03);
+        backdrop-filter:blur(8px);
+      }
+
+      .tz-edit-hero{
+        padding:28px;
+      }
+
+      .tz-edit-section{
+        padding:24px;
+      }
+
+      .tz-edit-hero::after,
+      .tz-edit-section::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        border-radius:33px;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.018), transparent 34%),
+          radial-gradient(420px 180px at 72% 14%, rgba(115,194,255,.035), transparent 62%);
+        z-index:0;
+      }
+
+      .tz-edit-hero-bg{
+        border-radius:34px;
+        background:
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
+      }
+
+      .tz-edit-hero > *,
+      .tz-edit-section > *{
+        position:relative;
+        z-index:1;
+      }
+
+      .tz-edit-btn,
+      .tz-edit-savebtn{
+        min-height:52px;
+        border-radius:20px;
+        border:1px solid rgba(255,255,255,.08);
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        color:#fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 8px 16px rgba(0,0,0,.16);
+        transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+      }
+
+      .tz-edit-btn:hover,
+      .tz-edit-btn:focus-visible,
+      .tz-edit-savebtn:hover,
+      .tz-edit-savebtn:focus-visible{
+        transform:translateY(-1px);
+        border-color:rgba(115,194,255,.92);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 18px rgba(87,170,255,.30),
+          0 0 46px rgba(48,110,255,.22),
+          0 10px 24px rgba(0,0,0,.24);
+      }
+
+      .tz-edit-btn:active,
+      .tz-edit-savebtn:active{
+        transform:scale(.985);
+      }
+
+
+
       @media(max-width:700px){
 
         .wrap.tz-edit-wrap{
@@ -4486,6 +4571,21 @@ router.get("/edit/:username", async (req, res) => {
         .tz-edit-hero-bg{
 
           border-radius:28px;
+
+        }
+
+        .tz-edit-section{
+
+          padding:20px;
+
+          border-radius:28px;
+
+        }
+
+        .tz-edit-hero::after,
+        .tz-edit-section::after{
+
+          border-radius:27px;
 
         }
 
