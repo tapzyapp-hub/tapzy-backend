@@ -2456,13 +2456,13 @@ router.get("/u/:username", async (req, res) => {
         border-radius:30px;
         border:1px solid rgba(255,255,255,.08);
         background:
-          radial-gradient(900px 300px at 80% 0%, rgba(58,116,190,.105), transparent 42%),
-          radial-gradient(600px 280px at 10% 20%, rgba(34,72,145,.06), transparent 46%),
-          linear-gradient(180deg, rgba(10,13,21,.99), rgba(5,7,12,.998));
+          radial-gradient(760px 280px at 70% 0%, rgba(255,255,255,.035), transparent 44%),
+          linear-gradient(180deg, rgba(5,6,9,.995), rgba(0,0,0,1));
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.04),
+          inset 0 -1px 0 rgba(0,0,0,.36),
           0 24px 60px rgba(0,0,0,.30),
-          0 0 0 1px rgba(120,170,255,.03);
+          0 0 0 1px rgba(255,255,255,.025);
         backdrop-filter:blur(8px);
       }
 
@@ -2486,6 +2486,19 @@ router.get("/u/:username", async (req, res) => {
         z-index:0;
       }
 
+      .profile-showcase::after,
+      .profile-panel::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        border-radius:29px;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.028), transparent 34%),
+          radial-gradient(420px 180px at 50% 0%, rgba(255,255,255,.03), transparent 62%);
+        z-index:0;
+      }
+
       .profile-showcase > *,
       .profile-panel > *{
         position:relative;
@@ -2496,8 +2509,7 @@ router.get("/u/:username", async (req, res) => {
         inset:0;
         border-radius:30px;
         background:
-          radial-gradient(900px 300px at 80% 0%, rgba(58,116,190,.105), transparent 42%),
-          radial-gradient(600px 280px at 10% 20%, rgba(34,72,145,.06), transparent 46%);
+          radial-gradient(760px 280px at 70% 0%, rgba(255,255,255,.035), transparent 44%);
         opacity:1;
       }
 
@@ -2565,6 +2577,7 @@ router.get("/u/:username", async (req, res) => {
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.03),
           0 8px 20px rgba(0,0,0,.10);
+        transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
       }
 
       .profile-pill-btn:hover,
@@ -2575,7 +2588,8 @@ router.get("/u/:username", async (req, res) => {
       .profile-quick-btn:focus-visible,
       .profile-showcase-actions .btn:hover,
       .profile-showcase-actions .btn:focus-visible{
-        border-color:rgba(127,210,255,.20) !important;
+        transform:translateY(-1px);
+        border-color:rgba(127,210,255,.34) !important;
         background:
           radial-gradient(220px 90px at 50% 0%, rgba(111,210,255,.14), transparent 60%),
           linear-gradient(180deg, rgba(24,28,38,.98), rgba(12,14,20,.99));
@@ -2583,6 +2597,13 @@ router.get("/u/:username", async (req, res) => {
           inset 0 0 0 1px rgba(127,210,255,.08),
           0 0 22px rgba(127,210,255,.11),
           0 8px 20px rgba(0,0,0,.18) !important;
+      }
+
+      .profile-pill-btn:active,
+      .profile-mini-action:active,
+      .profile-quick-btn:active,
+      .profile-showcase-actions .btn:active{
+        transform:scale(.985);
       }
 
       .profile-showcase-avatar-wrap::before,
