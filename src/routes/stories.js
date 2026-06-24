@@ -675,7 +675,7 @@ router.get("/stories", async (req, res) => {
 
         position:fixed;
 
-        z-index:50;
+        z-index:20;
 
         left:0;
 
@@ -683,23 +683,23 @@ router.get("/stories", async (req, res) => {
 
         bottom:0;
 
-        height:calc(76px + env(safe-area-inset-bottom, 0px));
+        height:calc(64px + env(safe-area-inset-bottom, 0px));
 
-        padding:8px 28px calc(8px + env(safe-area-inset-bottom, 0px));
+        padding:7px 10px env(safe-area-inset-bottom, 0px);
 
-        display:grid;
-
-        grid-template-columns:1fr auto 1fr;
+        display:flex;
 
         align-items:center;
 
-        gap:28px;
+        justify-content:space-around;
+
+        gap:0;
 
         background:#030303;
 
-        border-top:1px solid rgba(255,255,255,.10);
+        border-top:1px solid rgba(255,255,255,.08);
 
-        box-shadow:0 -18px 42px rgba(0,0,0,.42);
+        box-shadow:none;
 
       }
 
@@ -707,7 +707,7 @@ router.get("/stories", async (req, res) => {
 
       .stories-bottom-link{
 
-        min-width:74px;
+        min-width:55px;
 
         display:flex;
 
@@ -715,19 +715,15 @@ router.get("/stories", async (req, res) => {
 
         align-items:center;
 
-        justify-content:center;
-
-        gap:4px;
+        gap:2px;
 
         color:rgba(255,255,255,.72);
 
         text-decoration:none;
 
-        font-size:13px;
+        font-size:10px;
 
-        font-weight:820;
-
-        letter-spacing:-.02em;
+        font-weight:650;
 
         -webkit-tap-highlight-color:transparent;
 
@@ -735,33 +731,17 @@ router.get("/stories", async (req, res) => {
 
 
 
-      .stories-bottom-link:first-child{
-
-        justify-self:start;
-
-      }
-
-
-
-      .stories-bottom-link:last-child{
-
-        justify-self:end;
-
-      }
-
-
-
       .stories-bottom-link svg{
 
-        width:32px;
+        width:25px;
 
-        height:32px;
+        height:25px;
 
         fill:none;
 
         stroke:currentColor;
 
-        stroke-width:2.25;
+        stroke-width:2;
 
         stroke-linecap:round;
 
@@ -773,19 +753,17 @@ router.get("/stories", async (req, res) => {
 
       .stories-bottom-create{
 
-        justify-self:center;
+        width:56px;
 
-        width:88px;
-
-        height:48px;
+        height:38px;
 
         display:grid;
 
         place-items:center;
 
-        border:3px solid #fff;
+        border:2px solid #fff;
 
-        border-radius:18px;
+        border-radius:11px;
 
         background:linear-gradient(145deg,#2f76ff,#1145ad);
 
@@ -793,13 +771,13 @@ router.get("/stories", async (req, res) => {
 
         text-decoration:none;
 
-        font-size:36px;
+        font-size:29px;
 
-        font-weight:950;
+        font-weight:900;
 
         line-height:1;
 
-        box-shadow:0 5px 18px rgba(35,102,231,.42),0 0 28px rgba(35,102,231,.24);
+        box-shadow:0 5px 18px rgba(35,102,231,.42);
 
         -webkit-tap-highlight-color:transparent;
 
