@@ -1661,8 +1661,13 @@ router.get("/stories/feed", async (req, res) => {
         .sf-nav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
         .sf-create{width:56px;height:38px;display:grid;place-items:center;border:2px solid #fff;border-radius:11px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;text-decoration:none;font-size:29px;font-weight:900;line-height:1;box-shadow:0 5px 18px rgba(35,102,231,.42)}
         .sf-empty{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;text-align:center;background:radial-gradient(circle at 50% 30%,#172753,#07080c 54%,#000)}
-        .sf-empty-mark{display:grid;place-items:center;width:74px;height:74px;border-radius:24px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;box-shadow:0 18px 44px rgba(35,102,231,.34),inset 0 1px 0 rgba(255,255,255,.16)}
-        .tapzy-mark-empty{width:66%;height:66%}
+        .sf-empty-mark{position:relative;display:grid;place-items:center;width:74px;height:74px;border-radius:24px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;box-shadow:0 18px 44px rgba(35,102,231,.34),inset 0 1px 0 rgba(255,255,255,.16);animation:sfLogoPulse 2.25s ease-in-out infinite;will-change:transform,box-shadow}
+        .sf-empty-mark::before{content:"";position:absolute;inset:-12px;border-radius:32px;background:radial-gradient(circle,rgba(47,118,255,.36),rgba(47,118,255,0) 70%);animation:sfLogoHalo 2.25s ease-out infinite;z-index:-1}
+        .sf-empty-mark::after{content:"";position:absolute;inset:0;border-radius:24px;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,0) 45%);pointer-events:none}
+        .tapzy-mark-empty{width:66%;height:66%;filter:drop-shadow(0 3px 8px rgba(0,0,0,.22));animation:sfLogoInnerPulse 2.25s ease-in-out infinite}
+        @keyframes sfLogoPulse{0%,100%{transform:scale(1);box-shadow:0 18px 44px rgba(35,102,231,.34),inset 0 1px 0 rgba(255,255,255,.16)}50%{transform:scale(1.075);box-shadow:0 22px 62px rgba(35,102,231,.58),0 0 32px rgba(79,145,255,.38),inset 0 1px 0 rgba(255,255,255,.22)}}
+        @keyframes sfLogoHalo{0%{opacity:.48;transform:scale(.86)}60%{opacity:.16;transform:scale(1.32)}100%{opacity:0;transform:scale(1.45)}}
+        @keyframes sfLogoInnerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
         .sf-empty h1{margin:20px 0 6px}.sf-empty p{margin:0;color:#b8bfd0}.sf-empty a{margin-top:20px;padding:12px 18px;border-radius:12px;background:#1f55d5;color:#fff;text-decoration:none;font-weight:800}
         .sf-no-results{position:fixed;z-index:12;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:#090909;color:#c8ccda}
         .sf-no-results.is-visible{display:grid}
