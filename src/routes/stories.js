@@ -1608,7 +1608,7 @@ router.get("/stories/feed", async (req, res) => {
     const profileHref = currentProfile?.username ? `/u/${currentProfile.username}` : "/auth";
     const emptyMessage = stories.length
       ? ""
-      : `<div class="sf-empty"><div class="sf-empty-mark">${tapzyMarkImg("tapzy-mark tapzy-mark-empty")}</div><h1>No live stories yet</h1><p>Be the first to share what is happening.</p><a href="/stories">Post a story</a></div>`;
+      : `<div class="sf-empty"><div class="sf-empty-mark">${tapzyMarkImg("tapzy-mark tapzy-mark-empty")}</div><h1>No live stories yet</h1><p>Be the first to share what is happening.</p></div>`;
 
     res.send(`<!doctype html>
     <html lang="en">
@@ -1670,10 +1670,6 @@ router.get("/stories/feed", async (req, res) => {
         @keyframes sfLogoInnerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
         .sf-empty h1{margin:22px 0 8px;font-size:clamp(32px,8vw,46px);line-height:1.04;font-weight:860;letter-spacing:-.033em;color:#fff;text-wrap:balance;text-shadow:0 1px 18px rgba(255,255,255,.1),0 14px 34px rgba(0,0,0,.42);font-feature-settings:"kern" 1,"ss01" 1}
         .sf-empty p{max-width:340px;margin:0;color:rgba(224,231,246,.75);font-size:clamp(17px,4.25vw,22px);line-height:1.32;font-weight:460;letter-spacing:-.012em;text-wrap:balance;text-shadow:0 10px 28px rgba(0,0,0,.35)}
-        .sf-empty a{display:inline-flex;align-items:center;justify-content:center;margin-top:24px;min-width:164px;min-height:50px;padding:11px 24px;border:3px solid #fff;border-radius:17px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;text-decoration:none;font-size:18px;font-weight:860;letter-spacing:-.022em;line-height:1;box-shadow:0 5px 18px rgba(35,102,231,.42),0 0 22px rgba(35,102,231,.22);transform:translateZ(0);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;animation:sfCreateMatchPulse 2.6s ease-in-out infinite}
-        .sf-empty a:hover{filter:brightness(1.04);box-shadow:0 7px 22px rgba(35,102,231,.5),0 0 28px rgba(35,102,231,.3)}
-        .sf-empty a:active{transform:translateY(1px) scale(.985);box-shadow:0 4px 14px rgba(35,102,231,.38),0 0 18px rgba(35,102,231,.22)}
-        @keyframes sfCreateMatchPulse{0%,100%{box-shadow:0 5px 18px rgba(35,102,231,.42),0 0 22px rgba(35,102,231,.22)}50%{box-shadow:0 7px 24px rgba(35,102,231,.56),0 0 34px rgba(35,102,231,.36)}}
         .sf-no-results{position:fixed;z-index:12;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:#090909;color:#c8ccda}
         .sf-no-results.is-visible{display:grid}
         @media(min-width:760px){
