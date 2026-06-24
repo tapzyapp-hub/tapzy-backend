@@ -339,14 +339,8 @@ function compactFeedCount(value) {
   return String(count);
 }
 
-function tapzyMarkSvg(className = "tapzy-mark") {
-  return `
-    <svg class="${escapeHtml(className)}" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-      <path fill="currentColor" d="M11.7 33.8c1.9-11.6 13.5-20.2 29-20.2h46.5c5.5 0 9.2 4.5 8.2 10-1.6 8.9-8.4 14.7-18.2 14.7H61.8L48.7 80.2c-2.6 8.3-12.8 10.7-18.3 4.2L43.7 38.3H19.3c-5.5 0-8.5-2.1-7.6-4.5Z"/>
-      <circle fill="currentColor" cx="69.7" cy="66.4" r="12.5"/>
-      <circle fill="currentColor" cx="51.8" cy="80.2" r="10.7"/>
-    </svg>
-  `;
+function tapzyMarkImg(className = "tapzy-mark") {
+  return `<img class="${escapeHtml(className)}" src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />`;
 }
 
 
@@ -1614,7 +1608,7 @@ router.get("/stories/feed", async (req, res) => {
     const profileHref = currentProfile?.username ? `/u/${currentProfile.username}` : "/auth";
     const emptyMessage = stories.length
       ? ""
-      : `<div class="sf-empty"><div class="sf-empty-mark">${tapzyMarkSvg("tapzy-mark tapzy-mark-empty")}</div><h1>No live stories yet</h1><p>Be the first to share what is happening.</p><a href="/stories">Post a story</a></div>`;
+      : `<div class="sf-empty"><div class="sf-empty-mark">${tapzyMarkImg("tapzy-mark tapzy-mark-empty")}</div><h1>No live stories yet</h1><p>Be the first to share what is happening.</p><a href="/stories">Post a story</a></div>`;
 
     res.send(`<!doctype html>
     <html lang="en">
@@ -1640,7 +1634,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-text-story{position:absolute;inset:0;display:grid;place-items:center;padding:52px 44px 180px;background:radial-gradient(circle at 30% 20%,#27376b 0,#14172a 35%,#06070c 78%);font-size:clamp(28px,7vw,48px);font-weight:850;line-height:1.08;text-align:center}
         .sf-top{position:fixed;z-index:20;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(var(--safe-top) + 18px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.54),transparent)}
         .sf-brand{position:absolute;left:16px;top:calc(var(--safe-top) + 16px);display:grid;place-items:center;width:38px;height:38px;border:2px solid rgba(255,255,255,.9);border-radius:12px;color:#fff;text-decoration:none;background:rgba(3,6,12,.24);box-shadow:0 10px 26px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-        .tapzy-mark{display:block;width:72%;height:72%;color:currentColor}
+        .tapzy-mark{display:block;width:72%;height:72%;object-fit:contain}
         .sf-tabs{display:flex;gap:22px;align-items:center}
         .sf-tab{position:relative;border:0;background:none;padding:8px 0;color:rgba(255,255,255,.68);font-weight:750;font-size:15px;cursor:pointer}
         .sf-tab.is-active{color:#fff}
@@ -1682,7 +1676,7 @@ router.get("/stories/feed", async (req, res) => {
     <body>
       <main class="sf-app">
         <header class="sf-top">
-          <a class="sf-brand" href="/stories" aria-label="Back to Stories">${tapzyMarkSvg("tapzy-mark tapzy-mark-brand")}</a>
+          <a class="sf-brand" href="/stories" aria-label="Back to Stories">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
           <nav class="sf-tabs" aria-label="Story feed filters">
             <button class="sf-tab" type="button" data-filter="event">Events</button>
             <button class="sf-tab" type="button" data-filter="following">Following</button>

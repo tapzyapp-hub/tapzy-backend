@@ -1,7 +1,8 @@
-const TAPZY_CACHE = "tapzy-static-v3";
+const TAPZY_CACHE = "tapzy-static-v4";
 const STATIC_ASSETS = [
   "/js/tapzy-performance.js",
   "/images/tapzy-logo-white.png",
+  "/images/tapzy-mark-white.png",
 ];
 
 self.addEventListener("install", (event) => {
