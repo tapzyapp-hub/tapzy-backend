@@ -2588,10 +2588,13 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase-avatar-wrap::before,
       .profile-showcase-avatar-wrap:hover::before,
       .profile-showcase-avatar-wrap:focus-within::before{
-        inset:-8px;
-        border-radius:30px;
-        opacity:.45 !important;
-        filter:blur(14px) !important;
+        inset:-10px;
+        border-radius:34px;
+        background:
+          radial-gradient(circle at 50% 18%, rgba(115,194,255,.48), transparent 58%),
+          linear-gradient(180deg, rgba(115,194,255,.42), rgba(55,108,210,.18)) !important;
+        opacity:.86 !important;
+        filter:blur(11px) !important;
         transform:none !important;
         transition:none !important;
       }
@@ -2599,10 +2602,11 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase-avatar-wrap::after,
       .profile-showcase-avatar-wrap:hover::after,
       .profile-showcase-avatar-wrap:focus-within::after{
-        inset:-15px;
-        border-radius:30px;
-        opacity:.45 !important;
-        filter:blur(14px) !important;
+        inset:-18px;
+        border-radius:40px;
+        background:radial-gradient(circle at 50% 50%, rgba(85,179,255,.42), transparent 62%) !important;
+        opacity:.78 !important;
+        filter:blur(18px) !important;
         transform:none !important;
         transition:none !important;
       }
@@ -2610,10 +2614,12 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase-avatar,
       .profile-showcase-avatar:hover,
       .profile-showcase-avatar:focus-visible{
-        border-color:rgba(255,255,255,.08) !important;
+        border-color:rgba(115,194,255,.92) !important;
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.05),
-          0 0 18px rgba(127,210,255,.11),
+          0 0 0 1px rgba(255,255,255,.02),
+          0 0 22px rgba(87,170,255,.22),
+          0 0 42px rgba(48,110,255,.16),
           0 12px 28px rgba(0,0,0,.24) !important;
         transform:none !important;
         transition:none !important;
