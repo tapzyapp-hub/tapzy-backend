@@ -2589,6 +2589,8 @@ module.exports = async function getEventsPage(req, res) {
 
         pageType: "events",
 
+        storiesBottomNav: true,
+
       })
 
     );

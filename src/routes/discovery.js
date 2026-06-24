@@ -1700,6 +1700,8 @@ router.get("/discovery/:username", async (req, res) => {
 
         pageType: "discovery",
 
+        storiesBottomNav: true,
+
       })
 
     );

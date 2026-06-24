@@ -874,6 +874,24 @@ function renderTopBar({ currentProfile = null, pageTitle = "Tapzy Network™", p
 
 
 
+function renderStoriesBottomNav({ currentProfile = null } = {}) {
+  const profileHref = currentProfile?.username ? `/u/${escapeHtml(currentProfile.username)}` : "/auth";
+
+  return `
+  <nav class="tz-stories-bottom-nav" aria-label="Primary navigation">
+    <a class="tz-stories-bottom-link" href="/stories/feed">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3V11Z"></path></svg>
+      <span>Home</span>
+    </a>
+    <a class="tz-stories-bottom-create" href="/stories" aria-label="Create story">+</a>
+    <a class="tz-stories-bottom-link" href="${profileHref}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 22c0-5 3-8 8-8s8 3 8 8"></path></svg>
+      <span>Profile</span>
+    </a>
+  </nav>
+  `;
+}
+
 function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
   const currentProfile = shellOptions.currentProfile || null;
@@ -881,6 +899,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
   const pageTitle = shellOptions.pageTitle || "Tapzy Network™";
 
   const pageType = shellOptions.pageType || "general";
+  const showStoriesBottomNav = !!shellOptions.storiesBottomNav;
 
   const resolvedTitle = title || "Tapzy Network™ — Your Digital Identity";
 
@@ -2596,6 +2615,134 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
 
 
+      .tz-stories-bottom-nav{
+
+        position:fixed;
+
+        z-index:20;
+
+        left:0;
+
+        right:0;
+
+        bottom:0;
+
+        height:calc(64px + env(safe-area-inset-bottom, 0px));
+
+        padding:7px 10px env(safe-area-inset-bottom, 0px);
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:space-around;
+
+        background:#030303;
+
+        border-top:1px solid rgba(255,255,255,.08);
+
+      }
+
+
+
+      .tz-stories-bottom-link{
+
+        min-width:55px;
+
+        display:flex;
+
+        flex-direction:column;
+
+        align-items:center;
+
+        gap:2px;
+
+        color:rgba(255,255,255,.72);
+
+        text-decoration:none;
+
+        font-size:10px;
+
+        font-weight:650;
+
+        -webkit-tap-highlight-color:transparent;
+
+      }
+
+
+
+      .tz-stories-bottom-link svg{
+
+        width:25px;
+
+        height:25px;
+
+        fill:none;
+
+        stroke:currentColor;
+
+        stroke-width:2;
+
+        stroke-linecap:round;
+
+        stroke-linejoin:round;
+
+      }
+
+
+
+      .tz-stories-bottom-create{
+
+        width:56px;
+
+        height:38px;
+
+        display:grid;
+
+        place-items:center;
+
+        border:2px solid #fff;
+
+        border-radius:11px;
+
+        background:linear-gradient(145deg,#2f76ff,#1145ad);
+
+        color:#fff;
+
+        text-decoration:none;
+
+        font-size:29px;
+
+        font-weight:900;
+
+        line-height:1;
+
+        box-shadow:0 5px 18px rgba(35,102,231,.42);
+
+        -webkit-tap-highlight-color:transparent;
+
+      }
+
+
+
+      .tz-stories-bottom-create:active{
+
+        transform:translateY(1px) scale(.985);
+
+      }
+
+
+
+      body.tz-has-stories-bottom-nav .wrap,
+      body.tz-has-stories-bottom-nav .container,
+      body.tz-has-stories-bottom-nav main{
+
+        padding-bottom:calc(84px + env(safe-area-inset-bottom, 0px));
+
+      }
+
+
+
       .tz-core-arrow{
 
         color:#8ea1bd;
@@ -2738,11 +2885,13 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
   </head>
 
-  <body>
+  <body class="${showStoriesBottomNav ? "tz-has-stories-bottom-nav" : ""}">
 
     ${renderTopBar({ currentProfile, pageTitle, pageType })}
 
     ${body}
+
+    ${showStoriesBottomNav ? renderStoriesBottomNav({ currentProfile }) : ""}
 
 
 

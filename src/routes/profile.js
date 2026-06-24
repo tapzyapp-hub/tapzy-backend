@@ -2892,6 +2892,8 @@ router.get("/u/:username", async (req, res) => {
 
         pageType: "profile",
 
+        storiesBottomNav: true,
+
         metaDescription: `${displayName} on Tapzy Network™. View profile, quick share links, stories, and contact details.`,
 
       })
@@ -4616,6 +4618,8 @@ router.get("/edit/:username", async (req, res) => {
         pageTitle: "Edit Profile",
 
         pageType: "edit",
+
+        storiesBottomNav: true,
 
         metaDescription: `Edit ${profile.username}'s Tapzy Network™ profile, quick share settings, contact details, and social links.`,
 
