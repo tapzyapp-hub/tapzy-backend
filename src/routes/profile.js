@@ -2585,6 +2585,40 @@ router.get("/u/:username", async (req, res) => {
           0 8px 20px rgba(0,0,0,.18) !important;
       }
 
+      .profile-showcase-avatar-wrap::before,
+      .profile-showcase-avatar-wrap:hover::before,
+      .profile-showcase-avatar-wrap:focus-within::before{
+        inset:-8px;
+        border-radius:30px;
+        opacity:.45 !important;
+        filter:blur(14px) !important;
+        transform:none !important;
+        transition:none !important;
+      }
+
+      .profile-showcase-avatar-wrap::after,
+      .profile-showcase-avatar-wrap:hover::after,
+      .profile-showcase-avatar-wrap:focus-within::after{
+        inset:-15px;
+        border-radius:30px;
+        opacity:.45 !important;
+        filter:blur(14px) !important;
+        transform:none !important;
+        transition:none !important;
+      }
+
+      .profile-showcase-avatar,
+      .profile-showcase-avatar:hover,
+      .profile-showcase-avatar:focus-visible{
+        border-color:rgba(255,255,255,.08) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 0 18px rgba(127,210,255,.11),
+          0 12px 28px rgba(0,0,0,.24) !important;
+        transform:none !important;
+        transition:none !important;
+      }
+
       @media(max-width:700px){
 
         .tapzy-tap-card{
