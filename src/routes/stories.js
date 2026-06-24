@@ -1729,7 +1729,7 @@ router.get("/stories/feed", async (req, res) => {
         <header class="sf-top">
           <a class="sf-brand" href="/stories" aria-label="Back to Stories">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
           <nav class="sf-tabs" aria-label="Story feed filters">
-            <button class="sf-tab" type="button" data-filter="event">Events</button>
+            <a class="sf-tab" href="/events">Events</a>
             <button class="sf-tab" type="button" data-filter="following">Following</button>
             <button class="sf-tab is-active" type="button" data-filter="all">Discover</button>
           </nav>
@@ -1755,7 +1755,7 @@ router.get("/stories/feed", async (req, res) => {
         (function(){
           var feed = document.querySelector('.sf-feed');
           var slides = Array.prototype.slice.call(document.querySelectorAll('.sf-slide'));
-          var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab'));
+          var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab[data-filter]'));
           var empty = document.querySelector('.sf-no-results');
           var observer = new IntersectionObserver(function(entries){
             entries.forEach(function(entry){

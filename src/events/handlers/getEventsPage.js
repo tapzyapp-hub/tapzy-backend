@@ -422,7 +422,7 @@ module.exports = async function getEventsPage(req, res) {
       .events-chip-wrap{ display:grid; gap:12px; margin:6px 0 26px; }
       .events-chip-row{ display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
       .events-chip-row::-webkit-scrollbar{ display:none; }
-      .events-chip{ flex:0 0 auto; min-width:160px; text-align:center; padding:18px 26px; border-radius:999px; text-decoration:none; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
+      .events-chip{ flex:0 0 auto; min-width:124px; text-align:center; padding:13px 18px; border-radius:999px; text-decoration:none; font-weight:800; font-size:12px; letter-spacing:.065em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
       .events-chip.is-active{ background:#eef3fb; color:#101626; border-color:rgba(255,255,255,.45); }
       .events-location-prompt{ position:relative; overflow:hidden; margin:18px 0 24px; padding:26px; border-radius:30px; border:1px solid rgba(127,210,255,.28); background:radial-gradient(520px 260px at 92% -10%, rgba(83,184,255,.22), transparent 58%), radial-gradient(380px 220px at 8% 0%, rgba(255,255,255,.08), transparent 56%), linear-gradient(180deg, rgba(19,28,43,.88), rgba(7,9,14,.96)); box-shadow:0 26px 80px rgba(0,0,0,.44), 0 0 0 1px rgba(255,255,255,.05) inset, 0 0 46px rgba(83,184,255,.10); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
       .events-location-prompt h2{ margin:8px 0 8px; font-size:28px; letter-spacing:-.04em; }
@@ -1685,6 +1685,8 @@ module.exports = async function getEventsPage(req, res) {
         .events-chip{
           flex:0 0 auto;
           min-width:max-content;
+          padding:12px 17px;
+          font-size:12px;
           scroll-snap-align:start;
         }
 
@@ -2509,10 +2511,10 @@ module.exports = async function getEventsPage(req, res) {
 
         .events-chip{
           min-width:auto;
-          padding:16px 22px;
+          padding:12px 17px;
           border-radius:999px;
-          font-size:13px;
-          letter-spacing:.09em;
+          font-size:12px;
+          letter-spacing:.075em;
           white-space:nowrap;
           background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.03));
           border:1px solid rgba(255,255,255,.12);
