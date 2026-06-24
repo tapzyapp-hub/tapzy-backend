@@ -408,7 +408,7 @@ router.get("/stories", async (req, res) => {
     </div>
 
     <nav class="stories-bottom-nav" aria-label="Primary navigation">
-      <a class="stories-bottom-link" href="/">
+      <a class="stories-bottom-link" href="/stories/feed">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3V11Z"></path></svg>
         <span>Home</span>
       </a>
