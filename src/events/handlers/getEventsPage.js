@@ -186,6 +186,20 @@ module.exports = async function getEventsPage(req, res) {
 
     const body = `
 
+    <header class="events-story-top">
+      <a class="events-story-brand" href="/stories/feed" aria-label="Stories home">
+        <img src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />
+      </a>
+      <nav class="events-story-tabs" aria-label="Primary sections">
+        <span class="events-story-tab is-active">Events</span>
+        <a class="events-story-tab" href="/stories/feed?filter=following">Following</a>
+        <a class="events-story-tab" href="/stories/feed">Discover</a>
+      </nav>
+      <a class="events-story-search" href="${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}" aria-label="Search Tapzy">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
+      </a>
+    </header>
+
     <div class="wrap events-wrap">
 
       <section class="events-chip-wrap">
@@ -415,6 +429,76 @@ module.exports = async function getEventsPage(req, res) {
     <style>
 
       .events-wrap{ max-width:1160px; }
+
+      body.events-story-shell > .tz-topbar{display:none !important;}
+      body.events-story-shell{background:#000;}
+      .events-story-top{
+        position:sticky;
+        z-index:60;
+        top:0;
+        left:0;
+        right:0;
+        min-height:72px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:24px;
+        padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
+        background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
+      }
+      .events-story-brand{
+        position:absolute;
+        left:16px;
+        top:calc(env(safe-area-inset-top, 0px) + 14px);
+        width:38px;
+        height:38px;
+        display:grid;
+        place-items:center;
+        border:2px solid rgba(255,255,255,.9);
+        border-radius:12px;
+        color:#fff;
+        text-decoration:none;
+        background:rgba(3,6,12,.24);
+        box-shadow:0 10px 26px rgba(0,0,0,.22);
+        backdrop-filter:blur(10px);
+        -webkit-backdrop-filter:blur(10px);
+      }
+      .events-story-brand img{width:72%;height:72%;object-fit:contain;display:block;}
+      .events-story-tabs{display:flex;gap:22px;align-items:center;min-width:0;}
+      .events-story-tab{
+        position:relative;
+        border:0;
+        background:none;
+        padding:8px 0;
+        color:rgba(255,255,255,.68);
+        font-weight:750;
+        font-size:15px;
+        text-decoration:none;
+        white-space:nowrap;
+      }
+      .events-story-tab.is-active{color:#fff;}
+      .events-story-tab.is-active::after{
+        content:"";
+        position:absolute;
+        left:50%;
+        bottom:-5px;
+        width:26px;
+        height:3px;
+        border-radius:5px;
+        background:#fff;
+        transform:translateX(-50%);
+      }
+      .events-story-search{
+        position:absolute;
+        right:15px;
+        top:calc(env(safe-area-inset-top, 0px) + 15px);
+        width:40px;
+        height:40px;
+        padding:7px;
+        color:#fff;
+        text-decoration:none;
+      }
+      .events-story-search svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 
       .mobile-only{ display:none; }
 
@@ -2489,9 +2573,18 @@ module.exports = async function getEventsPage(req, res) {
           width:auto !important;
           height:auto !important;
           margin:0 auto !important;
-          padding:16px 14px calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+          padding:10px 14px calc(92px + env(safe-area-inset-bottom, 0px)) !important;
           overflow:visible !important;
         }
+
+        .events-story-top{
+          position:sticky;
+          min-height:72px;
+          padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
+        }
+
+        .events-story-tabs{gap:18px;}
+        .events-story-tab{font-size:15px;}
 
         .events-wrap > .events-hero{
           display:none !important;
@@ -2593,6 +2686,8 @@ module.exports = async function getEventsPage(req, res) {
         pageType: "events",
 
         storiesBottomNav: true,
+
+        bodyClass: "events-story-shell",
 
       })
 

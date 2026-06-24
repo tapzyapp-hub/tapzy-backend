@@ -900,6 +900,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
   const pageType = shellOptions.pageType || "general";
   const showStoriesBottomNav = !!shellOptions.storiesBottomNav;
+  const bodyClass = String(shellOptions.bodyClass || "").trim();
 
   const resolvedTitle = title || "Tapzy Network™ — Your Digital Identity";
 
@@ -2885,7 +2886,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
   </head>
 
-  <body class="${showStoriesBottomNav ? "tz-has-stories-bottom-nav" : ""}">
+  <body class="${[showStoriesBottomNav ? "tz-has-stories-bottom-nav" : "", escapeHtml(bodyClass)].filter(Boolean).join(" ")}">
 
     ${renderTopBar({ currentProfile, pageTitle, pageType })}
 
