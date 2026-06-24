@@ -355,58 +355,6 @@ router.get("/stories", async (req, res) => {
 
 
 
-    const activeStories = await prisma.story.findMany({
-
-      where: {
-
-        expiresAt: { gt: now },
-
-      },
-
-      include: {
-
-        profile: true,
-
-        event: true,
-
-      },
-
-      orderBy: [{ createdAt: "desc" }],
-
-      take: 200,
-
-    });
-
-
-
-    const grouped = new Map();
-
-    for (const story of activeStories) {
-
-      if (!story.profile?.username) continue;
-
-      const key = story.profile.username;
-
-      if (!grouped.has(key)) grouped.set(key, []);
-
-      grouped.get(key).push(story);
-
-    }
-
-
-
-    const groups = Array.from(grouped.entries()).map(([username, stories]) => ({
-
-      username,
-
-      profile: stories[0].profile,
-
-      stories,
-
-    }));
-
-
-
     let upcomingEvents = [];
 
     if (currentProfile) {
@@ -449,55 +397,27 @@ router.get("/stories", async (req, res) => {
 
 
 
+    const storyProfileHref = currentProfile?.username ? `/u/${currentProfile.username}` : "/auth";
+
     const body = `
 
     <div class="wrap stories-wrap">
 
       ${storyComposer(currentProfile, upcomingEvents)}
 
-
-
-      <section class="stories-discover-card">
-
-        <div class="stories-head-row">
-
-          <div>
-
-            <div class="stories-kicker">Live Now</div>
-
-            <h2 class="stories-title">Story feed</h2>
-
-            <div class="stories-subtitle">View Tapzy stories from people, places, and events happening now.</div>
-
-          </div>
-
-          <a class="stories-btn stories-btn-bright" href="/stories/feed">Open story feed</a>
-
-        </div>
-
-
-
-        ${
-
-          groups.length
-
-            ? `
-
-            <div class="stories-profile-grid">
-
-              ${groups.map((group) => profileStoryCard(group.profile, group.stories, currentProfile)).join("")}
-
-            </div>
-
-            `
-
-            : `<div class="stories-empty">No active stories right now.</div>`
-
-        }
-
-      </section>
-
     </div>
+
+    <nav class="stories-bottom-nav" aria-label="Primary navigation">
+      <a class="stories-bottom-link" href="/">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3V11Z"></path></svg>
+        <span>Home</span>
+      </a>
+      <a class="stories-bottom-create is-active" href="/stories" aria-label="Create story">+</a>
+      <a class="stories-bottom-link" href="${storyProfileHref}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 22c0-5 3-8 8-8s8 3 8 8"></path></svg>
+        <span>Profile</span>
+      </a>
+    </nav>
 
 
 
@@ -506,6 +426,8 @@ router.get("/stories", async (req, res) => {
       .stories-wrap{
 
         max-width:1120px;
+
+        padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px));
 
       }
 
@@ -744,6 +666,150 @@ router.get("/stories", async (req, res) => {
           radial-gradient(circle at 50% 0%, rgba(150,230,255,.18), transparent 55%),
 
           linear-gradient(180deg, rgba(40,92,210,.92), rgba(18,41,92,.98));
+
+      }
+
+
+
+      .stories-bottom-nav{
+
+        position:fixed;
+
+        z-index:50;
+
+        left:0;
+
+        right:0;
+
+        bottom:0;
+
+        height:calc(76px + env(safe-area-inset-bottom, 0px));
+
+        padding:8px 28px calc(8px + env(safe-area-inset-bottom, 0px));
+
+        display:grid;
+
+        grid-template-columns:1fr auto 1fr;
+
+        align-items:center;
+
+        gap:28px;
+
+        background:#030303;
+
+        border-top:1px solid rgba(255,255,255,.10);
+
+        box-shadow:0 -18px 42px rgba(0,0,0,.42);
+
+      }
+
+
+
+      .stories-bottom-link{
+
+        min-width:74px;
+
+        display:flex;
+
+        flex-direction:column;
+
+        align-items:center;
+
+        justify-content:center;
+
+        gap:4px;
+
+        color:rgba(255,255,255,.72);
+
+        text-decoration:none;
+
+        font-size:13px;
+
+        font-weight:820;
+
+        letter-spacing:-.02em;
+
+        -webkit-tap-highlight-color:transparent;
+
+      }
+
+
+
+      .stories-bottom-link:first-child{
+
+        justify-self:start;
+
+      }
+
+
+
+      .stories-bottom-link:last-child{
+
+        justify-self:end;
+
+      }
+
+
+
+      .stories-bottom-link svg{
+
+        width:32px;
+
+        height:32px;
+
+        fill:none;
+
+        stroke:currentColor;
+
+        stroke-width:2.25;
+
+        stroke-linecap:round;
+
+        stroke-linejoin:round;
+
+      }
+
+
+
+      .stories-bottom-create{
+
+        justify-self:center;
+
+        width:88px;
+
+        height:48px;
+
+        display:grid;
+
+        place-items:center;
+
+        border:3px solid #fff;
+
+        border-radius:18px;
+
+        background:linear-gradient(145deg,#2f76ff,#1145ad);
+
+        color:#fff;
+
+        text-decoration:none;
+
+        font-size:36px;
+
+        font-weight:950;
+
+        line-height:1;
+
+        box-shadow:0 5px 18px rgba(35,102,231,.42),0 0 28px rgba(35,102,231,.24);
+
+        -webkit-tap-highlight-color:transparent;
+
+      }
+
+
+
+      .stories-bottom-create:active{
+
+        transform:translateY(1px) scale(.985);
 
       }
 
