@@ -2456,9 +2456,9 @@ router.get("/u/:username", async (req, res) => {
         border-radius:30px;
         border:1px solid rgba(255,255,255,.08);
         background:
-          radial-gradient(900px 300px at 80% 0%, rgba(90,165,255,.12), transparent 42%),
-          radial-gradient(600px 280px at 10% 20%, rgba(60,120,255,.08), transparent 46%),
-          linear-gradient(180deg, rgba(15,18,28,.98), rgba(9,11,16,.995));
+          radial-gradient(900px 300px at 80% 0%, rgba(58,116,190,.105), transparent 42%),
+          radial-gradient(600px 280px at 10% 20%, rgba(34,72,145,.06), transparent 46%),
+          linear-gradient(180deg, rgba(10,13,21,.99), rgba(5,7,12,.998));
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.04),
           0 24px 60px rgba(0,0,0,.30),
@@ -2496,8 +2496,8 @@ router.get("/u/:username", async (req, res) => {
         inset:0;
         border-radius:30px;
         background:
-          radial-gradient(900px 300px at 80% 0%, rgba(90,165,255,.12), transparent 42%),
-          radial-gradient(600px 280px at 10% 20%, rgba(60,120,255,.08), transparent 46%);
+          radial-gradient(900px 300px at 80% 0%, rgba(58,116,190,.105), transparent 42%),
+          radial-gradient(600px 280px at 10% 20%, rgba(34,72,145,.06), transparent 46%);
         opacity:1;
       }
 
