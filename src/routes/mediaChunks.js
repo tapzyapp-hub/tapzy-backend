@@ -15,7 +15,7 @@ const sessions = new Map();
 function isVideoMime(mimetype = "", originalName = "") {
   const type = String(mimetype || "").toLowerCase();
   const name = String(originalName || "").toLowerCase();
-  return type.startsWith("video/") || /\.(mp4|mov|m4v|webm)$/i.test(name);
+  return type.startsWith("video/") || /\.(mp4|mov|m4v|webm|3gp|3gpp|avi|hevc)$/i.test(name);
 }
 
 function safeId(value = "") {
