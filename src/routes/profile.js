@@ -59,6 +59,10 @@ function isVideoUrl(url) {
 
 
 
+function renderStoryVideoPlaceholder() {
+  return `<div class="profile-story-card-media profile-story-video-placeholder" aria-label="Video story"><span class="profile-story-video-play">▶</span></div>`;
+}
+
 function renderVideoFrame(url, options = {}) {
   const src = escapeHtml(url || "");
   const className = escapeHtml(options.className || "profile-story-card-media");
@@ -122,7 +126,7 @@ function storyTrayCard(profile, story, isOwner) {
 
     ? isVideo
 
-      ? renderVideoFrame(story.mediaUrl, { className: "profile-story-card-media", controls: false, muted: true, preload: "auto" })
+      ? renderStoryVideoPlaceholder()
 
       : `<img class="profile-story-card-media" src="${escapeHtml(story.mediaUrl)}" alt="Story preview" loading="lazy" decoding="async" />`
 
@@ -2135,6 +2139,8 @@ router.get("/u/:username", async (req, res) => {
       .tz-video-preview-blur{position:absolute;inset:0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
       .tz-video-preview-badge{position:relative;z-index:1;width:60px;height:60px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(10,14,24,.72);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 28px rgba(0,0,0,.34);color:#fff;font-size:24px;line-height:1;}
       .tz-video-frame.is-ready .tz-video-preview,.tz-video-frame.is-playing .tz-video-preview{opacity:0;visibility:hidden;pointer-events:none;}
+      .profile-story-video-placeholder{display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 25%,rgba(46,111,255,.28),transparent 45%),linear-gradient(180deg,#07111f,#02040a);}
+      .profile-story-video-play{width:56px;height:56px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(5,8,16,.72);border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 28px rgba(0,0,0,.35);color:#fff;font-size:24px;line-height:1;padding-left:3px;}
       .profile-story-card-media{
 
         width:100%;

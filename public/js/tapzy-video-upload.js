@@ -5,7 +5,7 @@
   const START_COMPRESS_BYTES = 12 * 1024 * 1024;
   const CHUNK_UPLOAD_BYTES = 42 * 1024 * 1024;
   const CHUNK_SIZE = 5 * 1024 * 1024;
-  const DIRECT_UPLOAD_BYTES = 24 * 1024 * 1024;
+  const DIRECT_UPLOAD_BYTES = 64 * 1024 * 1024;
   const MAX_EDGE = 1280;
   const FPS = 30;
   const VIDEO_BITRATE = 2400000;
@@ -26,7 +26,8 @@
   }
 
   function isSupportedMediaFile(file) {
-    return isVideoFile(file) || isImageFile(file);
+    const type = String((file && file.type) || "").toLowerCase();
+    return isVideoFile(file) || isImageFile(file) || type === "application/octet-stream";
   }
 
   function inferMimeType(file) {
@@ -356,66 +357,42 @@
       return true;
     }
 
-    const file = mediaInput.files[0];
+    const file = mediaInput.files && mediaInput.files[0];
     if (!file) {
       form.dataset.tapzyVideoPrepared = "1";
       return true;
     }
 
     form.dataset.tapzyVideoPreparing = "1";
-    setStatus(form, "Preparing media like TikTok — keep this page open.");
     if (submitter) submitter.disabled = true;
 
     try {
-      let compressed = file;
-      if (isVideoFile(file) && file.size >= START_COMPRESS_BYTES) {
-        compressed = await compressVideo(file, (pct) => {
-        setStatus(form, `Preparing video ${pct}% — keep this page open.`);
-      });
-      }
-
-      if (compressed && compressed !== file && compressed.size < file.size) {
-        replaceInputFile(mediaInput, compressed);
-        const saved = Math.max(1, Math.round((1 - compressed.size / file.size) * 100));
-        setStatus(form, `Video ready — compressed ${saved}% for faster upload.`);
-      } else {
-        setStatus(form, file.size > TARGET_BYTES ? "Uploading original video. If it fails, choose a shorter or lower-resolution clip." : "Video ready.");
-      }
-
-      const preparedFile = mediaInput.files && mediaInput.files[0] ? mediaInput.files[0] : compressed || file;
-      if (preparedFile && supportsChunkedSubmit(form)) {
-        setStatus(form, "Uploading video safely in pieces — keep this page open.");
-        const complete = await uploadChunkedMedia(preparedFile, form, (pct) => {
-          setStatus(form, `Uploading video ${pct}% — retrying pieces if needed.`);
-        });
-        upsertHidden(form, "tapzyChunkedMediaUrl", complete.mediaUrl || "");
-        upsertHidden(form, "tapzyChunkedOriginalName", complete.originalName || preparedFile.name || "");
-        upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || preparedFile.type || "");
-        clearInputFile(mediaInput);
-        setStatus(form, "Video uploaded — posting now.");
-      }
-    } catch (_) {
-      if (file && supportsChunkedSubmit(form)) {
-        try {
-          setStatus(form, "Uploading original video safely in pieces — keep this page open.");
-          const complete = await uploadChunkedMedia(file, form, (pct) => {
-            setStatus(form, `Uploading video ${pct}% — retrying pieces if needed.`);
+      let complete = null;
+      if (supportsChunkedSubmit(form)) {
+        if (file.size <= DIRECT_UPLOAD_BYTES) {
+          setStatus(form, "Uploading media — keep this page open.");
+          complete = await uploadDirectMedia(file);
+        } else {
+          setStatus(form, "Uploading large video safely — keep this page open.");
+          complete = await uploadChunkedMedia(file, form, (pct) => {
+            setStatus(form, `Uploading video ${pct}% — keep this page open.`);
           });
-          upsertHidden(form, "tapzyChunkedMediaUrl", complete.mediaUrl || "");
-          upsertHidden(form, "tapzyChunkedOriginalName", complete.originalName || file.name || "");
-          upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || file.type || "");
-          clearInputFile(mediaInput);
-          setStatus(form, "Video uploaded — posting now.");
-        } catch (chunkError) {
-          setStatus(form, "Video upload failed. Please try again on a stronger connection.");
-          form.dataset.tapzyVideoPrepared = "0";
-          form.dataset.tapzyVideoPreparing = "0";
-          if (submitter) submitter.disabled = false;
-          throw chunkError;
         }
-      } else {
-        setStatus(form, "Uploading original video.");
       }
+
+      if (complete && complete.mediaUrl) {
+        upsertHidden(form, "tapzyChunkedMediaUrl", complete.mediaUrl || "");
+        upsertHidden(form, "tapzyChunkedOriginalName", complete.originalName || file.name || "");
+        upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || inferMimeType(file));
+        clearInputFile(mediaInput);
+        setStatus(form, "Media uploaded — posting now.");
+      }
+    } catch (error) {
+      setStatus(form, "Media upload failed. Please try again on a stronger connection.");
+      form.dataset.tapzyVideoPrepared = "0";
+      form.dataset.tapzyVideoPreparing = "0";
+      if (submitter) submitter.disabled = false;
+      throw error;
     }
 
     form.dataset.tapzyVideoPrepared = "1";
