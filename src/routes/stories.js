@@ -257,7 +257,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
           <label class="stories-upload-drop">
 
-            <input type="file" name="storyMedia" accept="image/*,video/*,.heic,.heif,.mov,.mp4,.webm" />
+            <input type="file" name="storyMedia" accept="image/*,video/*,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.mov,.mp4,.m4v,.webm,.3gp,.3gpp,.avi,.hevc" />
 
             <span class="stories-upload-icon">＋</span>
 

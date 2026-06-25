@@ -23,6 +23,20 @@ const chunkUpload = multer({
   limits: { fileSize: MAX_CHUNK_BYTES + 1024 * 1024 },
 });
 
+const directStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => cb(null, safeUploadFilename(file.originalname || "tapzy-media", file.mimetype || "application/octet-stream")),
+});
+
+const directUpload = multer({
+  storage: directStorage,
+  limits: { fileSize: 64 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ok = isSupportedMediaMime(file.mimetype || "", file.originalname || "");
+    cb(ok ? null : new Error("Only image and video uploads are supported"), ok);
+  },
+});
+
 function isSupportedMediaMime(mimetype = "", originalName = "") {
   const type = String(mimetype || "").toLowerCase();
   const name = String(originalName || "").toLowerCase();
@@ -53,6 +67,27 @@ function cleanupExpiredSessions() {
     }
   }
 }
+
+
+router.post("/media/upload", directUpload.single("media"), async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+    if (!req.file) return res.status(400).json({ ok: false, error: "Missing media" });
+
+    res.json({
+      ok: true,
+      mediaUrl: publicAbsoluteUrl(req, `/uploads/${req.file.filename}`),
+      filename: req.file.filename,
+      originalName: req.file.originalname || "tapzy-media",
+      mimetype: req.file.mimetype || "application/octet-stream",
+      size: req.file.size || 0,
+    });
+  } catch (error) {
+    console.error("Direct media upload error:", error);
+    res.status(500).json({ ok: false, error: "Could not upload media" });
+  }
+});
 
 router.post("/media/chunk/start", async (req, res) => {
   try {

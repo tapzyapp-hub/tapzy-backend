@@ -5,6 +5,7 @@
   const START_COMPRESS_BYTES = 12 * 1024 * 1024;
   const CHUNK_UPLOAD_BYTES = 42 * 1024 * 1024;
   const CHUNK_SIZE = 5 * 1024 * 1024;
+  const DIRECT_UPLOAD_BYTES = 24 * 1024 * 1024;
   const MAX_EDGE = 1280;
   const FPS = 30;
   const VIDEO_BITRATE = 2400000;
@@ -128,6 +129,20 @@
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify(body || {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || "Upload failed");
+    return data;
+  }
+
+
+  async function uploadDirectMedia(file) {
+    const formData = new FormData();
+    formData.append("media", file, file.name || "tapzy-media");
+    const res = await fetch("/media/upload", {
+      method: "POST",
+      credentials: "same-origin",
+      body: formData,
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || "Upload failed");
