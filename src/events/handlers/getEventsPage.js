@@ -805,12 +805,14 @@ module.exports = async function getEventsPage(req, res) {
         position:relative;
         --mx:72%;
         --my:22%;
+        isolation:isolate;
 
         min-height:450px;
 
         overflow:hidden;
 
         border-radius:32px;
+        clip-path:inset(0 round 32px);
 
         border:1px solid rgba(255,255,255,.08);
 
@@ -847,6 +849,7 @@ module.exports = async function getEventsPage(req, res) {
         position:absolute;
 
         inset:0;
+        border-radius:inherit;
 
         background:
 
@@ -904,7 +907,7 @@ module.exports = async function getEventsPage(req, res) {
 
       .event-card.is-touch-active{
 
-        transform:translateY(-8px) scale(1.02);
+        transform:translateY(-6px) scale(1.006);
 
         box-shadow:
 
@@ -966,6 +969,7 @@ module.exports = async function getEventsPage(req, res) {
         position:absolute;
 
         inset:0;
+        border-radius:inherit;
 
         opacity:.045;
 
@@ -1020,7 +1024,7 @@ module.exports = async function getEventsPage(req, res) {
 
         inset:0;
 
-        border-radius:32px;
+        border-radius:inherit;
 
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.10),
@@ -1039,6 +1043,7 @@ module.exports = async function getEventsPage(req, res) {
         position:absolute;
 
         inset:0;
+        border-radius:inherit;
 
         background-size:cover;
 
@@ -1056,7 +1061,7 @@ module.exports = async function getEventsPage(req, res) {
 
       .event-card.is-touch-active .event-media{
 
-        transform:scale(1.08);
+        transform:scale(1.045);
 
       }
 
@@ -2651,7 +2656,64 @@ module.exports = async function getEventsPage(req, res) {
 
         .mobile-events-grid .event-card{
           min-height:min(76svh,680px);
-          border-radius:30px;
+          border-radius:32px;
+          clip-path:inset(0 round 32px);
+          overflow:hidden;
+          isolation:isolate;
+          background:
+            radial-gradient(520px 260px at 72% 14%, rgba(120,190,255,.08), transparent 58%),
+            linear-gradient(180deg, rgba(9,12,19,.98), rgba(0,0,0,1));
+          border-color:rgba(135,205,255,.24);
+          box-shadow:
+            0 28px 80px rgba(0,0,0,.62),
+            0 0 0 1px rgba(115,194,255,.10),
+            inset 0 1px 0 rgba(255,255,255,.10);
+        }
+
+        .mobile-events-grid .event-card::before,
+        .mobile-events-grid .event-card::after,
+        .mobile-events-grid .event-media,
+        .mobile-events-grid .event-content,
+        .mobile-events-grid .event-card-edge,
+        .mobile-events-grid .event-card-noise{
+          border-radius:inherit;
+        }
+
+        .mobile-events-grid .event-card.is-touch-active{
+          transform:translateY(-3px) scale(1.004) !important;
+          border-radius:32px;
+          clip-path:inset(0 round 32px);
+        }
+
+        .mobile-events-grid .event-card.is-touch-active .event-media{
+          transform:scale(1.04) !important;
+        }
+      }
+
+      @media(max-width:700px){
+        .mobile-events-grid .event-card,
+        .mobile-events-grid .event-card:hover,
+        .mobile-events-grid .event-card.is-touch-active{
+          border-radius:32px !important;
+          clip-path:inset(0 round 32px) !important;
+          overflow:hidden !important;
+        }
+
+        .mobile-events-grid .event-card::before,
+        .mobile-events-grid .event-card::after,
+        .mobile-events-grid .event-card-edge,
+        .mobile-events-grid .event-card-noise,
+        .mobile-events-grid .event-media,
+        .mobile-events-grid .event-content{
+          border-radius:inherit !important;
+        }
+
+        .mobile-events-grid .event-card.is-touch-active{
+          transform:translateY(-3px) scale(1.004) !important;
+        }
+
+        .mobile-events-grid .event-card.is-touch-active .event-media{
+          transform:scale(1.04) !important;
         }
       }
 
