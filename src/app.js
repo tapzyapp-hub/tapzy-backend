@@ -24,6 +24,7 @@ const eventsRoutes = require("./routes/events");
 const storiesRoutes = require("./routes/stories");
 const postsRoutes = require("./routes/posts");
 const notificationsRoutes = require("./routes/notifications");
+const mediaChunksRoutes = require("./routes/mediaChunks");
 
 const app = express();
 
@@ -95,13 +96,14 @@ app.use("/", miscRoutes);
 app.use("/", discoveryRoutes);
 app.use("/", pairRoutes);
 app.use("/", eventsRoutes);
+app.use("/", mediaChunksRoutes);
 app.use("/", storiesRoutes);
 app.use("/", postsRoutes);
 app.use("/", notificationsRoutes);
 
 app.use((err, req, res, next) => {
   if (!err || err.code !== "LIMIT_FILE_SIZE") return next(err);
-  const message = "This file is over Tapzy's 50 MB upload limit. Try a compressed MP4 version.";
+  const message = "This video is still too large after Tapzy's upload prep. Try exporting it at 1080p or lower, then post again.";
   const isAjax = req.xhr || req.get("X-Requested-With") === "XMLHttpRequest";
   if (isAjax) return res.status(413).json({ ok: false, error: message });
   return res.status(413).send(message);

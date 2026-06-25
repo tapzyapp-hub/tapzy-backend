@@ -60,6 +60,95 @@ function isVideoUrl(url) {
 
 }
 
+function safeUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+    return parsed;
+  } catch (_) {
+    return null;
+  }
+}
+
+function isLiveStreamUrl(value) {
+  const parsed = safeUrl(value);
+  if (!parsed) return false;
+  return true;
+}
+
+function isNativeLiveUrl(value) {
+  return /^\/stories\/live\/[a-zA-Z0-9_-]+/.test(String(value || "").trim());
+}
+
+function youtubeEmbedUrl(value) {
+  const parsed = safeUrl(value);
+  if (!parsed) return "";
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  let videoId = "";
+
+  if (host === "youtu.be") {
+    videoId = parsed.pathname.split("/").filter(Boolean)[0] || "";
+  } else if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
+    if (parsed.pathname === "/watch") {
+      videoId = parsed.searchParams.get("v") || "";
+    } else if (parsed.pathname.startsWith("/live/") || parsed.pathname.startsWith("/shorts/") || parsed.pathname.startsWith("/embed/")) {
+      videoId = parsed.pathname.split("/").filter(Boolean)[1] || "";
+    }
+  }
+
+  videoId = String(videoId || "").replace(/[^a-zA-Z0-9_-]/g, "");
+  if (!videoId) return "";
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&rel=0&modestbranding=1`;
+}
+
+function renderLiveStreamMedia(url, title, index = 0, className = "sf-media") {
+  if (isNativeLiveUrl(url)) {
+    return `
+    <a class="sf-live-link ${escapeHtml(className)}" href="${escapeHtml(url)}">
+      <span class="sf-live-badge">LIVE</span>
+      <strong>${escapeHtml(title || "Tapzy Live")}</strong>
+      <em>Tap to join live</em>
+    </a>`;
+  }
+
+  const embedUrl = youtubeEmbedUrl(url);
+  const safeClass = escapeHtml(className);
+  if (embedUrl) {
+    return `<iframe class="${safeClass} sf-live-embed" src="${escapeHtml(embedUrl)}" title="${escapeHtml(title || "Tapzy live stream")}" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen loading="${index < 2 ? "eager" : "lazy"}"></iframe>`;
+  }
+
+  return `
+  <a class="sf-live-link ${safeClass}" href="${escapeHtml(url)}" target="_blank" rel="noopener">
+    <span class="sf-live-badge">LIVE</span>
+    <strong>${escapeHtml(title || "Open live stream")}</strong>
+    <em>Tap to watch live</em>
+  </a>`;
+}
+
+function configuredCreatorStreams() {
+  const raw = String(process.env.TAPZY_CREATOR_STREAMS || "").trim();
+  if (!raw) return [];
+  return raw
+    .split(";")
+    .map((item, index) => {
+      const [titleRaw, urlRaw, categoryRaw] = item.split("|").map((part) => String(part || "").trim());
+      if (!titleRaw || !isLiveStreamUrl(urlRaw)) return null;
+      return {
+        id: `creator-live-${index}`,
+        title: titleRaw,
+        category: categoryRaw || "Creator Live",
+        description: "Featured creator live stream playing now on Tapzy.",
+        venueName: "YouTube Live",
+        city: "Live Now",
+        liveUrl: urlRaw,
+        startAt: new Date(Date.now() + index * 30000),
+      };
+    })
+    .filter(Boolean);
+}
+
 
 
 function storyRing(profile, storyCount, hasLiveStory) {
@@ -180,6 +269,16 @@ function storyComposer(currentProfile, upcomingEvents) {
 
         </div>
 
+        <div class="stories-field stories-field-full stories-live-field">
+
+          <label>Live stream (optional)</label>
+
+          <input name="liveUrl" type="url" inputmode="url" placeholder="Paste a YouTube Live, Twitch, Kick, or stream link" data-live-url />
+
+          <div class="stories-event-hint">Use this when you want the story to open as a live stream. Uploading media will take priority if both are added.</div>
+
+        </div>
+
 
 
         <div class="stories-preview-card" data-story-preview>
@@ -243,6 +342,8 @@ function storyComposer(currentProfile, upcomingEvents) {
 
       <div class="stories-create-actions">
 
+        <a class="stories-btn stories-btn-live" href="${currentProfile ? "/stories/live/new" : "/auth"}">Go Live</a>
+
         <button class="stories-btn stories-btn-bright" type="submit" data-story-submit>Post Story</button>
 
         <span class="stories-post-status" data-story-status></span>
@@ -263,12 +364,17 @@ function profileStoryCard(profile, stories, currentProfile) {
   const previewUrl = firstStory?.mediaUrl || "";
 
   const previewIsVideo = isVideoUrl(previewUrl);
+  const previewIsLive = firstStory?.type === "live" && isLiveStreamUrl(previewUrl);
 
 
 
   const mediaHtml = previewUrl
 
-    ? previewIsVideo
+    ? previewIsLive
+
+      ? `<div class="stories-profile-preview-fallback">LIVE</div>`
+
+      : previewIsVideo
 
       ? `<video class="stories-profile-preview-media" src="${escapeHtml(previewUrl)}" muted playsinline></video>`
 
@@ -341,6 +447,57 @@ function compactFeedCount(value) {
 
 function tapzyMarkImg(className = "tapzy-mark") {
   return `<img class="${escapeHtml(className)}" src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />`;
+}
+
+function eventStreamTone(event = {}) {
+  const text = `${event.category || ""} ${event.title || ""} ${event.description || ""}`.toLowerCase();
+  if (/(box|boxing|fight|mma|ufc|wrestl)/.test(text)) return "Fight Night";
+  if (/(sport|game|basket|hockey|soccer|football|baseball|tennis|race)/.test(text)) return "Live Sports";
+  if (/(dance|party|club|nightlife|dj|lounge)/.test(text)) return "Live Party";
+  if (/(concert|music|festival|artist|band)/.test(text)) return "Live Music";
+  return "Live Event";
+}
+
+function eventStreamGradient(index = 0) {
+  const gradients = [
+    "radial-gradient(circle at 30% 18%,rgba(45,118,255,.42),transparent 34%),radial-gradient(circle at 78% 30%,rgba(255,80,140,.26),transparent 36%),linear-gradient(180deg,#101827,#02040a)",
+    "radial-gradient(circle at 25% 20%,rgba(255,184,77,.30),transparent 34%),radial-gradient(circle at 80% 24%,rgba(60,120,255,.38),transparent 38%),linear-gradient(180deg,#141017,#020204)",
+    "radial-gradient(circle at 28% 18%,rgba(125,220,255,.25),transparent 36%),radial-gradient(circle at 80% 32%,rgba(102,76,255,.35),transparent 38%),linear-gradient(180deg,#0b1220,#010205)",
+  ];
+  return gradients[Math.abs(index) % gradients.length];
+}
+
+function fallbackEventStreams() {
+  const now = Date.now();
+  return [
+    {
+      id: "virtual-sports-live",
+      title: "Live Sports Stream",
+      category: "Sports",
+      description: "Game-day energy, live crowd moments, and sports happening now.",
+      venueName: "Tapzy Live",
+      city: "Live Now",
+      startAt: new Date(now),
+    },
+    {
+      id: "virtual-fight-night",
+      title: "Fight Night Watch Party",
+      category: "Boxing",
+      description: "Boxing, fight-night reactions, and big-screen watch party moments.",
+      venueName: "Tapzy Live",
+      city: "Live Now",
+      startAt: new Date(now + 60000),
+    },
+    {
+      id: "virtual-party-live",
+      title: "Live Party Feed",
+      category: "Dances",
+      description: "Parties, DJs, dance floors, and nightlife energy from Tapzy.",
+      venueName: "Tapzy Live",
+      city: "Live Now",
+      startAt: new Date(now + 120000),
+    },
+  ];
 }
 
 
@@ -620,6 +777,10 @@ router.get("/stories", async (req, res) => {
       .stories-create-actions{
 
         margin-top:16px;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
 
       }
 
@@ -667,6 +828,14 @@ router.get("/stories", async (req, res) => {
 
           linear-gradient(180deg, rgba(40,92,210,.92), rgba(18,41,92,.98));
 
+      }
+
+      .stories-btn-live{
+        border:none;
+        background:
+          radial-gradient(circle at 20% 0%, rgba(255,255,255,.22), transparent 42%),
+          linear-gradient(135deg, #31d6ff, #2d6bff 48%, #123fbd);
+        box-shadow:0 0 24px rgba(47,118,255,.30);
       }
 
 
@@ -1261,6 +1430,7 @@ router.get("/stories", async (req, res) => {
         const textarea = form.querySelector('textarea[name="text"]');
         const count = form.querySelector('[data-caption-count]');
         const file = form.querySelector('input[name="storyMedia"]');
+        const liveUrl = form.querySelector('[data-live-url]');
         const label = form.querySelector('[data-upload-label]');
         const preview = form.querySelector('[data-story-preview]');
         const status = form.querySelector('[data-story-status]');
@@ -1326,6 +1496,16 @@ router.get("/stories", async (req, res) => {
             if (!selected) return;
             if (label) label.textContent = selected.name || 'Media selected';
             renderPreview(selected);
+          });
+        }
+
+        if (liveUrl && preview) {
+          liveUrl.addEventListener('input', function(){
+            const selected = file && file.files && file.files[0];
+            const value = (liveUrl.value || '').trim();
+            if (!value || selected) return;
+            clearPreviewUrl();
+            preview.innerHTML = '<div class="stories-preview-empty">Live stream story ready</div>';
           });
         }
 
@@ -1423,6 +1603,8 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
     const text = String(req.body.text || "").trim() || null;
 
     const requestedType = String(req.body.type || "").trim().toLowerCase();
+    const requestedLiveUrl = String(req.body.liveUrl || "").trim();
+    const chunkedMediaUrl = String(req.body.tapzyChunkedMediaUrl || "").trim();
 
     let eventId = String(req.body.eventId || "").trim() || null;
     const manualEventTitle = String(req.body.manualEventTitle || "").trim();
@@ -1469,13 +1651,23 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
       mediaUrl = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
 
+    } else if (chunkedMediaUrl) {
+
+      mediaUrl = chunkedMediaUrl;
+
+    } else if (requestedLiveUrl && isLiveStreamUrl(requestedLiveUrl)) {
+
+      mediaUrl = requestedLiveUrl;
+
     }
 
 
 
     let type = "text";
 
-    if (requestedType === "video") type = "video";
+    if (!req.file && requestedLiveUrl && mediaUrl) type = "live";
+
+    else if (requestedType === "video") type = "video";
 
     else if (requestedType === "image") type = "image";
 
@@ -1544,6 +1736,289 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
 });
 
+router.get("/stories/live/new", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.redirect("/auth");
+
+    const displayName = currentProfile.name || currentProfile.username || "Tapzy creator";
+    res.send(`<!doctype html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      <meta name="theme-color" content="#000000" />
+      <title>Go Live · Tapzy</title>
+      <style>
+        :root{color-scheme:dark;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+        *{box-sizing:border-box}
+        html,body{margin:0;width:100%;height:100%;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+        .tl-start{position:relative;height:100%;display:grid;place-items:center;padding:calc(var(--safe-top) + 24px) 22px calc(var(--safe-bottom) + 24px);background:radial-gradient(circle at 50% 22%,rgba(47,118,255,.32),transparent 34%),linear-gradient(180deg,#080b12,#000)}
+        .tl-card{width:min(440px,100%);padding:26px;border-radius:34px;border:1px solid rgba(255,255,255,.10);background:linear-gradient(180deg,rgba(14,18,28,.92),rgba(2,3,6,.98));box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 48px rgba(47,118,255,.16);text-align:center}
+        .tl-badge{display:inline-flex;margin-bottom:18px;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);font-size:11px;font-weight:950;letter-spacing:.18em;color:#dce8ff}
+        h1{margin:0 0 10px;font-size:44px;line-height:.98;letter-spacing:-.06em}
+        p{margin:0 auto 22px;max-width:310px;color:rgba(226,236,255,.72);font-size:16px;line-height:1.4}
+        input{width:100%;min-height:54px;margin:0 0 14px;padding:0 16px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:#05070c;color:#fff;font:inherit;font-weight:750;outline:none}
+        button,a{font:inherit}
+        .tl-primary{width:100%;min-height:54px;border:0;border-radius:18px;background:linear-gradient(135deg,#31d6ff,#2d6bff 48%,#123fbd);color:#fff;font-weight:950;font-size:17px;box-shadow:0 0 34px rgba(47,118,255,.38);cursor:pointer}
+        .tl-secondary{display:inline-flex;margin-top:14px;color:rgba(255,255,255,.70);text-decoration:none;font-weight:800}
+      </style>
+    </head>
+    <body>
+      <main class="tl-start">
+        <form class="tl-card" method="POST" action="/stories/live/start">
+          <div class="tl-badge">TAPZY LIVE</div>
+          <h1>Go Live</h1>
+          <p>Start a real WebRTC live story from your camera. Anyone can join from the story feed.</p>
+          <input name="title" maxlength="120" placeholder="${escapeHtml(displayName)} is live" autocomplete="off" />
+          <button class="tl-primary" type="submit">Start Live</button>
+          <a class="tl-secondary" href="/stories">Back</a>
+        </form>
+      </main>
+    </body>
+    </html>`);
+  } catch (error) {
+    console.error("Go live page error:", error);
+    res.status(500).send("Go live error");
+  }
+});
+
+router.post("/stories/live/start", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.redirect("/auth");
+
+    const title = String(req.body.title || "").trim() || `${currentProfile.name || currentProfile.username || "Tapzy creator"} is live`;
+    const story = await prisma.story.create({
+      data: {
+        profileId: currentProfile.id,
+        type: "live",
+        mediaUrl: "",
+        text: title.slice(0, 120),
+        expiresAt: expiresIn24Hours(),
+      },
+    });
+
+    await prisma.story.update({
+      where: { id: story.id },
+      data: { mediaUrl: `/stories/live/${story.id}` },
+    });
+
+    res.redirect(`/stories/live/${story.id}?host=1`);
+  } catch (error) {
+    console.error("Start live error:", error);
+    res.status(500).send("Start live error");
+  }
+});
+
+router.post("/stories/live/:id/end", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false });
+    const id = String(req.params.id || "").trim();
+    const story = await prisma.story.findFirst({ where: { id, profileId: currentProfile.id, type: "live" } });
+    if (!story) return res.status(404).json({ ok: false });
+    await prisma.story.update({ where: { id }, data: { expiresAt: new Date() } });
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("End live error:", error);
+    res.status(500).json({ ok: false });
+  }
+});
+
+router.get("/stories/live/:id", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile || null;
+    const id = String(req.params.id || "").trim();
+    const story = await prisma.story.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
+    if (!story || story.type !== "live") return res.status(404).send("Live not found");
+
+    const isHost = !!(currentProfile && currentProfile.id === story.profileId && req.query.host === "1");
+    const displayName = story.profile?.name || story.profile?.username || "Tapzy Live";
+    const viewerName = currentProfile?.name || currentProfile?.username || "Viewer";
+
+    res.send(`<!doctype html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      <meta name="theme-color" content="#000000" />
+      <title>${escapeHtml(story.text || "Tapzy Live")}</title>
+      <style>
+        :root{color-scheme:dark;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+        *{box-sizing:border-box}
+        html,body{margin:0;width:100%;height:100%;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+        button,a{font:inherit;-webkit-tap-highlight-color:transparent}
+        .tl-room{position:relative;width:100%;height:100%;background:#000;overflow:hidden}
+        video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05070c}
+        .tl-wait{position:absolute;inset:0;display:grid;place-items:center;padding:28px;text-align:center;background:radial-gradient(circle at 50% 24%,rgba(47,118,255,.28),transparent 34%),linear-gradient(180deg,#080b12,#000)}
+        .tl-wait-card{max-width:340px}
+        .tl-live-pill{position:fixed;z-index:5;top:calc(var(--safe-top) + 18px);left:16px;display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border-radius:999px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(14px);font-size:12px;font-weight:950;letter-spacing:.12em}
+        .tl-dot{width:8px;height:8px;border-radius:50%;background:#ff2d55;box-shadow:0 0 16px #ff2d55;animation:pulse 1.2s ease-in-out infinite}
+        @keyframes pulse{50%{transform:scale(1.35);opacity:.65}}
+        .tl-top{position:fixed;z-index:5;top:calc(var(--safe-top) + 18px);right:14px;display:flex;gap:10px}
+        .tl-icon{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.42);color:#fff;display:grid;place-items:center;text-decoration:none;backdrop-filter:blur(14px)}
+        .tl-copy{position:fixed;z-index:5;left:18px;right:86px;bottom:calc(var(--safe-bottom) + 26px);text-shadow:0 2px 16px rgba(0,0,0,.72)}
+        .tl-copy strong{display:block;font-size:19px;font-weight:950;margin-bottom:6px}
+        .tl-copy p{margin:0;color:rgba(255,255,255,.82);font-size:14px}
+        .tl-actions{position:fixed;z-index:6;right:12px;bottom:calc(var(--safe-bottom) + 28px);display:flex;flex-direction:column;gap:12px}
+        .tl-action{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.20);background:rgba(0,0,0,.46);color:#fff;font-size:20px;font-weight:950;backdrop-filter:blur(14px);cursor:pointer}
+        .tl-end{background:linear-gradient(135deg,#ff3b5f,#b5002f);border:0}
+        .tl-status{position:fixed;z-index:7;left:50%;bottom:calc(var(--safe-bottom) + 108px);transform:translateX(-50%);padding:9px 12px;border-radius:999px;background:rgba(0,0,0,.54);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.86);font-size:12px;font-weight:850;white-space:nowrap}
+      </style>
+    </head>
+    <body>
+      <main class="tl-room" data-story-id="${escapeHtml(story.id)}" data-role="${isHost ? "host" : "viewer"}" data-name="${escapeHtml(viewerName)}">
+        <video id="liveVideo" ${isHost ? "muted" : "autoplay"} playsinline webkit-playsinline></video>
+        <div class="tl-wait" id="waitLayer">
+          <div class="tl-wait-card">
+            <div class="tl-live-pill" style="position:static;margin:0 auto 18px;width:max-content"><span class="tl-dot"></span>LIVE</div>
+            <h1>${isHost ? "Preparing your live" : "Joining live"}</h1>
+            <p>${isHost ? "Allow camera and microphone to start broadcasting." : "Waiting for the host video."}</p>
+          </div>
+        </div>
+        <div class="tl-live-pill"><span class="tl-dot"></span>LIVE</div>
+        <div class="tl-top"><a class="tl-icon" href="/stories/feed" aria-label="Close">×</a></div>
+        <div class="tl-copy"><strong>${escapeHtml(displayName)}</strong><p>${escapeHtml(story.text || "Tapzy Live")}</p></div>
+        <div class="tl-actions">
+          ${isHost ? `<button class="tl-action" type="button" data-flip>↺</button><button class="tl-action" type="button" data-mute>🎙</button><button class="tl-action tl-end" type="button" data-end>×</button>` : `<button class="tl-action" type="button" data-sound>🔊</button>`}
+        </div>
+        <div class="tl-status" id="liveStatus">${isHost ? "Starting camera…" : "Connecting…"}</div>
+      </main>
+      <script src="/socket.io/socket.io.js"></script>
+      <script>
+        (function(){
+          const room = document.querySelector('.tl-room');
+          const storyId = room.getAttribute('data-story-id');
+          const role = room.getAttribute('data-role');
+          const name = room.getAttribute('data-name') || 'Viewer';
+          const video = document.getElementById('liveVideo');
+          const wait = document.getElementById('waitLayer');
+          const status = document.getElementById('liveStatus');
+          const socket = io();
+          const peers = new Map();
+          let localStream = null;
+          let facingMode = 'user';
+          const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
+
+          function setStatus(text){ if (status) status.textContent = text; }
+          function hideWait(){ if (wait) wait.style.display = 'none'; }
+
+          async function getCamera(){
+            if (localStream) localStream.getTracks().forEach(track => track.stop());
+            localStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode }, audio:true });
+            video.srcObject = localStream;
+            video.muted = true;
+            await video.play().catch(function(){});
+            hideWait();
+            setStatus('You are live');
+          }
+
+          function peerFor(id){
+            if (peers.has(id)) return peers.get(id);
+            const pc = new RTCPeerConnection(config);
+            peers.set(id, pc);
+            pc.onicecandidate = event => {
+              if (event.candidate) socket.emit('live:ice', { storyId, to:id, candidate:event.candidate });
+            };
+            pc.ontrack = event => {
+              if (role !== 'host') {
+                video.srcObject = event.streams[0];
+                video.muted = false;
+                video.play().catch(function(){});
+                hideWait();
+                setStatus('Live now');
+              }
+            };
+            if (role === 'host' && localStream) {
+              localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            }
+            return pc;
+          }
+
+          async function startHost(){
+            await getCamera();
+            socket.emit('live:join', { storyId, role:'host', name });
+          }
+
+          async function startViewer(){
+            socket.emit('live:join', { storyId, role:'viewer', name });
+          }
+
+          socket.on('connect', function(){
+            if (role === 'host') startHost().catch(function(){ setStatus('Camera permission needed'); });
+            else startViewer();
+          });
+
+          socket.on('live:viewer-joined', async function(payload){
+            if (role !== 'host') return;
+            const viewerId = payload.viewerId;
+            const pc = peerFor(viewerId);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            socket.emit('live:offer', { storyId, to:viewerId, sdp:offer });
+            setStatus('Viewer connected');
+          });
+
+          socket.on('live:offer', async function(payload){
+            if (role === 'host') return;
+            const pc = peerFor(payload.from);
+            await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('live:answer', { storyId, to:payload.from, sdp:answer });
+          });
+
+          socket.on('live:answer', async function(payload){
+            const pc = peers.get(payload.from);
+            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          });
+
+          socket.on('live:ice', async function(payload){
+            const pc = peerFor(payload.from);
+            try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
+          });
+
+          socket.on('live:waiting', function(){ setStatus('Waiting for host'); });
+          socket.on('live:ended', function(){
+            setStatus('Live ended');
+            if (wait) wait.style.display = 'grid';
+          });
+
+          document.addEventListener('click', async function(event){
+            if (event.target.closest('[data-sound]')) {
+              video.muted = !video.muted;
+              return;
+            }
+            if (event.target.closest('[data-mute]') && localStream) {
+              localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+              return;
+            }
+            if (event.target.closest('[data-flip]')) {
+              facingMode = facingMode === 'user' ? 'environment' : 'user';
+              await getCamera().catch(function(){});
+              return;
+            }
+            if (event.target.closest('[data-end]')) {
+              socket.emit('live:end', { storyId });
+              fetch('/stories/live/' + encodeURIComponent(storyId) + '/end', { method:'POST' }).finally(function(){
+                location.href = '/stories/feed';
+              });
+            }
+          });
+        })();
+      </script>
+    </body>
+    </html>`);
+  } catch (error) {
+    console.error("Live room error:", error);
+    res.status(500).send("Live room error");
+  }
+});
+
 router.get("/stories/feed", async (req, res) => {
   try {
     const currentProfile = req.currentProfile || null;
@@ -1572,6 +2047,37 @@ router.get("/stories/feed", async (req, res) => {
       take: 100,
     });
 
+    let eventStreams = [];
+    let fallbackVideos = [];
+    if (!stories.length) {
+      eventStreams = await prisma.eventFinderItem.findMany({
+        where: {
+          OR: [{ startAt: null }, { startAt: { gte: now } }],
+        },
+        orderBy: [{ startAt: "asc" }, { createdAt: "desc" }],
+        take: 18,
+      });
+      eventStreams = [...configuredCreatorStreams(), ...eventStreams];
+      if (!eventStreams.length) eventStreams = fallbackEventStreams();
+
+      fallbackVideos = await prisma.story.findMany({
+        where: {
+          mediaUrl: { not: null },
+          OR: [
+            { type: "video" },
+            { mediaUrl: { contains: ".mp4" } },
+            { mediaUrl: { contains: ".mov" } },
+            { mediaUrl: { contains: ".webm" } },
+            { mediaUrl: { contains: ".m4v" } },
+            { mediaUrl: { contains: "/video/" } },
+          ],
+        },
+        include: { profile: true, event: true },
+        orderBy: [{ createdAt: "desc" }],
+        take: 18,
+      });
+    }
+
     if (currentProfile && stories.length) {
       const unseen = await prisma.storyView.findMany({
         where: {
@@ -1589,11 +2095,12 @@ router.get("/stories/feed", async (req, res) => {
       }
     }
 
-    const slides = stories.map((story, index) => {
+    const storySlides = stories.map((story, index) => {
       const profile = story.profile || {};
       const username = profile.username || "tapzy";
       const displayName = profile.name || `@${username}`;
       const isVideo = story.mediaUrl && isVideoUrl(story.mediaUrl);
+      const isLive = story.mediaUrl && story.type === "live" && (isLiveStreamUrl(story.mediaUrl) || isNativeLiveUrl(story.mediaUrl));
       const isFollowing =
         currentProfile &&
         (currentProfile.id === story.profileId || followingIds.has(story.profileId));
@@ -1602,12 +2109,16 @@ router.get("/stories/feed", async (req, res) => {
         ? `<img src="${escapeHtml(profile.photo)}" alt="" />`
         : `<span>${escapeHtml((displayName[0] || "T").toUpperCase())}</span>`;
       const media = story.mediaUrl
-        ? isVideo
+        ? isLive
+          ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
+          : isVideo
           ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
         ? `<a class="sf-event" href="/events#event-${escapeHtml(story.event.id)}">${escapeHtml(story.event.title)}</a>`
+        : isLive
+        ? `<span class="sf-event">LIVE</span>`
         : "";
       const ageHours = Math.max(0, Math.floor((Date.now() - new Date(story.createdAt).getTime()) / 3600000));
       const age = ageHours < 1 ? "Just now" : `${ageHours}h`;
@@ -1651,8 +2162,64 @@ router.get("/stories/feed", async (req, res) => {
       </article>`;
     }).join("");
 
+    const eventSlides = !stories.length
+      ? eventStreams.map((event, index) => {
+        const title = event.title || "Live Event Stream";
+        const category = eventStreamTone(event);
+        const location = event.venueName || event.address || event.city || "Live now";
+        const liveUrl = String(event.liveUrl || "").trim();
+        const eventHref = liveUrl && isLiveStreamUrl(liveUrl)
+          ? liveUrl
+          : event.id && !String(event.id).startsWith("virtual-")
+          ? `/events#event-${escapeHtml(event.id)}`
+          : "/events";
+        const eventHrefAttr = escapeHtml(eventHref);
+        const eventMedia = String(event.imageUrl || "").trim();
+        const eventVideo = eventMedia && isVideoUrl(eventMedia) ? eventMedia : "";
+        const recycledVideo = fallbackVideos.length
+          ? String(fallbackVideos[index % fallbackVideos.length].mediaUrl || "").trim()
+          : "";
+        const videoUrl = eventVideo || recycledVideo;
+        const media = liveUrl && isLiveStreamUrl(liveUrl)
+          ? renderLiveStreamMedia(liveUrl, title, index)
+          : videoUrl
+          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
+          : `<div class="sf-virtual-stream sf-virtual-motion" style="--stream-bg:${escapeHtml(eventStreamGradient(index))}"><span>${escapeHtml(category)}</span></div>`;
+        const when = event.startAt ? formatPrettyLocal(event.startAt) : "Live now";
+        const text = event.description || `${category} from Tapzy events happening now.`;
+
+        return `
+        <article class="sf-slide sf-stream-slide" data-story="event-${escapeHtml(event.id || index)}" data-following="0" data-event="1">
+          <div class="sf-media-wrap">${media}<div class="sf-shade"></div></div>
+          <div class="sf-copy">
+            <a class="sf-event" href="${eventHrefAttr}">${escapeHtml(category)}</a>
+            <a class="sf-author" href="${eventHrefAttr}">${escapeHtml(title)}</a>
+            <p>${escapeHtml(text)}</p>
+            <div class="sf-meta">${escapeHtml(when)} Â· ${escapeHtml(location)}</div>
+          </div>
+          <aside class="sf-actions" aria-label="Live event actions">
+            <a class="sf-avatar sf-avatar-tapzy" href="/events">T</a>
+            <a class="sf-action" href="${eventHrefAttr}" aria-label="Open event">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 0 0 4v6h16v-6a2 2 0 0 0 0-4V5H4v2Z"/><path d="M13 5v12"/></svg>
+              <span>Open</span>
+            </a>
+            <button class="sf-action" type="button" data-share="${eventHrefAttr}" aria-label="Share event stream">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 16-8-6 16-3-6-7-2Zm7 2 9-10"/></svg>
+              <span>Share</span>
+            </button>
+            ${videoUrl ? `
+            <button class="sf-sound is-active" type="button" data-sound aria-label="Mute stream">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12-1c1.4 1.2 1.4 6.8 0 8m3-11c3 3 3 11 0 14"/></svg>
+            </button>` : ""}
+          </aside>
+        </article>`;
+      }).join("")
+      : "";
+
+    const slides = storySlides || eventSlides;
+
     const profileHref = currentProfile?.username ? `/u/${currentProfile.username}` : "/auth";
-    const emptyMessage = stories.length
+    const emptyMessage = slides
       ? ""
       : `<div class="sf-empty"><div class="sf-empty-mark">${tapzyMarkImg("tapzy-mark tapzy-mark-empty")}</div><h1>No live stories yet</h1><p>Be the first to share what is happening.</p></div>`;
 
@@ -1676,6 +2243,21 @@ router.get("/stories/feed", async (req, res) => {
         .sf-slide[hidden]{display:none}
         .sf-media-wrap,.sf-media,.sf-shade{position:absolute;inset:0;width:100%;height:100%}
         .sf-media{object-fit:cover;background:#111}
+        .sf-live-embed{border:0;background:#000}
+        .sf-live-link{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:44px;text-decoration:none;color:#fff;background:radial-gradient(circle at 28% 24%,rgba(47,118,255,.38),transparent 36%),radial-gradient(circle at 82% 34%,rgba(255,255,255,.12),transparent 34%),linear-gradient(180deg,#101827,#02040a)}
+        .sf-live-link::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.16) .7px,transparent .7px);background-size:10px 10px;opacity:.14}
+        .sf-live-link strong,.sf-live-link em,.sf-live-badge{position:relative;z-index:1}
+        .sf-live-link strong{max-width:11ch;font-size:clamp(42px,13vw,72px);line-height:.92;font-weight:950;letter-spacing:-.075em;text-transform:uppercase;text-shadow:0 18px 48px rgba(0,0,0,.65)}
+        .sf-live-link em{font-style:normal;color:rgba(226,236,255,.78);font-weight:800}
+        .sf-live-badge{display:inline-flex;width:max-content;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.20);background:rgba(255,255,255,.12);font-size:11px;font-weight:950;letter-spacing:.18em}
+        .sf-virtual-stream{position:absolute;inset:0;display:grid;place-items:center;padding:44px;background:var(--stream-bg);overflow:hidden;text-align:center}
+        .sf-virtual-stream::before{content:"";position:absolute;inset:-12%;background-image:radial-gradient(rgba(255,255,255,.18) .7px,transparent .7px);background-size:10px 10px;opacity:.16}
+        .sf-virtual-stream::after{content:"LIVE";position:absolute;top:calc(var(--safe-top) + 96px);left:20px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-size:11px;font-weight:900;letter-spacing:.18em;color:#fff}
+        .sf-virtual-motion{animation:sfStreamDrift 7s ease-in-out infinite alternate}
+        .sf-virtual-motion::before{animation:sfStreamNoise 12s linear infinite}
+        .sf-virtual-stream span{position:relative;z-index:1;max-width:10ch;font-size:clamp(42px,14vw,78px);line-height:.9;font-weight:950;letter-spacing:-.08em;text-transform:uppercase;text-shadow:0 16px 44px rgba(0,0,0,.62)}
+        @keyframes sfStreamDrift{0%{background-position:0 0;filter:saturate(1)}100%{background-position:22px -28px;filter:saturate(1.18) brightness(1.05)}}
+        @keyframes sfStreamNoise{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-28px,24px,0)}}
         .sf-shade{pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.42) 0,transparent 24%,transparent 54%,rgba(0,0,0,.12) 65%,rgba(0,0,0,.9) 100%)}
         .sf-text-story{position:absolute;inset:0;display:grid;place-items:center;padding:52px 44px 180px;background:radial-gradient(circle at 30% 20%,#27376b 0,#14172a 35%,#06070c 78%);font-size:clamp(28px,7vw,48px);font-weight:850;line-height:1.08;text-align:center}
         .sf-top{position:fixed;z-index:20;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(var(--safe-top) + 18px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.54),transparent)}
@@ -1694,6 +2276,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-event{display:inline-flex;margin-bottom:11px;padding:7px 10px;border-radius:9px;background:rgba(12,18,35,.64);backdrop-filter:blur(12px);color:#fff;text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.18)}
         .sf-actions{position:absolute;z-index:5;right:10px;bottom:calc(var(--safe-bottom) + 76px);display:flex;flex-direction:column;align-items:center;gap:16px;width:62px}
         .sf-avatar{width:48px;height:48px;border:2px solid #fff;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:linear-gradient(180deg,#111827,#02040a);color:#fff;text-decoration:none;font-weight:900}
+        .sf-avatar-tapzy{background:linear-gradient(145deg,#2f76ff,#1145ad);box-shadow:0 0 24px rgba(47,118,255,.34)}
         .sf-avatar img{width:100%;height:100%;object-fit:cover}
         .sf-action-form{margin:0}
         .sf-action{display:flex;flex-direction:column;align-items:center;gap:3px;width:58px;padding:0;border:0;background:none;color:#fff;text-decoration:none;font-size:12px;font-weight:700;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
@@ -1816,7 +2399,8 @@ router.get("/stories/feed", async (req, res) => {
             }
             var share = event.target.closest('[data-share]');
             if (share) {
-              var url = location.origin + share.getAttribute('data-share');
+              var shareTarget = share.getAttribute('data-share') || '';
+              var url = /^https?:\/\//i.test(shareTarget) ? shareTarget : location.origin + shareTarget;
               if (navigator.share) navigator.share({ title: 'Tapzy Story', url: url }).catch(function(){});
               else navigator.clipboard.writeText(url).then(function(){
                 var label = share.querySelector('span');
@@ -2064,10 +2648,15 @@ router.get("/stories/:username", async (req, res) => {
       .map((story, index) => {
 
         const isVideoStory = story.mediaUrl && isVideoUrl(story.mediaUrl);
+        const isLiveStory = story.mediaUrl && story.type === "live" && (isLiveStreamUrl(story.mediaUrl) || isNativeLiveUrl(story.mediaUrl));
 
         const media = story.mediaUrl
 
-          ? isVideoStory
+          ? isLiveStory
+
+            ? renderLiveStreamMedia(story.mediaUrl, story.text || "Tapzy live story", index, "story-view-media")
+
+            : isVideoStory
 
             ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay playsinline webkit-playsinline preload="metadata"></video>`
 
@@ -2470,6 +3059,49 @@ router.get("/stories/:username", async (req, res) => {
 
         background:#0b0e16;
 
+      }
+
+      .story-view-media.sf-live-embed{
+        border:0;
+      }
+
+      .story-view-media.sf-live-link{
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:flex-start;
+        gap:10px;
+        padding:34px;
+        color:#fff;
+        text-decoration:none;
+        background:radial-gradient(circle at 28% 24%,rgba(47,118,255,.38),transparent 36%),radial-gradient(circle at 82% 34%,rgba(255,255,255,.12),transparent 34%),linear-gradient(180deg,#101827,#02040a);
+      }
+
+      .story-view-media.sf-live-link strong{
+        max-width:11ch;
+        font-size:clamp(40px,12vw,70px);
+        line-height:.92;
+        font-weight:950;
+        letter-spacing:-.075em;
+        text-transform:uppercase;
+      }
+
+      .story-view-media.sf-live-link em{
+        font-style:normal;
+        color:rgba(226,236,255,.78);
+        font-weight:800;
+      }
+
+      .story-view-media .sf-live-badge{
+        display:inline-flex;
+        width:max-content;
+        padding:7px 10px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.20);
+        background:rgba(255,255,255,.12);
+        font-size:11px;
+        font-weight:950;
+        letter-spacing:.18em;
       }
 
 
