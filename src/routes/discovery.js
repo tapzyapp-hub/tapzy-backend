@@ -1702,6 +1702,8 @@ router.get("/discovery/:username", async (req, res) => {
 
         storiesBottomNav: true,
 
+        storiesTopNavActive: "discover",
+
       })
 
     );
