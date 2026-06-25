@@ -14,7 +14,7 @@
     if (!file) return false;
     const type = String(file.type || "").toLowerCase();
     const name = String(file.name || "").toLowerCase();
-    return type.indexOf("video/") === 0 || /\.(mp4|mov|m4v|webm)$/i.test(name);
+    return type.indexOf("video/") === 0 || /\.(mp4|mov|m4v|webm|3gp|3gpp|avi|hevc)$/i.test(name);
   }
 
   function supportsChunkedSubmit(form) {
@@ -382,10 +382,16 @@
     const hasVideo = Array.from(form.querySelectorAll('input[type="file"]')).some((input) => isVideoFile(input.files && input.files[0]));
     if (!hasVideo) return;
 
+    form.dataset.tapzyVideoIntercepting = "1";
     event.preventDefault();
     prepareForm(form, submitter).then(() => {
-      if (form.requestSubmit) form.requestSubmit(submitter || undefined);
+      form.dataset.tapzyVideoIntercepting = "0";
+      if (submitter) submitter.disabled = false;
+      if (form.requestSubmit) form.requestSubmit(submitter && !submitter.disabled ? submitter : undefined);
       else form.submit();
+    }).catch(() => {
+      form.dataset.tapzyVideoIntercepting = "0";
+      if (submitter) submitter.disabled = false;
     });
   }, true);
 

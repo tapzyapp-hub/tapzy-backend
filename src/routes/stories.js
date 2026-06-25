@@ -1542,6 +1542,7 @@ router.get("/stories", async (req, res) => {
         }
 
         form.addEventListener('submit', function(){
+          if (form.dataset.tapzyVideoIntercepting === '1' && form.dataset.tapzyVideoPrepared !== '1') return;
           if (status) status.textContent = 'Preparing story…';
           if (submit) {
             submit.disabled = true;
