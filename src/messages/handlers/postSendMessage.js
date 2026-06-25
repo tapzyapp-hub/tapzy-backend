@@ -23,10 +23,6 @@ function isVideoUpload(file) {
     || [".mp4", ".mov", ".webm", ".m4v"].includes(ext);
 }
 
-function isVideoUrl(value) {
-  return /\.(mp4|mov|m4v|webm)(?:$|\?)/i.test(String(value || ""));
-}
-
 module.exports = async function postSendMessage(req, res) {
   try {
     const currentProfile = req.currentProfile;
@@ -39,12 +35,11 @@ module.exports = async function postSendMessage(req, res) {
 
     const id = String(req.params.id || "").trim();
     const text = String(req.body.text || "").trim() || null;
-    const chunkedMediaUrl = String(req.body.tapzyChunkedMediaUrl || "").trim();
     const mediaUrl = req.file
       ? publicAbsoluteUrl(req, `/uploads/${req.file.filename}`)
-      : chunkedMediaUrl || null;
+      : null;
     const audioUpload = isAudioUpload(req.file);
-    const videoUpload = (isVideoUpload(req.file) || isVideoUrl(chunkedMediaUrl)) && !audioUpload;
+    const videoUpload = isVideoUpload(req.file) && !audioUpload;
     const imageUrl = mediaUrl && !audioUpload ? mediaUrl : null;
     const audioUrl = mediaUrl && audioUpload ? mediaUrl : null;
 

@@ -975,7 +975,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
     ${extraHead}
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script defer src="/js/tapzy-performance.js"></script>
-    <script defer src="/js/tapzy-video-upload.js"></script>
 
     <style>
 

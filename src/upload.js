@@ -4,9 +4,7 @@ const multer = require("multer");
 const crypto = require("crypto");
 
 const uploadsDir = path.join(__dirname, "..", "public", "uploads");
-const chunkUploadsDir = path.join(__dirname, "..", "tmp", "chunk-uploads");
 fs.mkdirSync(uploadsDir, { recursive: true });
-fs.mkdirSync(chunkUploadsDir, { recursive: true });
 
 // One consistent safety limit for stories, messages, and future media uploads.
 // Long videos are supported when their compressed file size fits this limit.
@@ -41,17 +39,14 @@ function safeExtension(originalName = "", mimetype = "") {
   return ".jpg";
 }
 
-function safeUploadFilename(originalName = "", mimetype = "") {
-  const ext = safeExtension(originalName, mimetype);
-  return `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${ext}`;
-}
-
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (_req, file, cb) => {
-    cb(null, safeUploadFilename(file.originalname || "", file.mimetype || ""));
+    const ext = safeExtension(file.originalname || "", file.mimetype || "");
+    const name = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`;
+    cb(null, name);
   },
 });
 
@@ -89,9 +84,6 @@ const upload = multer({
 module.exports = {
   upload,
   uploadsDir,
-  chunkUploadsDir,
-  safeUploadFilename,
-  safeExtension,
   VIDEO_UPLOAD_MAX_MB,
   VIDEO_UPLOAD_MAX_BYTES,
 };

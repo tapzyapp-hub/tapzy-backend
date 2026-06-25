@@ -3039,7 +3039,7 @@ router.get("/u/:username", async (req, res) => {
             const video = frame.querySelector('video');
             const preview = frame.querySelector('[data-video-preview]');
             if (!video || !preview) return;
-            const markReady = function(){ if (video.dataset.previewSeeked === '1') frame.classList.add('is-ready'); };
+            const markReady = function(){ frame.classList.add('is-ready'); };
             const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
             const markPaused = function(){ frame.classList.remove('is-playing'); };
             const warmPreviewFrame = function(){
@@ -3051,27 +3051,23 @@ router.get("/u/:username", async (req, res) => {
                 video.preload = 'auto';
                 if (video.readyState === 0) video.load();
                 if (video.readyState >= 1 && !video.dataset.previewSeeked) {
-                  video.dataset.previewSeeked = 'pending';
-                  const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
-                  const target = Math.min(Math.max(0.65, duration * 0.08), Math.max(0.01, duration - 0.05));
+                  video.dataset.previewSeeked = '1';
+                  const target = Math.min(0.12, Math.max(0.01, (video.duration || 1) - 0.01));
                   video.currentTime = target;
                 }
               } catch (err) {}
             };
-            video.addEventListener('seeked', function(){
-              video.dataset.previewSeeked = '1';
-              frame.classList.add('is-ready');
-            });
             preview.addEventListener('click', function(){ video.play().catch(function(){}); });
             preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
             video.addEventListener('loadedmetadata', warmPreviewFrame, { once: true });
-            video.addEventListener('loadeddata', warmPreviewFrame, { once: true });
+            video.addEventListener('loadeddata', markReady, { once: true });
             video.addEventListener('canplay', markReady, { once: true });
+            video.addEventListener('seeked', markReady, { once: true });
             video.addEventListener('play', markPlaying);
             video.addEventListener('playing', markPlaying);
             video.addEventListener('pause', markPaused);
             warmPreviewFrame();
-            if (video.readyState >= 1) warmPreviewFrame();
+            if (video.readyState >= 2) markReady();
           });
         }
         if (document.readyState === 'loading') {
