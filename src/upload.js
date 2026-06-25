@@ -16,7 +16,7 @@ const VIDEO_UPLOAD_MAX_BYTES = VIDEO_UPLOAD_MAX_MB * 1024 * 1024;
 function safeExtension(originalName = "", mimetype = "") {
   const ext = path.extname(originalName).toLowerCase();
 
-  if ([".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v", ".3gp", ".3gpp", ".avi", ".hevc", ".mp3", ".wav", ".ogg", ".m4a", ".aac"].includes(ext)) {
+  if ([".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v", ".mp3", ".wav", ".ogg", ".m4a", ".aac"].includes(ext)) {
     return ext;
   }
 
@@ -28,11 +28,7 @@ function safeExtension(originalName = "", mimetype = "") {
   if (mimetype === "video/quicktime") return ".mov";
   if (mimetype === "video/webm") return ".webm";
   if (mimetype === "video/x-m4v") return ".m4v";
-  if (mimetype === "video/3gpp") return ".3gp";
-  if (mimetype === "video/3gpp2") return ".3gpp";
-  if (mimetype === "video/x-msvideo") return ".avi";
-  if (mimetype.startsWith("video/")) return ext || ".mp4";
-  if (mimetype === "application/octet-stream" && [".webm", ".m4a", ".mp4", ".mov", ".m4v", ".3gp", ".3gpp", ".avi", ".hevc", ".mp3", ".wav", ".ogg", ".aac"].includes(ext)) return ext;
+  if (mimetype === "application/octet-stream" && [".webm", ".m4a", ".mp4", ".mov", ".m4v", ".mp3", ".wav", ".ogg", ".aac"].includes(ext)) return ext;
   if (mimetype === "audio/mpeg") return ".mp3";
   if (mimetype === "audio/wav") return ".wav";
   if (mimetype === "audio/x-wav") return ".wav";
@@ -74,9 +70,6 @@ const upload = multer({
       "video/quicktime",
       "video/webm",
       "video/x-m4v",
-      "video/3gpp",
-      "video/3gpp2",
-      "video/x-msvideo",
       "application/octet-stream",
       "audio/mpeg",
       "audio/wav",

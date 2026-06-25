@@ -310,7 +310,7 @@
     }
 
     const file = videoInput.files[0];
-    if (!file) {
+    if (!file || file.size < START_COMPRESS_BYTES) {
       form.dataset.tapzyVideoPrepared = "1";
       return true;
     }
@@ -320,12 +320,9 @@
     if (submitter) submitter.disabled = true;
 
     try {
-      let compressed = file;
-      if (file.size >= START_COMPRESS_BYTES) {
-        compressed = await compressVideo(file, (pct) => {
+      const compressed = await compressVideo(file, (pct) => {
         setStatus(form, `Preparing video ${pct}% — keep this page open.`);
       });
-      }
 
       if (compressed && compressed !== file && compressed.size < file.size) {
         replaceInputFile(videoInput, compressed);
@@ -336,7 +333,7 @@
       }
 
       const preparedFile = videoInput.files && videoInput.files[0] ? videoInput.files[0] : compressed || file;
-      if (preparedFile && supportsChunkedSubmit(form)) {
+      if (preparedFile && preparedFile.size >= CHUNK_UPLOAD_BYTES && supportsChunkedSubmit(form)) {
         setStatus(form, "Uploading video safely in pieces — keep this page open.");
         const complete = await uploadChunkedVideo(preparedFile, form, (pct) => {
           setStatus(form, `Uploading video ${pct}% — retrying pieces if needed.`);
@@ -348,7 +345,7 @@
         setStatus(form, "Video uploaded — posting now.");
       }
     } catch (_) {
-      if (file && supportsChunkedSubmit(form)) {
+      if (file && file.size >= CHUNK_UPLOAD_BYTES && supportsChunkedSubmit(form)) {
         try {
           setStatus(form, "Uploading original video safely in pieces — keep this page open.");
           const complete = await uploadChunkedVideo(file, form, (pct) => {
