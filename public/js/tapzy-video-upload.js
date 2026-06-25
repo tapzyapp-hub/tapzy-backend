@@ -304,10 +304,16 @@
     if (form.dataset.tapzyVideoPrepared === "1") return true;
     const inputs = Array.from(form.querySelectorAll('input[type="file"]'));
     const videoInput = inputs.find((input) => isVideoFile(input.files && input.files[0]));
-    if (!videoInput) return true;
+    if (!videoInput) {
+      form.dataset.tapzyVideoPrepared = "1";
+      return true;
+    }
 
     const file = videoInput.files[0];
-    if (!file || file.size < START_COMPRESS_BYTES) return true;
+    if (!file || file.size < START_COMPRESS_BYTES) {
+      form.dataset.tapzyVideoPrepared = "1";
+      return true;
+    }
 
     form.dataset.tapzyVideoPreparing = "1";
     setStatus(form, "Preparing video like TikTok — keep this page open.");

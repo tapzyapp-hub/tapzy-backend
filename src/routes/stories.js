@@ -2084,7 +2084,7 @@ router.get("/stories/feed", async (req, res) => {
         ? isLive
           ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
           : isVideo
-          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
+          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
@@ -2314,19 +2314,25 @@ router.get("/stories/feed", async (req, res) => {
           var slides = Array.prototype.slice.call(document.querySelectorAll('.sf-slide'));
           var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab[data-filter]'));
           var empty = document.querySelector('.sf-no-results');
+          function activateVideoSound(slide){
+            var video = slide && slide.querySelector ? slide.querySelector('video') : null;
+            if (!video) return;
+            video.muted = false;
+            video.volume = 1;
+            video.removeAttribute('muted');
+            var sound = slide.querySelector('[data-sound]');
+            if (sound) {
+              sound.classList.add('is-active');
+              sound.setAttribute('aria-label', 'Mute story');
+            }
+            video.play().catch(function(){});
+          }
           var observer = new IntersectionObserver(function(entries){
             entries.forEach(function(entry){
               var video = entry.target.querySelector('video');
               if (!video) return;
               if (entry.isIntersecting && entry.intersectionRatio > .65) {
-                video.muted = false;
-                video.volume = 1;
-                var sound = entry.target.querySelector('[data-sound]');
-                if (sound) {
-                  sound.classList.add('is-active');
-                  sound.setAttribute('aria-label', 'Mute story');
-                }
-                video.play().catch(function(){});
+                activateVideoSound(entry.target);
               } else {
                 video.pause();
               }
@@ -2355,9 +2361,19 @@ router.get("/stories/feed", async (req, res) => {
               var video = sound.closest('.sf-slide').querySelector('video');
               if (video) {
                 video.muted = !video.muted;
+                if (!video.muted) {
+                  video.volume = 1;
+                  video.removeAttribute('muted');
+                }
+                video.play().catch(function(){});
                 sound.classList.toggle('is-active', !video.muted);
                 sound.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Mute story');
               }
+              return;
+            }
+            var tappedSlide = event.target.closest('.sf-slide');
+            if (tappedSlide && event.target.closest('video,.sf-media-wrap')) {
+              activateVideoSound(tappedSlide);
               return;
             }
             var save = event.target.closest('[data-save]');
