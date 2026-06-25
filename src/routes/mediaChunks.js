@@ -2,9 +2,10 @@ const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const crypto = require("crypto");
+const multer = require("multer");
 const router = require("express").Router();
 
-const { upload, uploadsDir, chunkUploadsDir, safeUploadFilename } = require("../upload");
+const { uploadsDir, chunkUploadsDir, safeUploadFilename } = require("../upload");
 const { publicAbsoluteUrl } = require("../utils");
 
 const MAX_CHUNKS = 800;
@@ -12,10 +13,25 @@ const MAX_CHUNK_BYTES = 8 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 1024 * 1024 * 1024;
 const sessions = new Map();
 
-function isVideoMime(mimetype = "", originalName = "") {
+const chunkStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, chunkUploadsDir),
+  filename: (_req, _file, cb) => cb(null, `${Date.now()}-${crypto.randomBytes(8).toString("hex")}.part`),
+});
+
+const chunkUpload = multer({
+  storage: chunkStorage,
+  limits: { fileSize: MAX_CHUNK_BYTES + 1024 * 1024 },
+});
+
+function isSupportedMediaMime(mimetype = "", originalName = "") {
   const type = String(mimetype || "").toLowerCase();
   const name = String(originalName || "").toLowerCase();
-  return type.startsWith("video/") || /\.(mp4|mov|m4v|webm)$/i.test(name);
+  return (
+    type.startsWith("video/") ||
+    type.startsWith("image/") ||
+    type === "application/octet-stream" ||
+    /\.(mp4|mov|m4v|webm|3gp|3gpp|avi|hevc|jpg|jpeg|png|webp|gif|heic|heif)$/i.test(name)
+  );
 }
 
 function safeId(value = "") {
@@ -45,19 +61,19 @@ router.post("/media/chunk/start", async (req, res) => {
 
     cleanupExpiredSessions();
 
-    const originalName = String(req.body.originalName || "tapzy-video.webm").trim();
-    const mimetype = String(req.body.type || "video/webm").trim();
+    const originalName = String(req.body.originalName || "tapzy-media").trim();
+    const mimetype = String(req.body.type || "application/octet-stream").trim();
     const size = Math.max(0, Number(req.body.size) || 0);
     const totalChunks = Math.max(0, Number(req.body.totalChunks) || 0);
 
-    if (!isVideoMime(mimetype, originalName)) {
-      return res.status(400).json({ ok: false, error: "Only video chunk uploads are supported" });
+    if (!isSupportedMediaMime(mimetype, originalName)) {
+      return res.status(400).json({ ok: false, error: "Only media chunk uploads are supported" });
     }
     if (!totalChunks || totalChunks > MAX_CHUNKS) {
       return res.status(400).json({ ok: false, error: "Invalid chunk count" });
     }
     if (size > MAX_TOTAL_BYTES) {
-      return res.status(413).json({ ok: false, error: "Video is too large for chunked upload" });
+      return res.status(413).json({ ok: false, error: "Media is too large for chunked upload" });
     }
 
     const uploadId = crypto.randomBytes(16).toString("hex");
@@ -83,7 +99,7 @@ router.post("/media/chunk/start", async (req, res) => {
   }
 });
 
-router.post("/media/chunk/:uploadId/:index", upload.single("chunk"), async (req, res) => {
+router.post("/media/chunk/:uploadId/:index", chunkUpload.single("chunk"), async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
     if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
