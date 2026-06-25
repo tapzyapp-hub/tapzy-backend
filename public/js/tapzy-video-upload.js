@@ -168,7 +168,7 @@
       const video = document.createElement("video");
       video.preload = "auto";
       video.playsInline = true;
-      video.muted = true;
+      video.muted = false;
       video.src = url;
       video.onloadedmetadata = () => resolve({ video, url });
       video.onerror = () => {
@@ -176,6 +176,40 @@
         reject(new Error("Video could not be read"));
       };
     });
+  }
+
+  async function captureAudioFromVideo(video) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      try {
+        const audioContext = new AudioContextClass();
+        if (audioContext.state === "suspended" && audioContext.resume) {
+          await audioContext.resume().catch(() => {});
+        }
+        const source = audioContext.createMediaElementSource(video);
+        const destination = audioContext.createMediaStreamDestination();
+        source.connect(destination);
+        if (destination.stream.getAudioTracks().length) {
+          return {
+            stream: destination.stream,
+            close: () => audioContext.close && audioContext.close().catch(() => {}),
+          };
+        }
+        if (audioContext.close) audioContext.close().catch(() => {});
+      } catch (_) {}
+    }
+
+    const capture = video.captureStream || video.mozCaptureStream;
+    if (capture) {
+      try {
+        const stream = capture.call(video);
+        if (stream && stream.getAudioTracks().length) {
+          return { stream, close: () => {} };
+        }
+      } catch (_) {}
+    }
+
+    return null;
   }
 
   async function compressVideo(file, onProgress) {
@@ -196,15 +230,13 @@
     }
 
     const canvasStream = canvas.captureStream(FPS);
-    let audioStream = null;
-    if (video.captureStream) {
-      try {
-        audioStream = video.captureStream();
-      } catch (_) {}
-    } else if (video.mozCaptureStream) {
-      try {
-        audioStream = video.mozCaptureStream();
-      } catch (_) {}
+    const audioCapture = await captureAudioFromVideo(video);
+    const audioStream = audioCapture ? audioCapture.stream : null;
+
+    if (!audioStream || !audioStream.getAudioTracks().length) {
+      URL.revokeObjectURL(url);
+      canvasStream.getTracks().forEach((track) => track.stop());
+      return file;
     }
 
     if (audioStream) {
@@ -237,6 +269,7 @@
         try { video.pause(); } catch (_) {}
         canvasStream.getTracks().forEach((track) => track.stop());
         if (audioStream) audioStream.getTracks().forEach((track) => track.stop());
+        if (audioCapture && audioCapture.close) audioCapture.close();
         URL.revokeObjectURL(url);
         resolve(result || file);
       };
@@ -306,7 +339,27 @@
         setStatus(form, "Video uploaded — posting now.");
       }
     } catch (_) {
-      setStatus(form, "Uploading original video.");
+      if (file && file.size >= CHUNK_UPLOAD_BYTES && supportsChunkedSubmit(form)) {
+        try {
+          setStatus(form, "Uploading original video safely in pieces — keep this page open.");
+          const complete = await uploadChunkedVideo(file, form, (pct) => {
+            setStatus(form, `Uploading video ${pct}% — retrying pieces if needed.`);
+          });
+          upsertHidden(form, "tapzyChunkedMediaUrl", complete.mediaUrl || "");
+          upsertHidden(form, "tapzyChunkedOriginalName", complete.originalName || file.name || "");
+          upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || file.type || "");
+          clearInputFile(videoInput);
+          setStatus(form, "Video uploaded — posting now.");
+        } catch (chunkError) {
+          setStatus(form, "Video upload failed. Please try again on a stronger connection.");
+          form.dataset.tapzyVideoPrepared = "0";
+          form.dataset.tapzyVideoPreparing = "0";
+          if (submitter) submitter.disabled = false;
+          throw chunkError;
+        }
+      } else {
+        setStatus(form, "Uploading original video.");
+      }
     }
 
     form.dataset.tapzyVideoPrepared = "1";

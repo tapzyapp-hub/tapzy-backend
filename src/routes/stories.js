@@ -2047,36 +2047,8 @@ router.get("/stories/feed", async (req, res) => {
       take: 100,
     });
 
-    let eventStreams = [];
-    let fallbackVideos = [];
-    if (!stories.length) {
-      eventStreams = await prisma.eventFinderItem.findMany({
-        where: {
-          OR: [{ startAt: null }, { startAt: { gte: now } }],
-        },
-        orderBy: [{ startAt: "asc" }, { createdAt: "desc" }],
-        take: 18,
-      });
-      eventStreams = [...configuredCreatorStreams(), ...eventStreams];
-      if (!eventStreams.length) eventStreams = fallbackEventStreams();
-
-      fallbackVideos = await prisma.story.findMany({
-        where: {
-          mediaUrl: { not: null },
-          OR: [
-            { type: "video" },
-            { mediaUrl: { contains: ".mp4" } },
-            { mediaUrl: { contains: ".mov" } },
-            { mediaUrl: { contains: ".webm" } },
-            { mediaUrl: { contains: ".m4v" } },
-            { mediaUrl: { contains: "/video/" } },
-          ],
-        },
-        include: { profile: true, event: true },
-        orderBy: [{ createdAt: "desc" }],
-        take: 18,
-      });
-    }
+    const eventStreams = [];
+    const fallbackVideos = [];
 
     if (currentProfile && stories.length) {
       const unseen = await prisma.storyView.findMany({
