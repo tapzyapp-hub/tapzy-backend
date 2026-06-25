@@ -53,6 +53,11 @@ function isVideoUrl(url) {
     value.endsWith(".mov") ||
 
     value.endsWith(".webm") ||
+    value.endsWith(".m4v") ||
+    value.endsWith(".3gp") ||
+    value.endsWith(".3gpp") ||
+    value.endsWith(".avi") ||
+    value.endsWith(".hevc") ||
 
     value.includes("/video/")
 
@@ -1467,7 +1472,7 @@ router.get("/stories", async (req, res) => {
 
           const type = selected.type || '';
           const name = (selected.name || '').toLowerCase();
-          const isVideo = type.indexOf('video/') === 0 || /\.(mov|mp4|webm|m4v)$/i.test(name);
+          const isVideo = type.indexOf('video/') === 0 || /\.(mov|mp4|webm|m4v|3gp|3gpp|avi|hevc)$/i.test(name);
 
           if (isVideo) {
             activePreviewUrl = URL.createObjectURL(selected);

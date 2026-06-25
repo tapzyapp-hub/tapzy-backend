@@ -5,7 +5,7 @@
   const START_COMPRESS_BYTES = 12 * 1024 * 1024;
   const CHUNK_UPLOAD_BYTES = 42 * 1024 * 1024;
   const CHUNK_SIZE = 5 * 1024 * 1024;
-  const DIRECT_UPLOAD_BYTES = 64 * 1024 * 1024;
+  const DIRECT_UPLOAD_BYTES = 96 * 1024 * 1024;
   const MAX_EDGE = 1280;
   const FPS = 30;
   const VIDEO_BITRATE = 2400000;
@@ -370,8 +370,15 @@
       let complete = null;
       if (supportsChunkedSubmit(form)) {
         if (file.size <= DIRECT_UPLOAD_BYTES) {
-          setStatus(form, "Uploading media — keep this page open.");
-          complete = await uploadDirectMedia(file);
+          try {
+            setStatus(form, "Uploading media — keep this page open.");
+            complete = await uploadDirectMedia(file);
+          } catch (directError) {
+            setStatus(form, "Retrying upload safely — keep this page open.");
+            complete = await uploadChunkedMedia(file, form, (pct) => {
+              setStatus(form, `Uploading media ${pct}% — keep this page open.`);
+            });
+          }
         } else {
           setStatus(form, "Uploading large video safely — keep this page open.");
           complete = await uploadChunkedMedia(file, form, (pct) => {

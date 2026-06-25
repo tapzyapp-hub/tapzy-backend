@@ -30,7 +30,7 @@ const directStorage = multer.diskStorage({
 
 const directUpload = multer({
   storage: directStorage,
-  limits: { fileSize: 64 * 1024 * 1024 },
+  limits: { fileSize: 128 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ok = isSupportedMediaMime(file.mimetype || "", file.originalname || "");
     cb(ok ? null : new Error("Only image and video uploads are supported"), ok);
