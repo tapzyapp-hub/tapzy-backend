@@ -1476,9 +1476,23 @@ router.get("/stories", async (req, res) => {
 
           if (isVideo) {
             activePreviewUrl = URL.createObjectURL(selected);
-            preview.innerHTML = '<video src="' + activePreviewUrl + '" muted playsinline webkit-playsinline preload="metadata" controls></video>';
+            preview.innerHTML = '<video src="' + activePreviewUrl + '" playsinline webkit-playsinline preload="metadata" controls></video>';
             const video = preview.querySelector('video');
-            if (video && video.load) video.load();
+            if (video) {
+              try {
+                video.defaultMuted = false;
+                video.muted = false;
+                video.volume = 1;
+                video.removeAttribute('muted');
+              } catch (e) {}
+              video.addEventListener('play', function(){
+                try { video.defaultMuted = false; video.muted = false; video.volume = 1; video.removeAttribute('muted'); } catch (e) {}
+              });
+              video.addEventListener('click', function(){
+                try { video.defaultMuted = false; video.muted = false; video.volume = 1; video.removeAttribute('muted'); video.play().catch(function(){}); } catch (e) {}
+              });
+              if (video.load) video.load();
+            }
             return;
           }
 
@@ -2329,16 +2343,16 @@ router.get("/stories/feed", async (req, res) => {
           function forceSound(video){
             if (!video) return;
             try { video.defaultMuted = false; } catch(e) {}
+            video.muted = false;
+            video.volume = 1;
+            video.removeAttribute('muted');
             tapzySoundUnlocked = true;
             localStorage.setItem('tapzy_story_sound', '1');
-            forceSound(video);
           }
           function activateVideoSound(slide){
             var video = slide && slide.querySelector ? slide.querySelector('video') : null;
             if (!video) return;
-            video.muted = false;
-            video.volume = 1;
-            video.removeAttribute('muted');
+            forceSound(video);
             var sound = slide.querySelector('[data-sound]');
             if (sound) {
               sound.classList.add('is-active');
@@ -2380,13 +2394,12 @@ router.get("/stories/feed", async (req, res) => {
             if (sound) {
               var video = sound.closest('.sf-slide').querySelector('video');
               if (video) {
-                video.muted = !video.muted;
-                if (!video.muted) {
-                  tapzySoundUnlocked = true;
-                  localStorage.setItem('tapzy_story_sound', '1');
+                if (!tapzySoundUnlocked || video.muted) {
                   forceSound(video);
                 } else {
+                  video.muted = true;
                   localStorage.setItem('tapzy_story_sound', '0');
+                  tapzySoundUnlocked = false;
                 }
                 video.play().catch(function(){});
                 sound.classList.toggle('is-active', !video.muted);
@@ -3721,12 +3734,13 @@ router.get("/stories/:username", async (req, res) => {
           if (soundButton) {
             const video = currentVideo();
             if (video) {
-              video.muted = !video.muted;
-              if (!video.muted) {
+              if (!tapzyViewerSoundUnlocked || video.muted) {
                 tapzyViewerSoundUnlocked = true;
                 localStorage.setItem("tapzy_story_sound", "1");
                 forceViewerSound(video);
               } else {
+                video.muted = true;
+                tapzyViewerSoundUnlocked = false;
                 localStorage.setItem("tapzy_story_sound", "0");
               }
               video.play().catch(function(){});
