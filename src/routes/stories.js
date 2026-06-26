@@ -1918,7 +1918,12 @@ router.get("/stories/live/:id", async (req, res) => {
             localStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode }, audio:true });
             video.srcObject = localStream;
             video.muted = true;
-            await video.play().catch(function(){});
+            await video.play().catch(function(){
+              if (!tapzySoundUnlocked) {
+                video.muted = true;
+                video.play().catch(function(){});
+              }
+            });
             hideWait();
             setStatus('You are live');
           }
@@ -2320,6 +2325,14 @@ router.get("/stories/feed", async (req, res) => {
           var slides = Array.prototype.slice.call(document.querySelectorAll('.sf-slide'));
           var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab[data-filter]'));
           var empty = document.querySelector('.sf-no-results');
+          var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
+          function forceSound(video){
+            if (!video) return;
+            try { video.defaultMuted = false; } catch(e) {}
+            tapzySoundUnlocked = true;
+            localStorage.setItem('tapzy_story_sound', '1');
+            forceSound(video);
+          }
           function activateVideoSound(slide){
             var video = slide && slide.querySelector ? slide.querySelector('video') : null;
             if (!video) return;
@@ -2338,7 +2351,8 @@ router.get("/stories/feed", async (req, res) => {
               var video = entry.target.querySelector('video');
               if (!video) return;
               if (entry.isIntersecting && entry.intersectionRatio > .65) {
-                activateVideoSound(entry.target);
+                if (tapzySoundUnlocked) activateVideoSound(entry.target);
+                else video.play().catch(function(){});
               } else {
                 video.pause();
               }
@@ -2368,8 +2382,11 @@ router.get("/stories/feed", async (req, res) => {
               if (video) {
                 video.muted = !video.muted;
                 if (!video.muted) {
-                  video.volume = 1;
-                  video.removeAttribute('muted');
+                  tapzySoundUnlocked = true;
+                  localStorage.setItem('tapzy_story_sound', '1');
+                  forceSound(video);
+                } else {
+                  localStorage.setItem('tapzy_story_sound', '0');
                 }
                 video.play().catch(function(){});
                 sound.classList.toggle('is-active', !video.muted);
@@ -3558,6 +3575,15 @@ router.get("/stories/:username", async (req, res) => {
         let index = 0;
         let timer = null;
         let raf = null;
+        let tapzyViewerSoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
+        function forceViewerSound(video){
+          if (!video) return;
+          try { video.defaultMuted = false; } catch(e) {}
+          tapzyViewerSoundUnlocked = true;
+          localStorage.setItem("tapzy_story_sound", "1");
+          forceViewerSound(video);
+          video.removeAttribute('muted');
+        }
         let startX = 0;
 
         function currentPanel(){
@@ -3696,6 +3722,13 @@ router.get("/stories/:username", async (req, res) => {
             const video = currentVideo();
             if (video) {
               video.muted = !video.muted;
+              if (!video.muted) {
+                tapzyViewerSoundUnlocked = true;
+                localStorage.setItem("tapzy_story_sound", "1");
+                forceViewerSound(video);
+              } else {
+                localStorage.setItem("tapzy_story_sound", "0");
+              }
               video.play().catch(function(){});
               soundButton.textContent = video.muted ? "Sound on" : "Mute";
             }
