@@ -6,6 +6,7 @@
   "scripts": {
     "check": "node scripts/check-js.js",
     "dev": "nodemon server.js",
+    "encoder:windows": "node scripts/windows-nfc-encoder.js",
     "start": "node server.js",
     "test": "npm run check && npx prisma validate"
   },

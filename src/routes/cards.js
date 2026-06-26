@@ -172,17 +172,17 @@ router.get("/admin/encoder", adminLimiter, async (req, res) => {
   try {
     if (!requireAdmin(req, res)) return;
 
-    const [total, activated, nextCard, recent] = await Promise.all([
+    const [total, encoded, nextCard, recent] = await Promise.all([
       prisma.card.count(),
-      prisma.card.count({ where: { ownerId: { not: null } } }),
-      prisma.card.findFirst({ where: { ownerId: null }, orderBy: { createdAt: "asc" } }),
+      prisma.card.count({ where: { encoded: true } }),
+      prisma.card.findFirst({ where: { encoded: false }, orderBy: { createdAt: "asc" } }),
       prisma.card.findMany({ orderBy: { createdAt: "desc" }, take: 12, include: { owner: true } }),
     ]);
 
     const currentUrl = nextCard ? cardUrl(req, nextCard.code) : "Generate cards first";
     const key = encodeURIComponent(req.query.key || "");
     const rows = recent
-      .map((card) => `<tr><td>${escapeHtml(card.code)}</td><td>${card.owner?.username ? `@${escapeHtml(card.owner.username)}` : "Unclaimed"}</td><td>${card.activated ? "Active" : "Ready"}</td></tr>`)
+      .map((card) => `<tr><td>${escapeHtml(card.code)}</td><td>${card.encoded ? "Encoded" : "Needs write"}</td><td>${card.owner?.username ? `@${escapeHtml(card.owner.username)}` : "Unclaimed"}</td></tr>`)
       .join("");
 
     const body = `
@@ -192,7 +192,7 @@ router.get("/admin/encoder", adminLimiter, async (req, res) => {
           <div>
             <div class="mini">TAPZY NFC ENCODER</div>
             <h1 style="margin:.2em 0 0;">First Tap Activation</h1>
-            <div class="muted">Encoding card ${Math.min(activated + 1, total || 1)} / ${total || 0}</div>
+            <div class="muted">Encoding card ${Math.min(encoded + 1, total || 1)} / ${total || 0}</div>
           </div>
         </div>
 
@@ -256,6 +256,56 @@ router.post("/admin/cards/generate", adminLimiter, async (req, res) => {
   } catch (error) {
     console.error("Generate cards error:", error);
     res.status(500).send("Generate cards error");
+  }
+});
+
+router.get("/admin/encoder/next.json", adminLimiter, async (req, res) => {
+  try {
+    if (!requireAdmin(req, res)) return;
+
+    const [total, encoded, card] = await Promise.all([
+      prisma.card.count(),
+      prisma.card.count({ where: { encoded: true } }),
+      prisma.card.findFirst({ where: { encoded: false }, orderBy: { createdAt: "asc" } }),
+    ]);
+
+    if (!card) {
+      return res.json({ ok: true, done: true, total, encoded, remaining: 0 });
+    }
+
+    res.json({
+      ok: true,
+      done: false,
+      total,
+      encoded,
+      remaining: Math.max(0, total - encoded),
+      card: {
+        code: card.code,
+        url: cardUrl(req, card.code),
+      },
+    });
+  } catch (error) {
+    console.error("Encoder next error:", error);
+    res.status(500).json({ ok: false, error: "Could not load next card" });
+  }
+});
+
+router.post("/admin/encoder/:code/encoded", adminLimiter, async (req, res) => {
+  try {
+    if (!requireAdmin(req, res)) return;
+
+    const code = normalizeCardCode(req.params.code);
+    if (!CARD_CODE_RE.test(code)) return res.status(400).json({ ok: false, error: "Invalid card code" });
+
+    const card = await prisma.card.update({
+      where: { code },
+      data: { encoded: true, encodedAt: new Date() },
+    });
+
+    res.json({ ok: true, code: card.code, encoded: card.encoded, encodedAt: card.encodedAt });
+  } catch (error) {
+    console.error("Encoder mark encoded error:", error);
+    res.status(500).json({ ok: false, error: "Could not mark card encoded" });
   }
 });
 

@@ -29,6 +29,8 @@ model Card {
   code        String       @unique
   ownerId     String?
   owner       UserProfile? @relation("OwnedCards", fields: [ownerId], references: [id], onDelete: SetNull)
+  encoded     Boolean      @default(false)
+  encodedAt   DateTime?
   activated   Boolean      @default(false)
   activatedAt DateTime?
   giftFrom    String?
@@ -37,6 +39,7 @@ model Card {
   updatedAt   DateTime     @updatedAt
 
   @@index([ownerId], map: "card_ownerId_idx")
+  @@index([encoded, createdAt], map: "card_encoded_createdAt_idx")
   @@index([activated, createdAt], map: "card_activated_createdAt_idx")
 }
 
