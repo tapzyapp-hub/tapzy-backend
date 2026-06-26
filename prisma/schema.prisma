@@ -24,6 +24,22 @@ model ActivationCode {
   @@index([claimedAt], map: "activation_claimedAt_idx")
 }
 
+model Card {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  ownerId     String?
+  owner       UserProfile? @relation("OwnedCards", fields: [ownerId], references: [id], onDelete: SetNull)
+  activated   Boolean      @default(false)
+  activatedAt DateTime?
+  giftFrom    String?
+  giftMessage String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([ownerId], map: "card_ownerId_idx")
+  @@index([activated, createdAt], map: "card_activated_createdAt_idx")
+}
+
 model UserProfile {
   id         String  @id @default(cuid())
   username   String? @unique
@@ -70,6 +86,7 @@ model UserProfile {
   updatedAt DateTime @updatedAt
 
   activation              ActivationCode[]
+  cards                   Card[]               @relation("OwnedCards")
   sentConnections         Connection[]         @relation("ConnectionSender")
   receivedConnections     Connection[]         @relation("ConnectionReceiver")
   sentMoments             TapMoment[]          @relation("MomentSender")

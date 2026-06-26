@@ -11,6 +11,7 @@ const { sessionMiddleware } = require("./middleware");
 
 const authRoutes = require("./routes/auth");
 const activateRoutes = require("./routes/activate");
+const cardsRoutes = require("./routes/cards");
 const profileRoutes = require("./routes/profile");
 const shareRoutes = require("./routes/share");
 const messagesRoutes = require("./routes/messages");
@@ -86,6 +87,7 @@ app.use(sessionMiddleware);
 app.use("/api/assistant", assistantRoutes);
 
 app.use("/", authRoutes);
+app.use("/", cardsRoutes);
 app.use("/", activateRoutes);
 app.use("/", profileRoutes);
 app.use("/", shareRoutes);
