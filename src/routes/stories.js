@@ -2031,6 +2031,33 @@ router.get("/stories/live/:id", async (req, res) => {
         .tl-embed .tl-wait-card{transform:translateY(32%)}
         .tl-embed .tl-wait h1{font-size:22px;letter-spacing:-.03em}
         .tl-embed .tl-wait p{font-size:13px}
+        /* final live polish */
+        .tl-room:not(.tl-embed) .tl-wait{z-index:4;background:radial-gradient(circle at 50% 26%,rgba(35,94,220,.22),transparent 36%),linear-gradient(180deg,rgba(0,0,0,.34),rgba(0,0,0,.72))}
+        .tl-room:not(.tl-embed) .tl-live-pill:not(.tl-wait .tl-live-pill){top:calc(var(--safe-top) + 30px);left:22px;height:42px;padding:0 15px;font-size:12px;background:rgba(18,18,20,.62);border-color:rgba(255,255,255,.08)}
+        .tl-bars{font-size:11px;letter-spacing:1px;opacity:.9}
+        .tl-room:not(.tl-embed) .tl-viewers{top:calc(var(--safe-top) + 80px);left:22px;height:40px;padding:0 15px;border-radius:999px;background:rgba(18,18,20,.56);border-color:rgba(255,255,255,.08)}
+        .tl-room:not(.tl-embed) .tl-story-tabs{top:calc(var(--safe-top) + 134px);left:22px;right:22px;font-size:15px;gap:14px}
+        .tl-room:not(.tl-embed) .tl-top{top:calc(var(--safe-top) + 30px);right:22px}
+        .tl-room:not(.tl-embed) .tl-icon{width:52px;height:52px;font-size:28px;background:rgba(0,0,0,.34)}
+        .tl-room:not(.tl-embed) .tl-chat{left:22px;right:116px;bottom:calc(var(--safe-bottom) + 178px);height:116px;gap:6px}
+        .tl-room:not(.tl-embed) .tl-chat-row{padding:8px 12px;border-radius:18px;background:rgba(10,10,12,.42);font-size:13px;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+        .tl-room:not(.tl-embed) .tl-copy{left:22px;right:112px;bottom:calc(var(--safe-bottom) + 98px)}
+        .tl-room:not(.tl-embed) .tl-copy strong{font-size:25px;line-height:.95}
+        .tl-room:not(.tl-embed) .tl-copy p{font-size:14px;line-height:1.25}
+        .tl-room:not(.tl-embed) .tl-status{bottom:calc(var(--safe-bottom) + 152px);font-size:12px;padding:8px 13px;opacity:.92}
+        .tl-room:not(.tl-embed) .tl-actions{right:22px;bottom:calc(var(--safe-bottom) + 116px);gap:16px}
+        .tl-room:not(.tl-embed) .tl-action{width:56px;height:56px;font-size:17px;background:rgba(0,0,0,.34)}
+        .tl-room:not(.tl-embed) .tl-end{width:64px;height:64px;font-size:30px}
+        .tl-room:not(.tl-embed) .tl-chat-form{left:22px;right:22px;bottom:calc(var(--safe-bottom) + 18px);grid-template-columns:minmax(0,1fr) 86px;gap:12px;align-items:center}
+        .tl-room:not(.tl-embed) .tl-chat-form input{width:100%;min-width:0;min-height:54px;padding:0 18px;border-radius:999px;background:rgba(0,0,0,.58)}
+        .tl-room:not(.tl-embed) .tl-chat-form button{width:86px;min-width:86px;min-height:54px;border-radius:999px;font-size:18px}
+        .tl-room.tl-keyboard .tl-actions,.tl-room.tl-keyboard .tl-status{display:none!important}
+        .tl-room.tl-keyboard .tl-chat{bottom:calc(var(--safe-bottom) + 156px);right:22px;height:92px}
+        .tl-room.tl-keyboard .tl-copy{bottom:calc(var(--safe-bottom) + 86px);right:22px}
+        .tl-room.tl-keyboard .tl-chat-form{left:18px;right:18px;bottom:calc(var(--safe-bottom) + 12px);grid-template-columns:minmax(0,1fr) 82px}
+        .tl-room.tl-keyboard .tl-chat-form input{min-height:52px}
+        .tl-room.tl-keyboard .tl-chat-form button{width:82px;min-width:82px;min-height:52px}
+        .tl-room.tl-keyboard .tl-story-tabs,.tl-room.tl-keyboard .tl-live-pill,.tl-room.tl-keyboard .tl-viewers{opacity:.18;pointer-events:none}
         @media(max-width:390px){
           .tl-story-tabs{font-size:14px;gap:10px}
           .tl-chat-form{right:102px;grid-template-columns:minmax(0,1fr) 68px}
@@ -2245,6 +2272,11 @@ router.get("/stories/live/:id", async (req, res) => {
             addChat(payload.name, 'sent ' + giftText, true);
             showGift((payload.name || 'Viewer') + ' sent ' + giftText);
           });
+
+          if (chatInput) {
+            chatInput.addEventListener('focus', function(){ room.classList.add('tl-keyboard'); });
+            chatInput.addEventListener('blur', function(){ setTimeout(function(){ room.classList.remove('tl-keyboard'); }, 120); });
+          }
 
           if (chatForm) chatForm.addEventListener('submit', function(event){
             event.preventDefault();
