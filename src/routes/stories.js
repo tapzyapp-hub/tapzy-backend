@@ -115,7 +115,6 @@ function renderLiveStreamMedia(url, title, index = 0, className = "sf-media") {
     return `
     <a class="sf-native-live-preview ${safeClass}" href="${escapeHtml(url)}" aria-label="Open Tapzy live">
       <iframe class="sf-native-live-frame" src="${escapeHtml(previewSrc)}" title="${escapeHtml(title || "Tapzy Live")}" allow="autoplay; camera; microphone; encrypted-media; picture-in-picture" loading="${index < 2 ? "eager" : "lazy"}"></iframe>
-      <span class="sf-native-live-cta">Tap to watch LIVE</span>
     </a>`;
   }
 
@@ -2541,7 +2540,6 @@ router.get("/stories/feed", async (req, res) => {
         .sf-live-embed{border:0;background:#000}
         .sf-native-live-preview{position:absolute;inset:0;display:block;overflow:hidden;background:#000;color:#fff;text-decoration:none}
         .sf-native-live-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;pointer-events:none}
-        .sf-native-live-cta{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);z-index:3;padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.46);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);font-size:15px;font-weight:950;white-space:nowrap;box-shadow:0 10px 28px rgba(0,0,0,.28)}
         .sf-live-link{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:44px;text-decoration:none;color:#fff;background:radial-gradient(circle at 28% 24%,rgba(47,118,255,.38),transparent 36%),radial-gradient(circle at 82% 34%,rgba(255,255,255,.12),transparent 34%),linear-gradient(180deg,#101827,#02040a)}
         .sf-live-link::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.16) .7px,transparent .7px);background-size:10px 10px;opacity:.14}
         .sf-live-link strong,.sf-live-link em,.sf-live-badge{position:relative;z-index:1}
