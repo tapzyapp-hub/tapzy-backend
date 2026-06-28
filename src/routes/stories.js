@@ -110,11 +110,12 @@ function youtubeEmbedUrl(value) {
 
 function renderLiveStreamMedia(url, title, index = 0, className = "sf-media") {
   if (isNativeLiveUrl(url)) {
+    const safeClass = escapeHtml(className);
+    const previewSrc = url.includes("?") ? `${url}&embed=1` : `${url}?embed=1`;
     return `
-    <a class="sf-live-link ${escapeHtml(className)}" href="${escapeHtml(url)}">
-      <span class="sf-live-badge">LIVE</span>
-      <strong>${escapeHtml(title || "Tapzy Live")}</strong>
-      <em>Tap to join live</em>
+    <a class="sf-native-live-preview ${safeClass}" href="${escapeHtml(url)}" aria-label="Open Tapzy live">
+      <iframe class="sf-native-live-frame" src="${escapeHtml(previewSrc)}" title="${escapeHtml(title || "Tapzy Live")}" allow="autoplay; camera; microphone; encrypted-media; picture-in-picture" loading="${index < 2 ? "eager" : "lazy"}"></iframe>
+      <span class="sf-native-live-cta">Tap to watch LIVE</span>
     </a>`;
   }
 
@@ -1859,6 +1860,7 @@ router.get("/stories/live/:id", async (req, res) => {
     const isHost = !!(currentProfile && currentProfile.id === story.profileId && req.query.host === "1");
     const displayName = story.profile?.name || story.profile?.username || "Tapzy Live";
     const viewerName = currentProfile?.name || currentProfile?.username || "Viewer";
+    const isEmbed = String(req.query.embed || "") === "1";
 
     res.send(`<!doctype html>
     <html lang="en">
@@ -2024,6 +2026,11 @@ router.get("/stories/live/:id", async (req, res) => {
           border:0;
           box-shadow:0 10px 26px rgba(0,0,0,.24);
         }
+        .tl-embed .tl-story-tabs,.tl-embed .tl-top,.tl-embed .tl-viewers,.tl-embed .tl-chat,.tl-embed .tl-copy,.tl-embed .tl-actions,.tl-embed .tl-chat-form,.tl-embed .tl-gift-panel,.tl-embed .tl-toast{display:none!important}
+        .tl-embed .tl-wait{background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.55));padding:22px}
+        .tl-embed .tl-wait-card{transform:translateY(32%)}
+        .tl-embed .tl-wait h1{font-size:22px;letter-spacing:-.03em}
+        .tl-embed .tl-wait p{font-size:13px}
         @media(max-width:390px){
           .tl-story-tabs{font-size:14px;gap:10px}
           .tl-chat-form{right:102px;grid-template-columns:minmax(0,1fr) 68px}
@@ -2033,13 +2040,13 @@ router.get("/stories/live/:id", async (req, res) => {
       </style>
     </head>
     <body>
-      <main class="tl-room" data-story-id="${escapeHtml(story.id)}" data-role="${isHost ? "host" : "viewer"}" data-name="${escapeHtml(viewerName)}">
+      <main class="tl-room ${isEmbed ? "tl-embed" : ""}" data-story-id="${escapeHtml(story.id)}" data-role="${isHost ? "host" : "viewer"}" data-name="${escapeHtml(viewerName)}">
         <video id="liveVideo" ${isHost ? "muted" : "autoplay"} playsinline webkit-playsinline></video>
         <div class="tl-wait" id="waitLayer">
           <div class="tl-wait-card">
             <div class="tl-live-pill" style="position:static;margin:0 auto 18px;width:max-content"><span class="tl-dot"></span>LIVE</div>
-            <h1>${isHost ? "Preparing your live" : "Joining live"}</h1>
-            <p>${isHost ? "Allow camera and microphone to start broadcasting." : "Waiting for the host video."}</p>
+            <h1>${isEmbed ? "Tap to watch LIVE" : isHost ? "Preparing your live" : "Joining live"}</h1>
+            <p>${isEmbed ? "Live preview" : isHost ? "Allow camera and microphone to start broadcasting." : "Waiting for the host video."}</p>
           </div>
         </div>
         <div class="tl-live-pill"><span class="tl-dot"></span>LIVE</div>
@@ -2047,7 +2054,7 @@ router.get("/stories/live/:id", async (req, res) => {
           <a href="/events">Community</a>
           <a href="/stories/feed?filter=nearby">Simcoe</a>
           <a href="/stories/feed?filter=following">Following</a>
-          <a class="is-active" href="/stories/feed">For You</a>
+          <a class="is-active" href="/stories/feed">Discover</a>
         </nav>
         <div class="tl-viewers">▮▮ <span id="viewerCount">1</span> watching</div>
         <div class="tl-top"><a class="tl-icon" href="/stories/feed" aria-label="Close">×</a></div>
@@ -2479,6 +2486,9 @@ router.get("/stories/feed", async (req, res) => {
         .sf-media-wrap,.sf-media,.sf-shade{position:absolute;inset:0;width:100%;height:100%}
         .sf-media{object-fit:cover;background:#111}
         .sf-live-embed{border:0;background:#000}
+        .sf-native-live-preview{position:absolute;inset:0;display:block;overflow:hidden;background:#000;color:#fff;text-decoration:none}
+        .sf-native-live-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;pointer-events:none}
+        .sf-native-live-cta{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);z-index:3;padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.46);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);font-size:15px;font-weight:950;white-space:nowrap;box-shadow:0 10px 28px rgba(0,0,0,.28)}
         .sf-live-link{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:44px;text-decoration:none;color:#fff;background:radial-gradient(circle at 28% 24%,rgba(47,118,255,.38),transparent 36%),radial-gradient(circle at 82% 34%,rgba(255,255,255,.12),transparent 34%),linear-gradient(180deg,#101827,#02040a)}
         .sf-live-link::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.16) .7px,transparent .7px);background-size:10px 10px;opacity:.14}
         .sf-live-link strong,.sf-live-link em,.sf-live-badge{position:relative;z-index:1}
