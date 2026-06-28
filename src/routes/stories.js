@@ -2026,7 +2026,7 @@ router.get("/stories/live/:id", async (req, res) => {
           box-shadow:0 10px 26px rgba(0,0,0,.24);
         }
         .tl-status:empty{display:none}
-        .tl-embed .tl-story-tabs,.tl-embed .tl-top,.tl-embed .tl-viewers,.tl-embed .tl-chat,.tl-embed .tl-copy,.tl-embed .tl-actions,.tl-embed .tl-chat-form,.tl-embed .tl-gift-panel,.tl-embed .tl-toast{display:none!important}
+        .tl-embed .tl-live-pill,.tl-embed .tl-story-tabs,.tl-embed .tl-top,.tl-embed .tl-viewers,.tl-embed .tl-chat,.tl-embed .tl-copy,.tl-embed .tl-actions,.tl-embed .tl-chat-form,.tl-embed .tl-gift-panel,.tl-embed .tl-toast{display:none!important}
         .tl-embed .tl-wait{background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.55));padding:22px}
         .tl-embed .tl-wait-card{transform:translateY(32%)}
         .tl-embed .tl-wait h1{font-size:22px;letter-spacing:-.03em}
