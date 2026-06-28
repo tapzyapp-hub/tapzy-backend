@@ -29,6 +29,19 @@ const io = new Server(server, {
 app.set("io", io);
 
 const liveHosts = new Map();
+const liveViewers = new Map();
+
+function liveRoomCount(storyId) {
+  const viewers = liveViewers.get(storyId);
+  return viewers ? viewers.size : 0;
+}
+
+function emitLiveCount(storyId) {
+  io.to(`live:${storyId}`).emit("live:count", {
+    storyId,
+    count: liveRoomCount(storyId),
+  });
+}
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
@@ -76,12 +89,18 @@ io.on("connection", (socket) => {
 
     if (liveRole === "host") {
       liveHosts.set(id, socket.id);
+      if (!liveViewers.has(id)) liveViewers.set(id, new Set());
       io.to(`live:${id}`).emit("live:host-ready", {
         storyId: id,
         hostId: socket.id,
       });
+      emitLiveCount(id);
       return;
     }
+
+    if (!liveViewers.has(id)) liveViewers.set(id, new Set());
+    liveViewers.get(id).add(socket.id);
+    emitLiveCount(id);
 
     const hostId = liveHosts.get(id);
     if (hostId) {
@@ -125,11 +144,44 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("live:chat", ({ storyId, message, name }) => {
+    const id = String(storyId || "").trim();
+    const text = String(message || "").trim().slice(0, 220);
+    if (!id || !text) return;
+    io.to(`live:${id}`).emit("live:chat", {
+      storyId: id,
+      name: String(name || socket.data.liveName || "Viewer").trim().slice(0, 48) || "Viewer",
+      message: text,
+      at: Date.now(),
+    });
+  });
+
+  socket.on("live:gift", ({ storyId, gift, amount, name }) => {
+    const id = String(storyId || "").trim();
+    const giftName = String(gift || "Rose").trim().slice(0, 32) || "Rose";
+    const giftAmount = Math.max(0, Math.min(9999, Number(amount || 0) || 0));
+    if (!id) return;
+    io.to(`live:${id}`).emit("live:gift", {
+      storyId: id,
+      name: String(name || socket.data.liveName || "Viewer").trim().slice(0, 48) || "Viewer",
+      gift: giftName,
+      amount: giftAmount,
+      at: Date.now(),
+    });
+  });
+
   socket.on("disconnect", () => {
     const liveStoryId = socket.data.liveStoryId;
     if (liveStoryId && liveHosts.get(liveStoryId) === socket.id) {
       liveHosts.delete(liveStoryId);
       socket.to(`live:${liveStoryId}`).emit("live:ended", { storyId: liveStoryId });
+    }
+    if (liveStoryId && liveViewers.has(liveStoryId)) {
+      liveViewers.get(liveStoryId).delete(socket.id);
+      emitLiveCount(liveStoryId);
+      if (!liveViewers.get(liveStoryId).size && !liveHosts.has(liveStoryId)) {
+        liveViewers.delete(liveStoryId);
+      }
     }
     console.log("Socket disconnected:", socket.id);
   });

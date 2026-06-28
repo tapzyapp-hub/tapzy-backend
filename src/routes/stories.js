@@ -1476,9 +1476,23 @@ router.get("/stories", async (req, res) => {
 
           if (isVideo) {
             activePreviewUrl = URL.createObjectURL(selected);
-            preview.innerHTML = '<video src="' + activePreviewUrl + '" muted playsinline webkit-playsinline preload="metadata" controls></video>';
+            preview.innerHTML = '<video src="' + activePreviewUrl + '" playsinline webkit-playsinline preload="metadata" controls></video>';
             const video = preview.querySelector('video');
-            if (video && video.load) video.load();
+            if (video) {
+              try {
+                video.defaultMuted = false;
+                video.muted = false;
+                video.volume = 1;
+                video.removeAttribute('muted');
+              } catch (e) {}
+              video.addEventListener('play', function(){
+                try { video.defaultMuted = false; video.muted = false; video.volume = 1; video.removeAttribute('muted'); } catch (e) {}
+              });
+              video.addEventListener('click', function(){
+                try { video.defaultMuted = false; video.muted = false; video.volume = 1; video.removeAttribute('muted'); video.play().catch(function(){}); } catch (e) {}
+              });
+              if (video.load) video.load();
+            }
             return;
           }
 
@@ -1874,6 +1888,32 @@ router.get("/stories/live/:id", async (req, res) => {
         .tl-action{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.20);background:rgba(0,0,0,.46);color:#fff;font-size:20px;font-weight:950;backdrop-filter:blur(14px);cursor:pointer}
         .tl-end{background:linear-gradient(135deg,#ff3b5f,#b5002f);border:0}
         .tl-status{position:fixed;z-index:7;left:50%;bottom:calc(var(--safe-bottom) + 108px);transform:translateX(-50%);padding:9px 12px;border-radius:999px;background:rgba(0,0,0,.54);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.86);font-size:12px;font-weight:850;white-space:nowrap}
+        .tl-room::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.68),transparent 24%,transparent 58%,rgba(0,0,0,.86));z-index:2}
+        .tl-wait{z-index:3}
+        .tl-story-tabs{position:fixed;z-index:8;top:calc(var(--safe-top) + 76px);left:18px;right:18px;display:flex;align-items:center;justify-content:center;gap:22px;font-size:16px;font-weight:950;text-shadow:0 2px 14px rgba(0,0,0,.7)}
+        .tl-story-tabs a{color:rgba(255,255,255,.62);text-decoration:none;white-space:nowrap}
+        .tl-story-tabs .is-active{position:relative;color:#fff}
+        .tl-story-tabs .is-active::after{content:"";position:absolute;left:18%;right:18%;bottom:-10px;height:3px;border-radius:999px;background:#fff}
+        .tl-viewers{position:fixed;z-index:8;top:calc(var(--safe-top) + 58px);left:18px;display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);font-size:12px;font-weight:900}
+        .tl-chat{position:fixed;z-index:8;left:16px;right:88px;bottom:calc(var(--safe-bottom) + 174px);height:148px;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;pointer-events:none;overflow:hidden}
+        .tl-chat-row{width:max-content;max-width:100%;padding:8px 10px;border-radius:16px;background:rgba(0,0,0,.36);backdrop-filter:blur(12px);font-size:13px;line-height:1.25;text-shadow:0 2px 10px #000;animation:tlChatIn .18s ease both}
+        .tl-chat-row strong{font-weight:950;margin-right:6px}
+        .tl-chat-row.is-gift{background:linear-gradient(135deg,rgba(255,45,85,.76),rgba(47,118,255,.72));box-shadow:0 0 24px rgba(255,45,85,.24)}
+        @keyframes tlChatIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+        .tl-chat-form{position:fixed;z-index:10;left:14px;right:88px;bottom:calc(var(--safe-bottom) + 18px);display:grid;grid-template-columns:1fr auto;gap:8px}
+        .tl-chat-form input{min-height:42px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(0,0,0,.48);color:#fff;padding:0 14px;outline:none;backdrop-filter:blur(14px)}
+        .tl-chat-form button{min-width:58px;border:0;border-radius:999px;background:#fff;color:#000;font-weight:950}
+        .tl-gift-panel{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:18px 14px calc(var(--safe-bottom) + 18px);border-radius:28px 28px 0 0;background:linear-gradient(180deg,rgba(20,24,34,.98),rgba(2,3,7,.99));border-top:1px solid rgba(255,255,255,.12);box-shadow:0 -20px 70px rgba(0,0,0,.58);transform:translateY(110%);transition:transform .22s ease}
+        .tl-gift-panel.is-open{transform:translateY(0)}
+        .tl-gift-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+        .tl-gift-head strong{font-size:20px;letter-spacing:-.03em}
+        .tl-gift-close{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff}
+        .tl-gifts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .tl-gift{min-height:92px;border:1px solid rgba(255,255,255,.10);border-radius:20px;background:radial-gradient(circle at 50% 0,rgba(47,118,255,.22),transparent 55%),rgba(255,255,255,.06);color:#fff;font-weight:950;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+        .tl-gift span{font-size:28px}.tl-gift small{font-size:12px;color:rgba(255,255,255,.7);font-weight:800}
+        .tl-toast{position:fixed;z-index:22;left:50%;top:42%;transform:translate(-50%,-50%) scale(.92);padding:14px 18px;border-radius:999px;background:linear-gradient(135deg,#ff2d55,#2f76ff);box-shadow:0 0 60px rgba(255,45,85,.32);font-weight:1000;opacity:0;pointer-events:none}
+        .tl-toast.show{animation:tlGiftPop 1.8s ease both}@keyframes tlGiftPop{0%{opacity:0;transform:translate(-50%,-35%) scale(.82)}16%,75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-70%) scale(.96)}}
+        .tl-action[data-gifts]{background:linear-gradient(135deg,#ff2d55,#2f76ff);border:0}
       </style>
     </head>
     <body>
@@ -1887,12 +1927,36 @@ router.get("/stories/live/:id", async (req, res) => {
           </div>
         </div>
         <div class="tl-live-pill"><span class="tl-dot"></span>LIVE</div>
+        <nav class="tl-story-tabs" aria-label="Live sections">
+          <a href="/events">Community</a>
+          <a href="/stories/feed?filter=nearby">Simcoe</a>
+          <a href="/stories/feed?filter=following">Following</a>
+          <a class="is-active" href="/stories/feed">For You</a>
+        </nav>
+        <div class="tl-viewers">▮▮ <span id="viewerCount">1</span> watching</div>
         <div class="tl-top"><a class="tl-icon" href="/stories/feed" aria-label="Close">×</a></div>
+        <section class="tl-chat" id="liveChat" aria-live="polite"></section>
         <div class="tl-copy"><strong>${escapeHtml(displayName)}</strong><p>${escapeHtml(story.text || "Tapzy Live")}</p></div>
         <div class="tl-actions">
-          ${isHost ? `<button class="tl-action" type="button" data-flip>↺</button><button class="tl-action" type="button" data-mute>🎙</button><button class="tl-action tl-end" type="button" data-end>×</button>` : `<button class="tl-action" type="button" data-sound>🔊</button>`}
+          ${isHost ? `<button class="tl-action" type="button" data-flip>↺</button><button class="tl-action" type="button" data-mute>🎙</button><button class="tl-action tl-end" type="button" data-end>×</button>` : `<button class="tl-action" type="button" data-sound>🔊</button><button class="tl-action" type="button" data-gifts>🎁</button><button class="tl-action" type="button" data-share>↗</button>`}
         </div>
+        <form class="tl-chat-form" id="chatForm">
+          <input id="chatInput" maxlength="220" placeholder="Say something nice…" autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
         <div class="tl-status" id="liveStatus">${isHost ? "Starting camera…" : "Connecting…"}</div>
+        <section class="tl-gift-panel" id="giftPanel" aria-hidden="true">
+          <div class="tl-gift-head"><strong>Send a gift</strong><button class="tl-gift-close" type="button" data-gift-close>x</button></div>
+          <div class="tl-gifts">
+            <button class="tl-gift" type="button" data-gift="Rose" data-amount="1"><span>Rose</span>Rose<small>$1</small></button>
+            <button class="tl-gift" type="button" data-gift="Glow" data-amount="3"><span>Glow</span>Glow<small>$3</small></button>
+            <button class="tl-gift" type="button" data-gift="Crown" data-amount="5"><span>Crown</span>Crown<small>$5</small></button>
+            <button class="tl-gift" type="button" data-gift="Fire" data-amount="10"><span>Fire</span>Fire<small>$10</small></button>
+            <button class="tl-gift" type="button" data-gift="Diamond" data-amount="25"><span>Diamond</span>Diamond<small>$25</small></button>
+            <button class="tl-gift" type="button" data-gift="Universe" data-amount="50"><span>Universe</span>Universe<small>$50</small></button>
+          </div>
+        </section>
+        <div class="tl-toast" id="giftToast"></div>
       </main>
       <script src="/socket.io/socket.io.js"></script>
       <script>
@@ -1904,6 +1968,12 @@ router.get("/stories/live/:id", async (req, res) => {
           const video = document.getElementById('liveVideo');
           const wait = document.getElementById('waitLayer');
           const status = document.getElementById('liveStatus');
+          const chat = document.getElementById('liveChat');
+          const chatForm = document.getElementById('chatForm');
+          const chatInput = document.getElementById('chatInput');
+          const giftPanel = document.getElementById('giftPanel');
+          const giftToast = document.getElementById('giftToast');
+          const viewerCount = document.getElementById('viewerCount');
           const socket = io();
           const peers = new Map();
           let localStream = null;
@@ -1912,13 +1982,36 @@ router.get("/stories/live/:id", async (req, res) => {
 
           function setStatus(text){ if (status) status.textContent = text; }
           function hideWait(){ if (wait) wait.style.display = 'none'; }
+          function addChat(nameText, message, gift){
+            if (!chat) return;
+            const row = document.createElement('div');
+            row.className = 'tl-chat-row' + (gift ? ' is-gift' : '');
+            const strong = document.createElement('strong');
+            strong.textContent = nameText || 'Viewer';
+            const span = document.createElement('span');
+            span.textContent = message || '';
+            row.appendChild(strong);
+            row.appendChild(span);
+            chat.appendChild(row);
+            while (chat.children.length > 6) chat.removeChild(chat.firstElementChild);
+          }
+          function showGift(text){
+            if (!giftToast) return;
+            giftToast.textContent = text;
+            giftToast.classList.remove('show');
+            void giftToast.offsetWidth;
+            giftToast.classList.add('show');
+          }
 
           async function getCamera(){
             if (localStream) localStream.getTracks().forEach(track => track.stop());
             localStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode }, audio:true });
             video.srcObject = localStream;
             video.muted = true;
-            await video.play().catch(function(){});
+            await video.play().catch(function(){
+              video.muted = true;
+              video.play().catch(function(){});
+            });
             hideWait();
             setStatus('You are live');
           }
@@ -1948,10 +2041,12 @@ router.get("/stories/live/:id", async (req, res) => {
           async function startHost(){
             await getCamera();
             socket.emit('live:join', { storyId, role:'host', name });
+            addChat('Tapzy', 'You are live. Viewers can chat and send gifts.');
           }
 
           async function startViewer(){
             socket.emit('live:join', { storyId, role:'viewer', name });
+            addChat('Tapzy', 'Welcome to the live.');
           }
 
           socket.on('connect', function(){
@@ -1992,11 +2087,36 @@ router.get("/stories/live/:id", async (req, res) => {
           socket.on('live:ended', function(){
             setStatus('Live ended');
             if (wait) wait.style.display = 'grid';
+            addChat('Tapzy', 'The live has ended.');
+          });
+
+          socket.on('live:count', function(payload){
+            if (viewerCount) viewerCount.textContent = String(Math.max(1, Number(payload.count || 0)));
+          });
+
+          socket.on('live:chat', function(payload){
+            addChat(payload.name, payload.message);
+          });
+
+          socket.on('live:gift', function(payload){
+            const giftText = (payload.gift || 'Gift') + (payload.amount ? ' $' + payload.amount : '');
+            addChat(payload.name, 'sent ' + giftText, true);
+            showGift((payload.name || 'Viewer') + ' sent ' + giftText);
+          });
+
+          if (chatForm) chatForm.addEventListener('submit', function(event){
+            event.preventDefault();
+            const text = (chatInput.value || '').trim();
+            if (!text) return;
+            socket.emit('live:chat', { storyId, name, message:text });
+            chatInput.value = '';
           });
 
           document.addEventListener('click', async function(event){
             if (event.target.closest('[data-sound]')) {
               video.muted = !video.muted;
+              video.volume = 1;
+              video.play().catch(function(){});
               return;
             }
             if (event.target.closest('[data-mute]') && localStream) {
@@ -2013,6 +2133,27 @@ router.get("/stories/live/:id", async (req, res) => {
               fetch('/stories/live/' + encodeURIComponent(storyId) + '/end', { method:'POST' }).finally(function(){
                 location.href = '/stories/feed';
               });
+              return;
+            }
+            if (event.target.closest('[data-gifts]')) {
+              if (giftPanel) { giftPanel.classList.add('is-open'); giftPanel.setAttribute('aria-hidden','false'); }
+              return;
+            }
+            if (event.target.closest('[data-gift-close]')) {
+              if (giftPanel) { giftPanel.classList.remove('is-open'); giftPanel.setAttribute('aria-hidden','true'); }
+              return;
+            }
+            const giftButton = event.target.closest('[data-gift]');
+            if (giftButton) {
+              const gift = giftButton.getAttribute('data-gift');
+              const amount = Number(giftButton.getAttribute('data-amount') || 0);
+              socket.emit('live:gift', { storyId, name, gift, amount });
+              if (giftPanel) giftPanel.classList.remove('is-open');
+              return;
+            }
+            if (event.target.closest('[data-share]')) {
+              if (navigator.share) navigator.share({ title: document.title, url: location.href }).catch(function(){});
+              else if (navigator.clipboard) navigator.clipboard.writeText(location.href);
             }
           });
         })();
@@ -2320,12 +2461,20 @@ router.get("/stories/feed", async (req, res) => {
           var slides = Array.prototype.slice.call(document.querySelectorAll('.sf-slide'));
           var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab[data-filter]'));
           var empty = document.querySelector('.sf-no-results');
-          function activateVideoSound(slide){
-            var video = slide && slide.querySelector ? slide.querySelector('video') : null;
+          var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
+          function forceSound(video){
             if (!video) return;
+            try { video.defaultMuted = false; } catch(e) {}
             video.muted = false;
             video.volume = 1;
             video.removeAttribute('muted');
+            tapzySoundUnlocked = true;
+            localStorage.setItem('tapzy_story_sound', '1');
+          }
+          function activateVideoSound(slide){
+            var video = slide && slide.querySelector ? slide.querySelector('video') : null;
+            if (!video) return;
+            forceSound(video);
             var sound = slide.querySelector('[data-sound]');
             if (sound) {
               sound.classList.add('is-active');
@@ -2338,7 +2487,8 @@ router.get("/stories/feed", async (req, res) => {
               var video = entry.target.querySelector('video');
               if (!video) return;
               if (entry.isIntersecting && entry.intersectionRatio > .65) {
-                activateVideoSound(entry.target);
+                if (tapzySoundUnlocked) activateVideoSound(entry.target);
+                else video.play().catch(function(){});
               } else {
                 video.pause();
               }
@@ -2366,10 +2516,12 @@ router.get("/stories/feed", async (req, res) => {
             if (sound) {
               var video = sound.closest('.sf-slide').querySelector('video');
               if (video) {
-                video.muted = !video.muted;
-                if (!video.muted) {
-                  video.volume = 1;
-                  video.removeAttribute('muted');
+                if (!tapzySoundUnlocked || video.muted) {
+                  forceSound(video);
+                } else {
+                  video.muted = true;
+                  localStorage.setItem('tapzy_story_sound', '0');
+                  tapzySoundUnlocked = false;
                 }
                 video.play().catch(function(){});
                 sound.classList.toggle('is-active', !video.muted);
@@ -3558,6 +3710,16 @@ router.get("/stories/:username", async (req, res) => {
         let index = 0;
         let timer = null;
         let raf = null;
+        let tapzyViewerSoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
+        function forceViewerSound(video){
+          if (!video) return;
+          try { video.defaultMuted = false; } catch(e) {}
+          video.muted = false;
+          video.volume = 1;
+          video.removeAttribute('muted');
+          tapzyViewerSoundUnlocked = true;
+          localStorage.setItem("tapzy_story_sound", "1");
+        }
         let startX = 0;
 
         function currentPanel(){
@@ -3663,11 +3825,21 @@ router.get("/stories/:username", async (req, res) => {
           };
 
           try { video.currentTime = 0; } catch(e) {}
-          video.muted = false;
-          video.volume = 1;
           const soundButton = currentPanel() ? currentPanel().querySelector("[data-story-sound]") : null;
-          if (soundButton) soundButton.textContent = "Mute";
-          video.play().catch(function(){});
+          if (tapzyViewerSoundUnlocked) {
+            forceViewerSound(video);
+            if (soundButton) soundButton.textContent = "Mute";
+            video.play().catch(function(){
+              video.muted = true;
+              tapzyViewerSoundUnlocked = false;
+              localStorage.setItem("tapzy_story_sound", "0");
+              if (soundButton) soundButton.textContent = "Sound on";
+            });
+          } else {
+            video.muted = true;
+            if (soundButton) soundButton.textContent = "Sound on";
+            video.play().catch(function(){});
+          }
           raf = requestAnimationFrame(tick);
         }
 
@@ -3695,8 +3867,18 @@ router.get("/stories/:username", async (req, res) => {
           if (soundButton) {
             const video = currentVideo();
             if (video) {
-              video.muted = !video.muted;
-              video.play().catch(function(){});
+              if (!tapzyViewerSoundUnlocked || video.muted || soundButton.textContent !== "Mute") {
+                forceViewerSound(video);
+              } else {
+                video.muted = true;
+                tapzyViewerSoundUnlocked = false;
+                localStorage.setItem("tapzy_story_sound", "0");
+              }
+              video.play().catch(function(){
+                video.muted = true;
+                tapzyViewerSoundUnlocked = false;
+                localStorage.setItem("tapzy_story_sound", "0");
+              });
               soundButton.textContent = video.muted ? "Sound on" : "Mute";
             }
             return;
