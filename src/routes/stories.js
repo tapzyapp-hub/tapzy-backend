@@ -1767,7 +1767,7 @@ router.get("/stories/live/new", async (req, res) => {
     <html lang="en">
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
       <meta name="theme-color" content="#000000" />
       <title>Go Live · Tapzy</title>
       <style>
@@ -1866,7 +1866,7 @@ router.get("/stories/live/:id", async (req, res) => {
     <html lang="en">
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
       <meta name="theme-color" content="#000000" />
       <title>${escapeHtml(story.text || "Tapzy Live")}</title>
       <style>
@@ -2049,13 +2049,15 @@ router.get("/stories/live/:id", async (req, res) => {
         .tl-room:not(.tl-embed) .tl-action{width:56px;height:56px;font-size:17px;background:rgba(0,0,0,.34)}
         .tl-room:not(.tl-embed) .tl-end{width:64px;height:64px;font-size:30px}
         .tl-room:not(.tl-embed) .tl-chat-form{left:22px;right:22px;bottom:calc(var(--safe-bottom) + 18px);grid-template-columns:minmax(0,1fr) 86px;gap:12px;align-items:center}
-        .tl-room:not(.tl-embed) .tl-chat-form input{width:100%;min-width:0;min-height:54px;padding:0 18px;border-radius:999px;background:rgba(0,0,0,.58)}
+        .tl-room:not(.tl-embed) .tl-chat-form input{width:100%;min-width:0;min-height:54px;padding:0 18px;border-radius:999px;background:rgba(0,0,0,.58);font-size:16px!important;line-height:1.2}
         .tl-room:not(.tl-embed) .tl-chat-form button{width:86px;min-width:86px;min-height:54px;border-radius:999px;font-size:18px}
         .tl-room.tl-keyboard .tl-actions,.tl-room.tl-keyboard .tl-status{display:none!important}
-        .tl-room.tl-keyboard .tl-chat{bottom:calc(var(--safe-bottom) + 156px);right:22px;height:92px}
-        .tl-room.tl-keyboard .tl-copy{bottom:calc(var(--safe-bottom) + 86px);right:22px}
+        .tl-room.tl-keyboard .tl-chat{bottom:calc(var(--safe-bottom) + 150px);right:22px;height:78px}
+        .tl-room.tl-keyboard .tl-copy{bottom:calc(var(--safe-bottom) + 82px);right:22px}
+        .tl-room.tl-keyboard .tl-copy strong{font-size:22px}
+        .tl-room.tl-keyboard .tl-copy p{font-size:13px}
         .tl-room.tl-keyboard .tl-chat-form{left:18px;right:18px;bottom:calc(var(--safe-bottom) + 12px);grid-template-columns:minmax(0,1fr) 82px}
-        .tl-room.tl-keyboard .tl-chat-form input{min-height:52px}
+        .tl-room.tl-keyboard .tl-chat-form input{min-height:52px;font-size:16px!important}
         .tl-room.tl-keyboard .tl-chat-form button{width:82px;min-width:82px;min-height:52px}
         .tl-room.tl-keyboard .tl-story-tabs,.tl-room.tl-keyboard .tl-live-pill,.tl-room.tl-keyboard .tl-viewers{opacity:.18;pointer-events:none}
         @media(max-width:390px){
