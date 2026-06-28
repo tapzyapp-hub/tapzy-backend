@@ -2126,8 +2126,25 @@ router.get("/stories/live/:id", async (req, res) => {
             giftToast.classList.add('show');
           }
 
+          function syncLocalStreamToPeers(){
+            if (role !== 'host' || !localStream) return;
+            const tracks = localStream.getTracks();
+            peers.forEach(function(pc){
+              tracks.forEach(function(track){
+                const sender = pc.getSenders().find(function(item){
+                  return item.track && item.track.kind === track.kind;
+                });
+                if (sender) {
+                  sender.replaceTrack(track).catch(function(){});
+                } else {
+                  try { pc.addTrack(track, localStream); } catch(e) {}
+                }
+              });
+            });
+          }
+
           async function getCamera(){
-            if (localStream) localStream.getTracks().forEach(track => track.stop());
+            const oldStream = localStream;
             localStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode }, audio:true });
             video.srcObject = localStream;
             video.muted = true;
@@ -2135,6 +2152,8 @@ router.get("/stories/live/:id", async (req, res) => {
               video.muted = true;
               video.play().catch(function(){});
             });
+            syncLocalStreamToPeers();
+            if (oldStream) oldStream.getTracks().forEach(track => track.stop());
             hideWait();
             setStatus('You are live');
           }
