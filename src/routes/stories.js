@@ -1914,6 +1914,122 @@ router.get("/stories/live/:id", async (req, res) => {
         .tl-toast{position:fixed;z-index:22;left:50%;top:42%;transform:translate(-50%,-50%) scale(.92);padding:14px 18px;border-radius:999px;background:linear-gradient(135deg,#ff2d55,#2f76ff);box-shadow:0 0 60px rgba(255,45,85,.32);font-weight:1000;opacity:0;pointer-events:none}
         .tl-toast.show{animation:tlGiftPop 1.8s ease both}@keyframes tlGiftPop{0%{opacity:0;transform:translate(-50%,-35%) scale(.82)}16%,75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-70%) scale(.96)}}
         .tl-action[data-gifts]{background:linear-gradient(135deg,#ff2d55,#2f76ff);border:0}
+        .tl-live-pill{
+          top:calc(var(--safe-top) + 28px);
+          left:18px;
+          padding:8px 13px;
+          background:rgba(16,16,18,.58);
+          border:1px solid rgba(255,255,255,.10);
+          box-shadow:0 10px 28px rgba(0,0,0,.28);
+          letter-spacing:.16em;
+        }
+        .tl-viewers{
+          top:calc(var(--safe-top) + 72px);
+          left:18px;
+          padding:8px 12px;
+          background:rgba(16,16,18,.54);
+          box-shadow:0 10px 28px rgba(0,0,0,.24);
+        }
+        .tl-story-tabs{
+          top:calc(var(--safe-top) + 120px);
+          left:18px;
+          right:18px;
+          justify-content:space-between;
+          gap:12px;
+          font-size:15px;
+          letter-spacing:-.02em;
+        }
+        .tl-top{
+          top:calc(var(--safe-top) + 28px);
+          right:18px;
+          z-index:10;
+        }
+        .tl-icon{
+          width:48px;
+          height:48px;
+          background:rgba(0,0,0,.42);
+          border-color:rgba(255,255,255,.16);
+          font-size:24px;
+        }
+        .tl-copy{
+          bottom:calc(var(--safe-bottom) + 84px);
+          right:94px;
+        }
+        .tl-copy strong{
+          font-size:24px;
+          letter-spacing:-.05em;
+          line-height:.95;
+        }
+        .tl-copy p{
+          margin-top:4px;
+          font-size:14px;
+          color:rgba(255,255,255,.76);
+        }
+        .tl-actions{
+          right:18px;
+          bottom:calc(var(--safe-bottom) + 92px);
+          gap:14px;
+        }
+        .tl-action{
+          width:54px;
+          height:54px;
+          border:0;
+          background:rgba(0,0,0,.36);
+          box-shadow:0 10px 24px rgba(0,0,0,.25);
+        }
+        .tl-end{
+          width:60px;
+          height:60px;
+          font-size:28px;
+          background:linear-gradient(135deg,#ff3b68,#f00648);
+          box-shadow:0 14px 36px rgba(255,0,72,.28);
+        }
+        .tl-chat{
+          left:18px;
+          right:96px;
+          bottom:calc(var(--safe-bottom) + 182px);
+          height:124px;
+          gap:6px;
+        }
+        .tl-chat-row{
+          max-width:min(100%, 360px);
+          padding:9px 12px;
+          border-radius:18px;
+          background:rgba(0,0,0,.38);
+          font-size:13px;
+        }
+        .tl-chat-form{
+          left:18px;
+          right:112px;
+          bottom:calc(var(--safe-bottom) + 20px);
+          grid-template-columns:minmax(0,1fr) 76px;
+          gap:10px;
+        }
+        .tl-chat-form input{
+          min-height:48px;
+          background:rgba(0,0,0,.52);
+          border-color:rgba(255,255,255,.10);
+          box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 30px rgba(0,0,0,.22);
+        }
+        .tl-chat-form button{
+          min-height:48px;
+          min-width:76px;
+          font-size:18px;
+          box-shadow:0 12px 30px rgba(0,0,0,.22);
+        }
+        .tl-status{
+          left:50%;
+          bottom:calc(var(--safe-bottom) + 132px);
+          background:rgba(0,0,0,.44);
+          border:0;
+          box-shadow:0 10px 26px rgba(0,0,0,.24);
+        }
+        @media(max-width:390px){
+          .tl-story-tabs{font-size:14px;gap:10px}
+          .tl-chat-form{right:102px;grid-template-columns:minmax(0,1fr) 68px}
+          .tl-chat-form button{min-width:68px;font-size:16px}
+          .tl-copy strong{font-size:22px}
+        }
       </style>
     </head>
     <body>
@@ -1938,7 +2054,7 @@ router.get("/stories/live/:id", async (req, res) => {
         <section class="tl-chat" id="liveChat" aria-live="polite"></section>
         <div class="tl-copy"><strong>${escapeHtml(displayName)}</strong><p>${escapeHtml(story.text || "Tapzy Live")}</p></div>
         <div class="tl-actions">
-          ${isHost ? `<button class="tl-action" type="button" data-flip>↺</button><button class="tl-action" type="button" data-mute>🎙</button><button class="tl-action tl-end" type="button" data-end>×</button>` : `<button class="tl-action" type="button" data-sound>🔊</button><button class="tl-action" type="button" data-gifts>🎁</button><button class="tl-action" type="button" data-share>↗</button>`}
+          ${isHost ? `<button class="tl-action" type="button" data-flip>&#8635;</button><button class="tl-action" type="button" data-mute>Mic</button><button class="tl-action tl-end" type="button" data-end>&times;</button>` : `<button class="tl-action" type="button" data-sound>&#128266;</button><button class="tl-action" type="button" data-gifts>Gift</button><button class="tl-action" type="button" data-share>&#8599;</button>`}
         </div>
         <form class="tl-chat-form" id="chatForm">
           <input id="chatInput" maxlength="220" placeholder="Say something nice…" autocomplete="off" />
