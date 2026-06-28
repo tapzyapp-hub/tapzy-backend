@@ -2184,7 +2184,7 @@ router.get("/stories/live/:id", async (req, res) => {
             syncLocalStreamToPeers();
             if (oldStream) oldStream.getTracks().forEach(track => track.stop());
             hideWait();
-            setStatus('You are live');
+            setStatus('');
           }
 
           function peerFor(id){
@@ -2200,7 +2200,7 @@ router.get("/stories/live/:id", async (req, res) => {
                 video.muted = false;
                 video.play().catch(function(){});
                 hideWait();
-                setStatus('Live now');
+                setStatus('');
               }
             };
             if (role === 'host' && localStream) {
@@ -2232,7 +2232,7 @@ router.get("/stories/live/:id", async (req, res) => {
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
             socket.emit('live:offer', { storyId, to:viewerId, sdp:offer });
-            setStatus('Viewer connected');
+            setStatus('');
           });
 
           socket.on('live:offer', async function(payload){
