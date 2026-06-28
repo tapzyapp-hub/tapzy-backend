@@ -2025,6 +2025,7 @@ router.get("/stories/live/:id", async (req, res) => {
           border:0;
           box-shadow:0 10px 26px rgba(0,0,0,.24);
         }
+        .tl-status:empty{display:none}
         .tl-embed .tl-story-tabs,.tl-embed .tl-top,.tl-embed .tl-viewers,.tl-embed .tl-chat,.tl-embed .tl-copy,.tl-embed .tl-actions,.tl-embed .tl-chat-form,.tl-embed .tl-gift-panel,.tl-embed .tl-toast{display:none!important}
         .tl-embed .tl-wait{background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.55));padding:22px}
         .tl-embed .tl-wait-card{transform:translateY(32%)}
@@ -2131,7 +2132,7 @@ router.get("/stories/live/:id", async (req, res) => {
           let facingMode = 'user';
           const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
-          function setStatus(text){ if (status) status.textContent = text; }
+          function setStatus(text){ if (status) status.textContent = (text || '').trim(); }
           function hideWait(){ if (wait) wait.style.display = 'none'; }
           function addChat(nameText, message, gift){
             if (!chat) return;
@@ -2253,7 +2254,7 @@ router.get("/stories/live/:id", async (req, res) => {
             try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
           });
 
-          socket.on('live:waiting', function(){ setStatus('Waiting for host'); });
+          socket.on('live:waiting', function(){ setStatus(''); });
           socket.on('live:ended', function(){
             setStatus('Live ended');
             if (wait) wait.style.display = 'grid';
