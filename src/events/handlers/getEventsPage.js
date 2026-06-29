@@ -2691,12 +2691,56 @@ module.exports = async function getEventsPage(req, res) {
       }
 
       @media(max-width:700px){
+        html,
+        body,
+        body.events-story-shell{
+          height:auto !important;
+          min-height:100% !important;
+          overflow-x:hidden !important;
+          overflow-y:auto !important;
+          overscroll-behavior-y:auto !important;
+          touch-action:pan-y !important;
+          -webkit-overflow-scrolling:touch;
+        }
+
+        body.events-story-shell{
+          position:static !important;
+        }
+
+        .events-wrap,
+        .events-mobile-feed,
+        .events-section.mobile-only,
+        .mobile-events-grid{
+          overflow:visible !important;
+          overscroll-behavior:contain;
+          touch-action:pan-y !important;
+        }
+
+        .event-feed-mobile,
+        .event-feed-mobile.mobile-only,
+        .event-feed-mobile .reel-feed{
+          height:auto !important;
+          min-height:0 !important;
+          overflow:hidden !important;
+          scroll-snap-type:none !important;
+          overscroll-behavior:auto !important;
+        }
+
+        .events-chip-row{
+          touch-action:pan-x pan-y !important;
+        }
+
         .mobile-events-grid .event-card,
         .mobile-events-grid .event-card:hover,
         .mobile-events-grid .event-card.is-touch-active{
           border-radius:32px !important;
           clip-path:inset(0 round 32px) !important;
           overflow:hidden !important;
+          touch-action:pan-y !important;
+          transform:translateZ(0);
+          -webkit-transform:translateZ(0);
+          -webkit-backface-visibility:hidden;
+          backface-visibility:hidden;
         }
 
         .mobile-events-grid .event-card::before,
