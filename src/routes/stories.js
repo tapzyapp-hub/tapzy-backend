@@ -110,11 +110,11 @@ function youtubeEmbedUrl(value) {
 
 function renderLiveStreamMedia(url, title, index = 0, className = "sf-media") {
   if (isNativeLiveUrl(url)) {
-    const safeClass = escapeHtml(className);
-    const previewSrc = url.includes("?") ? `${url}&embed=1` : `${url}?embed=1`;
     return `
-    <a class="sf-native-live-preview ${safeClass}" href="${escapeHtml(url)}" aria-label="Open Tapzy live">
-      <iframe class="sf-native-live-frame" src="${escapeHtml(previewSrc)}" title="${escapeHtml(title || "Tapzy Live")}" allow="autoplay; camera; microphone; encrypted-media; picture-in-picture" loading="${index < 2 ? "eager" : "lazy"}"></iframe>
+    <a class="sf-live-link ${escapeHtml(className)}" href="${escapeHtml(url)}">
+      <span class="sf-live-badge">LIVE</span>
+      <strong>${escapeHtml(title || "Tapzy Live")}</strong>
+      <em>Tap to join live</em>
     </a>`;
   }
 
@@ -1766,7 +1766,7 @@ router.get("/stories/live/new", async (req, res) => {
     <html lang="en">
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       <meta name="theme-color" content="#000000" />
       <title>Go Live · Tapzy</title>
       <style>
@@ -1859,13 +1859,12 @@ router.get("/stories/live/:id", async (req, res) => {
     const isHost = !!(currentProfile && currentProfile.id === story.profileId && req.query.host === "1");
     const displayName = story.profile?.name || story.profile?.username || "Tapzy Live";
     const viewerName = currentProfile?.name || currentProfile?.username || "Viewer";
-    const isEmbed = String(req.query.embed || "") === "1";
 
     res.send(`<!doctype html>
     <html lang="en">
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       <meta name="theme-color" content="#000000" />
       <title>${escapeHtml(story.text || "Tapzy Live")}</title>
       <style>
@@ -2025,41 +2024,6 @@ router.get("/stories/live/:id", async (req, res) => {
           border:0;
           box-shadow:0 10px 26px rgba(0,0,0,.24);
         }
-        .tl-status:empty{display:none}
-        .tl-embed .tl-live-pill,.tl-embed .tl-story-tabs,.tl-embed .tl-top,.tl-embed .tl-viewers,.tl-embed .tl-chat,.tl-embed .tl-copy,.tl-embed .tl-actions,.tl-embed .tl-chat-form,.tl-embed .tl-gift-panel,.tl-embed .tl-toast{display:none!important}
-        .tl-embed .tl-wait{background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.55));padding:22px}
-        .tl-embed .tl-wait-card{transform:translateY(32%)}
-        .tl-embed .tl-wait h1{font-size:22px;letter-spacing:-.03em}
-        .tl-embed .tl-wait p{font-size:13px}
-        /* final live polish */
-        .tl-room:not(.tl-embed) .tl-wait{z-index:4;background:radial-gradient(circle at 50% 26%,rgba(35,94,220,.22),transparent 36%),linear-gradient(180deg,rgba(0,0,0,.34),rgba(0,0,0,.72))}
-        .tl-room:not(.tl-embed) .tl-live-pill:not(.tl-wait .tl-live-pill){top:calc(var(--safe-top) + 30px);left:22px;height:42px;padding:0 15px;font-size:12px;background:rgba(18,18,20,.62);border-color:rgba(255,255,255,.08)}
-        .tl-bars{font-size:11px;letter-spacing:1px;opacity:.9}
-        .tl-room:not(.tl-embed) .tl-viewers{top:calc(var(--safe-top) + 80px);left:22px;height:40px;padding:0 15px;border-radius:999px;background:rgba(18,18,20,.56);border-color:rgba(255,255,255,.08)}
-        .tl-room:not(.tl-embed) .tl-story-tabs{top:calc(var(--safe-top) + 134px);left:22px;right:22px;font-size:15px;gap:14px}
-        .tl-room:not(.tl-embed) .tl-top{top:calc(var(--safe-top) + 30px);right:22px}
-        .tl-room:not(.tl-embed) .tl-icon{width:52px;height:52px;font-size:28px;background:rgba(0,0,0,.34)}
-        .tl-room:not(.tl-embed) .tl-chat{left:22px;right:116px;bottom:calc(var(--safe-bottom) + 178px);height:116px;gap:6px}
-        .tl-room:not(.tl-embed) .tl-chat-row{padding:8px 12px;border-radius:18px;background:rgba(10,10,12,.42);font-size:13px;box-shadow:0 8px 22px rgba(0,0,0,.16)}
-        .tl-room:not(.tl-embed) .tl-copy{left:22px;right:112px;bottom:calc(var(--safe-bottom) + 98px)}
-        .tl-room:not(.tl-embed) .tl-copy strong{font-size:25px;line-height:.95}
-        .tl-room:not(.tl-embed) .tl-copy p{font-size:14px;line-height:1.25}
-        .tl-room:not(.tl-embed) .tl-status{bottom:calc(var(--safe-bottom) + 152px);font-size:12px;padding:8px 13px;opacity:.92}
-        .tl-room:not(.tl-embed) .tl-actions{right:22px;bottom:calc(var(--safe-bottom) + 116px);gap:16px}
-        .tl-room:not(.tl-embed) .tl-action{width:56px;height:56px;font-size:17px;background:rgba(0,0,0,.34)}
-        .tl-room:not(.tl-embed) .tl-end{width:64px;height:64px;font-size:30px}
-        .tl-room:not(.tl-embed) .tl-chat-form{left:22px;right:22px;bottom:calc(var(--safe-bottom) + 18px);grid-template-columns:minmax(0,1fr) 86px;gap:12px;align-items:center}
-        .tl-room:not(.tl-embed) .tl-chat-form input{width:100%;min-width:0;min-height:54px;padding:0 18px;border-radius:999px;background:rgba(0,0,0,.58);font-size:16px!important;line-height:1.2}
-        .tl-room:not(.tl-embed) .tl-chat-form button{width:86px;min-width:86px;min-height:54px;border-radius:999px;font-size:18px}
-        .tl-room.tl-keyboard .tl-actions,.tl-room.tl-keyboard .tl-status{display:none!important}
-        .tl-room.tl-keyboard .tl-chat{bottom:calc(var(--safe-bottom) + 150px);right:22px;height:78px}
-        .tl-room.tl-keyboard .tl-copy{bottom:calc(var(--safe-bottom) + 82px);right:22px}
-        .tl-room.tl-keyboard .tl-copy strong{font-size:22px}
-        .tl-room.tl-keyboard .tl-copy p{font-size:13px}
-        .tl-room.tl-keyboard .tl-chat-form{left:18px;right:18px;bottom:calc(var(--safe-bottom) + 12px);grid-template-columns:minmax(0,1fr) 82px}
-        .tl-room.tl-keyboard .tl-chat-form input{min-height:52px;font-size:16px!important}
-        .tl-room.tl-keyboard .tl-chat-form button{width:82px;min-width:82px;min-height:52px}
-        .tl-room.tl-keyboard .tl-story-tabs,.tl-room.tl-keyboard .tl-live-pill,.tl-room.tl-keyboard .tl-viewers{opacity:.18;pointer-events:none}
         @media(max-width:390px){
           .tl-story-tabs{font-size:14px;gap:10px}
           .tl-chat-form{right:102px;grid-template-columns:minmax(0,1fr) 68px}
@@ -2069,13 +2033,13 @@ router.get("/stories/live/:id", async (req, res) => {
       </style>
     </head>
     <body>
-      <main class="tl-room ${isEmbed ? "tl-embed" : ""}" data-story-id="${escapeHtml(story.id)}" data-role="${isHost ? "host" : "viewer"}" data-name="${escapeHtml(viewerName)}">
+      <main class="tl-room" data-story-id="${escapeHtml(story.id)}" data-role="${isHost ? "host" : "viewer"}" data-name="${escapeHtml(viewerName)}">
         <video id="liveVideo" ${isHost ? "muted" : "autoplay"} playsinline webkit-playsinline></video>
         <div class="tl-wait" id="waitLayer">
           <div class="tl-wait-card">
             <div class="tl-live-pill" style="position:static;margin:0 auto 18px;width:max-content"><span class="tl-dot"></span>LIVE</div>
-            <h1>${isEmbed ? "Tap to watch LIVE" : isHost ? "Preparing your live" : "Joining live"}</h1>
-            <p>${isEmbed ? "Live preview" : isHost ? "Allow camera and microphone to start broadcasting." : "Waiting for the host video."}</p>
+            <h1>${isHost ? "Preparing your live" : "Joining live"}</h1>
+            <p>${isHost ? "Allow camera and microphone to start broadcasting." : "Waiting for the host video."}</p>
           </div>
         </div>
         <div class="tl-live-pill"><span class="tl-dot"></span>LIVE</div>
@@ -2083,7 +2047,7 @@ router.get("/stories/live/:id", async (req, res) => {
           <a href="/events">Community</a>
           <a href="/stories/feed?filter=nearby">Simcoe</a>
           <a href="/stories/feed?filter=following">Following</a>
-          <a class="is-active" href="/stories/feed">Discover</a>
+          <a class="is-active" href="/stories/feed">For You</a>
         </nav>
         <div class="tl-viewers">▮▮ <span id="viewerCount">1</span> watching</div>
         <div class="tl-top"><a class="tl-icon" href="/stories/feed" aria-label="Close">×</a></div>
@@ -2132,7 +2096,7 @@ router.get("/stories/live/:id", async (req, res) => {
           let facingMode = 'user';
           const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
-          function setStatus(text){ if (status) status.textContent = (text || '').trim(); }
+          function setStatus(text){ if (status) status.textContent = text; }
           function hideWait(){ if (wait) wait.style.display = 'none'; }
           function addChat(nameText, message, gift){
             if (!chat) return;
@@ -2155,25 +2119,8 @@ router.get("/stories/live/:id", async (req, res) => {
             giftToast.classList.add('show');
           }
 
-          function syncLocalStreamToPeers(){
-            if (role !== 'host' || !localStream) return;
-            const tracks = localStream.getTracks();
-            peers.forEach(function(pc){
-              tracks.forEach(function(track){
-                const sender = pc.getSenders().find(function(item){
-                  return item.track && item.track.kind === track.kind;
-                });
-                if (sender) {
-                  sender.replaceTrack(track).catch(function(){});
-                } else {
-                  try { pc.addTrack(track, localStream); } catch(e) {}
-                }
-              });
-            });
-          }
-
           async function getCamera(){
-            const oldStream = localStream;
+            if (localStream) localStream.getTracks().forEach(track => track.stop());
             localStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode }, audio:true });
             video.srcObject = localStream;
             video.muted = true;
@@ -2181,10 +2128,8 @@ router.get("/stories/live/:id", async (req, res) => {
               video.muted = true;
               video.play().catch(function(){});
             });
-            syncLocalStreamToPeers();
-            if (oldStream) oldStream.getTracks().forEach(track => track.stop());
             hideWait();
-            setStatus('');
+            setStatus('You are live');
           }
 
           function peerFor(id){
@@ -2200,7 +2145,7 @@ router.get("/stories/live/:id", async (req, res) => {
                 video.muted = false;
                 video.play().catch(function(){});
                 hideWait();
-                setStatus('');
+                setStatus('Live now');
               }
             };
             if (role === 'host' && localStream) {
@@ -2232,7 +2177,7 @@ router.get("/stories/live/:id", async (req, res) => {
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
             socket.emit('live:offer', { storyId, to:viewerId, sdp:offer });
-            setStatus('');
+            setStatus('Viewer connected');
           });
 
           socket.on('live:offer', async function(payload){
@@ -2254,7 +2199,7 @@ router.get("/stories/live/:id", async (req, res) => {
             try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
           });
 
-          socket.on('live:waiting', function(){ setStatus(''); });
+          socket.on('live:waiting', function(){ setStatus('Waiting for host'); });
           socket.on('live:ended', function(){
             setStatus('Live ended');
             if (wait) wait.style.display = 'grid';
@@ -2274,11 +2219,6 @@ router.get("/stories/live/:id", async (req, res) => {
             addChat(payload.name, 'sent ' + giftText, true);
             showGift((payload.name || 'Viewer') + ' sent ' + giftText);
           });
-
-          if (chatInput) {
-            chatInput.addEventListener('focus', function(){ room.classList.add('tl-keyboard'); });
-            chatInput.addEventListener('blur', function(){ setTimeout(function(){ room.classList.remove('tl-keyboard'); }, 120); });
-          }
 
           if (chatForm) chatForm.addEventListener('submit', function(event){
             event.preventDefault();
@@ -2539,8 +2479,6 @@ router.get("/stories/feed", async (req, res) => {
         .sf-media-wrap,.sf-media,.sf-shade{position:absolute;inset:0;width:100%;height:100%}
         .sf-media{object-fit:cover;background:#111}
         .sf-live-embed{border:0;background:#000}
-        .sf-native-live-preview{position:absolute;inset:0;display:block;overflow:hidden;background:#000;color:#fff;text-decoration:none}
-        .sf-native-live-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;pointer-events:none}
         .sf-live-link{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:44px;text-decoration:none;color:#fff;background:radial-gradient(circle at 28% 24%,rgba(47,118,255,.38),transparent 36%),radial-gradient(circle at 82% 34%,rgba(255,255,255,.12),transparent 34%),linear-gradient(180deg,#101827,#02040a)}
         .sf-live-link::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.16) .7px,transparent .7px);background-size:10px 10px;opacity:.14}
         .sf-live-link strong,.sf-live-link em,.sf-live-badge{position:relative;z-index:1}
