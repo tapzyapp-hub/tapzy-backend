@@ -1202,6 +1202,123 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           if (!grid || !loader || !end) return;
 
+          const isAndroid = /Android/i.test(navigator.userAgent || "");
+
+          if (isAndroid) {
+            let page = 2;
+            let loading = false;
+            let hasMore = loader.dataset.hasMore === "1";
+            let ticking = false;
+            let lastScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+            let lastScrollAt = Date.now();
+
+            grid.querySelectorAll(".js-event-card").forEach((card) => {
+              card.classList.add("is-revealed");
+              card.dataset.revealBound = "1";
+            });
+
+            function syncFooter() {
+              loader.style.display = loading && hasMore ? "block" : "none";
+              end.style.display = hasMore ? "none" : "block";
+              if (button) button.style.display = "none";
+            }
+
+            function nearBottom() {
+              const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+              const doc = document.documentElement;
+              const height = Math.max(doc.scrollHeight || 0, document.body ? document.body.scrollHeight || 0 : 0);
+              const viewport = window.innerHeight || doc.clientHeight || 700;
+              return height - (scrollY + viewport) < Math.max(560, viewport * 0.72);
+            }
+
+            function softenRunawayMomentum() {
+              const now = Date.now();
+              const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+              const elapsed = Math.max(16, now - lastScrollAt);
+              const delta = scrollY - lastScrollY;
+              const maxStep = Math.max(520, (window.innerHeight || 700) * 0.88);
+              const previousY = lastScrollY;
+
+              lastScrollY = scrollY;
+              lastScrollAt = now;
+
+              if (delta > maxStep && elapsed < 90) {
+                window.scrollTo({ top: previousY + maxStep, behavior: "auto" });
+                lastScrollY = window.pageYOffset || document.documentElement.scrollTop || previousY + maxStep;
+              }
+            }
+
+            async function loadMore() {
+              if (loading || !hasMore) return;
+              loading = true;
+              syncFooter();
+
+              try {
+                const qs = new URLSearchParams({
+                  page: String(page),
+                  limit: String(Math.min(FEED_PAGE_SIZE, 8)),
+                  city: "",
+                  category: category || "all"
+                });
+
+                if (IS_HOT_NEARBY_MODE && HAS_LIVE_LOCATION) {
+                  qs.set("lat", String(LIVE_LAT));
+                  qs.set("lng", String(LIVE_LNG));
+                  qs.set("radiusKm", String(RADIUS_KM || 85));
+                }
+
+                const res = await fetch("/events/feed?" + qs.toString(), {
+                  cache: "no-store",
+                  headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+
+                const data = await res.json();
+                if (!res.ok || !data.ok) throw new Error(data.error || "Could not load more events");
+
+                const items = Array.isArray(data.items) ? data.items : [];
+                if (!items.length) {
+                  hasMore = false;
+                  return;
+                }
+
+                const template = document.createElement("template");
+                template.innerHTML = items.map((event) => renderClientCard(event)).join("");
+                grid.appendChild(template.content);
+                grid.querySelectorAll(".js-event-card").forEach((card) => {
+                  card.classList.add("is-revealed");
+                  card.dataset.revealBound = "1";
+                });
+                enhance(grid);
+
+                page += 1;
+                hasMore = !!data.hasMore;
+              } catch (err) {
+                console.error(err);
+              } finally {
+                loading = false;
+                syncFooter();
+              }
+            }
+
+            function onScroll() {
+              if (ticking) return;
+              ticking = true;
+              window.requestAnimationFrame(() => {
+                ticking = false;
+                softenRunawayMomentum();
+                if (nearBottom()) loadMore();
+              });
+            }
+
+            window.addEventListener("scroll", onScroll, { passive: true });
+            window.addEventListener("resize", onScroll, { passive: true });
+            if (button) button.addEventListener("click", loadMore);
+            syncFooter();
+            enhance(grid);
+            window.setTimeout(onScroll, 350);
+            return;
+          }
+
           const section = grid.closest(".events-section") || grid.parentElement || document.body;
           const topSpacer = document.createElement("div");
           const bottomSpacer = document.createElement("div");
