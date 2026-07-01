@@ -194,6 +194,7 @@ module.exports = async function getEventsPage(req, res) {
         <span class="events-story-tab is-active">Events</span>
         <a class="events-story-tab" href="/stories/feed?filter=following">Following</a>
         <a class="events-story-tab" href="/stories/feed">Discover</a>
+        <a class="events-story-tab" href="/messages">Messages</a>
       </nav>
       <a class="events-story-search" href="${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}" aria-label="Search Tapzy">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
@@ -464,7 +465,7 @@ module.exports = async function getEventsPage(req, res) {
         -webkit-backdrop-filter:blur(10px);
       }
       .events-story-brand img{width:72%;height:72%;object-fit:contain;display:block;}
-      .events-story-tabs{display:flex;gap:22px;align-items:center;min-width:0;}
+      .events-story-tabs{display:flex;gap:18px;align-items:center;min-width:0;}
       .events-story-tab{
         position:relative;
         border:0;
@@ -2596,8 +2597,8 @@ module.exports = async function getEventsPage(req, res) {
           padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
         }
 
-        .events-story-tabs{gap:18px;}
-        .events-story-tab{font-size:15px;}
+        .events-story-tabs{gap:12px;}
+        .events-story-tab{font-size:13px;}
 
         .events-wrap > .events-hero{
           display:none !important;

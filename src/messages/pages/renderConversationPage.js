@@ -2228,6 +2228,127 @@ module.exports = function renderConversationPage({
     }
   }
 
+  /* Compact premium mobile header so Messages fits the new Tapzy app flow */
+  .tz-chat-topbar{
+    border:1px solid rgba(116,190,255,.12);
+    border-radius:28px;
+    padding:10px;
+    background:
+      radial-gradient(360px 150px at 48% 0%, rgba(47,118,255,.15), transparent 58%),
+      linear-gradient(180deg, rgba(8,13,24,.92), rgba(3,5,10,.76));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 14px 36px rgba(0,0,0,.26);
+  }
+
+  .tz-chat-topbar-actions{
+    gap:8px;
+  }
+
+  .tz-chat-pill{
+    min-width:88px;
+    min-height:38px;
+    padding:0 16px;
+    font-size:13px;
+  }
+
+  .tz-chat-pill-danger{
+    color:#ffdce4;
+    border-color:rgba(255,98,140,.30);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 28px rgba(0,0,0,.24),0 0 18px rgba(255,65,110,.12);
+  }
+
+  @media(max-width:700px){
+    .tz-chat-topbar{
+      display:grid;
+      grid-template-columns:auto minmax(0,1fr) auto;
+      align-items:center;
+      gap:8px;
+      padding:9px;
+      border-radius:24px;
+      margin-bottom:12px;
+    }
+
+    .tz-chat-topbar-left{
+      min-width:0;
+      gap:8px;
+    }
+
+    .tz-chat-back{
+      width:38px;
+      height:38px;
+      font-size:22px;
+      border-radius:15px;
+    }
+
+    .tz-chat-partner{
+      gap:8px;
+      min-width:0;
+    }
+
+    .tz-chat-partner-avatar{
+      width:42px;
+      height:42px;
+      border-radius:15px;
+      flex:0 0 auto;
+    }
+
+    .tz-chat-partner-copy{
+      min-width:0;
+    }
+
+    .tz-chat-partner-name-row{
+      gap:5px;
+      flex-wrap:nowrap;
+    }
+
+    .tz-chat-partner-name{
+      max-width:34vw;
+      font-size:14px;
+      letter-spacing:-.03em;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .tz-chat-partner-badge{
+      min-height:24px;
+      padding:0 10px;
+      font-size:10px;
+      letter-spacing:.14em;
+    }
+
+    .tz-chat-partner-badge:not(:first-of-type){
+      display:none;
+    }
+
+    .tz-chat-topbar-actions{
+      display:flex;
+      gap:7px;
+      margin-left:0;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:nowrap;
+    }
+
+    .tz-chat-topbar-actions form{
+      display:flex;
+      margin:0;
+    }
+
+    .tz-chat-pill{
+      min-width:58px;
+      min-height:34px;
+      height:34px;
+      padding:0 11px;
+      border-radius:14px;
+      font-size:11px;
+      letter-spacing:.01em;
+    }
+
+    .tz-chat-settings-panel{
+      right:-66px;
+    }
+  }
+
 </style>
 
 
