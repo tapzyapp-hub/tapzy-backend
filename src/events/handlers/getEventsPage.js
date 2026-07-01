@@ -1163,6 +1163,14 @@ module.exports = async function getEventsPage(req, res) {
 
         border-color:rgba(255,255,255,.12);
 
+        white-space:nowrap;
+
+        flex-shrink:0;
+
+        line-height:1;
+
+        word-break:keep-all;
+
       }
 
 
@@ -2687,6 +2695,15 @@ module.exports = async function getEventsPage(req, res) {
 
         .mobile-events-grid .event-card.is-touch-active .event-media{
           transform:scale(1.04) !important;
+        }
+
+        .mobile-events-grid .event-pill-soft{
+          max-width:46%;
+          padding-inline:10px;
+          font-size:9.5px;
+          letter-spacing:.75px;
+          overflow:hidden;
+          text-overflow:ellipsis;
         }
       }
 
