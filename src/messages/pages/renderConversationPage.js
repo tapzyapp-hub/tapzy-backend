@@ -2349,6 +2349,70 @@ module.exports = function renderConversationPage({
     }
   }
 
+  /* Fixed chat app layout: only the messages move */
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav{
+    height:100dvh;
+    overflow:hidden;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav > .wrap{
+    height:calc(100dvh - 72px - 64px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding:0 14px !important;
+    overflow:hidden;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+    height:100%;
+    min-height:0;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
+    flex:0 0 auto;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-block-notice{
+    flex:0 0 auto;
+    position:relative;
+    bottom:auto;
+  }
+
+  @media(max-width:700px){
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav > .wrap{
+      height:calc(100dvh - 72px - 64px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+      padding:0 !important;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+      border-radius:0;
+      padding:8px 8px 10px;
+      margin:0;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+      padding:10px;
+      border-radius:22px;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer{
+      margin-top:8px;
+      padding-top:0;
+    }
+  }
+
 </style>
 
 
