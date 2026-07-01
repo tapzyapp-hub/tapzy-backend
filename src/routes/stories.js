@@ -2535,11 +2535,10 @@ router.get("/stories/feed", async (req, res) => {
         .sf-loader::before{content:"";position:absolute;inset:-35%;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.10),transparent 33%);filter:blur(34px);opacity:.52;animation:sfLoaderAura 2.8s ease-in-out infinite}
         .sf-loader::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.16) .55px,transparent .55px);background-size:12px 12px;opacity:.035;mask-image:radial-gradient(circle at 50% 45%,#000,transparent 70%);-webkit-mask-image:radial-gradient(circle at 50% 45%,#000,transparent 70%)}
         .sf-loader.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
-        .sf-loader-logo{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:12px;width:min(82vw,460px);transform:translateY(-4px);filter:drop-shadow(0 18px 48px rgba(255,255,255,.18));animation:sfLoaderPulse 1.9s cubic-bezier(.45,0,.2,1) infinite;will-change:transform,filter,opacity}
-        .sf-loader-logo::before{content:"";position:absolute;left:50%;top:50%;width:min(86vw,500px);height:170px;border-radius:999px;background:radial-gradient(circle,rgba(255,255,255,.18),rgba(255,255,255,.045) 34%,rgba(255,255,255,0) 70%);transform:translate(-50%,-50%);filter:blur(18px);opacity:.78;animation:sfLoaderHalo 1.9s ease-out infinite;z-index:-1}
-        .sf-loader-mark{width:clamp(154px,32vw,214px);height:auto;object-fit:contain;filter:brightness(1.13) contrast(1.08)}
-        .sf-loader-word{font-size:clamp(70px,18vw,128px);font-weight:950;letter-spacing:-.095em;line-height:.86;color:#fff;margin-left:-2px;text-shadow:0 0 1px rgba(255,255,255,.85),0 18px 46px rgba(255,255,255,.14)}
-        @keyframes sfLoaderPulse{0%,100%{transform:translateY(-4px) scale(1);opacity:.94;filter:drop-shadow(0 18px 48px rgba(255,255,255,.16))}50%{transform:translateY(-4px) scale(1.04);opacity:1;filter:drop-shadow(0 24px 72px rgba(255,255,255,.25))}}
+        .sf-loader-logo{position:relative;z-index:1;display:grid;place-items:center;width:min(62vw,320px);transform:translateY(-8px);filter:drop-shadow(0 18px 48px rgba(255,255,255,.20));animation:sfLoaderPulse 1.9s cubic-bezier(.45,0,.2,1) infinite;will-change:transform,filter,opacity}
+        .sf-loader-logo::before{content:"";position:absolute;left:50%;top:50%;width:min(78vw,420px);height:min(78vw,420px);border-radius:999px;background:radial-gradient(circle,rgba(255,255,255,.20),rgba(255,255,255,.05) 33%,rgba(255,255,255,0) 68%);transform:translate(-50%,-50%);filter:blur(20px);opacity:.78;animation:sfLoaderHalo 1.9s ease-out infinite;z-index:-1}
+        .sf-loader-mark{width:100%;height:auto;object-fit:contain;filter:brightness(1.15) contrast(1.08)}
+        @keyframes sfLoaderPulse{0%,100%{transform:translateY(-8px) scale(1);opacity:.94;filter:drop-shadow(0 18px 48px rgba(255,255,255,.18))}50%{transform:translateY(-8px) scale(1.055);opacity:1;filter:drop-shadow(0 26px 78px rgba(255,255,255,.30))}}
         @keyframes sfLoaderHalo{0%{opacity:.46;transform:translate(-50%,-50%) scale(.82)}62%{opacity:.18;transform:translate(-50%,-50%) scale(1.22)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.38)}}
         @keyframes sfLoaderAura{0%,100%{opacity:.42;transform:scale(.96)}50%{opacity:.66;transform:scale(1.04)}}
         .sf-app{position:relative;width:100%;height:100%;background:#000;overflow:hidden}
@@ -2621,7 +2620,6 @@ router.get("/stories/feed", async (req, res) => {
       <div class="sf-loader" id="storyLoader" aria-hidden="true">
         <div class="sf-loader-logo">
           ${tapzyMarkImg("sf-loader-mark")}
-          <span class="sf-loader-word">apzy</span>
         </div>
       </div>
       <main class="sf-app">
