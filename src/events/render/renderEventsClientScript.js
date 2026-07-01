@@ -1207,12 +1207,33 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             let loading = false;
             let hasMore = loader.dataset.hasMore === "1";
             let ticking = false;
+            let settleTimer = null;
+            let isSettling = false;
+            let touchStartY = 0;
+            let touchStartScrollY = 0;
 
             // Android Chrome can jump when cards are recycled while momentum scroll is active.
             // Keep the same Apple visuals and interactions, but use a stable append-only feed.
+            document.documentElement.classList.add("tapzy-android-ios-scroll");
             grid.style.overflowAnchor = "none";
             document.documentElement.style.scrollBehavior = "auto";
             document.body.style.scrollBehavior = "auto";
+            document.body.style.overscrollBehaviorY = "contain";
+
+            if (!document.getElementById("tapzyAndroidIosScrollStyles")) {
+              const style = document.createElement("style");
+              style.id = "tapzyAndroidIosScrollStyles";
+              style.textContent = [
+                "html.tapzy-android-ios-scroll{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.38) transparent;}",
+                "html.tapzy-android-ios-scroll::-webkit-scrollbar{width:3px;background:transparent;}",
+                "html.tapzy-android-ios-scroll::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(255,255,255,.36);}",
+                "html.tapzy-android-ios-scroll body::-webkit-scrollbar{width:3px;background:transparent;}",
+                "html.tapzy-android-ios-scroll body::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(255,255,255,.36);}",
+                "html.tapzy-android-ios-scroll .mobile-events-grid .event-card{transition:transform .34s cubic-bezier(.2,.8,.2,1),box-shadow .34s ease,border-color .34s ease;}",
+                "html.tapzy-android-ios-scroll .events-chip-row::-webkit-scrollbar{height:0!important;display:none!important;}"
+              ].join("\n");
+              document.head.appendChild(style);
+            }
 
             grid.querySelectorAll(".js-event-card").forEach((card) => {
               card.classList.add("is-revealed");
@@ -1287,18 +1308,87 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               }
             }
 
+            function getScrollY() {
+              return window.pageYOffset || document.documentElement.scrollTop || 0;
+            }
+
+            function easeOutCubic(t) {
+              return 1 - Math.pow(1 - t, 3);
+            }
+
+            function nearestCardTarget() {
+              const cards = Array.from(grid.querySelectorAll(".js-event-card"));
+              if (!cards.length) return null;
+              const viewport = window.innerHeight || document.documentElement.clientHeight || 700;
+              const focusY = viewport * 0.52;
+              let best = null;
+              let bestDelta = Infinity;
+              cards.forEach((card) => {
+                const rect = card.getBoundingClientRect();
+                const center = rect.top + rect.height / 2;
+                const delta = Math.abs(center - focusY);
+                if (delta < bestDelta) {
+                  bestDelta = delta;
+                  best = { card, rect };
+                }
+              });
+              if (!best) return null;
+              const safeTop = 18;
+              return Math.max(0, getScrollY() + best.rect.top - safeTop);
+            }
+
+            function animateScrollTo(target, duration) {
+              const start = getScrollY();
+              const distance = target - start;
+              if (Math.abs(distance) < 12) return;
+              const started = performance.now();
+              isSettling = true;
+              function frame(now) {
+                const progress = Math.min(1, (now - started) / duration);
+                const next = start + distance * easeOutCubic(progress);
+                window.scrollTo(0, next);
+                if (progress < 1) requestAnimationFrame(frame);
+                else isSettling = false;
+              }
+              requestAnimationFrame(frame);
+            }
+
+            function scheduleSettle(delay) {
+              if (settleTimer) window.clearTimeout(settleTimer);
+              settleTimer = window.setTimeout(() => {
+                const target = nearestCardTarget();
+                if (target !== null) animateScrollTo(target, 430);
+              }, delay);
+            }
+
             function onScroll() {
               if (ticking) return;
               ticking = true;
               window.requestAnimationFrame(() => {
                 ticking = false;
-                if (nearBottom()) loadMore();
+                if (!isSettling && nearBottom()) loadMore();
               });
             }
 
             window.addEventListener("scroll", onScroll, { passive: true });
+            window.addEventListener("touchstart", (event) => {
+              if (settleTimer) window.clearTimeout(settleTimer);
+              isSettling = false;
+              touchStartY = event.touches && event.touches[0] ? event.touches[0].clientY : 0;
+              touchStartScrollY = getScrollY();
+            }, { passive: true });
+            window.addEventListener("touchend", (event) => {
+              const endY = event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientY : touchStartY;
+              const fingerDelta = Math.abs(endY - touchStartY);
+              const scrollDelta = Math.abs(getScrollY() - touchStartScrollY);
+              const releaseDelay = scrollDelta > 420 || fingerDelta > 80 ? 260 : 130;
+              scheduleSettle(releaseDelay);
+            }, { passive: true });
+            window.addEventListener("touchcancel", () => {
+              if (settleTimer) window.clearTimeout(settleTimer);
+            }, { passive: true });
             window.addEventListener("resize", onScroll, { passive: true });
-            window.addEventListener("orientationchange", () => window.setTimeout(onScroll, 250), { passive: true });
+            window.addEventListener("orientationchange", () => window.setTimeout(() => { onScroll(); scheduleSettle(220); }, 250), { passive: true });
             if (button) button.addEventListener("click", loadMore);
             syncFooter();
             window.setTimeout(onScroll, 250);
