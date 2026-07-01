@@ -1209,8 +1209,16 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             let loading = false;
             let hasMore = loader.dataset.hasMore === "1";
             let ticking = false;
+            let isTouching = false;
+            let lastBrakeAt = 0;
             let lastScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
             let lastScrollAt = Date.now();
+
+            document.documentElement.classList.add("tapzy-android-event-scroll");
+            document.documentElement.style.scrollBehavior = "auto";
+            document.body.style.scrollBehavior = "auto";
+            document.body.style.overscrollBehaviorY = "contain";
+            grid.style.overflowAnchor = "none";
 
             grid.querySelectorAll(".js-event-card").forEach((card) => {
               card.classList.add("is-revealed");
@@ -1236,13 +1244,17 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
               const elapsed = Math.max(16, now - lastScrollAt);
               const delta = scrollY - lastScrollY;
-              const maxStep = Math.max(520, (window.innerHeight || 700) * 0.88);
+              const viewport = window.innerHeight || 700;
+              const maxStep = Math.max(430, viewport * 0.68);
               const previousY = lastScrollY;
 
               lastScrollY = scrollY;
               lastScrollAt = now;
 
-              if (delta > maxStep && elapsed < 90) {
+              if (isTouching || delta <= 0) return;
+
+              if (delta > maxStep && elapsed < 140 && now - lastBrakeAt > 130) {
+                lastBrakeAt = now;
                 window.scrollTo({ top: previousY + maxStep, behavior: "auto" });
                 lastScrollY = window.pageYOffset || document.documentElement.scrollTop || previousY + maxStep;
               }
@@ -1310,6 +1322,19 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               });
             }
 
+            window.addEventListener("touchstart", () => {
+              isTouching = true;
+              lastScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+              lastScrollAt = Date.now();
+            }, { passive: true });
+            window.addEventListener("touchend", () => {
+              isTouching = false;
+              lastScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+              lastScrollAt = Date.now();
+            }, { passive: true });
+            window.addEventListener("touchcancel", () => {
+              isTouching = false;
+            }, { passive: true });
             window.addEventListener("scroll", onScroll, { passive: true });
             window.addEventListener("resize", onScroll, { passive: true });
             if (button) button.addEventListener("click", loadMore);
