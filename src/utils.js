@@ -906,6 +906,7 @@ function renderStoriesTopNav({ currentProfile = null, active = "discover" } = {}
       <a class="tz-story-tab${activeKey === "events" ? " is-active" : ""}" href="/events">Events</a>
       <a class="tz-story-tab${activeKey === "following" ? " is-active" : ""}" href="/stories/feed?filter=following">Following</a>
       <a class="tz-story-tab${activeKey === "discover" ? " is-active" : ""}" href="/stories/feed">Discover</a>
+      <a class="tz-story-tab${activeKey === "messages" ? " is-active" : ""}" href="/messages">Messages</a>
     </nav>
     <a class="tz-story-search" href="${searchHref}" aria-label="Search Tapzy">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
@@ -2842,7 +2843,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         display:flex;
 
-        gap:22px;
+        gap:18px;
 
         align-items:center;
 
@@ -2866,7 +2867,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         font-weight:750;
 
-        font-size:15px;
+        font-size:14px;
 
         text-decoration:none;
 
@@ -2954,6 +2955,12 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         display:none !important;
 
+      }
+
+      @media(max-width:430px){
+        .tz-story-tabs{gap:10px;}
+        .tz-story-tab{font-size:12px;}
+        .tz-story-top-nav{padding-left:50px;padding-right:50px;}
       }
 
 
