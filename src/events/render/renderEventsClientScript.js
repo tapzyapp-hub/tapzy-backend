@@ -901,6 +901,32 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         }
 
+        function enhanceAndroidFast(scope) {
+          const root = scope || document;
+          root.querySelectorAll(".js-event-card").forEach((card) => {
+            card.classList.add("is-revealed");
+            card.dataset.revealBound = "1";
+            card.dataset.motionBound = "1";
+          });
+          bindGoingActions(root);
+        }
+
+        function installAndroidFastStyles() {
+          if (document.getElementById("tapzyAndroidEventFastStyles")) return;
+          const style = document.createElement("style");
+          style.id = "tapzyAndroidEventFastStyles";
+          style.textContent = [
+            "html.tapzy-android-event-scroll,html.tapzy-android-event-scroll body{scroll-behavior:auto!important;overscroll-behavior-y:contain!important;}",
+            "html.tapzy-android-event-scroll .mobile-events-grid{content-visibility:auto;contain-intrinsic-size:680px;}",
+            "html.tapzy-android-event-scroll .mobile-events-grid .event-card{will-change:auto!important;contain:layout paint style!important;}",
+            "html.tapzy-android-event-scroll .mobile-events-grid .event-card::after,html.tapzy-android-event-scroll .mobile-events-grid .event-card-noise{display:none!important;}",
+            "html.tapzy-android-event-scroll .mobile-events-grid .event-media{filter:saturate(1.06) contrast(1.02)!important;transform:none!important;will-change:auto!important;}",
+            "html.tapzy-android-event-scroll .mobile-events-grid .event-content{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}",
+            "html.tapzy-android-event-scroll .mobile-events-grid .event-card.is-touch-active{transform:none!important;box-shadow:0 24px 64px rgba(0,0,0,.56),0 0 0 1px rgba(135,205,255,.22),inset 0 1px 0 rgba(255,255,255,.10)!important;}"
+          ].join("\n");
+          document.head.appendChild(style);
+        }
+
 
 
         function setupMainFeedInfinite() {
@@ -1215,6 +1241,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             let lastScrollAt = Date.now();
 
             document.documentElement.classList.add("tapzy-android-event-scroll");
+            installAndroidFastStyles();
             document.documentElement.style.scrollBehavior = "auto";
             document.body.style.scrollBehavior = "auto";
             document.body.style.overscrollBehaviorY = "contain";
@@ -1236,7 +1263,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               const doc = document.documentElement;
               const height = Math.max(doc.scrollHeight || 0, document.body ? document.body.scrollHeight || 0 : 0);
               const viewport = window.innerHeight || doc.clientHeight || 700;
-              return height - (scrollY + viewport) < Math.max(560, viewport * 0.72);
+              return height - (scrollY + viewport) < Math.max(920, viewport * 1.35);
             }
 
             function softenRunawayMomentum() {
@@ -1245,7 +1272,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               const elapsed = Math.max(16, now - lastScrollAt);
               const delta = scrollY - lastScrollY;
               const viewport = window.innerHeight || 700;
-              const maxStep = Math.max(430, viewport * 0.68);
+              const maxStep = Math.max(760, viewport * 0.98);
               const previousY = lastScrollY;
 
               lastScrollY = scrollY;
@@ -1253,7 +1280,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
               if (isTouching || delta <= 0) return;
 
-              if (delta > maxStep && elapsed < 140 && now - lastBrakeAt > 130) {
+              if (delta > Math.max(980, viewport * 1.28) && elapsed < 110 && now - lastBrakeAt > 180) {
                 lastBrakeAt = now;
                 window.scrollTo({ top: previousY + maxStep, behavior: "auto" });
                 lastScrollY = window.pageYOffset || document.documentElement.scrollTop || previousY + maxStep;
@@ -1268,7 +1295,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               try {
                 const qs = new URLSearchParams({
                   page: String(page),
-                  limit: String(Math.min(FEED_PAGE_SIZE, 8)),
+                  limit: String(Math.min(FEED_PAGE_SIZE, 12)),
                   city: "",
                   category: category || "all"
                 });
@@ -1300,7 +1327,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
                   card.classList.add("is-revealed");
                   card.dataset.revealBound = "1";
                 });
-                enhance(grid);
+                enhanceAndroidFast(grid);
 
                 page += 1;
                 hasMore = !!data.hasMore;
@@ -1339,8 +1366,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             window.addEventListener("resize", onScroll, { passive: true });
             if (button) button.addEventListener("click", loadMore);
             syncFooter();
-            enhance(grid);
-            window.setTimeout(onScroll, 350);
+            enhanceAndroidFast(grid);
+            window.setTimeout(onScroll, 120);
             return;
           }
 
@@ -1809,10 +1836,17 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
 
-        enhance(document);
-        window.addEventListener("scroll", scheduleAmbientGlowRefresh, { passive: true });
-        window.addEventListener("resize", scheduleAmbientGlowRefresh, { passive: true });
-        scheduleAmbientGlowRefresh();
+        const IS_ANDROID_DEVICE = /Android/i.test(navigator.userAgent || "");
+        if (IS_ANDROID_DEVICE && IS_MOBILE_FEED) {
+          document.documentElement.classList.add("tapzy-android-event-scroll");
+          installAndroidFastStyles();
+          enhanceAndroidFast(document);
+        } else {
+          enhance(document);
+          window.addEventListener("scroll", scheduleAmbientGlowRefresh, { passive: true });
+          window.addEventListener("resize", scheduleAmbientGlowRefresh, { passive: true });
+          scheduleAmbientGlowRefresh();
+        }
 
         setupLiveLocationGate();
         setupEventSharing();
