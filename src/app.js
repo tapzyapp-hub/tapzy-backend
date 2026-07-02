@@ -11,7 +11,6 @@ const { sessionMiddleware } = require("./middleware");
 
 const authRoutes = require("./routes/auth");
 const activateRoutes = require("./routes/activate");
-const cardsRoutes = require("./routes/cards");
 const profileRoutes = require("./routes/profile");
 const shareRoutes = require("./routes/share");
 const messagesRoutes = require("./routes/messages");
@@ -25,7 +24,6 @@ const eventsRoutes = require("./routes/events");
 const storiesRoutes = require("./routes/stories");
 const postsRoutes = require("./routes/posts");
 const notificationsRoutes = require("./routes/notifications");
-const mediaChunksRoutes = require("./routes/mediaChunks");
 
 const app = express();
 
@@ -87,7 +85,6 @@ app.use(sessionMiddleware);
 app.use("/api/assistant", assistantRoutes);
 
 app.use("/", authRoutes);
-app.use("/", cardsRoutes);
 app.use("/", activateRoutes);
 app.use("/", profileRoutes);
 app.use("/", shareRoutes);
@@ -98,14 +95,13 @@ app.use("/", miscRoutes);
 app.use("/", discoveryRoutes);
 app.use("/", pairRoutes);
 app.use("/", eventsRoutes);
-app.use("/", mediaChunksRoutes);
 app.use("/", storiesRoutes);
 app.use("/", postsRoutes);
 app.use("/", notificationsRoutes);
 
 app.use((err, req, res, next) => {
   if (!err || err.code !== "LIMIT_FILE_SIZE") return next(err);
-  const message = "This video is still too large after Tapzy's upload prep. Try exporting it at 1080p or lower, then post again.";
+  const message = "This file is over Tapzy's 50 MB upload limit. Try a compressed MP4 version.";
   const isAjax = req.xhr || req.get("X-Requested-With") === "XMLHttpRequest";
   if (isAjax) return res.status(413).json({ ok: false, error: message });
   return res.status(413).send(message);

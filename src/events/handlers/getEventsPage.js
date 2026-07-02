@@ -186,31 +186,106 @@ module.exports = async function getEventsPage(req, res) {
 
     const body = `
 
-    <header class="events-story-top">
-      <a class="events-story-brand" href="/stories/feed" aria-label="Stories home">
-        <img src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />
-      </a>
-      <nav class="events-story-tabs" aria-label="Primary sections">
-        <span class="events-story-tab is-active">Events</span>
-        <a class="events-story-tab" href="/stories/feed?filter=following">Following</a>
-        <a class="events-story-tab" href="/stories/feed">Discover</a>
-        <a class="events-story-tab" href="/messages">Messages</a>
-      </nav>
-      <a class="events-story-search" href="${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}" aria-label="Search Tapzy">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
-      </a>
-    </header>
-
     <div class="wrap events-wrap">
+
+      <section class="events-hero">
+
+        <div class="events-hero-glow"></div>
+
+        <div class="events-hero-glow-b"></div>
+
+
+
+        <div class="row-between events-hero-top">
+
+          <div>
+
+            <div class="events-kicker">Tapzy Discovery</div>
+
+            <h1 class="events-main-title">Event Finder</h1>
+
+            <div class="muted events-hero-copy">
+
+              Live nearby discovery for the hottest sports, dances, and concerts around you.
+
+            </div>
+
+            ${
+
+              hasLiveLocation
+
+                ? usingClosestAreaFallback
+                  ? `<div class="muted" style="margin-top:10px;">No hot events were found within <b>${escapeHtml(radiusKm)} km</b>, so Tapzy switched to the closest active area: <b>${escapeHtml(closestAreaFallback.areaName)}</b>.</div>`
+                  : `<div class="muted" style="margin-top:10px;">Showing live nearby events within <b>${escapeHtml(radiusKm)} km</b>.</div>`
+
+                : isHotNearbyMode
+                  ? `<div class="muted" style="margin-top:10px;"><b>Enable location</b> to show hot events in your area only.</div>`
+                  : ``
+
+            }
+
+            ${
+
+              req.query.synced
+
+                ? `<div class="success" style="margin-top:14px;">Real events synced: ${escapeHtml(req.query.synced)}</div>`
+
+                : ""
+
+            }
+
+          </div>
+
+
+
+          <div class="row desktop-only">
+
+            ${
+
+              currentProfile
+
+                ? `<a class="btn btnDark" href="/events/saved">My Saved Events</a>`
+
+                : `<a class="btn btnDark" href="/auth">Sign in</a>`
+
+            }
+
+            ${
+
+              hasAdminKey
+
+                ? `
+
+                  <form method="POST" action="/events/admin/sync?key=${encodeURIComponent(adminKey)}" style="margin:0;">
+
+                    <button class="btn btnLuxury" type="submit">Refresh Feed</button>
+
+                  </form>
+
+                `
+
+                : ""
+
+            }
+
+          </div>
+
+        </div>
+
+
+
+      </section>
+
+
 
       <section class="events-chip-wrap">
         <div class="events-chip-row">
           ${[
+            ["nearby", "Hot Nearby", hasLiveLocation ? (localEvents.length || closestAreaFallback.events.length) : ""],
             ["all", "All Events", allHotEvents.length],
             ["sports", "Sports", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "sports")).length],
             ["dances", "Dances", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "dances")).length],
             ["concerts", "Concerts", allHotEvents.filter((e) => eventMatchesCategoryGroup(e, "concerts")).length],
-            ["nearby", "Hot Nearby", hasLiveLocation ? (localEvents.length || closestAreaFallback.events.length) : ""],
           ].map(([value, label, count]) => {
             const qs = new URLSearchParams();
             if (value) qs.set("category", value);
@@ -431,83 +506,13 @@ module.exports = async function getEventsPage(req, res) {
 
       .events-wrap{ max-width:1160px; }
 
-      body.events-story-shell > .tz-topbar{display:none !important;}
-      body.events-story-shell{background:#000;}
-      .events-story-top{
-        position:sticky;
-        z-index:60;
-        top:0;
-        left:0;
-        right:0;
-        min-height:72px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:24px;
-        padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
-        background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
-      }
-      .events-story-brand{
-        position:absolute;
-        left:16px;
-        top:calc(env(safe-area-inset-top, 0px) + 14px);
-        width:38px;
-        height:38px;
-        display:grid;
-        place-items:center;
-        border:2px solid rgba(255,255,255,.9);
-        border-radius:12px;
-        color:#fff;
-        text-decoration:none;
-        background:rgba(3,6,12,.24);
-        box-shadow:0 10px 26px rgba(0,0,0,.22);
-        backdrop-filter:blur(10px);
-        -webkit-backdrop-filter:blur(10px);
-      }
-      .events-story-brand img{width:72%;height:72%;object-fit:contain;display:block;}
-      .events-story-tabs{display:flex;gap:18px;align-items:center;min-width:0;}
-      .events-story-tab{
-        position:relative;
-        border:0;
-        background:none;
-        padding:8px 0;
-        color:rgba(255,255,255,.68);
-        font-weight:750;
-        font-size:15px;
-        text-decoration:none;
-        white-space:nowrap;
-      }
-      .events-story-tab.is-active{color:#fff;}
-      .events-story-tab.is-active::after{
-        content:"";
-        position:absolute;
-        left:50%;
-        bottom:-5px;
-        width:26px;
-        height:3px;
-        border-radius:5px;
-        background:#fff;
-        transform:translateX(-50%);
-      }
-      .events-story-search{
-        position:absolute;
-        right:15px;
-        top:calc(env(safe-area-inset-top, 0px) + 15px);
-        width:40px;
-        height:40px;
-        padding:7px;
-        color:#fff;
-        text-decoration:none;
-      }
-      .events-story-search svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-
       .mobile-only{ display:none; }
 
       .desktop-only{ display:block; }
-      .events-chip-wrap{ display:grid; gap:12px; margin:6px 0 26px; }
+      .events-chip-wrap{ display:grid; gap:12px; margin:18px 0 12px; }
       .events-chip-row{ display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
       .events-chip-row::-webkit-scrollbar{ display:none; }
-      .events-chip{ flex:0 0 auto; min-width:124px; text-align:center; padding:13px 18px; border-radius:999px; text-decoration:none; font-weight:800; font-size:12px; letter-spacing:.065em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
+      .events-chip{ flex:0 0 auto; min-width:160px; text-align:center; padding:18px 26px; border-radius:999px; text-decoration:none; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
       .events-chip.is-active{ background:#eef3fb; color:#101626; border-color:rgba(255,255,255,.45); }
       .events-location-prompt{ position:relative; overflow:hidden; margin:18px 0 24px; padding:26px; border-radius:30px; border:1px solid rgba(127,210,255,.28); background:radial-gradient(520px 260px at 92% -10%, rgba(83,184,255,.22), transparent 58%), radial-gradient(380px 220px at 8% 0%, rgba(255,255,255,.08), transparent 56%), linear-gradient(180deg, rgba(19,28,43,.88), rgba(7,9,14,.96)); box-shadow:0 26px 80px rgba(0,0,0,.44), 0 0 0 1px rgba(255,255,255,.05) inset, 0 0 46px rgba(83,184,255,.10); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
       .events-location-prompt h2{ margin:8px 0 8px; font-size:28px; letter-spacing:-.04em; }
@@ -806,14 +811,12 @@ module.exports = async function getEventsPage(req, res) {
         position:relative;
         --mx:72%;
         --my:22%;
-        isolation:isolate;
 
         min-height:450px;
 
         overflow:hidden;
 
         border-radius:32px;
-        clip-path:inset(0 round 32px);
 
         border:1px solid rgba(255,255,255,.08);
 
@@ -850,7 +853,6 @@ module.exports = async function getEventsPage(req, res) {
         position:absolute;
 
         inset:0;
-        border-radius:inherit;
 
         background:
 
@@ -908,7 +910,7 @@ module.exports = async function getEventsPage(req, res) {
 
       .event-card.is-touch-active{
 
-        transform:translateY(-6px) scale(1.006);
+        transform:translateY(-8px) scale(1.02);
 
         box-shadow:
 
@@ -970,7 +972,6 @@ module.exports = async function getEventsPage(req, res) {
         position:absolute;
 
         inset:0;
-        border-radius:inherit;
 
         opacity:.045;
 
@@ -1025,7 +1026,7 @@ module.exports = async function getEventsPage(req, res) {
 
         inset:0;
 
-        border-radius:inherit;
+        border-radius:32px;
 
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.10),
@@ -1044,7 +1045,6 @@ module.exports = async function getEventsPage(req, res) {
         position:absolute;
 
         inset:0;
-        border-radius:inherit;
 
         background-size:cover;
 
@@ -1062,7 +1062,7 @@ module.exports = async function getEventsPage(req, res) {
 
       .event-card.is-touch-active .event-media{
 
-        transform:scale(1.045);
+        transform:scale(1.08);
 
       }
 
@@ -1163,14 +1163,6 @@ module.exports = async function getEventsPage(req, res) {
         background:rgba(255,255,255,.08);
 
         border-color:rgba(255,255,255,.12);
-
-        white-space:nowrap;
-
-        flex-shrink:0;
-
-        line-height:1;
-
-        word-break:keep-all;
 
       }
 
@@ -1783,8 +1775,6 @@ module.exports = async function getEventsPage(req, res) {
         .events-chip{
           flex:0 0 auto;
           min-width:max-content;
-          padding:12px 17px;
-          font-size:12px;
           scroll-snap-align:start;
         }
 
@@ -2569,216 +2559,6 @@ module.exports = async function getEventsPage(req, res) {
         }
       }
 
-      @media(max-width:700px){
-        html,body{
-          height:auto !important;
-          min-height:100% !important;
-          overflow-x:hidden !important;
-          overflow-y:auto !important;
-          background:#000 !important;
-        }
-
-        .event-feed-mobile,
-        .event-feed-mobile.mobile-only{
-          display:none !important;
-        }
-
-        .events-wrap{
-          width:auto !important;
-          height:auto !important;
-          margin:0 auto !important;
-          padding:10px 14px calc(92px + env(safe-area-inset-bottom, 0px)) !important;
-          overflow:visible !important;
-        }
-
-        .events-story-top{
-          position:sticky;
-          min-height:72px;
-          padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
-        }
-
-        .events-story-tabs{gap:12px;}
-        .events-story-tab{font-size:13px;}
-
-        .events-wrap > .events-hero{
-          display:none !important;
-        }
-
-        .events-chip-wrap{
-          display:block !important;
-          margin:4px -14px 28px !important;
-          padding:0 14px;
-          overflow:hidden;
-        }
-
-        .events-chip-row{
-          gap:12px;
-          padding:0 0 8px;
-        }
-
-        .events-chip{
-          min-width:auto;
-          padding:12px 17px;
-          border-radius:999px;
-          font-size:12px;
-          letter-spacing:.075em;
-          white-space:nowrap;
-          background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.03));
-          border:1px solid rgba(255,255,255,.12);
-          box-shadow:0 10px 30px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
-        }
-
-        .events-chip.is-active{
-          background:#eef3fb;
-          color:#101626;
-          border-color:rgba(255,255,255,.45);
-        }
-
-        .events-mobile-feed{
-          display:block !important;
-          margin-top:0 !important;
-          padding-bottom:40px !important;
-          overflow:visible !important;
-        }
-
-        .events-mobile-feed-head{
-          display:flex !important;
-          align-items:flex-end;
-          justify-content:space-between;
-          gap:16px;
-          margin:0 2px 15px;
-        }
-
-        .events-mobile-feed-head .events-section-title{
-          margin:3px 0 0;
-          font-size:30px;
-          line-height:1;
-          letter-spacing:-1px;
-        }
-
-        .mobile-events-grid{
-          display:grid !important;
-          grid-template-columns:1fr !important;
-          gap:22px !important;
-          overflow:visible !important;
-        }
-
-        .mobile-events-grid .event-card{
-          min-height:min(76svh,680px);
-          border-radius:32px;
-          clip-path:inset(0 round 32px);
-          overflow:hidden;
-          isolation:isolate;
-          background:
-            radial-gradient(520px 260px at 72% 14%, rgba(120,190,255,.08), transparent 58%),
-            linear-gradient(180deg, rgba(9,12,19,.98), rgba(0,0,0,1));
-          border-color:rgba(135,205,255,.24);
-          box-shadow:
-            0 28px 80px rgba(0,0,0,.62),
-            0 0 0 1px rgba(115,194,255,.10),
-            inset 0 1px 0 rgba(255,255,255,.10);
-        }
-
-        .mobile-events-grid .event-card::before,
-        .mobile-events-grid .event-card::after,
-        .mobile-events-grid .event-media,
-        .mobile-events-grid .event-content,
-        .mobile-events-grid .event-card-edge,
-        .mobile-events-grid .event-card-noise{
-          border-radius:inherit;
-        }
-
-        .mobile-events-grid .event-card.is-touch-active{
-          transform:translateY(-3px) scale(1.004) !important;
-          border-radius:32px;
-          clip-path:inset(0 round 32px);
-        }
-
-        .mobile-events-grid .event-card.is-touch-active .event-media{
-          transform:scale(1.04) !important;
-        }
-
-        .mobile-events-grid .event-pill-soft{
-          max-width:46%;
-          padding-inline:10px;
-          font-size:9.5px;
-          letter-spacing:.75px;
-          overflow:hidden;
-          text-overflow:ellipsis;
-        }
-      }
-
-      @media(max-width:700px){
-        html,
-        body,
-        body.events-story-shell{
-          height:auto !important;
-          min-height:100% !important;
-          overflow-x:hidden !important;
-          overflow-y:auto !important;
-          overscroll-behavior-y:auto !important;
-          touch-action:pan-y !important;
-          -webkit-overflow-scrolling:touch;
-        }
-
-        body.events-story-shell{
-          position:static !important;
-        }
-
-        .events-wrap,
-        .events-mobile-feed,
-        .events-section.mobile-only,
-        .mobile-events-grid{
-          overflow:visible !important;
-          overscroll-behavior:contain;
-          touch-action:pan-y !important;
-        }
-
-        .event-feed-mobile,
-        .event-feed-mobile.mobile-only,
-        .event-feed-mobile .reel-feed{
-          height:auto !important;
-          min-height:0 !important;
-          overflow:hidden !important;
-          scroll-snap-type:none !important;
-          overscroll-behavior:auto !important;
-        }
-
-        .events-chip-row{
-          touch-action:pan-x pan-y !important;
-        }
-
-        .mobile-events-grid .event-card,
-        .mobile-events-grid .event-card:hover,
-        .mobile-events-grid .event-card.is-touch-active{
-          border-radius:32px !important;
-          clip-path:inset(0 round 32px) !important;
-          overflow:hidden !important;
-          touch-action:pan-y !important;
-          transform:translateZ(0);
-          -webkit-transform:translateZ(0);
-          -webkit-backface-visibility:hidden;
-          backface-visibility:hidden;
-        }
-
-        .mobile-events-grid .event-card::before,
-        .mobile-events-grid .event-card::after,
-        .mobile-events-grid .event-card-edge,
-        .mobile-events-grid .event-card-noise,
-        .mobile-events-grid .event-media,
-        .mobile-events-grid .event-content{
-          border-radius:inherit !important;
-        }
-
-        .mobile-events-grid .event-card.is-touch-active{
-          transform:translateY(-3px) scale(1.004) !important;
-        }
-
-        .mobile-events-grid .event-card.is-touch-active .event-media{
-          transform:scale(1.04) !important;
-        }
-      }
-
     </style>
 
 
@@ -2810,8 +2590,6 @@ module.exports = async function getEventsPage(req, res) {
         pageType: "events",
 
         storiesBottomNav: true,
-
-        bodyClass: "events-story-shell",
 
       })
 
