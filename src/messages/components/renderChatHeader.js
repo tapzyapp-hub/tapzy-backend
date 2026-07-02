@@ -37,7 +37,6 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
           <div class="tz-chat-partner-copy">
             <div class="tz-chat-partner-name-row">
               <div class="tz-chat-partner-name">${escapeHtml(name)}</div>
-              <div class="tz-chat-partner-badge">Private</div>
               ${isPinned ? `<div class="tz-chat-partner-badge">Pinned</div>` : ""}
               ${isMuted ? `<div class="tz-chat-partner-badge">Muted</div>` : ""}
               ${iBlockedThem ? `<div class="tz-chat-partner-badge">Blocked</div>` : ""}
@@ -51,7 +50,7 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
         <details class="tz-chat-settings-menu">
           <summary class="tz-chat-pill" aria-label="Open chat settings">Settings</summary>
           <div class="tz-chat-settings-panel">
-            <div class="tz-chat-settings-title">Chat Settings</div>
+            <div class="tz-chat-settings-title">Signal Controls</div>
             <a class="tz-chat-setting-link" href="${profileHref}">View profile</a>
 
             <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/settings">
@@ -89,7 +88,7 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
           </div>
         </details>
         <form method="POST" action="/messages/${escapeHtml(String(conversationId || ""))}/remove" onsubmit="return confirm('Remove this conversation from your inbox?');">
-          <button class="tz-chat-pill tz-chat-pill-danger" type="submit">Remove</button>
+          <button class="tz-chat-pill" type="submit">Clear</button>
         </form>
       </div>
     </div>
