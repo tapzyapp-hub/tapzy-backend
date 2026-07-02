@@ -130,6 +130,8 @@ module.exports = async function getConversationPage(req, res) {
         currentProfile,
         pageTitle: other?.name || other?.username || "Conversation",
         pageType: "messages",
+        storiesBottomNav: true,
+        storiesTopNavActive: "messages",
       })
     );
   } catch (e) {

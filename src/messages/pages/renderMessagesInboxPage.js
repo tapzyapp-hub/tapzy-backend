@@ -27,16 +27,16 @@ module.exports = function renderMessagesInboxPage({
           <div class="tz-msg-hub">
             <div class="tz-msg-head">
               <div>
-                <div class="tz-msg-kicker">Tapzy Connect</div>
-                <h1 class="tz-msg-title">Messages</h1>
+                <div class="tz-msg-kicker">Tapzy Signal</div>
+                <h1 class="tz-msg-title">Private Network</h1>
                 <div class="tz-msg-subtitle">
-                  Private conversations inside your Tapzy network.
+                  Premium one-to-one conversations built around your Tapzy profile, cards, stories, and real connections.
                 </div>
               </div>
 
               <div class="tz-msg-head-actions">
-                <a class="tz-btn tz-btn-dark" href="${escapeHtml(discoveryHref)}">Start Conversation</a>
-                <a class="tz-btn tz-btn-dark" href="/notifications">Notifications${unreadNotificationCount ? ` (${unreadNotificationCount})` : ""}</a>
+                <a class="tz-btn tz-btn-dark" href="${escapeHtml(discoveryHref)}">Find People</a>
+                <a class="tz-btn tz-btn-dark" href="/notifications">Activity${unreadNotificationCount ? ` (${unreadNotificationCount})` : ""}</a>
               </div>
             </div>
 
@@ -47,7 +47,7 @@ module.exports = function renderMessagesInboxPage({
 
             <div class="tz-msg-content">
               <div class="tz-msg-section-head">
-                <h2 class="tz-msg-section-title">${isArchived ? "Archived" : "Inbox"}</h2>
+                <h2 class="tz-msg-section-title">${isArchived ? "Saved Threads" : "Active Threads"}</h2>
                 <div class="tz-msg-section-meta">
                   ${conversationCount} conversation${conversationCount === 1 ? "" : "s"}
                 </div>
@@ -468,6 +468,160 @@ module.exports = function renderMessagesInboxPage({
 
       .tz-core-empty p{
         margin:0;
+      }
+
+      /* Tapzy premium messaging refresh */
+      .wrap{
+        background:
+          radial-gradient(700px 380px at 50% -10%, rgba(29,92,220,.18), transparent 58%),
+          radial-gradient(460px 320px at 100% 18%, rgba(91,168,255,.08), transparent 56%),
+          #000;
+      }
+
+      .tz-msg-shell{
+        max-width:980px;
+        padding:0 14px 90px;
+      }
+
+      .tz-msg-hub{
+        border-radius:34px;
+        border-color:rgba(96,174,255,.16);
+        background:
+          radial-gradient(640px 280px at 50% -8%, rgba(39,113,255,.22), transparent 54%),
+          radial-gradient(420px 260px at 92% 18%, rgba(148,204,255,.08), transparent 56%),
+          linear-gradient(180deg, rgba(8,12,22,.98), rgba(1,2,5,1) 78%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.055),
+          0 28px 86px rgba(0,0,0,.52),
+          0 0 42px rgba(38,118,255,.08);
+      }
+
+      .tz-msg-hub::before{
+        opacity:.055;
+        background-image:
+          radial-gradient(rgba(255,255,255,.78) .55px, transparent .55px);
+        mask-image:radial-gradient(circle at 50% 18%, #000, transparent 72%);
+        -webkit-mask-image:radial-gradient(circle at 50% 18%, #000, transparent 72%);
+      }
+
+      .tz-msg-kicker{
+        color:#9fb8e8;
+        font-weight:900;
+        letter-spacing:.42em;
+      }
+
+      .tz-msg-title{
+        font-size:clamp(40px,8vw,68px);
+        letter-spacing:-.075em;
+        text-shadow:0 18px 52px rgba(0,0,0,.55), 0 0 26px rgba(72,143,255,.12);
+      }
+
+      .tz-msg-subtitle{
+        color:rgba(226,235,255,.74);
+        font-size:16px;
+        line-height:1.55;
+      }
+
+      .tz-btn-dark{
+        min-height:48px;
+        border-color:rgba(116,190,255,.18);
+        background:
+          radial-gradient(120px 70px at 50% 0%, rgba(87,164,255,.22), transparent 70%),
+          linear-gradient(180deg, rgba(21,27,39,.98), rgba(7,10,17,.98));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.06),
+          0 14px 30px rgba(0,0,0,.28),
+          0 0 22px rgba(50,130,255,.12);
+      }
+
+      .tz-msg-tabs{
+        background:rgba(255,255,255,.028);
+        border-color:rgba(116,190,255,.12);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+      }
+
+      .tz-msg-tab{
+        letter-spacing:.02em;
+      }
+
+      .tz-msg-tab.is-active{
+        color:#06111f;
+        background:linear-gradient(180deg,#f9fdff,#dceeff);
+        box-shadow:0 14px 34px rgba(0,0,0,.28), 0 0 28px rgba(120,194,255,.12);
+      }
+
+      .tz-msg-content{
+        margin-top:22px;
+      }
+
+      .tz-msg-section-title{
+        font-size:clamp(25px,5vw,36px);
+        letter-spacing:-.055em;
+      }
+
+      .tz-msg-thread{
+        min-height:106px;
+        padding:18px;
+        border-radius:28px;
+        border-color:rgba(116,190,255,.13);
+        background:
+          radial-gradient(440px 220px at 86% 5%, rgba(63,140,255,.18), transparent 45%),
+          radial-gradient(260px 160px at 12% 95%, rgba(255,255,255,.045), transparent 55%),
+          linear-gradient(180deg, rgba(13,18,29,.98), rgba(4,6,12,.995));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.045),
+          0 18px 48px rgba(0,0,0,.34),
+          0 0 0 1px rgba(78,154,255,.035);
+      }
+
+      .tz-msg-thread:hover{
+        border-color:rgba(137,207,255,.26);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 24px 58px rgba(0,0,0,.38),
+          0 0 34px rgba(74,145,255,.18);
+      }
+
+      .tz-msg-thread-avatar{
+        width:64px;
+        height:64px;
+        border-radius:22px;
+        border-color:rgba(137,207,255,.28);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(92,170,255,.20), transparent 58%),
+          linear-gradient(180deg,#0c111b,#020306);
+        box-shadow:
+          0 16px 34px rgba(0,0,0,.32),
+          0 0 24px rgba(83,166,255,.18),
+          inset 0 1px 0 rgba(255,255,255,.06);
+      }
+
+      .tz-msg-thread-name{
+        letter-spacing:-.045em;
+      }
+
+      .tz-msg-thread-badge{
+        border-color:rgba(121,190,255,.18);
+        background:rgba(62,130,255,.09);
+        color:#dcecff;
+      }
+
+      .tz-msg-thread-preview{
+        color:rgba(218,228,244,.78);
+      }
+
+      .tz-msg-thread-unread{
+        background:linear-gradient(180deg,#347eff,#1651c2);
+        box-shadow:0 0 22px rgba(66,140,255,.36);
+      }
+
+      .tz-core-empty{
+        border-style:solid;
+        border-color:rgba(116,190,255,.13);
+        background:
+          radial-gradient(320px 160px at 50% 0%, rgba(48,126,255,.16), transparent 65%),
+          rgba(255,255,255,.025);
+        padding:28px;
       }
 
       @media(max-width:900px){
