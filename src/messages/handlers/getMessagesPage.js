@@ -178,8 +178,6 @@ module.exports = async function getMessagesPage(req, res) {
         currentProfile,
         pageTitle: "Messages",
         pageType: "messages-list",
-        storiesBottomNav: true,
-        storiesTopNavActive: "messages",
       })
     );
   } catch (e) {

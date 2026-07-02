@@ -22,7 +22,7 @@ module.exports = function renderChatComposer({ conversationId }) {
             class="tz-chat-input"
             id="tzMessageInput"
             name="text"
-            placeholder="Message on Tapzy"
+            placeholder="Message"
             rows="1"
           ></textarea>
         </div>
