@@ -4,7 +4,9 @@ const multer = require("multer");
 const crypto = require("crypto");
 
 const uploadsDir = path.join(__dirname, "..", "public", "uploads");
+const chunkUploadsDir = path.join(__dirname, "..", "tmp", "chunk-uploads");
 fs.mkdirSync(uploadsDir, { recursive: true });
+fs.mkdirSync(chunkUploadsDir, { recursive: true });
 
 // One consistent safety limit for stories, messages, and future media uploads.
 // Long videos are supported when their compressed file size fits this limit.
@@ -14,7 +16,7 @@ const VIDEO_UPLOAD_MAX_BYTES = VIDEO_UPLOAD_MAX_MB * 1024 * 1024;
 function safeExtension(originalName = "", mimetype = "") {
   const ext = path.extname(originalName).toLowerCase();
 
-  if ([".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v", ".mp3", ".wav", ".ogg", ".m4a", ".aac"].includes(ext)) {
+  if ([".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif", ".mp4", ".mov", ".webm", ".m4v", ".3gp", ".3gpp", ".avi", ".hevc", ".mp3", ".wav", ".ogg", ".m4a", ".aac"].includes(ext)) {
     return ext;
   }
 
@@ -22,11 +24,17 @@ function safeExtension(originalName = "", mimetype = "") {
   if (mimetype === "image/png") return ".png";
   if (mimetype === "image/webp") return ".webp";
   if (mimetype === "image/gif") return ".gif";
+  if (mimetype === "image/heic") return ".heic";
+  if (mimetype === "image/heif") return ".heif";
   if (mimetype === "video/mp4") return ".mp4";
   if (mimetype === "video/quicktime") return ".mov";
   if (mimetype === "video/webm") return ".webm";
   if (mimetype === "video/x-m4v") return ".m4v";
-  if (mimetype === "application/octet-stream" && [".webm", ".m4a", ".mp4", ".mov", ".m4v", ".mp3", ".wav", ".ogg", ".aac"].includes(ext)) return ext;
+  if (mimetype === "video/3gpp") return ".3gp";
+  if (mimetype === "video/3gpp2") return ".3gpp";
+  if (mimetype === "video/x-msvideo") return ".avi";
+  if (mimetype.startsWith("video/")) return ext || ".mp4";
+  if (mimetype === "application/octet-stream" && [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif", ".webm", ".m4a", ".mp4", ".mov", ".m4v", ".3gp", ".3gpp", ".avi", ".hevc", ".mp3", ".wav", ".ogg", ".aac"].includes(ext)) return ext;
   if (mimetype === "audio/mpeg") return ".mp3";
   if (mimetype === "audio/wav") return ".wav";
   if (mimetype === "audio/x-wav") return ".wav";
@@ -39,14 +47,17 @@ function safeExtension(originalName = "", mimetype = "") {
   return ".jpg";
 }
 
+function safeUploadFilename(originalName = "", mimetype = "") {
+  const ext = safeExtension(originalName, mimetype);
+  return `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${ext}`;
+}
+
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (_req, file, cb) => {
-    const ext = safeExtension(file.originalname || "", file.mimetype || "");
-    const name = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`;
-    cb(null, name);
+    cb(null, safeUploadFilename(file.originalname || "", file.mimetype || ""));
   },
 });
 
@@ -61,10 +72,15 @@ const upload = multer({
       "image/png",
       "image/webp",
       "image/gif",
+      "image/heic",
+      "image/heif",
       "video/mp4",
       "video/quicktime",
       "video/webm",
       "video/x-m4v",
+      "video/3gpp",
+      "video/3gpp2",
+      "video/x-msvideo",
       "application/octet-stream",
       "audio/mpeg",
       "audio/wav",
@@ -84,6 +100,9 @@ const upload = multer({
 module.exports = {
   upload,
   uploadsDir,
+  chunkUploadsDir,
+  safeUploadFilename,
+  safeExtension,
   VIDEO_UPLOAD_MAX_MB,
   VIDEO_UPLOAD_MAX_BYTES,
 };

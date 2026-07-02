@@ -19,6 +19,12 @@ const router = express.Router();
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
+function safeAuthRedirect(value = "") {
+  const text = String(value || "").trim();
+  if (!text || !text.startsWith("/") || text.startsWith("//") || /^\\/i.test(text)) return "";
+  return text;
+}
+
 function forgotPasswordEmailHtml(resetUrl) {
   return `
     <div style="background:#0a0a0f;padding:32px;font-family:Inter,Arial,sans-serif;color:#ffffff;">
@@ -63,6 +69,8 @@ router.get("/auth", async (req, res) => {
 
     const error = String(req.query.error || "").trim();
     const success = String(req.query.success || "").trim();
+    const redirectTo = safeAuthRedirect(req.query.redirectTo || req.body?.redirectTo || "");
+    const redirectInput = redirectTo ? `<input type="hidden" name="redirectTo" value="${escapeHtml(redirectTo)}" />` : "";
 
     const errorHtml = error
       ? `<div class="panel" style="border-color:#5a1f1f;color:#ffcccc;background:linear-gradient(180deg,#241010,#160b0b);margin-bottom:14px;">${escapeHtml(error)}</div>`
@@ -86,6 +94,7 @@ router.get("/auth", async (req, res) => {
           <div class="panel">
             <h3 style="margin-top:0;">Create Account</h3>
             <form method="POST" action="/auth/register">
+              ${redirectInput}
               <label>Email</label>
               <input name="email" type="email" placeholder="Enter your email" required />
 
@@ -101,6 +110,7 @@ router.get("/auth", async (req, res) => {
           <div class="panel" style="margin-top:14px;">
             <h3 style="margin-top:0;">Login</h3>
             <form method="POST" action="/auth/login">
+              ${redirectInput}
               <label>Email</label>
               <input name="email" type="email" placeholder="Enter your email" required />
 
@@ -145,6 +155,7 @@ router.post("/auth/register", async (req, res) => {
   try {
     const email = String(req.body.email || "").trim().toLowerCase();
     const password = String(req.body.password || "");
+    const redirectTo = safeAuthRedirect(req.body.redirectTo);
 
     if (!email || !password) {
       return res.redirect("/auth?error=Email%20and%20password%20are%20required");
@@ -186,6 +197,8 @@ router.post("/auth/register", async (req, res) => {
 
     await createSessionForAccount(account.id, res);
 
+    if (redirectTo) return res.redirect(redirectTo);
+
     return res.redirect(`/u/${account.profile.username}`);
   } catch (e) {
     console.error(e);
@@ -197,6 +210,7 @@ router.post("/auth/login", async (req, res) => {
   try {
     const email = String(req.body.email || "").trim().toLowerCase();
     const password = String(req.body.password || "");
+    const redirectTo = safeAuthRedirect(req.body.redirectTo);
 
     if (!email || !password) {
       return res.redirect("/auth?error=Email%20and%20password%20are%20required");
@@ -218,6 +232,8 @@ router.post("/auth/login", async (req, res) => {
     }
 
     await createSessionForAccount(account.id, res);
+
+    if (redirectTo) return res.redirect(redirectTo);
 
     if (account.profile?.username) {
       return res.redirect(`/u/${account.profile.username}`);
