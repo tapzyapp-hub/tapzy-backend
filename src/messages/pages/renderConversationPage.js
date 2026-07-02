@@ -3010,6 +3010,166 @@ module.exports = function renderConversationPage({
       inset 0 1px 0 rgba(255,255,255,.16);
   }
 
+  /* Alive polish: subtle motion that keeps the black/nav-bar feel */
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::before{
+    animation:tzChatAura 7.2s ease-in-out infinite;
+    transform-origin:center top;
+    will-change:opacity, transform;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::before{
+    animation:tzWindowAura 8.5s ease-in-out infinite;
+    will-change:opacity, transform;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+    animation:tzComposerBreathe 5.8s ease-in-out infinite;
+    transition:border-color .22s ease, box-shadow .22s ease, transform .22s ease;
+    will-change:box-shadow;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner:focus-within{
+    animation:tzComposerFocus 2.6s ease-in-out infinite;
+    border-color:rgba(134,196,255,.32);
+    transform:translateY(-1px);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap{
+    transition:border-color .22s ease, box-shadow .22s ease, background .22s ease;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap:focus-within{
+    border-color:rgba(255,255,255,.22);
+    box-shadow:
+      0 0 0 1px rgba(47,118,255,.12),
+      0 0 24px rgba(47,118,255,.16),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble{
+    animation:tzBubbleArrive .30s cubic-bezier(.2,.85,.22,1) both;
+    transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine{
+    position:relative;
+    overflow:hidden;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine::after{
+    content:"";
+    position:absolute;
+    inset:-1px;
+    pointer-events:none;
+    background:linear-gradient(120deg, transparent 10%, rgba(255,255,255,.10) 42%, transparent 70%);
+    opacity:0;
+    transform:translateX(-64%);
+    animation:tzBubbleSheen 6.5s ease-in-out infinite;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-mic,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-send{
+    transition:transform .16s ease, filter .16s ease, box-shadow .16s ease;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill:active,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-mic:active,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-send:active{
+    transform:scale(.96);
+    filter:brightness(1.08);
+  }
+
+  @keyframes tzChatAura{
+    0%,100%{
+      opacity:.22;
+      transform:translate3d(0,0,0) scale(1);
+    }
+    50%{
+      opacity:.38;
+      transform:translate3d(0,5px,0) scale(1.035);
+    }
+  }
+
+  @keyframes tzWindowAura{
+    0%,100%{
+      opacity:.70;
+      transform:translateY(0);
+    }
+    50%{
+      opacity:1;
+      transform:translateY(4px);
+    }
+  }
+
+  @keyframes tzComposerBreathe{
+    0%,100%{
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.045),
+        0 14px 34px rgba(0,0,0,.34),
+        0 0 18px rgba(47,118,255,.08);
+    }
+    50%{
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.07),
+        0 16px 38px rgba(0,0,0,.42),
+        0 0 28px rgba(47,118,255,.16);
+    }
+  }
+
+  @keyframes tzComposerFocus{
+    0%,100%{
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 18px 42px rgba(0,0,0,.46),
+        0 0 24px rgba(47,118,255,.20);
+    }
+    50%{
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 20px 48px rgba(0,0,0,.50),
+        0 0 38px rgba(47,118,255,.30);
+    }
+  }
+
+  @keyframes tzBubbleArrive{
+    from{
+      opacity:0;
+      transform:translateY(10px) scale(.985);
+      filter:blur(1px);
+    }
+    to{
+      opacity:1;
+      transform:translateY(0) scale(1);
+      filter:blur(0);
+    }
+  }
+
+  @keyframes tzBubbleSheen{
+    0%,58%,100%{
+      opacity:0;
+      transform:translateX(-64%);
+    }
+    68%{
+      opacity:.65;
+    }
+    82%{
+      opacity:0;
+      transform:translateX(64%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::before,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::before,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine::after{
+      animation:none !important;
+      transition:none !important;
+    }
+  }
+
 </style>
 
 
