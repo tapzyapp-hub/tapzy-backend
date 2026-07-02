@@ -3170,6 +3170,124 @@ module.exports = function renderConversationPage({
     }
   }
 
+  /* Jet black finish: blue is edge glow only */
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .wrap,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+    background:#000 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+    box-shadow:none !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::before{
+    opacity:.30;
+    background:
+      radial-gradient(360px 150px at 50% 0%, rgba(47,118,255,.16), transparent 70%),
+      radial-gradient(220px 90px at 50% 100%, rgba(47,118,255,.10), transparent 72%);
+    filter:blur(10px);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::after{
+    opacity:.10;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+    background:
+      linear-gradient(180deg, rgba(4,4,6,.98), rgba(0,0,0,1)) !important;
+    border-color:rgba(255,255,255,.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.045),
+      0 0 0 1px rgba(47,118,255,.08),
+      0 0 26px rgba(47,118,255,.15),
+      0 16px 36px rgba(0,0,0,.40);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.05),
+      0 0 0 1px rgba(47,118,255,.10),
+      0 0 24px rgba(47,118,255,.16),
+      0 14px 34px rgba(0,0,0,.40);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.035),
+      inset 0 0 0 1px rgba(47,118,255,.045),
+      0 0 28px rgba(47,118,255,.12),
+      0 18px 42px rgba(0,0,0,.34);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::before{
+    opacity:.82;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.022), transparent 18%, transparent 82%, rgba(47,118,255,.026)),
+      radial-gradient(280px 120px at 88% 0%, rgba(47,118,255,.08), transparent 70%);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-back,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner-avatar,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-date-divider span,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap{
+    background:linear-gradient(180deg, rgba(10,10,12,.98), rgba(0,0,0,1)) !important;
+    border-color:rgba(255,255,255,.14);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.055),
+      0 0 18px rgba(47,118,255,.12),
+      0 10px 24px rgba(0,0,0,.32);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill-danger{
+    background:linear-gradient(180deg, rgba(48,10,20,.96), rgba(10,0,4,1)) !important;
+    border-color:rgba(255,78,120,.28);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.06),
+      0 0 20px rgba(255,45,90,.16),
+      0 10px 24px rgba(0,0,0,.32);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.other{
+    background:
+      radial-gradient(150px 74px at 75% 0%, rgba(255,255,255,.055), transparent 66%),
+      linear-gradient(180deg, rgba(9,10,14,.98), rgba(0,0,0,.98)) !important;
+    border-color:rgba(105,180,255,.22);
+    box-shadow:
+      0 14px 30px rgba(0,0,0,.36),
+      0 0 20px rgba(47,118,255,.13),
+      inset 0 1px 0 rgba(255,255,255,.055);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine::before{
+    background:linear-gradient(135deg, rgba(255,255,255,.075), transparent 42%, rgba(47,118,255,.055));
+    opacity:.54;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-mic{
+    background:
+      radial-gradient(80px 50px at 50% 0%, rgba(255,255,255,.16), transparent 70%),
+      linear-gradient(145deg,#2f76ff,#1145ad) !important;
+    border-color:rgba(255,255,255,.72);
+    box-shadow:
+      0 0 24px rgba(47,118,255,.42),
+      inset 0 1px 0 rgba(255,255,255,.18);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-send{
+    background:linear-gradient(180deg,#ffffff,#dceeff) !important;
+    color:#05070d;
+    border-color:rgba(255,255,255,.82);
+    box-shadow:
+      0 0 18px rgba(255,255,255,.18),
+      0 0 22px rgba(47,118,255,.16),
+      0 12px 26px rgba(0,0,0,.30);
+  }
+
 </style>
 
 
