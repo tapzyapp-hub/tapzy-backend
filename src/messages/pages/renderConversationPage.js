@@ -2942,6 +2942,74 @@ module.exports = function renderConversationPage({
     }
   }
 
+  /* Post-story black base: blue becomes accent only */
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+    background:#000;
+    box-shadow:none;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::before{
+    opacity:.28;
+    background:radial-gradient(360px 180px at 50% 0%, rgba(47,118,255,.10), transparent 68%);
+    filter:blur(8px);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::after{
+    opacity:.18;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+    background:
+      radial-gradient(260px 100px at 50% 0%, rgba(255,255,255,.035), transparent 72%),
+      linear-gradient(180deg, rgba(5,6,10,.98), rgba(0,0,0,1));
+    border-color:rgba(255,255,255,.11);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.045),
+      0 14px 34px rgba(0,0,0,.34);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::before{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.028), transparent 16%, transparent 86%, rgba(47,118,255,.028)),
+      radial-gradient(260px 150px at 80% 0%, rgba(47,118,255,.055), transparent 70%);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine{
+    background:
+      radial-gradient(160px 78px at 76% 0%, rgba(255,255,255,.10), transparent 64%),
+      linear-gradient(180deg, rgba(20,24,34,.96), rgba(4,5,8,.98));
+    border-color:rgba(92,170,255,.26);
+    box-shadow:
+      0 16px 32px rgba(0,0,0,.34),
+      0 0 20px rgba(47,118,255,.10),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine::before{
+    background:linear-gradient(135deg, rgba(255,255,255,.10), transparent 38%, rgba(47,118,255,.05));
+    opacity:.56;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.other{
+    background:
+      radial-gradient(150px 78px at 76% 0%, rgba(255,255,255,.055), transparent 64%),
+      linear-gradient(180deg, rgba(12,13,17,.94), rgba(0,0,0,.96));
+    border-color:rgba(255,255,255,.13);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap{
+    background:linear-gradient(180deg, rgba(16,16,18,.98), rgba(0,0,0,1));
+    border-color:rgba(255,255,255,.13);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill{
+    box-shadow:
+      0 0 18px rgba(47,118,255,.30),
+      inset 0 1px 0 rgba(255,255,255,.16);
+  }
+
 </style>
 
 
