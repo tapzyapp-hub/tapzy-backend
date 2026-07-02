@@ -3840,6 +3840,246 @@ module.exports = function renderConversationPage({
     }
   }
 
+  /* Exact screenshot lock: stories nav + black chat + matching Settings/Clear */
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav{
+    background:#000;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav > .wrap{
+    background:#000 !important;
+    padding:0 16px 10px !important;
+    overflow:hidden;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+    max-width:980px;
+    height:100%;
+    margin:0 auto;
+    padding:14px 0 12px;
+    border:0;
+    border-radius:0;
+    background:#000 !important;
+    box-shadow:none !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::before{
+    opacity:.16;
+    background:radial-gradient(360px 150px at 50% 0%, rgba(47,118,255,.11), transparent 74%);
+    filter:blur(12px);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell::after{
+    opacity:.06;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+    margin:0 0 14px;
+    padding:10px;
+    border-radius:29px;
+    border:1px solid rgba(255,255,255,.12);
+    background:
+      radial-gradient(260px 90px at 18% 0%, rgba(47,118,255,.10), transparent 70%),
+      linear-gradient(180deg, rgba(6,7,10,.98), rgba(0,0,0,1)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.045),
+      0 0 0 1px rgba(47,118,255,.045),
+      0 0 18px rgba(47,118,255,.10),
+      0 12px 30px rgba(0,0,0,.36);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar-left,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar-actions{
+    display:flex;
+    align-items:center;
+    min-width:0;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar-left,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner{
+    gap:10px;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar-actions{
+    justify-content:flex-end;
+    gap:8px;
+    margin-left:auto;
+    padding:0;
+    flex-wrap:nowrap;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar-actions form{
+    display:flex;
+    margin:0;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-back,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner-avatar{
+    width:48px;
+    height:48px;
+    flex:0 0 48px;
+    border-radius:18px;
+    background:
+      radial-gradient(80px 52px at 50% 0%, rgba(47,118,255,.11), transparent 70%),
+      linear-gradient(180deg, rgba(10,12,17,.98), rgba(0,0,0,1)) !important;
+    border-color:rgba(255,255,255,.14);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.055),
+      0 0 18px rgba(47,118,255,.12),
+      0 10px 24px rgba(0,0,0,.32);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner-name{
+    max-width:30vw;
+    font-size:18px;
+    line-height:1;
+    letter-spacing:-.035em;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill-danger{
+    min-width:72px;
+    min-height:42px;
+    height:42px;
+    padding:0 14px;
+    border-radius:18px;
+    color:#fff;
+    background:
+      radial-gradient(120px 64px at 50% 0%, rgba(47,118,255,.12), transparent 70%),
+      linear-gradient(180deg, rgba(12,14,20,.98), rgba(0,0,0,1)) !important;
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.055),
+      0 0 18px rgba(47,118,255,.12),
+      0 10px 24px rgba(0,0,0,.32);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+    margin:0;
+    padding:12px;
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.10);
+    background:
+      radial-gradient(260px 120px at 88% 0%, rgba(47,118,255,.055), transparent 70%),
+      linear-gradient(180deg, rgba(2,3,6,.98), #000 78%) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.03),
+      inset 0 0 0 1px rgba(47,118,255,.035),
+      0 0 20px rgba(47,118,255,.09),
+      0 16px 34px rgba(0,0,0,.32);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::before{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.018), transparent 18%, transparent 84%, rgba(47,118,255,.018)),
+      radial-gradient(240px 110px at 82% 0%, rgba(47,118,255,.055), transparent 72%);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.other{
+    background:
+      radial-gradient(145px 70px at 74% 0%, rgba(255,255,255,.05), transparent 66%),
+      linear-gradient(180deg, rgba(11,13,18,.96), rgba(0,0,0,.98)) !important;
+    border-color:rgba(91,164,255,.20);
+    box-shadow:
+      0 12px 26px rgba(0,0,0,.34),
+      0 0 18px rgba(47,118,255,.10),
+      inset 0 1px 0 rgba(255,255,255,.045);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine{
+    max-width:min(62%, 320px);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-date-divider span{
+    background:linear-gradient(180deg, rgba(14,15,19,.96), rgba(0,0,0,.98)) !important;
+    border-color:rgba(255,255,255,.13);
+    color:rgba(255,255,255,.78);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+    margin-top:12px;
+    padding:8px;
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.12);
+    background:
+      radial-gradient(260px 100px at 78% 0%, rgba(47,118,255,.08), transparent 70%),
+      linear-gradient(180deg, rgba(5,7,11,.98), #000) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.045),
+      0 0 0 1px rgba(47,118,255,.05),
+      0 0 22px rgba(47,118,255,.13),
+      0 14px 30px rgba(0,0,0,.38);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap{
+    border-radius:21px;
+    background:linear-gradient(180deg, rgba(15,16,20,.98), rgba(0,0,0,1)) !important;
+    border-color:rgba(255,255,255,.13);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-mic{
+    background:
+      radial-gradient(80px 50px at 50% 0%, rgba(255,255,255,.16), transparent 70%),
+      linear-gradient(145deg,#2f76ff,#1145ad) !important;
+    border-color:rgba(255,255,255,.62);
+    box-shadow:
+      0 0 22px rgba(47,118,255,.34),
+      inset 0 1px 0 rgba(255,255,255,.16);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-send{
+    background:linear-gradient(180deg,#f8fdff,#dceeff) !important;
+    color:#05070d;
+    border-color:rgba(255,255,255,.72);
+  }
+
+  @media(max-width:700px){
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav > .wrap{
+      padding:0 16px 10px !important;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+      padding:14px 0 12px;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
+      padding:9px;
+      border-radius:27px;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-back,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner-avatar{
+      width:44px;
+      height:44px;
+      flex-basis:44px;
+      border-radius:16px;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner-name{
+      max-width:25vw;
+      font-size:16px;
+    }
+
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill-danger{
+      min-width:64px;
+      min-height:38px;
+      height:38px;
+      padding:0 12px;
+      font-size:12px;
+    }
+  }
+
 </style>
 
 
