@@ -2923,6 +2923,25 @@ module.exports = function renderConversationPage({
     }
   }
 
+  /* Final elegance pass: slimmer sent bubbles + softer window edge */
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+    border-color:rgba(255,255,255,.075);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.026),
+      inset 0 0 0 1px rgba(47,118,255,.022),
+      0 14px 38px rgba(0,0,0,.18);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine{
+    max-width:min(66%, 420px);
+  }
+
+  @media(max-width:700px){
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine{
+      max-width:min(62%, 320px);
+    }
+  }
+
 </style>
 
 
