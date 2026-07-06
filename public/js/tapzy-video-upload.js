@@ -162,6 +162,54 @@
     return data;
   }
 
+  function uploadCloudinaryFile(file, signature, onProgress) {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append("file", file, file.name || "tapzy-media");
+      formData.append("api_key", signature.apiKey);
+      formData.append("timestamp", String(signature.timestamp));
+      formData.append("signature", signature.signature);
+      if (signature.folder) formData.append("folder", signature.folder);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", signature.uploadUrl);
+      xhr.upload.onprogress = function(event) {
+        if (!event.lengthComputable || !onProgress) return;
+        onProgress(Math.max(1, Math.min(99, Math.round((event.loaded / event.total) * 100))));
+      };
+      xhr.onload = function() {
+        let data = {};
+        try { data = JSON.parse(xhr.responseText || "{}"); } catch (_) {}
+        if (xhr.status < 200 || xhr.status >= 300 || !data.secure_url) {
+          reject(new Error(data.error && data.error.message ? data.error.message : "Cloud upload failed"));
+          return;
+        }
+        resolve({
+          ok: true,
+          mediaUrl: data.secure_url,
+          filename: data.public_id || file.name || "tapzy-media",
+          originalName: file.name || data.original_filename || "tapzy-media",
+          mimetype: inferMimeType(file),
+          size: data.bytes || file.size || 0,
+          provider: "cloudinary",
+        });
+      };
+      xhr.onerror = function() { reject(new Error("Cloud upload failed")); };
+      xhr.ontimeout = function() { reject(new Error("Cloud upload timed out")); };
+      xhr.timeout = 30 * 60 * 1000;
+      xhr.send(formData);
+    });
+  }
+
+  async function uploadCloudMedia(file, onProgress) {
+    const signature = await postJson("/media/cloudinary/sign", {
+      originalName: file.name || "tapzy-media",
+      type: inferMimeType(file),
+      size: file.size,
+    });
+    return uploadCloudinaryFile(file, signature, onProgress);
+  }
+
   async function uploadChunkWithRetry(uploadId, index, blob) {
     let lastError = null;
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -392,7 +440,16 @@
     try {
       let complete = null;
       if (supportsChunkedSubmit(form)) {
-        if (file.size <= DIRECT_UPLOAD_BYTES) {
+        try {
+          setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} to cloud ${0}% — keep this page open.`);
+          complete = await uploadCloudMedia(file, (pct) => {
+            setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} to cloud ${pct}% — keep this page open.`);
+          });
+        } catch (cloudError) {
+          complete = null;
+        }
+
+        if (!complete && file.size <= DIRECT_UPLOAD_BYTES) {
           try {
             setStatus(form, `${isVideoFile(file) ? "Uploading video" : "Uploading media"} — keep this page open.`);
             complete = await uploadDirectMedia(file);
@@ -402,7 +459,7 @@
               setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} ${pct}% — keep this page open.`);
             });
           }
-        } else {
+        } else if (!complete) {
           setStatus(form, "Uploading video fast — keep this page open.");
           complete = await uploadChunkedMedia(file, form, (pct) => {
             setStatus(form, `Uploading video ${pct}% — keep this page open.`);

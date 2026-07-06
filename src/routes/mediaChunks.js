@@ -11,6 +11,7 @@ const { publicAbsoluteUrl } = require("../utils");
 const MAX_CHUNKS = 800;
 const MAX_CHUNK_BYTES = 16 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 1024 * 1024 * 1024;
+const CLOUDINARY_UPLOAD_FOLDER = process.env.CLOUDINARY_UPLOAD_FOLDER || "tapzy-media";
 const sessions = new Map();
 
 const chunkStorage = multer.diskStorage({
@@ -67,6 +68,56 @@ function cleanupExpiredSessions() {
     }
   }
 }
+
+function signCloudinaryParams(params, apiSecret) {
+  const payload = Object.keys(params)
+    .filter((key) => params[key] !== undefined && params[key] !== null && params[key] !== "")
+    .sort()
+    .map((key) => `${key}=${params[key]}`)
+    .join("&");
+
+  return crypto.createHash("sha1").update(`${payload}${apiSecret}`).digest("hex");
+}
+
+router.post("/media/cloudinary/sign", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+
+    const cloudName = String(process.env.CLOUDINARY_CLOUD_NAME || "").trim();
+    const apiKey = String(process.env.CLOUDINARY_API_KEY || "").trim();
+    const apiSecret = String(process.env.CLOUDINARY_API_SECRET || "").trim();
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      return res.status(501).json({ ok: false, error: "Cloud uploads are not configured" });
+    }
+
+    const originalName = String(req.body.originalName || "tapzy-media").trim();
+    const mimetype = String(req.body.type || "application/octet-stream").trim();
+    if (!isSupportedMediaMime(mimetype, originalName)) {
+      return res.status(400).json({ ok: false, error: "Only media uploads are supported" });
+    }
+
+    const timestamp = Math.floor(Date.now() / 1000);
+    const params = {
+      folder: CLOUDINARY_UPLOAD_FOLDER,
+      timestamp,
+    };
+
+    res.json({
+      ok: true,
+      cloudName,
+      apiKey,
+      folder: CLOUDINARY_UPLOAD_FOLDER,
+      timestamp,
+      signature: signCloudinaryParams(params, apiSecret),
+      uploadUrl: `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/auto/upload`,
+    });
+  } catch (error) {
+    console.error("Cloudinary sign error:", error);
+    res.status(500).json({ ok: false, error: "Could not start cloud upload" });
+  }
+});
 
 
 router.post("/media/upload", directUpload.single("media"), async (req, res) => {
