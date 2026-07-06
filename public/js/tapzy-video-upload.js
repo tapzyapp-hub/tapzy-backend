@@ -2,6 +2,8 @@
   if (window.TapzyVideoUpload) return;
 
   const CHUNK_SIZE = 16 * 1024 * 1024;
+  const CLOUDINARY_CHUNK_SIZE = 20 * 1024 * 1024;
+  const CLOUDINARY_CHUNK_UPLOAD_BYTES = 40 * 1024 * 1024;
   const DIRECT_UPLOAD_BYTES = 24 * 1024 * 1024;
   const MAX_PARALLEL_CHUNKS = 6;
   const MAX_EDGE = 1280;
@@ -201,12 +203,72 @@
     });
   }
 
+  function uploadCloudinaryChunk(file, signature, uploadId, start, end, onProgress) {
+    return new Promise((resolve, reject) => {
+      const chunk = file.slice(start, end);
+      const formData = new FormData();
+      formData.append("file", chunk, file.name || "tapzy-media");
+      formData.append("api_key", signature.apiKey);
+      formData.append("timestamp", String(signature.timestamp));
+      formData.append("signature", signature.signature);
+      if (signature.folder) formData.append("folder", signature.folder);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", signature.uploadUrl);
+      xhr.setRequestHeader("X-Unique-Upload-Id", uploadId);
+      xhr.setRequestHeader("Content-Range", `bytes ${start}-${end - 1}/${file.size}`);
+      xhr.upload.onprogress = function(event) {
+        if (!event.lengthComputable || !onProgress) return;
+        onProgress(start + event.loaded);
+      };
+      xhr.onload = function() {
+        let data = {};
+        try { data = JSON.parse(xhr.responseText || "{}"); } catch (_) {}
+        if (xhr.status < 200 || xhr.status >= 300) {
+          reject(new Error(data.error && data.error.message ? data.error.message : "Cloud chunk failed"));
+          return;
+        }
+        resolve(data);
+      };
+      xhr.onerror = function() { reject(new Error("Cloud chunk failed")); };
+      xhr.ontimeout = function() { reject(new Error("Cloud chunk timed out")); };
+      xhr.timeout = 30 * 60 * 1000;
+      xhr.send(formData);
+    });
+  }
+
+  async function uploadCloudinaryChunkedFile(file, signature, onProgress) {
+    const uploadId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    let latest = null;
+
+    for (let start = 0; start < file.size; start += CLOUDINARY_CHUNK_SIZE) {
+      const end = Math.min(file.size, start + CLOUDINARY_CHUNK_SIZE);
+      latest = await uploadCloudinaryChunk(file, signature, uploadId, start, end, (loaded) => {
+        if (onProgress) onProgress(Math.max(1, Math.min(99, Math.round((loaded / file.size) * 100))));
+      });
+    }
+
+    if (!latest || !latest.secure_url) throw new Error("Cloud upload did not return a media URL");
+    return {
+      ok: true,
+      mediaUrl: latest.secure_url,
+      filename: latest.public_id || file.name || "tapzy-media",
+      originalName: file.name || latest.original_filename || "tapzy-media",
+      mimetype: inferMimeType(file),
+      size: latest.bytes || file.size || 0,
+      provider: "cloudinary",
+    };
+  }
+
   async function uploadCloudMedia(file, onProgress) {
     const signature = await postJson("/media/cloudinary/sign", {
       originalName: file.name || "tapzy-media",
       type: inferMimeType(file),
       size: file.size,
     });
+    if (file.size >= CLOUDINARY_CHUNK_UPLOAD_BYTES) {
+      return uploadCloudinaryChunkedFile(file, signature, onProgress);
+    }
     return uploadCloudinaryFile(file, signature, onProgress);
   }
 
@@ -446,6 +508,7 @@
             setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} to cloud ${pct}% — keep this page open.`);
           });
         } catch (cloudError) {
+          setStatus(form, `Cloud upload failed: ${cloudError.message || "retrying safely"}`);
           complete = null;
         }
 
@@ -475,7 +538,7 @@
         setStatus(form, "Media uploaded — posting now.");
       }
     } catch (error) {
-      setStatus(form, "Media upload failed. Please try again on a stronger connection.");
+      setStatus(form, `Media upload failed: ${error.message || "Please try again on a stronger connection."}`);
       form.dataset.tapzyVideoPrepared = "0";
       form.dataset.tapzyVideoPreparing = "0";
       if (submitter) submitter.disabled = false;
