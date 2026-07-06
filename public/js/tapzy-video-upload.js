@@ -4,13 +4,13 @@
   const CHUNK_SIZE = 16 * 1024 * 1024;
   const CLOUDINARY_CHUNK_SIZE = 20 * 1024 * 1024;
   const CLOUDINARY_CHUNK_UPLOAD_BYTES = 40 * 1024 * 1024;
-  const DIRECT_UPLOAD_BYTES = 24 * 1024 * 1024;
-  const START_OPTIMIZE_BYTES = 24 * 1024 * 1024;
+  const DIRECT_UPLOAD_BYTES = 18 * 1024 * 1024;
+  const START_OPTIMIZE_BYTES = 10 * 1024 * 1024;
   const MAX_PARALLEL_CHUNKS = 6;
-  const MAX_EDGE = 1280;
-  const FPS = 30;
-  const VIDEO_BITRATE = 2400000;
-  const AUDIO_BITRATE = 128000;
+  const MAX_EDGE = 960;
+  const FPS = 24;
+  const VIDEO_BITRATE = 1300000;
+  const AUDIO_BITRATE = 96000;
 
   function isVideoFile(file) {
     if (!file) return false;
