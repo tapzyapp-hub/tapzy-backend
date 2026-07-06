@@ -2812,7 +2812,8 @@ module.exports = function renderConversationPage({
   }
 
   body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
-    overflow:hidden;
+    overflow:visible;
+    z-index:80;
   }
 
   body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar::after{
@@ -2824,6 +2825,18 @@ module.exports = function renderConversationPage({
     height:1px;
     pointer-events:none;
     background:linear-gradient(90deg, transparent, rgba(255,255,255,.50), transparent);
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-settings-menu{
+    z-index:90;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-settings-menu[open]{
+    z-index:120;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-settings-panel{
+    z-index:130;
   }
 
   body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
