@@ -1,11 +1,9 @@
 (function () {
   if (window.TapzyVideoUpload) return;
 
-  const TARGET_BYTES = 42 * 1024 * 1024;
-  const START_COMPRESS_BYTES = 12 * 1024 * 1024;
-  const CHUNK_UPLOAD_BYTES = 42 * 1024 * 1024;
-  const CHUNK_SIZE = 5 * 1024 * 1024;
-  const DIRECT_UPLOAD_BYTES = 96 * 1024 * 1024;
+  const CHUNK_SIZE = 16 * 1024 * 1024;
+  const DIRECT_UPLOAD_BYTES = 120 * 1024 * 1024;
+  const MAX_PARALLEL_CHUNKS = 4;
   const MAX_EDGE = 1280;
   const FPS = 30;
   const VIDEO_BITRATE = 2400000;
@@ -182,13 +180,24 @@
     });
 
     try {
-      for (let index = 0; index < totalChunks; index += 1) {
+      let nextIndex = 0;
+      let completed = 0;
+      const parallelChunks = Math.max(1, Math.min(MAX_PARALLEL_CHUNKS, totalChunks));
+
+      async function uploadNextChunk() {
+        const index = nextIndex;
+        nextIndex += 1;
+        if (index >= totalChunks) return;
+
         const start = index * CHUNK_SIZE;
         const chunk = file.slice(start, Math.min(file.size, start + CHUNK_SIZE));
         await uploadChunkWithRetry(session.uploadId, index, chunk);
-        if (onProgress) onProgress(Math.round(((index + 1) / totalChunks) * 100));
+        completed += 1;
+        if (onProgress) onProgress(Math.round((completed / totalChunks) * 100));
+        await uploadNextChunk();
       }
 
+      await Promise.all(Array.from({ length: parallelChunks }, uploadNextChunk));
       return await postJson("/media/chunk/" + encodeURIComponent(session.uploadId) + "/complete", {});
     } catch (error) {
       try { await postJson("/media/chunk/" + encodeURIComponent(session.uploadId) + "/cancel", {}); } catch (_) {}

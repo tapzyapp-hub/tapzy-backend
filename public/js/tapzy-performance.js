@@ -194,6 +194,15 @@
     status.textContent = text || "";
   }
 
+  function isDedicatedMediaUploadForm(form) {
+    try {
+      var action = new URL(form.getAttribute("action") || location.href, location.href);
+      return /^\/stories(?:$|\/)/.test(action.pathname) || /^\/messages\/[^/]+$/.test(action.pathname);
+    } catch (_) {
+      return false;
+    }
+  }
+
   function installServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
     if (!window.isSecureContext && location.hostname !== "localhost") return;
@@ -204,6 +213,7 @@
     document.addEventListener("submit", function (event) {
       var form = event.target;
       if (!form || !form.matches || !form.matches('form[enctype="multipart/form-data"]')) return;
+      if (isDedicatedMediaUploadForm(form)) return;
       if (form.__tapzyPrepared) return;
       var input = form.querySelector('input[type="file"]');
       if (!input || !input.files || !input.files[0]) return;

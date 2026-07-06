@@ -9,7 +9,7 @@ const { uploadsDir, chunkUploadsDir, safeUploadFilename } = require("../upload")
 const { publicAbsoluteUrl } = require("../utils");
 
 const MAX_CHUNKS = 800;
-const MAX_CHUNK_BYTES = 8 * 1024 * 1024;
+const MAX_CHUNK_BYTES = 16 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 1024 * 1024 * 1024;
 const sessions = new Map();
 
