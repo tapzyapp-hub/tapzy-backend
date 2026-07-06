@@ -160,7 +160,7 @@ function renderVideoPreviewFrame(url, escapeHtml, extra = {}) {
   const controls = extra.controls === false ? '' : ' controls';
   const autoplay = extra.autoplay ? ' autoplay' : '';
   const muted = extra.muted ? ' muted' : '';
-  const preload = escapeHtml(extra.preload || 'metadata');
+  const preload = escapeHtml(extra.preload || 'auto');
   const aria = escapeHtml(extra.ariaLabel || 'Play video');
   return `
     <div class="tz-video-frame${extra.autoplay ? ' is-autoplay' : ''}" data-video-frame>
@@ -168,7 +168,7 @@ function renderVideoPreviewFrame(url, escapeHtml, extra = {}) {
         <div class="tz-video-preview-blur"></div>
         <div class="tz-video-preview-badge">▶</div>
       </div>
-      <video class="${className}"${controls}${autoplay}${muted} preload="${preload}" playsinline src="${src}"></video>
+      <video class="${className}"${controls}${autoplay}${muted} preload="${preload}" playsinline webkit-playsinline src="${src}"></video>
     </div>
   `;
 }
@@ -1351,6 +1351,12 @@ module.exports = function renderConversationPage({
 
     background:#05070d;
 
+    width:min(72vw, 320px);
+
+    max-width:100%;
+
+    aspect-ratio:9 / 14;
+
   }
 
   .tz-video-preview{
@@ -1369,7 +1375,7 @@ module.exports = function renderConversationPage({
 
     cursor:pointer;
 
-    background:radial-gradient(circle at 50% 20%, rgba(52,116,255,.22), transparent 42%),linear-gradient(180deg, rgba(8,12,24,.96), rgba(3,5,12,.98));
+    background:linear-gradient(180deg, rgba(3,5,12,.14), rgba(3,5,12,.34));
 
     transition:opacity .22s ease, visibility .22s ease;
 
@@ -1381,9 +1387,9 @@ module.exports = function renderConversationPage({
 
     inset:0;
 
-    backdrop-filter:blur(14px);
+    backdrop-filter:blur(2px);
 
-    -webkit-backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(2px);
 
   }
 
@@ -1433,9 +1439,13 @@ module.exports = function renderConversationPage({
 
     display:block;
 
-    width:min(100%, 360px);
+    width:100%;
+
+    height:100%;
 
     max-width:100%;
+
+    object-fit:cover;
 
     border-radius:22px;
 
@@ -3540,7 +3550,7 @@ module.exports = function renderConversationPage({
                 <div class="tz-video-preview-blur"></div>
                 <div class="tz-video-preview-badge">▶</div>
               </div>
-              <video class="tz-chat-video" controls preload="metadata" playsinline src="\${safeEscape(url)}"></video>
+              <video class="tz-chat-video" controls preload="auto" playsinline webkit-playsinline src="\${safeEscape(url)}"></video>
             </div>
           \`;
         }
@@ -3552,17 +3562,37 @@ module.exports = function renderConversationPage({
             const video = frame.querySelector('video');
             const preview = frame.querySelector('[data-video-preview]');
             if (!video || !preview) return;
-            const markReady = function(){ frame.classList.add('is-ready'); };
-            const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
+            const markReady = function(){ if (video.dataset.previewSeeked === '1') frame.classList.add('is-ready'); };
+            const markPlaying = function(){ video.muted = false; video.removeAttribute('muted'); frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
             const markPaused = function(){ frame.classList.remove('is-playing'); };
-            preview.addEventListener('click', function(){ video.play().catch(function(){}); });
-            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
-            video.addEventListener('loadeddata', markReady, { once: true });
+            const warmPreviewFrame = function(){
+              try {
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+                video.preload = 'auto';
+                if (video.readyState === 0) video.load();
+                if (video.readyState >= 1 && !video.dataset.previewSeeked) {
+                  video.dataset.previewSeeked = 'pending';
+                  const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
+                  const target = Math.min(Math.max(0.65, duration * 0.08), Math.max(0.01, duration - 0.05));
+                  video.currentTime = target;
+                }
+              } catch (err) {}
+            };
+            video.addEventListener('seeked', function(){
+              video.dataset.previewSeeked = '1';
+              frame.classList.add('is-ready');
+            });
+            preview.addEventListener('click', function(){ video.muted = false; video.removeAttribute('muted'); video.play().catch(function(){}); });
+            preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.muted = false; video.removeAttribute('muted'); video.play().catch(function(){}); } });
+            video.addEventListener('loadedmetadata', warmPreviewFrame, { once: true });
+            video.addEventListener('loadeddata', warmPreviewFrame, { once: true });
             video.addEventListener('canplay', markReady, { once: true });
             video.addEventListener('play', markPlaying);
             video.addEventListener('playing', markPlaying);
             video.addEventListener('pause', markPaused);
-            if (video.readyState >= 2) markReady();
+            warmPreviewFrame();
+            if (video.readyState >= 1) warmPreviewFrame();
           });
         }
 

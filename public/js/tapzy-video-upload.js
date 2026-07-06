@@ -2,8 +2,8 @@
   if (window.TapzyVideoUpload) return;
 
   const CHUNK_SIZE = 16 * 1024 * 1024;
-  const DIRECT_UPLOAD_BYTES = 120 * 1024 * 1024;
-  const MAX_PARALLEL_CHUNKS = 4;
+  const DIRECT_UPLOAD_BYTES = 24 * 1024 * 1024;
+  const MAX_PARALLEL_CHUNKS = 6;
   const MAX_EDGE = 1280;
   const FPS = 30;
   const VIDEO_BITRATE = 2400000;
@@ -56,6 +56,20 @@
     } catch (_) {
       return false;
     }
+  }
+
+  function chunkConcurrency(totalChunks) {
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const effectiveType = String((connection && connection.effectiveType) || "").toLowerCase();
+    const saveData = !!(connection && connection.saveData);
+    let limit = MAX_PARALLEL_CHUNKS;
+
+    if (saveData || /(?:^|-)2g$/.test(effectiveType)) limit = 2;
+    else if (effectiveType === "3g") limit = 3;
+    else if (effectiveType === "4g") limit = 6;
+    else limit = 4;
+
+    return Math.max(1, Math.min(limit, totalChunks));
   }
 
   function bestMimeType() {
@@ -182,7 +196,7 @@
     try {
       let nextIndex = 0;
       let completed = 0;
-      const parallelChunks = Math.max(1, Math.min(MAX_PARALLEL_CHUNKS, totalChunks));
+      const parallelChunks = chunkConcurrency(totalChunks);
 
       async function uploadNextChunk() {
         const index = nextIndex;
@@ -380,16 +394,16 @@
       if (supportsChunkedSubmit(form)) {
         if (file.size <= DIRECT_UPLOAD_BYTES) {
           try {
-            setStatus(form, "Uploading media — keep this page open.");
+            setStatus(form, `${isVideoFile(file) ? "Uploading video" : "Uploading media"} — keep this page open.`);
             complete = await uploadDirectMedia(file);
           } catch (directError) {
-            setStatus(form, "Retrying upload safely — keep this page open.");
+            setStatus(form, `Retrying ${isVideoFile(file) ? "video" : "media"} upload safely — keep this page open.`);
             complete = await uploadChunkedMedia(file, form, (pct) => {
-              setStatus(form, `Uploading media ${pct}% — keep this page open.`);
+              setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} ${pct}% — keep this page open.`);
             });
           }
         } else {
-          setStatus(form, "Uploading large video safely — keep this page open.");
+          setStatus(form, "Uploading video fast — keep this page open.");
           complete = await uploadChunkedMedia(file, form, (pct) => {
             setStatus(form, `Uploading video ${pct}% — keep this page open.`);
           });
