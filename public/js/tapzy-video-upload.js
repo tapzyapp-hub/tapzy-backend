@@ -5,6 +5,7 @@
   const CLOUDINARY_CHUNK_SIZE = 20 * 1024 * 1024;
   const CLOUDINARY_CHUNK_UPLOAD_BYTES = 40 * 1024 * 1024;
   const DIRECT_UPLOAD_BYTES = 24 * 1024 * 1024;
+  const START_OPTIMIZE_BYTES = 24 * 1024 * 1024;
   const MAX_PARALLEL_CHUNKS = 6;
   const MAX_EDGE = 1280;
   const FPS = 30;
@@ -136,6 +137,11 @@
       form.appendChild(input);
     }
     input.value = value || "";
+  }
+
+  function formatMegabytes(bytes) {
+    const value = Math.max(0, Number(bytes) || 0) / (1024 * 1024);
+    return value >= 10 ? Math.round(value) + " MB" : value.toFixed(1) + " MB";
   }
 
   async function postJson(url, body) {
@@ -496,35 +502,47 @@
       return true;
     }
 
+    let uploadFile = file;
+
     form.dataset.tapzyVideoPreparing = "1";
     if (submitter) submitter.disabled = true;
 
     try {
       let complete = null;
       if (supportsChunkedSubmit(form)) {
+        if (isVideoFile(file) && file.size >= START_OPTIMIZE_BYTES) {
+          setStatus(form, "Optimizing video for faster upload 0% — keep this page open.");
+          uploadFile = await compressVideo(file, (pct) => {
+            setStatus(form, `Optimizing video for faster upload ${pct}% — keep this page open.`);
+          });
+          if (uploadFile !== file && uploadFile.size < file.size) {
+            setStatus(form, `Video optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} — uploading now.`);
+          }
+        }
+
         try {
-          setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} to cloud ${0}% — keep this page open.`);
-          complete = await uploadCloudMedia(file, (pct) => {
-            setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} to cloud ${pct}% — keep this page open.`);
+          setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${0}% — keep this page open.`);
+          complete = await uploadCloudMedia(uploadFile, (pct) => {
+            setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${pct}% — keep this page open.`);
           });
         } catch (cloudError) {
           setStatus(form, `Cloud upload failed: ${cloudError.message || "retrying safely"}`);
           complete = null;
         }
 
-        if (!complete && file.size <= DIRECT_UPLOAD_BYTES) {
+        if (!complete && uploadFile.size <= DIRECT_UPLOAD_BYTES) {
           try {
-            setStatus(form, `${isVideoFile(file) ? "Uploading video" : "Uploading media"} — keep this page open.`);
-            complete = await uploadDirectMedia(file);
+            setStatus(form, `${isVideoFile(uploadFile) ? "Uploading video" : "Uploading media"} — keep this page open.`);
+            complete = await uploadDirectMedia(uploadFile);
           } catch (directError) {
-            setStatus(form, `Retrying ${isVideoFile(file) ? "video" : "media"} upload safely — keep this page open.`);
-            complete = await uploadChunkedMedia(file, form, (pct) => {
-              setStatus(form, `Uploading ${isVideoFile(file) ? "video" : "media"} ${pct}% — keep this page open.`);
+            setStatus(form, `Retrying ${isVideoFile(uploadFile) ? "video" : "media"} upload safely — keep this page open.`);
+            complete = await uploadChunkedMedia(uploadFile, form, (pct) => {
+              setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} ${pct}% — keep this page open.`);
             });
           }
         } else if (!complete) {
           setStatus(form, "Uploading video fast — keep this page open.");
-          complete = await uploadChunkedMedia(file, form, (pct) => {
+          complete = await uploadChunkedMedia(uploadFile, form, (pct) => {
             setStatus(form, `Uploading video ${pct}% — keep this page open.`);
           });
         }
@@ -532,8 +550,8 @@
 
       if (complete && complete.mediaUrl) {
         upsertHidden(form, "tapzyChunkedMediaUrl", complete.mediaUrl || "");
-        upsertHidden(form, "tapzyChunkedOriginalName", complete.originalName || file.name || "");
-        upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || inferMimeType(file));
+        upsertHidden(form, "tapzyChunkedOriginalName", complete.originalName || uploadFile.name || file.name || "");
+        upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || inferMimeType(uploadFile));
         clearInputFile(mediaInput);
         setStatus(form, "Media uploaded — posting now.");
       }
