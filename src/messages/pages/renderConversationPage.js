@@ -4085,6 +4085,8 @@ module.exports = function renderConversationPage({
 
           e.preventDefault();
 
+          if (form.dataset.tapzyVideoIntercepting === "1" && form.dataset.tapzyVideoPrepared !== "1") return;
+
           if (isSending) return;
 
 
@@ -4112,6 +4114,12 @@ module.exports = function renderConversationPage({
 
 
           try {
+
+            if (selectedFile && window.TapzyVideoUpload && typeof window.TapzyVideoUpload.prepareForm === "function") {
+
+              await window.TapzyVideoUpload.prepareForm(form, sendBtn);
+
+            }
 
             const formData = new FormData(form);
 
