@@ -185,8 +185,10 @@ router.post("/media/chunk/start", async (req, res) => {
   }
 });
 
-router.post("/media/chunk/:uploadId/:index", chunkUpload.single("chunk"), async (req, res) => {
+router.post("/media/chunk/:uploadId/:index", chunkUpload.single("chunk"), async (req, res, next) => {
   try {
+    if (!/^\d+$/.test(String(req.params.index || ""))) return next();
+
     const currentProfile = req.currentProfile;
     if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
 
