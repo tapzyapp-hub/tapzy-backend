@@ -696,7 +696,7 @@ function requireOwnerAccess(profile, req, res) {
 
       .muted{color:#bdbdbd;margin-top:10px;line-height:1.6}
 
-      .btn{display:inline-block;margin-top:18px;padding:12px 16px;border-radius:12px;background:#fff;color:#000;text-decoration:none;font-weight:800}
+      .btn{display:inline-block;margin-top:18px;padding:12px 16px;border-radius:14px;background:#fff;color:#000;text-decoration:none;font-weight:800}
 
     </style>
 
@@ -1135,7 +1135,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       .tz-topbar{
 
-        position:fixed;
+        position:sticky;
         width:100%;
         max-width:100%;
         overflow-x:hidden;
@@ -1457,7 +1457,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         height:38px;
 
-        border-radius:12px;
+        border-radius:14px;
 
         border:1px solid rgba(255,255,255,.08);
 
@@ -1591,11 +1591,11 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         justify-content:center;
 
-        min-height:40px;
+        min-height:42px;
 
         padding:10px 14px;
 
-        border-radius:12px;
+        border-radius:14px;
 
         text-decoration:none;
 
@@ -1727,7 +1727,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         padding:13px 14px;
 
-        border-radius:12px;
+        border-radius:14px;
 
         border:1px solid var(--border);
 
@@ -2869,7 +2869,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         font-size:14px;
 
-
         text-decoration:none;
 
         white-space:nowrap;
@@ -2970,7 +2969,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         background:#000;
 
-
       }
 
 
@@ -3043,7 +3041,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
           padding:10px 8px;
 
-          border-radius:12px;
+          border-radius:14px;
 
           font-size:12px;
 

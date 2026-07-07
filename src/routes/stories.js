@@ -2609,7 +2609,7 @@ router.get("/stories/feed", async (req, res) => {
     <body>
       <main class="sf-app">
         <header class="sf-top">
-          <a class="sf-brand" href="/stories/feed" aria-label="Stories home">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
+          <a class="sf-brand" href="/stories" aria-label="Back to Stories">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
           <nav class="sf-tabs" aria-label="Story feed filters">
             <a class="sf-tab" href="/events">Events</a>
             <button class="sf-tab" type="button" data-filter="following">Following</button>

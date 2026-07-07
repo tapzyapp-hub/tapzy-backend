@@ -200,6 +200,7 @@ module.exports = async function getEventsPage(req, res) {
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
       </a>
     </header>
+
     <div class="wrap events-wrap">
 
       <section class="events-chip-wrap">
@@ -2598,6 +2599,7 @@ module.exports = async function getEventsPage(req, res) {
 
         .events-story-tabs{gap:12px;}
         .events-story-tab{font-size:13px;}
+
         .events-wrap > .events-hero{
           display:none !important;
         }
