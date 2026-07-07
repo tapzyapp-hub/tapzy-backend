@@ -27,10 +27,10 @@ module.exports = function renderMessagesInboxPage({
           <div class="tz-msg-hub">
             <div class="tz-msg-head">
               <div>
-                <div class="tz-msg-kicker">Tapzy Signal</div>
-                <h1 class="tz-msg-title">Private Network</h1>
+                <div class="tz-msg-kicker">Tapzy Contacts</div>
+                <h1 class="tz-msg-title">Contacts</h1>
                 <div class="tz-msg-subtitle">
-                  Premium one-to-one conversations built around your Tapzy profile, cards, stories, and real connections.
+                  Your private Tapzy contact list for quick one-to-one messages, shared stories, and real connections.
                 </div>
               </div>
 
@@ -47,7 +47,7 @@ module.exports = function renderMessagesInboxPage({
 
             <div class="tz-msg-content">
               <div class="tz-msg-section-head">
-                <h2 class="tz-msg-section-title">${isArchived ? "Saved Threads" : "Active Threads"}</h2>
+                <h2 class="tz-msg-section-title">${isArchived ? "Saved Contacts" : "Tapzy Contacts"}</h2>
                 <div class="tz-msg-section-meta">
                   ${conversationCount} conversation${conversationCount === 1 ? "" : "s"}
                 </div>
@@ -739,6 +739,224 @@ module.exports = function renderMessagesInboxPage({
           min-height:26px;
           padding:0 9px;
           font-size:10px;
+        }
+      }
+
+      .tz-msg-hub{
+        border-radius:28px;
+        padding:16px;
+      }
+
+      .tz-msg-head{
+        padding:4px 2px 2px;
+      }
+
+      .tz-msg-title{
+        font-size:clamp(42px, 9vw, 58px);
+        letter-spacing:-.065em;
+      }
+
+      .tz-msg-subtitle{
+        max-width:560px;
+      }
+
+      .tz-msg-head-actions{
+        width:100%;
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+
+      .tz-msg-tabs{
+        width:100%;
+      }
+
+      .tz-msg-tab{
+        flex:1;
+      }
+
+      .tz-msg-section-head{
+        margin-top:2px;
+        padding:0 2px;
+      }
+
+      .tz-msg-section-title{
+        font-size:clamp(26px, 6vw, 34px);
+      }
+
+      .tz-msg-list{
+        gap:10px;
+      }
+
+      .tz-msg-thread{
+        grid-template-columns:auto minmax(0, 1fr) auto;
+        min-height:88px;
+        padding:12px 14px;
+        gap:14px;
+        border-radius:22px;
+        background:
+          radial-gradient(320px 160px at 92% 8%, rgba(57,132,255,.13), transparent 48%),
+          linear-gradient(180deg, rgba(13,18,28,.96), rgba(4,6,11,.99));
+      }
+
+      .tz-msg-thread.has-unread{
+        border-color:rgba(111,195,255,.32);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.06),
+          0 18px 44px rgba(0,0,0,.34),
+          0 0 28px rgba(66,145,255,.14);
+      }
+
+      .tz-msg-thread::before{
+        width:190px;
+        height:190px;
+        right:-76px;
+        top:-64px;
+        opacity:.86;
+      }
+
+      .tz-msg-thread-avatar-wrap{
+        position:relative;
+        width:66px;
+        height:66px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex:0 0 auto;
+      }
+
+      .tz-msg-thread-avatar-wrap::before,
+      .tz-msg-thread-avatar-wrap::after{
+        content:"";
+        position:absolute;
+        inset:2px;
+        border-radius:22px;
+        border:1px solid rgba(108,190,255,.58);
+        box-shadow:0 0 0 rgba(78,160,255,0);
+        animation:tzContactPulse 2.2s ease-out infinite;
+        pointer-events:none;
+      }
+
+      .tz-msg-thread-avatar-wrap::after{
+        inset:-3px;
+        opacity:.34;
+        animation-delay:.75s;
+      }
+
+      .tz-msg-thread-avatar{
+        position:relative;
+        z-index:1;
+        width:58px;
+        height:58px;
+        border-radius:19px;
+      }
+
+      .tz-msg-thread-name-row{
+        gap:8px;
+      }
+
+      .tz-msg-thread-name{
+        font-size:20px;
+      }
+
+      .tz-msg-thread-badge{
+        min-height:24px;
+        padding:0 9px;
+        font-size:10px;
+        letter-spacing:.11em;
+      }
+
+      .tz-msg-thread-user{
+        margin-top:4px;
+        font-size:14px;
+      }
+
+      .tz-msg-thread-preview{
+        margin-top:4px;
+        font-size:14px;
+      }
+
+      .tz-msg-thread-time{
+        font-size:12px;
+        color:#9aa9bd;
+      }
+
+      .tz-msg-thread-arrow{
+        width:30px;
+        height:30px;
+        border-radius:999px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(255,255,255,.045);
+        color:#d9e9ff;
+        font-size:24px;
+      }
+
+      @keyframes tzContactPulse{
+        0%{
+          transform:scale(.92);
+          opacity:.68;
+          box-shadow:0 0 0 0 rgba(77,157,255,.28);
+        }
+        72%{
+          opacity:.08;
+          box-shadow:0 0 0 13px rgba(77,157,255,0);
+        }
+        100%{
+          transform:scale(1.16);
+          opacity:0;
+          box-shadow:0 0 0 16px rgba(77,157,255,0);
+        }
+      }
+
+      @media(max-width:700px){
+        .tz-msg-hub{
+          padding:14px 10px;
+        }
+
+        .tz-msg-head-actions{
+          grid-template-columns:1fr;
+        }
+
+        .tz-msg-thread{
+          grid-template-columns:auto minmax(0, 1fr) auto;
+          min-height:82px;
+          padding:12px;
+          gap:11px;
+        }
+
+        .tz-msg-thread-avatar-wrap{
+          width:58px;
+          height:58px;
+        }
+
+        .tz-msg-thread-avatar{
+          width:52px;
+          height:52px;
+          border-radius:17px;
+        }
+
+        .tz-msg-thread-name{
+          font-size:18px;
+        }
+
+        .tz-msg-thread-top{
+          align-items:center;
+        }
+
+        .tz-msg-thread-top-right{
+          align-self:flex-start;
+        }
+
+        .tz-msg-thread-time{
+          display:none;
+        }
+
+        .tz-msg-thread-arrow{
+          display:flex;
+          width:28px;
+          height:28px;
+          font-size:22px;
         }
       }
     </style>
