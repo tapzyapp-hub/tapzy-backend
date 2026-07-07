@@ -186,21 +186,6 @@ module.exports = async function getEventsPage(req, res) {
 
     const body = `
 
-    <header class="events-story-top">
-      <a class="events-story-brand" href="/stories/feed" aria-label="Stories home">
-        <img src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />
-      </a>
-      <nav class="events-story-tabs" aria-label="Primary sections">
-        <span class="events-story-tab is-active">Events</span>
-        <a class="events-story-tab" href="/stories/feed?filter=following">Following</a>
-        <a class="events-story-tab" href="/stories/feed">Discover</a>
-        <a class="events-story-tab" href="/messages">Messages</a>
-      </nav>
-      <a class="events-story-search" href="${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}" aria-label="Search Tapzy">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
-      </a>
-    </header>
-
     <div class="wrap events-wrap">
 
       <section class="events-chip-wrap">
@@ -2810,6 +2795,8 @@ module.exports = async function getEventsPage(req, res) {
         pageType: "events",
 
         storiesBottomNav: true,
+
+        storiesTopNavActive: "events",
 
         bodyClass: "events-story-shell",
 

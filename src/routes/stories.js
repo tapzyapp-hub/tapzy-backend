@@ -2557,14 +2557,14 @@ router.get("/stories/feed", async (req, res) => {
         @keyframes sfStreamNoise{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-28px,24px,0)}}
         .sf-shade{pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.42) 0,transparent 24%,transparent 54%,rgba(0,0,0,.12) 65%,rgba(0,0,0,.9) 100%)}
         .sf-text-story{position:absolute;inset:0;display:grid;place-items:center;padding:52px 44px 180px;background:radial-gradient(circle at 30% 20%,#27376b 0,#14172a 35%,#06070c 78%);font-size:clamp(28px,7vw,48px);font-weight:850;line-height:1.08;text-align:center}
-        .sf-top{position:fixed;z-index:20;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(var(--safe-top) + 18px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.54),transparent)}
-        .sf-brand{position:absolute;left:16px;top:calc(var(--safe-top) + 16px);display:grid;place-items:center;width:38px;height:38px;border:2px solid rgba(255,255,255,.9);border-radius:12px;color:#fff;text-decoration:none;background:rgba(3,6,12,.24);box-shadow:0 10px 26px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+        .sf-top{position:fixed;z-index:20;top:0;left:0;right:0;min-height:74px;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(var(--safe-top) + 16px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.54),transparent)}
+        .sf-brand{position:absolute;left:24px;top:calc(var(--safe-top) + 14px);display:grid;place-items:center;width:44px;height:44px;border:2px solid rgba(255,255,255,.9);border-radius:14px;color:#fff;text-decoration:none;background:rgba(3,6,12,.24);box-shadow:0 10px 26px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
         .tapzy-mark{display:block;width:72%;height:72%;object-fit:contain}
-        .sf-tabs{display:flex;gap:18px;align-items:center}
-        .sf-tab{position:relative;border:0;background:none;padding:8px 0;color:rgba(255,255,255,.68);font-weight:750;font-size:15px;cursor:pointer}
+        .sf-tabs{display:flex;gap:26px;align-items:center}
+        .sf-tab{position:relative;border:0;background:none;padding:8px 0 10px;color:rgba(255,255,255,.68);font-weight:800;font-size:18px;cursor:pointer;text-decoration:none;white-space:nowrap}
         .sf-tab.is-active{color:#fff}
-        .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-5px;width:26px;height:3px;border-radius:5px;background:#fff;transform:translateX(-50%)}
-        .sf-search{position:absolute;right:15px;top:calc(var(--safe-top) + 16px);width:40px;height:40px;border:0;background:none;padding:7px;cursor:pointer}
+        .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-6px;width:32px;height:4px;border-radius:5px;background:#fff;transform:translateX(-50%)}
+        .sf-search{position:absolute;right:24px;top:calc(var(--safe-top) + 17px);width:42px;height:42px;border:0;background:none;padding:4px;cursor:pointer}
         .sf-search svg,.sf-action svg,.sf-sound svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
         .sf-copy{position:absolute;z-index:4;left:18px;right:92px;bottom:calc(var(--safe-bottom) + 82px);text-shadow:0 2px 12px rgba(0,0,0,.7)}
         .sf-author{display:block;width:max-content;max-width:100%;margin-bottom:8px;color:#fff;text-decoration:none;font-size:17px;font-weight:850}
@@ -2603,13 +2603,13 @@ router.get("/stories/feed", async (req, res) => {
           .sf-app{max-width:520px;margin:0 auto;box-shadow:0 0 80px rgba(0,0,0,.8)}
           body{background:#111}
         }
-        @media(max-width:430px){.sf-tabs{gap:12px}.sf-tab{font-size:13px}.sf-top{padding-left:50px;padding-right:50px}.sf-copy{left:14px}}
+        @media(max-width:430px){.sf-top{min-height:74px;padding:calc(var(--safe-top) + 16px) 54px 16px}.sf-brand{left:16px;width:38px;height:38px;border-radius:12px}.sf-tabs{gap:12px}.sf-tab{font-size:13px}.sf-search{right:16px;width:40px;height:40px;padding:5px}.sf-copy{left:14px}}
       </style>
     </head>
     <body>
       <main class="sf-app">
         <header class="sf-top">
-          <a class="sf-brand" href="/stories" aria-label="Back to Stories">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
+          <a class="sf-brand" href="/stories/feed" aria-label="Stories home">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
           <nav class="sf-tabs" aria-label="Story feed filters">
             <a class="sf-tab" href="/events">Events</a>
             <button class="sf-tab" type="button" data-filter="following">Following</button>
