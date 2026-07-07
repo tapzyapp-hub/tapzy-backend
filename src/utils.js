@@ -696,7 +696,7 @@ function requireOwnerAccess(profile, req, res) {
 
       .muted{color:#bdbdbd;margin-top:10px;line-height:1.6}
 
-      .btn{display:inline-block;margin-top:18px;padding:12px 16px;border-radius:14px;background:#fff;color:#000;text-decoration:none;font-weight:800}
+      .btn{display:inline-block;margin-top:18px;padding:12px 16px;border-radius:12px;background:#fff;color:#000;text-decoration:none;font-weight:800}
 
     </style>
 
@@ -1457,7 +1457,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         height:38px;
 
-        border-radius:14px;
+        border-radius:12px;
 
         border:1px solid rgba(255,255,255,.08);
 
@@ -1591,11 +1591,11 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         justify-content:center;
 
-        min-height:42px;
+        min-height:40px;
 
         padding:10px 14px;
 
-        border-radius:14px;
+        border-radius:12px;
 
         text-decoration:none;
 
@@ -1727,7 +1727,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         padding:13px 14px;
 
-        border-radius:14px;
+        border-radius:12px;
 
         border:1px solid var(--border);
 
@@ -2771,7 +2771,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         right:0;
 
-        min-height:74px;
+        min-height:72px;
 
         display:flex;
 
@@ -2779,9 +2779,9 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         justify-content:center;
 
-        gap:26px;
+        gap:24px;
 
-        padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 16px;
+        padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
 
         background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
 
@@ -2793,13 +2793,13 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         position:absolute;
 
-        left:24px;
+        left:16px;
 
         top:calc(env(safe-area-inset-top, 0px) + 14px);
 
-        width:44px;
+        width:38px;
 
-        height:44px;
+        height:38px;
 
         display:grid;
 
@@ -2807,7 +2807,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         border:2px solid rgba(255,255,255,.9);
 
-        border-radius:14px;
+        border-radius:12px;
 
         color:#fff;
 
@@ -2843,7 +2843,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         display:flex;
 
-        gap:26px;
+        gap:18px;
 
         align-items:center;
 
@@ -2861,15 +2861,14 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         background:none;
 
-        padding:8px 0 10px;
+        padding:8px 0;
 
         color:rgba(255,255,255,.68);
 
-        font-weight:800;
+        font-weight:750;
 
-        font-size:18px;
+        font-size:14px;
 
-        letter-spacing:0 !important;
 
         text-decoration:none;
 
@@ -2895,11 +2894,11 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         left:50%;
 
-        bottom:-6px;
+        bottom:-5px;
 
-        width:32px;
+        width:26px;
 
-        height:4px;
+        height:3px;
 
         border-radius:5px;
 
@@ -2915,15 +2914,15 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         position:absolute;
 
-        right:24px;
+        right:15px;
 
-        top:calc(env(safe-area-inset-top, 0px) + 17px);
+        top:calc(env(safe-area-inset-top, 0px) + 15px);
 
-        width:42px;
+        width:40px;
 
-        height:42px;
+        height:40px;
 
-        padding:4px;
+        padding:7px;
 
         color:#fff;
 
@@ -2960,24 +2959,9 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       }
 
       @media(max-width:430px){
-        .tz-story-top-nav{
-          min-height:74px;
-          padding:calc(env(safe-area-inset-top, 0px) + 16px) 54px 16px;
-        }
-        .tz-story-brand{
-          left:16px;
-          width:38px;
-          height:38px;
-          border-radius:12px;
-        }
-        .tz-story-tabs{gap:12px;}
-        .tz-story-tab{font-size:13px;letter-spacing:0 !important;}
-        .tz-story-search{
-          right:16px;
-          width:40px;
-          height:40px;
-          padding:5px;
-        }
+        .tz-story-tabs{gap:10px;}
+        .tz-story-tab{font-size:12px;}
+        .tz-story-top-nav{padding-left:50px;padding-right:50px;}
       }
 
 
@@ -2986,7 +2970,6 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         background:#000;
 
-        padding-top:calc(74px + env(safe-area-inset-top, 0px));
 
       }
 
@@ -3060,7 +3043,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
           padding:10px 8px;
 
-          border-radius:14px;
+          border-radius:12px;
 
           font-size:12px;
 
