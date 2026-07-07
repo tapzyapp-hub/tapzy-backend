@@ -18,7 +18,7 @@ router.get("/", async (req, res) => {
   try {
     const currentProfile = req.currentProfile || null;
     if (!currentProfile) return res.redirect("/auth");
-    return res.redirect(`/discovery/${encodeURIComponent(currentProfile.username || "user")}`);
+    return res.redirect("/stories/feed");
   } catch (e) {
     console.error(e);
     return res.status(500).send("Home redirect error");
