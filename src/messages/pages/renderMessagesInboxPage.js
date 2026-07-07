@@ -1058,6 +1058,7 @@ module.exports = function renderMessagesInboxPage({
       .tz-msg-thread-avatar-wrap::before,
       .tz-msg-thread-avatar-wrap::after{
         border-radius:999px;
+        border-color:rgba(76,142,255,.48);
       }
 
       .tz-msg-thread-avatar{
@@ -1066,8 +1067,13 @@ module.exports = function renderMessagesInboxPage({
         border-radius:999px;
         font-size:20px;
         background:
-          radial-gradient(circle at 30% 18%, rgba(236,247,255,.55), transparent 32%),
-          linear-gradient(145deg, #abcaf2, #667ec9);
+          radial-gradient(circle at 42% 0%, rgba(126,190,255,.34), transparent 55%),
+          linear-gradient(180deg, #162033, #0d1118);
+        border-color:rgba(137,207,255,.28);
+        box-shadow:
+          0 16px 34px rgba(0,0,0,.32),
+          0 0 24px rgba(83,166,255,.18),
+          inset 0 1px 0 rgba(255,255,255,.06);
       }
 
       .tz-msg-thread-main,

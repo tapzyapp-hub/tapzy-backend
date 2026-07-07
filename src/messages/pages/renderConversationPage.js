@@ -4147,6 +4147,19 @@ module.exports = function renderConversationPage({
 
             if (mediaHint) mediaHint.textContent = "";
 
+            form.querySelectorAll('[data-tapzy-video-status]').forEach(function(status){
+              status.textContent = "";
+              status.remove();
+            });
+
+            form.querySelectorAll('input[name^="tapzyChunked"]').forEach(function(input){
+              input.remove();
+            });
+
+            form.dataset.tapzyVideoPrepared = "0";
+            form.dataset.tapzyVideoPreparing = "0";
+            form.dataset.tapzyVideoIntercepting = "0";
+
             setRecordState("", false);
 
             if (recordBtn) recordBtn.textContent = "🎤";
