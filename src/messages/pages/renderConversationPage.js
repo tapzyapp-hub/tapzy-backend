@@ -3232,6 +3232,31 @@ module.exports = function renderConversationPage({
 
         if (!conversationId || !chat || !form) return;
 
+        function clearComposerMediaState() {
+          if (mediaInput) mediaInput.value = "";
+
+          if (mediaHint) {
+            mediaHint.textContent = "";
+            mediaHint.style.display = "none";
+          }
+
+          document.querySelectorAll('[data-tapzy-video-status], [data-media-hint], .media-hint, .upload-hint').forEach(function(status){
+            if (status === mediaHint || status.closest('#tzChatForm')) {
+              status.textContent = "";
+              status.style.display = "none";
+              if (status.hasAttribute('data-tapzy-video-status')) status.remove();
+            }
+          });
+
+          form.querySelectorAll('input[name^="tapzyChunked"]').forEach(function(input){
+            input.remove();
+          });
+
+          form.dataset.tapzyVideoPrepared = "0";
+          form.dataset.tapzyVideoPreparing = "0";
+          form.dataset.tapzyVideoIntercepting = "0";
+        }
+
 
 
         const socket = window.io ? io({
@@ -3913,6 +3938,8 @@ module.exports = function renderConversationPage({
 
           appendMessage(message);
 
+          clearComposerMediaState();
+
           if (typingIndicator) typingIndicator.style.display = "none";
 
         });
@@ -4011,6 +4038,8 @@ module.exports = function renderConversationPage({
 
             if (mediaInput.files && mediaInput.files[0] && mediaHint) {
 
+              mediaHint.style.display = "";
+
               const selectedFile = mediaInput.files[0];
               if (selectedFile.type && selectedFile.type.startsWith("video/")) {
                 mediaHint.textContent = "Video ready: " + selectedFile.name;
@@ -4107,7 +4136,10 @@ module.exports = function renderConversationPage({
 
             sendBtn.textContent = "Preparing...";
 
-            if (mediaHint) mediaHint.textContent = "Sending video — keep this page open.";
+            if (mediaHint) {
+              mediaHint.style.display = "";
+              mediaHint.textContent = "Sending video — keep this page open.";
+            }
 
           }
 
@@ -4129,6 +4161,8 @@ module.exports = function renderConversationPage({
 
             if (data.message) {
 
+              clearComposerMediaState();
+
               appendMessage(data.message);
 
             }
@@ -4143,22 +4177,7 @@ module.exports = function renderConversationPage({
 
             }
 
-            if (mediaInput) mediaInput.value = "";
-
-            if (mediaHint) mediaHint.textContent = "";
-
-            form.querySelectorAll('[data-tapzy-video-status]').forEach(function(status){
-              status.textContent = "";
-              status.remove();
-            });
-
-            form.querySelectorAll('input[name^="tapzyChunked"]').forEach(function(input){
-              input.remove();
-            });
-
-            form.dataset.tapzyVideoPrepared = "0";
-            form.dataset.tapzyVideoPreparing = "0";
-            form.dataset.tapzyVideoIntercepting = "0";
+            clearComposerMediaState();
 
             setRecordState("", false);
 

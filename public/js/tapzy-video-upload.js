@@ -98,6 +98,7 @@
 
     if (targets.length) {
       targets.forEach((target) => {
+        target.style.display = "";
         target.textContent = text;
       });
       return;
