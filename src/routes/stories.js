@@ -2561,7 +2561,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-brand{position:absolute;left:24px;top:calc(var(--safe-top) + 14px);display:grid;place-items:center;width:44px;height:44px;border:2px solid rgba(255,255,255,.9);border-radius:14px;color:#fff;text-decoration:none;background:rgba(3,6,12,.24);box-shadow:0 10px 26px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
         .tapzy-mark{display:block;width:72%;height:72%;object-fit:contain}
         .sf-tabs{display:flex;gap:26px;align-items:center}
-        .sf-tab{position:relative;border:0;background:none;padding:8px 0 10px;color:rgba(255,255,255,.68);font-weight:800;font-size:18px;cursor:pointer;text-decoration:none;white-space:nowrap}
+        .sf-tab{position:relative;border:0;background:none;padding:8px 0 10px;color:rgba(255,255,255,.68);font-weight:800;font-size:18px;letter-spacing:0!important;cursor:pointer;text-decoration:none;white-space:nowrap}
         .sf-tab.is-active{color:#fff}
         .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-6px;width:32px;height:4px;border-radius:5px;background:#fff;transform:translateX(-50%)}
         .sf-search{position:absolute;right:24px;top:calc(var(--safe-top) + 17px);width:42px;height:42px;border:0;background:none;padding:4px;cursor:pointer}
@@ -2603,7 +2603,7 @@ router.get("/stories/feed", async (req, res) => {
           .sf-app{max-width:520px;margin:0 auto;box-shadow:0 0 80px rgba(0,0,0,.8)}
           body{background:#111}
         }
-        @media(max-width:430px){.sf-top{min-height:74px;padding:calc(var(--safe-top) + 16px) 54px 16px}.sf-brand{left:16px;width:38px;height:38px;border-radius:12px}.sf-tabs{gap:12px}.sf-tab{font-size:13px}.sf-search{right:16px;width:40px;height:40px;padding:5px}.sf-copy{left:14px}}
+        @media(max-width:430px){.sf-top{min-height:74px;padding:calc(var(--safe-top) + 16px) 54px 16px}.sf-brand{left:16px;width:38px;height:38px;border-radius:12px}.sf-tabs{gap:12px}.sf-tab{font-size:13px;letter-spacing:0!important}.sf-search{right:16px;width:40px;height:40px;padding:5px}.sf-copy{left:14px}}
       </style>
     </head>
     <body>

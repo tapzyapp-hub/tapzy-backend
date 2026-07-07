@@ -2869,6 +2869,8 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         font-size:18px;
 
+        letter-spacing:0 !important;
+
         text-decoration:none;
 
         white-space:nowrap;
@@ -2969,7 +2971,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
           border-radius:12px;
         }
         .tz-story-tabs{gap:12px;}
-        .tz-story-tab{font-size:13px;}
+        .tz-story-tab{font-size:13px;letter-spacing:0 !important;}
         .tz-story-search{
           right:16px;
           width:40px;
