@@ -959,6 +959,181 @@ module.exports = function renderMessagesInboxPage({
           font-size:22px;
         }
       }
+
+      .tz-msg-hub{
+        border-radius:26px;
+        padding:14px 18px 20px;
+      }
+
+      .tz-msg-head{
+        justify-content:center;
+        text-align:center;
+      }
+
+      .tz-msg-kicker,
+      .tz-msg-subtitle{
+        display:none;
+      }
+
+      .tz-msg-title{
+        font-size:30px;
+        letter-spacing:0;
+      }
+
+      .tz-msg-head-actions{
+        margin-top:12px;
+      }
+
+      .tz-msg-tabs{
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      .tz-msg-section-head{
+        padding:8px 2px 2px;
+      }
+
+      .tz-msg-section-title{
+        font-size:20px;
+        letter-spacing:0;
+      }
+
+      .tz-msg-section-meta{
+        display:none;
+      }
+
+      .tz-msg-list{
+        gap:0;
+        overflow:hidden;
+        border-radius:20px;
+        border:1px solid rgba(120,190,255,.12);
+        background:rgba(255,255,255,.018);
+      }
+
+      .tz-msg-thread{
+        display:grid;
+        grid-template-columns:auto minmax(0, 1fr) auto;
+        min-height:76px;
+        padding:10px 4px 10px 4px;
+        gap:14px;
+        border:0;
+        border-radius:0;
+        box-shadow:none;
+        background:transparent;
+      }
+
+      .tz-msg-thread + .tz-msg-thread{
+        border-top:1px solid rgba(255,255,255,.08);
+      }
+
+      .tz-msg-thread:hover{
+        transform:none;
+        border-color:transparent;
+        background:rgba(255,255,255,.035);
+        box-shadow:none;
+      }
+
+      .tz-msg-thread:active{
+        transform:none;
+        background:rgba(255,255,255,.06);
+      }
+
+      .tz-msg-thread::before,
+      .tz-msg-thread::after,
+      .tz-msg-thread-shimmer,
+      .tz-msg-thread-glow,
+      .tz-msg-thread-arrow,
+      .tz-msg-thread-user,
+      .tz-msg-thread-preview,
+      .tz-msg-thread-badge,
+      .tz-msg-thread-time{
+        display:none;
+      }
+
+      .tz-msg-thread-avatar-wrap{
+        width:62px;
+        height:62px;
+      }
+
+      .tz-msg-thread-avatar-wrap::before,
+      .tz-msg-thread-avatar-wrap::after{
+        border-radius:999px;
+      }
+
+      .tz-msg-thread-avatar{
+        width:54px;
+        height:54px;
+        border-radius:999px;
+        font-size:20px;
+        background:
+          radial-gradient(circle at 30% 18%, rgba(236,247,255,.55), transparent 32%),
+          linear-gradient(145deg, #abcaf2, #667ec9);
+      }
+
+      .tz-msg-thread-main,
+      .tz-msg-thread-copy,
+      .tz-msg-thread-name-row{
+        min-width:0;
+      }
+
+      .tz-msg-thread-top{
+        min-height:54px;
+        align-items:center;
+      }
+
+      .tz-msg-thread-name{
+        font-size:22px;
+        font-weight:800;
+        letter-spacing:0;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .tz-msg-thread-unread{
+        min-width:20px;
+        height:20px;
+        padding:0 7px;
+      }
+
+      @media(max-width:700px){
+        .tz-msg-hub{
+          padding:12px 12px 18px;
+          border-radius:24px;
+        }
+
+        .tz-msg-title{
+          font-size:26px;
+        }
+
+        .tz-msg-list{
+          border-left:0;
+          border-right:0;
+          border-radius:0;
+          background:transparent;
+        }
+
+        .tz-msg-thread{
+          min-height:72px;
+          padding:9px 0;
+          gap:12px;
+        }
+
+        .tz-msg-thread-avatar-wrap{
+          width:58px;
+          height:58px;
+        }
+
+        .tz-msg-thread-avatar{
+          width:50px;
+          height:50px;
+          font-size:19px;
+        }
+
+        .tz-msg-thread-name{
+          font-size:21px;
+        }
+      }
     </style>
 
     ${renderTapzyAssistant({
