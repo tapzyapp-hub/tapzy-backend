@@ -573,6 +573,7 @@
   document.addEventListener("submit", function (event) {
     const form = event.target;
     if (!form || !form.matches || !form.matches('form[enctype="multipart/form-data"]')) return;
+    if (form.id === "tzChatForm") return;
     if (form.dataset.tapzyVideoPrepared === "1") return;
     const submitter = event.submitter || form.querySelector('button[type="submit"],input[type="submit"]');
     const hasMedia = Array.from(form.querySelectorAll('input[type="file"]')).some((input) => isSupportedMediaFile(input.files && input.files[0]));
