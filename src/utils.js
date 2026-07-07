@@ -1135,7 +1135,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       .tz-topbar{
 
-        position:sticky;
+        position:fixed;
         width:100%;
         max-width:100%;
         overflow-x:hidden;
@@ -2983,6 +2983,8 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       body.tz-has-stories-top-nav{
 
         background:#000;
+
+        padding-top:calc(74px + env(safe-area-inset-top, 0px));
 
       }
 

@@ -2608,15 +2608,15 @@ router.get("/stories/feed", async (req, res) => {
     </head>
     <body>
       <main class="sf-app">
-        <header class="sf-top">
-          <a class="sf-brand" href="/stories/feed" aria-label="Stories home">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
-          <nav class="sf-tabs" aria-label="Story feed filters">
-            <a class="sf-tab" href="/events">Events</a>
-            <button class="sf-tab" type="button" data-filter="following">Following</button>
-            <button class="sf-tab is-active" type="button" data-filter="all">Discover</button>
-            <a class="sf-tab" href="/messages">Messages</a>
+        <header class="sf-top tz-story-top-nav">
+          <a class="sf-brand tz-story-brand" href="/stories/feed" aria-label="Stories home">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
+          <nav class="sf-tabs tz-story-tabs" aria-label="Story feed filters">
+            <a class="sf-tab tz-story-tab" href="/events">Events</a>
+            <button class="sf-tab tz-story-tab" type="button" data-filter="following">Following</button>
+            <button class="sf-tab tz-story-tab is-active" type="button" data-filter="all">Discover</button>
+            <a class="sf-tab tz-story-tab" href="/messages">Messages</a>
           </nav>
-          <button class="sf-search" type="button" data-search aria-label="Search Tapzy">
+          <button class="sf-search tz-story-search" type="button" data-search aria-label="Search Tapzy">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
           </button>
         </header>
