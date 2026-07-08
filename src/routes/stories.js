@@ -961,32 +961,33 @@ router.get("/stories", async (req, res) => {
         position:relative;
         width:58px;
         height:58px;
-        border-radius:19px;
+        border-radius:50%;
         display:grid;
         place-items:center;
         overflow:visible;
-        color:#d9e9ff;
+        color:#fff;
         font-weight:950;
         font-size:24px;
-        background:linear-gradient(145deg,#a8d0ff,#6079d8);
-        box-shadow:0 0 0 1px rgba(255,255,255,.16) inset,0 10px 26px rgba(77,157,255,.24);
+        background:radial-gradient(circle at 46% 32%,rgba(44,66,103,.96),rgba(7,11,19,.98) 68%);
+        border:1px solid rgba(118,168,235,.55);
+        box-shadow:0 0 0 4px rgba(33,79,139,.20),0 0 28px rgba(70,150,255,.18),inset 0 1px 0 rgba(255,255,255,.12);
       }
 
       .stories-composer-avatar::before,
       .stories-composer-avatar::after{
         content:"";
         position:absolute;
-        inset:2px;
+        inset:-5px;
         border-radius:inherit;
-        border:1px solid rgba(108,190,255,.58);
+        border:1px solid rgba(72,142,225,.36);
         box-shadow:0 0 0 rgba(78,160,255,0);
         animation:storiesContactPulse 2.2s ease-out infinite;
         pointer-events:none;
       }
 
       .stories-composer-avatar::after{
-        inset:-3px;
-        opacity:.34;
+        inset:-12px;
+        opacity:.30;
         animation-delay:.75s;
       }
 
@@ -996,7 +997,7 @@ router.get("/stories", async (req, res) => {
         width:100%;
         height:100%;
         object-fit:cover;
-        border-radius:19px;
+        border-radius:50%;
       }
 
       .stories-composer-avatar span{
