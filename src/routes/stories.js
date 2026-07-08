@@ -959,33 +959,55 @@ router.get("/stories", async (req, res) => {
 
       .stories-composer-avatar{
         position:relative;
-        width:50px;
-        height:50px;
-        border-radius:50%;
+        width:58px;
+        height:58px;
+        border-radius:19px;
         display:grid;
         place-items:center;
-        overflow:hidden;
-        color:#fff;
+        overflow:visible;
+        color:#d9e9ff;
         font-weight:950;
-        font-size:20px;
-        background:linear-gradient(145deg,#8fb9ff,#5068ba);
-        box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 10px 24px rgba(47,118,255,.22);
+        font-size:24px;
+        background:linear-gradient(145deg,#a8d0ff,#6079d8);
+        box-shadow:0 0 0 1px rgba(255,255,255,.16) inset,0 10px 26px rgba(77,157,255,.24);
       }
 
+      .stories-composer-avatar::before,
       .stories-composer-avatar::after{
         content:"";
         position:absolute;
-        inset:-5px;
+        inset:2px;
         border-radius:inherit;
-        border:1px solid rgba(82,166,255,.38);
-        box-shadow:0 0 18px rgba(47,118,255,.22);
+        border:1px solid rgba(108,190,255,.58);
+        box-shadow:0 0 0 rgba(78,160,255,0);
+        animation:storiesContactPulse 2.2s ease-out infinite;
         pointer-events:none;
       }
 
+      .stories-composer-avatar::after{
+        inset:-3px;
+        opacity:.34;
+        animation-delay:.75s;
+      }
+
       .stories-composer-avatar img{
+        position:relative;
+        z-index:1;
         width:100%;
         height:100%;
         object-fit:cover;
+        border-radius:19px;
+      }
+
+      .stories-composer-avatar span{
+        position:relative;
+        z-index:1;
+      }
+
+      @keyframes storiesContactPulse{
+        0%{transform:scale(.92);opacity:.68;box-shadow:0 0 0 0 rgba(77,157,255,.28)}
+        72%{opacity:.08;box-shadow:0 0 0 13px rgba(77,157,255,0)}
+        100%{transform:scale(1.16);opacity:0;box-shadow:0 0 0 16px rgba(77,157,255,0)}
       }
 
       .stories-composer-profile strong{
