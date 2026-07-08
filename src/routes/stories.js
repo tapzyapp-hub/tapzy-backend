@@ -1855,9 +1855,14 @@ router.post("/stories/live/:id/end", async (req, res) => {
 router.post("/stories/live/:id/replay", upload.single("replayMedia"), async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
-    if (!currentProfile) return res.status(401).json({ ok: false });
+    const wantsHtml = String(req.headers.accept || "").includes("text/html");
+    if (!currentProfile) {
+      if (wantsHtml) return res.redirect("/auth");
+      return res.status(401).json({ ok: false });
+    }
 
     const id = String(req.params.id || "").trim();
+    const editUrl = `/stories/live/${encodeURIComponent(id)}/edit`;
     const story = await prisma.story.findFirst({
       where: {
         id,
@@ -1865,7 +1870,10 @@ router.post("/stories/live/:id/replay", upload.single("replayMedia"), async (req
         type: { in: ["live", "live_replay_draft"] },
       },
     });
-    if (!story) return res.status(404).json({ ok: false });
+    if (!story) {
+      if (wantsHtml) return res.status(404).send("Live replay not found");
+      return res.status(404).json({ ok: false });
+    }
 
     const data = {
       type: "live_replay_draft",
@@ -1880,9 +1888,13 @@ router.post("/stories/live/:id/replay", upload.single("replayMedia"), async (req
     if (caption) data.text = caption.slice(0, 220);
 
     await prisma.story.update({ where: { id }, data });
-    res.json({ ok: true, editUrl: `/stories/live/${encodeURIComponent(id)}/edit` });
+    if (wantsHtml) return res.redirect(editUrl);
+    res.json({ ok: true, editUrl });
   } catch (error) {
     console.error("Save live replay error:", error);
+    if (String(req.headers.accept || "").includes("text/html")) {
+      return res.status(500).send("Could not save live replay");
+    }
     res.status(500).json({ ok: false, error: "Could not save live replay" });
   }
 });
@@ -1918,6 +1930,14 @@ router.get("/stories/live/:id/edit", async (req, res) => {
             }
           </div>
 
+          <form class="live-edit-form live-edit-upload" method="POST" action="/stories/live/${escapeHtml(story.id)}/replay" enctype="multipart/form-data">
+            <label>${hasReplay ? "Replace replay video" : "Save replay video"}</label>
+            <input class="live-edit-file" type="file" name="replayMedia" accept="video/mp4,video/quicktime,video/webm,video/x-m4v,.mp4,.mov,.webm,.m4v">
+            <input type="hidden" name="text" value="${escapeHtml(story.text || "")}">
+            <button class="live-edit-secondary" type="submit">${hasReplay ? "Replace Replay" : "Save Replay"}</button>
+            ${hasReplay ? "" : `<div class="live-edit-note">If the automatic save did not attach the replay, choose the video from your phone, save it here, then post.</div>`}
+          </form>
+
           <form class="live-edit-form" method="POST" action="/stories/live/${escapeHtml(story.id)}/post">
             <label>Caption</label>
             <textarea name="text" maxlength="220" rows="3" placeholder="Add a caption...">${escapeHtml(story.text || "")}</textarea>
@@ -1952,6 +1972,9 @@ router.get("/stories/live/:id/edit", async (req, res) => {
         .live-edit-form{margin-top:18px;}
         .live-edit-form label{display:block;margin-bottom:8px;color:#dce8ff;font-weight:900;}
         .live-edit-form textarea{width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:#05070d;color:#fff;padding:14px;font:inherit;resize:vertical;outline:none;}
+        .live-edit-file{width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:#05070d;color:#dce8ff;padding:13px;font:inherit;margin-bottom:12px;}
+        .live-edit-upload{padding:14px;border-radius:20px;border:1px solid rgba(98,168,255,.18);background:rgba(16,32,58,.34);}
+        .live-edit-note{margin-top:10px;color:#aebbd4;font-size:14px;line-height:1.35;font-weight:750;}
         .live-edit-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
         .live-edit-primary,.live-edit-secondary,.live-edit-discard button{
           min-height:48px;border-radius:999px;padding:0 18px;font:inherit;font-weight:900;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
@@ -2356,6 +2379,7 @@ router.get("/stories/live/:id", async (req, res) => {
             formData.append('text', ${JSON.stringify(story.text || "")});
             const res = await fetch('/stories/live/' + encodeURIComponent(storyId) + '/replay', {
               method:'POST',
+              headers:{ 'Accept':'application/json' },
               body:formData,
             });
             const data = await res.json().catch(function(){ return {}; });
