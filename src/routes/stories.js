@@ -279,12 +279,6 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
 
-  const displayName = currentProfile.name || currentProfile.username || "Tapzy";
-  const username = currentProfile.username ? `@${currentProfile.username}` : "Your story";
-  const avatar = currentProfile.photo
-    ? `<img src="${escapeHtml(currentProfile.photo)}" alt="${escapeHtml(displayName)}" />`
-    : `<span>${escapeHtml((displayName[0] || "T").toUpperCase())}</span>`;
-
   return `
 
   <section class="stories-create-card tapzy-premium-card">
@@ -303,14 +297,6 @@ function storyComposer(currentProfile, upcomingEvents) {
 
         </div>
 
-      </div>
-
-      <div class="stories-composer-profile">
-        <div class="stories-composer-avatar">${avatar}</div>
-        <div>
-          <strong>${escapeHtml(displayName)}</strong>
-          <span>${escapeHtml(username)}</span>
-        </div>
       </div>
 
     </div>
@@ -943,87 +929,6 @@ router.get("/stories", async (req, res) => {
           radial-gradient(circle at 20% 0%, rgba(255,255,255,.22), transparent 42%),
           linear-gradient(135deg, #31d6ff, #2d6bff 48%, #123fbd);
         box-shadow:0 0 24px rgba(47,118,255,.30);
-      }
-
-      .stories-composer-profile{
-        margin-top:22px;
-        display:flex;
-        align-items:center;
-        gap:13px;
-        padding:12px;
-        border-radius:22px;
-        border:1px solid rgba(255,255,255,.07);
-        background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
-      }
-
-      .stories-composer-avatar{
-        position:relative;
-        width:58px;
-        height:58px;
-        border-radius:50%;
-        display:grid;
-        place-items:center;
-        overflow:visible;
-        color:#fff;
-        font-weight:950;
-        font-size:24px;
-        background:radial-gradient(circle at 46% 32%,rgba(44,66,103,.96),rgba(7,11,19,.98) 68%);
-        border:1px solid rgba(118,168,235,.55);
-        box-shadow:0 0 0 4px rgba(33,79,139,.20),0 0 28px rgba(70,150,255,.18),inset 0 1px 0 rgba(255,255,255,.12);
-      }
-
-      .stories-composer-avatar::before,
-      .stories-composer-avatar::after{
-        content:"";
-        position:absolute;
-        inset:-5px;
-        border-radius:inherit;
-        border:1px solid rgba(72,142,225,.36);
-        box-shadow:0 0 0 rgba(78,160,255,0);
-        animation:storiesContactPulse 2.2s ease-out infinite;
-        pointer-events:none;
-      }
-
-      .stories-composer-avatar::after{
-        inset:-12px;
-        opacity:.30;
-        animation-delay:.75s;
-      }
-
-      .stories-composer-avatar img{
-        position:relative;
-        z-index:1;
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        border-radius:50%;
-      }
-
-      .stories-composer-avatar span{
-        position:relative;
-        z-index:1;
-      }
-
-      @keyframes storiesContactPulse{
-        0%{transform:scale(.92);opacity:.68;box-shadow:0 0 0 0 rgba(77,157,255,.28)}
-        72%{opacity:.08;box-shadow:0 0 0 13px rgba(77,157,255,0)}
-        100%{transform:scale(1.16);opacity:0;box-shadow:0 0 0 16px rgba(77,157,255,0)}
-      }
-
-      .stories-composer-profile strong{
-        display:block;
-        color:#fff;
-        font-size:17px;
-        line-height:1.1;
-      }
-
-      .stories-composer-profile span{
-        display:block;
-        margin-top:4px;
-        color:#94a4bb;
-        font-size:13px;
-        font-weight:750;
       }
 
 
