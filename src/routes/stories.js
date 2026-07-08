@@ -1873,10 +1873,14 @@ router.post("/stories/live/now", async (req, res) => {
       data: {
         profileId: currentProfile.id,
         type: "live",
-        mediaUrl: null,
+        mediaUrl: "",
         text: title.slice(0, 220),
         expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
       },
+    });
+    await prisma.story.update({
+      where: { id: story.id },
+      data: { mediaUrl: `/stories/live/${story.id}` },
     });
 
     res.json({ ok: true, storyId: story.id, feedUrl: "/stories/feed" });
@@ -1972,6 +1976,7 @@ router.get("/stories/live/new", async (req, res) => {
           <div class="tl-status" id="status">Starting camera...</div>
         </section>
       </main>
+      <script src="/socket.io/socket.io.js"></script>
       <script>
         (function(){
           const root = document.getElementById('recorder');
@@ -1990,6 +1995,10 @@ router.get("/stories/live/new", async (req, res) => {
           let facingMode = 'user';
           let posting = false;
           let liveStoryId = '';
+          let socket = null;
+          let liveName = ${JSON.stringify(displayName)};
+          const peers = new Map();
+          const peerConfig = { iceServers: [{ urls:'stun:stun.l.google.com:19302' }, { urls:'stun:stun1.l.google.com:19302' }] };
 
           function setStatus(text){ status.textContent = text || ''; }
           function mimeType(){
@@ -2017,7 +2026,67 @@ router.get("/stories/live/new", async (req, res) => {
             });
             preview.srcObject = stream;
             await preview.play().catch(function(){});
+            syncStreamToPeers();
             setStatus('Ready');
+          }
+          function syncStreamToPeers(){
+            if (!stream) return;
+            peers.forEach(function(pc){
+              stream.getTracks().forEach(function(track){
+                const sender = pc.getSenders().find(function(item){
+                  return item.track && item.track.kind === track.kind;
+                });
+                if (sender) sender.replaceTrack(track).catch(function(){});
+                else {
+                  try { pc.addTrack(track, stream); } catch(e) {}
+                }
+              });
+            });
+          }
+          function peerFor(id){
+            if (peers.has(id)) return peers.get(id);
+            const pc = new RTCPeerConnection(peerConfig);
+            peers.set(id, pc);
+            pc.onicecandidate = function(event){
+              if (event.candidate && socket) socket.emit('live:ice', { storyId:liveStoryId, to:id, candidate:event.candidate });
+            };
+            if (stream) {
+              stream.getTracks().forEach(function(track){
+                try { pc.addTrack(track, stream); } catch(e) {}
+              });
+            }
+            return pc;
+          }
+          function startLiveBroadcast(){
+            if (!liveStoryId || !stream || socket) return;
+            socket = io();
+            socket.on('connect', function(){
+              socket.emit('live:join', { storyId:liveStoryId, role:'host', name:liveName });
+            });
+            socket.on('live:viewer-joined', async function(payload){
+              const viewerId = payload.viewerId;
+              const pc = peerFor(viewerId);
+              const offer = await pc.createOffer();
+              await pc.setLocalDescription(offer);
+              socket.emit('live:offer', { storyId:liveStoryId, to:viewerId, sdp:offer });
+            });
+            socket.on('live:answer', async function(payload){
+              const pc = peers.get(payload.from);
+              if (pc) await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+            });
+            socket.on('live:ice', async function(payload){
+              const pc = peerFor(payload.from);
+              try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
+            });
+          }
+          function stopLiveBroadcast(){
+            if (socket) {
+              try { socket.emit('live:end', { storyId:liveStoryId }); } catch(e) {}
+              try { socket.disconnect(); } catch(e) {}
+              socket = null;
+            }
+            peers.forEach(function(pc){ try { pc.close(); } catch(e) {} });
+            peers.clear();
           }
           async function uploadChunkWithRetry(uploadId, index, blob){
             let lastError = null;
@@ -2082,6 +2151,7 @@ router.get("/stories/live/new", async (req, res) => {
               title:(titleInput.value || '').trim() || ${JSON.stringify(`${displayName} is live`)},
             });
             liveStoryId = data.storyId || '';
+            startLiveBroadcast();
           }
           async function cancelLiveOnHome(){
             if (!liveStoryId) return;
@@ -2121,6 +2191,7 @@ router.get("/stories/live/new", async (req, res) => {
             setStatus('Preparing recording...');
             try {
               await stopRecorder();
+              stopLiveBroadcast();
               const type = (recorder && recorder.mimeType) || mimeType() || 'video/webm';
               const ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
               const file = new File(chunks, 'tapzy-live.' + ext, { type:type.split(';')[0] || 'video/webm' });
@@ -2140,6 +2211,7 @@ router.get("/stories/live/new", async (req, res) => {
             await startCamera().catch(function(error){ setStatus(error.message || 'Camera failed'); });
           });
           cancelBtn.addEventListener('click', function(){
+            stopLiveBroadcast();
             if (stream) stream.getTracks().forEach(function(track){ track.stop(); });
             cancelLiveOnHome().finally(function(){ location.href = '/stories/feed'; });
           });
@@ -3182,8 +3254,6 @@ router.get("/stories/feed", async (req, res) => {
       orderBy: [{ createdAt: "desc" }],
       take: 100,
     });
-    stories = stories.filter((story) => !(story.type === "live" && story.mediaUrl && isNativeLiveUrl(story.mediaUrl)));
-
     const eventStreams = [];
     const fallbackVideos = [];
 
@@ -3641,8 +3711,6 @@ router.get("/stories/:username", async (req, res) => {
       take: 50,
 
     });
-    stories = stories.filter((story) => !(story.type === "live" && story.mediaUrl && isNativeLiveUrl(story.mediaUrl)));
-
 
 
     if (!stories.length) {
