@@ -3663,16 +3663,16 @@ router.get("/stories/feed", async (req, res) => {
         .sf-copy p{margin:0 0 8px;font-size:15px;line-height:1.35}
         .sf-meta{font-size:13px;color:rgba(255,255,255,.8)}
         .sf-event{display:inline-flex;margin-bottom:11px;padding:7px 10px;border-radius:9px;background:rgba(12,18,35,.64);backdrop-filter:blur(12px);color:#fff;text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.18)}
-        .sf-actions{position:absolute;z-index:5;right:10px;bottom:calc(var(--safe-bottom) + 76px);display:flex;flex-direction:column;align-items:center;gap:14px;width:68px;padding:10px 5px;border-radius:34px;background:linear-gradient(180deg,rgba(5,8,14,.22),rgba(5,8,14,.06));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-        .sf-avatar{position:relative;width:52px;height:52px;border:2px solid rgba(255,255,255,.92);border-radius:50%;overflow:visible;display:grid;place-items:center;background:linear-gradient(180deg,#111827,#02040a);color:#fff;text-decoration:none;font-weight:950;box-shadow:0 14px 34px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.12) inset}
-        .sf-avatar::before,.sf-avatar::after{content:"";position:absolute;inset:-7px;border-radius:inherit;border:1px solid rgba(82,166,255,.62);box-shadow:0 0 22px rgba(47,118,255,.38);animation:sfAvatarPulse 2.2s ease-out infinite;pointer-events:none}
-        .sf-avatar::after{inset:-13px;animation-delay:.75s;opacity:.48}
+        .sf-actions{position:absolute;z-index:5;right:9px;bottom:calc(var(--safe-bottom) + 78px);display:flex;flex-direction:column;align-items:center;gap:10px;width:58px;padding:8px 3px;border-radius:29px;background:linear-gradient(180deg,rgba(5,8,14,.16),rgba(5,8,14,.04));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+        .sf-avatar{position:relative;width:46px;height:46px;border:2px solid rgba(255,255,255,.90);border-radius:50%;overflow:visible;display:grid;place-items:center;background:linear-gradient(180deg,#111827,#02040a);color:#fff;text-decoration:none;font-weight:950;box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.10) inset}
+        .sf-avatar::before,.sf-avatar::after{content:"";position:absolute;inset:-5px;border-radius:inherit;border:1px solid rgba(82,166,255,.54);box-shadow:0 0 18px rgba(47,118,255,.30);animation:sfAvatarPulse 2.2s ease-out infinite;pointer-events:none}
+        .sf-avatar::after{inset:-10px;animation-delay:.75s;opacity:.42}
         .sf-avatar-tapzy{background:linear-gradient(145deg,#2f76ff,#1145ad);box-shadow:0 0 24px rgba(47,118,255,.34)}
         .sf-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
         @keyframes sfAvatarPulse{0%{transform:scale(.88);opacity:.86}70%{transform:scale(1.16);opacity:.12}100%{transform:scale(1.2);opacity:0}}
         .sf-action-form{margin:0}
-        .sf-action{display:flex;flex-direction:column;align-items:center;gap:4px;width:62px;padding:6px 0;border:0;border-radius:20px;background:rgba(255,255,255,.03);color:#fff;text-decoration:none;font-size:12px;font-weight:850;cursor:pointer;text-shadow:0 2px 12px rgba(0,0,0,.7);filter:drop-shadow(0 9px 18px rgba(0,0,0,.34))}
-        .sf-action svg{width:32px;height:32px;fill:#fff;stroke:#fff;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+        .sf-action{display:flex;flex-direction:column;align-items:center;gap:3px;width:54px;padding:4px 0;border:0;border-radius:18px;background:rgba(255,255,255,.02);color:#fff;text-decoration:none;font-size:11px;font-weight:850;cursor:pointer;text-shadow:0 2px 10px rgba(0,0,0,.7);filter:drop-shadow(0 7px 14px rgba(0,0,0,.32))}
+        .sf-action svg{width:28px;height:28px;fill:#fff;stroke:#fff;filter:drop-shadow(0 7px 14px rgba(0,0,0,.48))}
         .sf-action span{line-height:1;letter-spacing:.01em}
         .sf-action.is-active svg{fill:#ff315f;stroke:#ff315f}
         .sf-save.is-saved svg{fill:#2f76ff;stroke:#fff}
