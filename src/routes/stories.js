@@ -1989,7 +1989,7 @@ router.get("/stories/live/new", async (req, res) => {
     if (!currentProfile) return res.redirect("/auth");
 
     const displayName = currentProfile.name || currentProfile.username || "Tapzy creator";
-    const defaultTitle = `${displayName} was live`;
+    const defaultTitle = "";
     res.send(`<!doctype html>
     <html lang="en">
     <head>
@@ -2037,7 +2037,7 @@ router.get("/stories/live/new", async (req, res) => {
           <p>Record in the app. When you end it, Tapzy posts the video story for 24 hours.</p>
         </section>
         <section class="tl-controls">
-          <input id="title" maxlength="120" value="${escapeHtml(defaultTitle)}" autocomplete="off" />
+          <input id="title" maxlength="120" value="${escapeHtml(defaultTitle)}" placeholder="${escapeHtml(displayName)}" autocomplete="off" />
           <div class="tl-buttons">
             <button class="tl-primary" id="startBtn" type="button">Start</button>
             <button class="tl-danger" id="stopBtn" type="button" disabled>End & Post</button>
@@ -3663,13 +3663,17 @@ router.get("/stories/feed", async (req, res) => {
         .sf-copy p{margin:0 0 8px;font-size:15px;line-height:1.35}
         .sf-meta{font-size:13px;color:rgba(255,255,255,.8)}
         .sf-event{display:inline-flex;margin-bottom:11px;padding:7px 10px;border-radius:9px;background:rgba(12,18,35,.64);backdrop-filter:blur(12px);color:#fff;text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.18)}
-        .sf-actions{position:absolute;z-index:5;right:10px;bottom:calc(var(--safe-bottom) + 76px);display:flex;flex-direction:column;align-items:center;gap:16px;width:62px}
-        .sf-avatar{width:48px;height:48px;border:2px solid #fff;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:linear-gradient(180deg,#111827,#02040a);color:#fff;text-decoration:none;font-weight:900}
+        .sf-actions{position:absolute;z-index:5;right:10px;bottom:calc(var(--safe-bottom) + 76px);display:flex;flex-direction:column;align-items:center;gap:14px;width:68px;padding:10px 5px;border-radius:34px;background:linear-gradient(180deg,rgba(5,8,14,.22),rgba(5,8,14,.06));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+        .sf-avatar{position:relative;width:52px;height:52px;border:2px solid rgba(255,255,255,.92);border-radius:50%;overflow:visible;display:grid;place-items:center;background:linear-gradient(180deg,#111827,#02040a);color:#fff;text-decoration:none;font-weight:950;box-shadow:0 14px 34px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.12) inset}
+        .sf-avatar::before,.sf-avatar::after{content:"";position:absolute;inset:-7px;border-radius:inherit;border:1px solid rgba(82,166,255,.62);box-shadow:0 0 22px rgba(47,118,255,.38);animation:sfAvatarPulse 2.2s ease-out infinite;pointer-events:none}
+        .sf-avatar::after{inset:-13px;animation-delay:.75s;opacity:.48}
         .sf-avatar-tapzy{background:linear-gradient(145deg,#2f76ff,#1145ad);box-shadow:0 0 24px rgba(47,118,255,.34)}
-        .sf-avatar img{width:100%;height:100%;object-fit:cover}
+        .sf-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+        @keyframes sfAvatarPulse{0%{transform:scale(.88);opacity:.86}70%{transform:scale(1.16);opacity:.12}100%{transform:scale(1.2);opacity:0}}
         .sf-action-form{margin:0}
-        .sf-action{display:flex;flex-direction:column;align-items:center;gap:3px;width:58px;padding:0;border:0;background:none;color:#fff;text-decoration:none;font-size:12px;font-weight:700;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
-        .sf-action svg{width:34px;height:34px;fill:#fff;stroke:#fff}
+        .sf-action{display:flex;flex-direction:column;align-items:center;gap:4px;width:62px;padding:6px 0;border:0;border-radius:20px;background:rgba(255,255,255,.03);color:#fff;text-decoration:none;font-size:12px;font-weight:850;cursor:pointer;text-shadow:0 2px 12px rgba(0,0,0,.7);filter:drop-shadow(0 9px 18px rgba(0,0,0,.34))}
+        .sf-action svg{width:32px;height:32px;fill:#fff;stroke:#fff;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+        .sf-action span{line-height:1;letter-spacing:.01em}
         .sf-action.is-active svg{fill:#ff315f;stroke:#ff315f}
         .sf-save.is-saved svg{fill:#2f76ff;stroke:#fff}
         .sf-sound{width:43px;height:43px;border-radius:50%;border:2px solid rgba(255,255,255,.65);background:rgba(0,0,0,.4);padding:10px;cursor:pointer}
