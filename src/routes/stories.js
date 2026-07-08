@@ -1,7 +1,7 @@
 const router = require("express").Router();
-const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
+const multer = require("multer");
 
 
 
@@ -44,6 +44,10 @@ function expiresIn24Hours() {
 }
 
 const liveRecordingSessions = new Map();
+const liveRecordUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 32 * 1024 * 1024 },
+});
 
 function liveRecordingExtension(mimetype = "") {
   const type = String(mimetype || "").toLowerCase();
@@ -1891,7 +1895,7 @@ router.post("/stories/live/:id/record/start", async (req, res) => {
   }
 });
 
-router.post("/stories/live/:id/record/chunk", upload.single("chunk"), async (req, res) => {
+router.post("/stories/live/:id/record/chunk", liveRecordUpload.single("chunk"), async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
     if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
@@ -1901,30 +1905,19 @@ router.post("/stories/live/:id/record/chunk", upload.single("chunk"), async (req
     const session = liveRecordingSessions.get(id);
 
     if (!session || session.profileId !== currentProfile.id) {
-      if (req.file) await fsp.unlink(req.file.path).catch(() => {});
       return res.status(404).json({ ok: false, error: "Recording session not found" });
     }
     if (!Number.isInteger(index) || index !== session.nextIndex) {
-      if (req.file) await fsp.unlink(req.file.path).catch(() => {});
       return res.status(409).json({ ok: false, error: "Invalid recording chunk order", nextIndex: session.nextIndex });
     }
     if (!req.file) return res.status(400).json({ ok: false, error: "Missing recording chunk" });
 
-    await new Promise((resolve, reject) => {
-      const input = fs.createReadStream(req.file.path);
-      const output = fs.createWriteStream(session.finalPath, { flags: "a" });
-      input.on("error", reject);
-      output.on("error", reject);
-      output.on("finish", resolve);
-      input.pipe(output);
-    });
+    await fsp.appendFile(session.finalPath, req.file.buffer);
     session.bytes += req.file.size || 0;
     session.nextIndex += 1;
-    await fsp.unlink(req.file.path).catch(() => {});
 
     res.json({ ok: true, nextIndex: session.nextIndex, bytes: session.bytes });
   } catch (error) {
-    if (req.file) await fsp.unlink(req.file.path).catch(() => {});
     console.error("Live recording chunk error:", error);
     res.status(500).json({ ok: false, error: "Could not save recording chunk" });
   }
@@ -1997,9 +1990,7 @@ router.post("/stories/live/:id/end", async (req, res) => {
       where: { id },
       data: {
         type: "live",
-        mediaUrl: story.mediaUrl || `/stories/live/${id}`,
-        expiresAt: expiresIn24Hours(),
-        createdAt: new Date(),
+        expiresAt: new Date(),
       },
     });
     res.json({ ok: true, feedUrl: "/stories/feed" });
@@ -2545,20 +2536,30 @@ router.get("/stories/live/:id", async (req, res) => {
             recordingIndex += 1;
             recordingQueue = recordingQueue.then(async function(){
               if (recordingFailed) return;
-              const formData = new FormData();
-              formData.append('index', String(index));
-              formData.append('chunk', blob, 'tapzy-live-' + index + '.webm');
-              const res = await fetch('/stories/live/' + encodeURIComponent(storyId) + '/record/chunk', {
-                method:'POST',
-                headers:{ 'Accept':'application/json' },
-                body:formData,
-              });
-              const data = await res.json().catch(function(){ return {}; });
-              if (!res.ok || !data.ok) throw new Error(data.error || 'Recording chunk failed');
+              let lastError = null;
+              for (let attempt = 0; attempt < 3; attempt += 1) {
+                try {
+                  const formData = new FormData();
+                  formData.append('index', String(index));
+                  formData.append('chunk', blob, 'tapzy-live-' + index + '.webm');
+                  const res = await fetch('/stories/live/' + encodeURIComponent(storyId) + '/record/chunk', {
+                    method:'POST',
+                    headers:{ 'Accept':'application/json' },
+                    body:formData,
+                  });
+                  const data = await res.json().catch(function(){ return {}; });
+                  if (!res.ok || !data.ok) throw new Error(data.error || 'Recording chunk failed');
+                  return;
+                } catch (error) {
+                  lastError = error;
+                  await new Promise(function(resolve){ setTimeout(resolve, 450 * (attempt + 1)); });
+                }
+              }
+              throw lastError || new Error('Recording chunk failed');
             }).catch(function(error){
               recordingFailed = true;
               console.error(error);
-              setStatus('Live recording stopped. Live will still post.');
+              setStatus('Live recording stopped. Ending live will not post a black replay.');
             });
           }
           async function startReplayRecorder(stream){
@@ -2577,7 +2578,7 @@ router.get("/stories/live/:id", async (req, res) => {
             } catch (error) {
               recordingFailed = true;
               replayRecorder = null;
-              setStatus('Live recording unavailable. Live will still post.');
+              setStatus('Live recording unavailable.');
             }
           }
           async function finishLiveRecording(){
