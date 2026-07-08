@@ -2068,6 +2068,7 @@ router.get("/stories/live/new", async (req, res) => {
           let facingMode = 'user';
           let posting = false;
           let liveStoryId = '';
+          let liveReadyPromise = null;
           let socket = null;
           let providerRoom = null;
           let liveName = ${JSON.stringify(displayName)};
@@ -2227,6 +2228,42 @@ router.get("/stories/live/new", async (req, res) => {
             }
             return postJson('/media/chunk/' + encodeURIComponent(session.uploadId) + '/complete', {});
           }
+          function uploadCloudFile(file, signature){
+            return new Promise(function(resolve, reject){
+              const formData = new FormData();
+              formData.append('file', file, file.name || 'tapzy-live.webm');
+              formData.append('api_key', signature.apiKey);
+              formData.append('timestamp', String(signature.timestamp));
+              formData.append('signature', signature.signature);
+              if (signature.folder) formData.append('folder', signature.folder);
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', signature.uploadUrl);
+              xhr.upload.onprogress = function(event){
+                if (event.lengthComputable) setStatus('Uploading live ' + Math.max(1, Math.min(99, Math.round((event.loaded / event.total) * 100))) + '%');
+              };
+              xhr.onload = function(){
+                let data = {};
+                try { data = JSON.parse(xhr.responseText || '{}'); } catch(e) {}
+                if (xhr.status < 200 || xhr.status >= 300 || !data.secure_url) {
+                  reject(new Error(data.error && data.error.message ? data.error.message : 'Cloud upload failed'));
+                  return;
+                }
+                resolve({ ok:true, mediaUrl:data.secure_url, originalName:file.name || 'tapzy-live.webm', mimetype:inferType(file), size:data.bytes || file.size || 0 });
+              };
+              xhr.onerror = function(){ reject(new Error('Cloud upload failed')); };
+              xhr.ontimeout = function(){ reject(new Error('Cloud upload timed out')); };
+              xhr.timeout = 30 * 60 * 1000;
+              xhr.send(formData);
+            });
+          }
+          async function uploadCloud(file){
+            const signature = await postJson('/media/cloudinary/sign', {
+              originalName:file.name || 'tapzy-live.webm',
+              type:inferType(file),
+              size:file.size,
+            });
+            return uploadCloudFile(file, signature);
+          }
           async function uploadDirect(file){
             const formData = new FormData();
             formData.append('title', (titleInput.value || '').trim());
@@ -2249,12 +2286,18 @@ router.get("/stories/live/new", async (req, res) => {
             });
           }
           async function showLiveOnHome(){
-            if (liveStoryId) return;
-            const data = await postJson('/stories/live/now', {
+            if (liveStoryId) return liveStoryId;
+            if (liveReadyPromise) return liveReadyPromise;
+            liveReadyPromise = postJson('/stories/live/now', {
               title:(titleInput.value || '').trim() || ${JSON.stringify(`${displayName} is live`)},
+            }).then(function(data){
+              liveStoryId = data.storyId || '';
+              startLiveBroadcast();
+              return liveStoryId;
+            }).finally(function(){
+              liveReadyPromise = null;
             });
-            liveStoryId = data.storyId || '';
-            startLiveBroadcast();
+            return liveReadyPromise;
           }
           async function cancelLiveOnHome(){
             if (!liveStoryId) return;
@@ -2265,6 +2308,7 @@ router.get("/stories/live/new", async (req, res) => {
             return new Promise(function(resolve){
               if (!recorder || recorder.state === 'inactive') return resolve();
               recorder.addEventListener('stop', resolve, { once:true });
+              try { recorder.requestData(); } catch(e) {}
               recorder.stop();
             });
           }
@@ -2280,7 +2324,7 @@ router.get("/stories/live/new", async (req, res) => {
               if (event.data && event.data.size) chunks.push(event.data);
             };
             recorder.start(1000);
-            showLiveOnHome().catch(function(error){ console.error(error); });
+            liveReadyPromise = showLiveOnHome().catch(function(error){ console.error(error); });
             root.classList.add('is-recording');
             startBtn.disabled = true;
             stopBtn.disabled = false;
@@ -2293,14 +2337,22 @@ router.get("/stories/live/new", async (req, res) => {
             stopBtn.disabled = true;
             setStatus('Preparing recording...');
             try {
+              await showLiveOnHome();
               await stopRecorder();
-              stopLiveBroadcast();
               const type = (recorder && recorder.mimeType) || mimeType() || 'video/webm';
               const ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
               const file = new File(chunks, 'tapzy-live.' + ext, { type:type.split(';')[0] || 'video/webm' });
               if (!file.size) throw new Error('Recording is empty');
               setStatus('Uploading...');
-              const posted = file.size <= DIRECT_LIMIT ? await uploadDirect(file) : await postRecordedUrl(await uploadChunked(file));
+              let posted = null;
+              try {
+                posted = await postRecordedUrl(await uploadCloud(file));
+              } catch (cloudError) {
+                console.error(cloudError);
+                posted = file.size <= DIRECT_LIMIT ? await uploadDirect(file) : await postRecordedUrl(await uploadChunked(file));
+              }
+              stopLiveBroadcast();
+              if (stream) stream.getTracks().forEach(function(track){ track.stop(); });
               location.href = posted.feedUrl || '/stories/feed';
             } catch (error) {
               console.error(error);
