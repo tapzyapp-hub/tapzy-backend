@@ -1841,11 +1841,13 @@ router.post("/stories/live/:id/end", async (req, res) => {
     await prisma.story.update({
       where: { id },
       data: {
-        type: "live_replay_draft",
-        expiresAt: new Date(),
+        type: "live",
+        mediaUrl: story.mediaUrl || `/stories/live/${id}`,
+        expiresAt: expiresIn24Hours(),
+        createdAt: new Date(),
       },
     });
-    res.json({ ok: true, editUrl: `/stories/live/${encodeURIComponent(id)}/edit` });
+    res.json({ ok: true, feedUrl: "/stories/feed" });
   } catch (error) {
     console.error("End live error:", error);
     res.status(500).json({ ok: false });
@@ -2339,6 +2341,7 @@ router.get("/stories/live/:id", async (req, res) => {
           let replayRecorder = null;
           let replayChunks = [];
           let endingLive = false;
+          let liveExitPosted = false;
           const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
           function setStatus(text){ if (status) status.textContent = (text || '').trim(); }
@@ -2386,27 +2389,50 @@ router.get("/stories/live/:id", async (req, res) => {
             if (!res.ok || !data.ok) throw new Error(data.error || 'Replay upload failed');
             return data.editUrl || ('/stories/live/' + encodeURIComponent(storyId) + '/edit');
           }
+          function postLiveToStoriesBeacon(){
+            if (liveExitPosted) return;
+            liveExitPosted = true;
+            try { socket.emit('live:end', { storyId }); } catch(e) {}
+            try {
+              const endpoint = '/stories/live/' + encodeURIComponent(storyId) + '/end';
+              if (navigator.sendBeacon) {
+                const payload = new Blob(['ended=1'], { type:'application/x-www-form-urlencoded' });
+                navigator.sendBeacon(endpoint, payload);
+              } else {
+                fetch(endpoint, { method:'POST', keepalive:true, headers:{ 'Accept':'application/json' } }).catch(function(){});
+              }
+            } catch(e) {}
+          }
+          async function postLiveToStoriesOnExit(){
+            if (liveExitPosted) return '/stories/feed';
+            liveExitPosted = true;
+            try { socket.emit('live:end', { storyId }); } catch(e) {}
+            try { await stopReplayRecorder(); } catch(e) {}
+            if (localStream) localStream.getTracks().forEach(function(track){ track.stop(); });
+            try {
+              const endpoint = '/stories/live/' + encodeURIComponent(storyId) + '/end';
+              if (navigator.sendBeacon) {
+                const payload = new Blob(['ended=1'], { type:'application/x-www-form-urlencoded' });
+                navigator.sendBeacon(endpoint, payload);
+                return '/stories/feed';
+              }
+              const res = await fetch(endpoint, { method:'POST', keepalive:true, headers:{ 'Accept':'application/json' } });
+              const data = await res.json().catch(function(){ return {}; });
+              return data.feedUrl || '/stories/feed';
+            } catch (error) {}
+            return '/stories/feed';
+          }
           async function finishLiveAndOpenEditor(){
             if (endingLive) return;
             endingLive = true;
-            setStatus('Saving live replay...');
-            try { socket.emit('live:end', { storyId }); } catch(e) {}
-            try {
-              await stopReplayRecorder();
-              const blob = replayChunks.length ? new Blob(replayChunks, { type: (replayChunks[0] && replayChunks[0].type) || 'video/webm' }) : null;
-              if (localStream) localStream.getTracks().forEach(function(track){ track.stop(); });
-              if (blob && blob.size) {
-                const editUrl = await uploadLiveReplayBlob(blob);
-                location.href = editUrl;
-                return;
-              }
-            } catch (error) {
-              setStatus('Replay could not be saved on this device.');
-            }
-            fetch('/stories/live/' + encodeURIComponent(storyId) + '/end', { method:'POST' })
-              .then(function(res){ return res.json().catch(function(){ return {}; }); })
-              .then(function(data){ location.href = data.editUrl || ('/stories/live/' + encodeURIComponent(storyId) + '/edit'); })
-              .catch(function(){ location.href = '/stories/live/' + encodeURIComponent(storyId) + '/edit'; });
+            setStatus('Posting live to stories...');
+            const feedUrl = await postLiveToStoriesOnExit();
+            location.href = feedUrl || '/stories/feed';
+          }
+          if (role === 'host') {
+            window.addEventListener('pagehide', function(){
+              postLiveToStoriesBeacon();
+            });
           }
           function addChat(nameText, message, gift){
             if (!chat) return;
@@ -2713,6 +2739,13 @@ router.get("/stories/feed", async (req, res) => {
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-6a3 3 0 0 1-1-2V7a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3v8Z"/></svg>
             <span>${compactFeedCount(story._count.replies)}</span>
           </a>
+          ${currentProfile && currentProfile.id === story.profileId ? `
+          <form method="POST" action="/stories/${escapeHtml(story.id)}/delete" class="sf-action-form" onsubmit="return confirm('Remove this story?');">
+            <button class="sf-action" type="submit" aria-label="Remove story">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6h10l-1 15H8L7 6Zm2-3h6l1 2H8l1-2Zm-4 2h14v2H5V5Z"/></svg>
+              <span>Remove</span>
+            </button>
+          </form>` : ""}
           <button class="sf-action sf-save" type="button" data-save="${escapeHtml(story.id)}" aria-label="Save story">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>
             <span>Save</span>
