@@ -160,7 +160,7 @@ function renderVideoPreviewFrame(url, escapeHtml, extra = {}) {
   const controls = extra.controls === false ? '' : ' controls';
   const autoplay = extra.autoplay ? ' autoplay' : '';
   const muted = extra.muted ? ' muted' : '';
-  const preload = escapeHtml(extra.preload || 'auto');
+  const preload = escapeHtml(extra.preload || 'metadata');
   const aria = escapeHtml(extra.ariaLabel || 'Play video');
   return `
     <div class="tz-video-frame${extra.autoplay ? ' is-autoplay' : ''}" data-video-frame>
@@ -3575,7 +3575,7 @@ module.exports = function renderConversationPage({
                 <div class="tz-video-preview-blur"></div>
                 <div class="tz-video-preview-badge">▶</div>
               </div>
-              <video class="tz-chat-video" controls preload="auto" playsinline webkit-playsinline src="\${safeEscape(url)}"></video>
+              <video class="tz-chat-video" controls preload="metadata" playsinline webkit-playsinline src="\${safeEscape(url)}"></video>
             </div>
           \`;
         }

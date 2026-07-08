@@ -2,6 +2,7 @@ const router = require("express").Router();
 const fsp = require("fs/promises");
 const path = require("path");
 const multer = require("multer");
+const crypto = require("crypto");
 
 
 
@@ -41,6 +42,40 @@ function expiresIn24Hours() {
 
   return new Date(Date.now() + 24 * 60 * 60 * 1000);
 
+}
+
+function base64UrlJson(value) {
+  return Buffer.from(JSON.stringify(value)).toString("base64url");
+}
+
+function liveKitConfig() {
+  const url = String(process.env.LIVEKIT_URL || "").trim();
+  const apiKey = String(process.env.LIVEKIT_API_KEY || "").trim();
+  const apiSecret = String(process.env.LIVEKIT_API_SECRET || "").trim();
+  return { url, apiKey, apiSecret, configured: !!(url && apiKey && apiSecret) };
+}
+
+function signLiveKitToken({ room, identity, name, canPublish }) {
+  const { apiKey, apiSecret } = liveKitConfig();
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "HS256", typ: "JWT" };
+  const payload = {
+    iss: apiKey,
+    sub: identity,
+    name,
+    nbf: now - 10,
+    exp: now + 60 * 60 * 2,
+    video: {
+      room,
+      roomJoin: true,
+      canPublish: !!canPublish,
+      canSubscribe: true,
+      canPublishData: true,
+    },
+  };
+  const body = `${base64UrlJson(header)}.${base64UrlJson(payload)}`;
+  const signature = crypto.createHmac("sha256", apiSecret).update(body).digest("base64url");
+  return `${body}.${signature}`;
 }
 
 const liveRecordingSessions = new Map();
@@ -1910,6 +1945,44 @@ router.post("/stories/live/now/cancel", async (req, res) => {
   }
 });
 
+router.post("/stories/live/:id/provider-token", async (req, res) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const currentProfile = req.currentProfile || null;
+    const story = await prisma.story.findFirst({
+      where: { id, type: "live", expiresAt: { gt: new Date() } },
+      include: { profile: true },
+    });
+    if (!story) return res.status(404).json({ ok: false, error: "Live not found" });
+
+    const role = String(req.body.role || "viewer").toLowerCase();
+    const canPublish = !!(currentProfile && story.profileId === currentProfile.id && role === "host");
+    const config = liveKitConfig();
+    if (!config.configured) {
+      return res.json({ ok: true, configured: false });
+    }
+
+    const identity = currentProfile
+      ? `${currentProfile.id}-${canPublish ? "host" : "viewer"}`
+      : `guest-${crypto.randomBytes(8).toString("hex")}`;
+    const name = currentProfile?.name || currentProfile?.username || "Tapzy viewer";
+    const room = `tapzy-live-${story.id}`;
+    const token = signLiveKitToken({ room, identity, name, canPublish });
+
+    res.json({
+      ok: true,
+      configured: true,
+      url: config.url,
+      token,
+      room,
+      canPublish,
+    });
+  } catch (error) {
+    console.error("Live provider token error:", error);
+    res.status(500).json({ ok: false, error: "Could not join live provider" });
+  }
+});
+
 router.get("/stories/live/new", async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
@@ -1996,6 +2069,7 @@ router.get("/stories/live/new", async (req, res) => {
           let posting = false;
           let liveStoryId = '';
           let socket = null;
+          let providerRoom = null;
           let liveName = ${JSON.stringify(displayName)};
           const peers = new Map();
           const peerConfig = { iceServers: [{ urls:'stun:stun.l.google.com:19302' }, { urls:'stun:stun1.l.google.com:19302' }] };
@@ -2057,8 +2131,33 @@ router.get("/stories/live/new", async (req, res) => {
             }
             return pc;
           }
+          function loadLiveKitClient(){
+            return new Promise(function(resolve, reject){
+              if (window.LivekitClient) return resolve(window.LivekitClient);
+              const script = document.createElement('script');
+              script.src = 'https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js';
+              script.async = true;
+              script.onload = function(){ window.LivekitClient ? resolve(window.LivekitClient) : reject(new Error('Live provider SDK unavailable')); };
+              script.onerror = function(){ reject(new Error('Live provider SDK failed to load')); };
+              document.head.appendChild(script);
+            });
+          }
+          async function startProviderBroadcast(){
+            if (!liveStoryId || !stream || providerRoom) return false;
+            const tokenData = await postJson('/stories/live/' + encodeURIComponent(liveStoryId) + '/provider-token', { role:'host' });
+            if (!tokenData.configured) return false;
+            const LK = await loadLiveKitClient();
+            const room = new LK.Room({ adaptiveStream:true, dynacast:true });
+            await room.connect(tokenData.url, tokenData.token);
+            for (const track of stream.getTracks()) {
+              await room.localParticipant.publishTrack(track);
+            }
+            providerRoom = room;
+            return true;
+          }
           function startLiveBroadcast(){
             if (!liveStoryId || !stream || socket) return;
+            startProviderBroadcast().catch(function(error){ console.error(error); });
             socket = io();
             socket.on('connect', function(){
               socket.emit('live:join', { storyId:liveStoryId, role:'host', name:liveName });
@@ -2080,6 +2179,10 @@ router.get("/stories/live/new", async (req, res) => {
             });
           }
           function stopLiveBroadcast(){
+            if (providerRoom) {
+              try { providerRoom.disconnect(); } catch(e) {}
+              providerRoom = null;
+            }
             if (socket) {
               try { socket.emit('live:end', { storyId:liveStoryId }); } catch(e) {}
               try { socket.disconnect(); } catch(e) {}
@@ -3103,7 +3206,50 @@ router.get("/stories/live/:id", async (req, res) => {
             addChat('Tapzy', 'You are live. Viewers can chat and send gifts.');
           }
 
+          function loadLiveKitClient(){
+            return new Promise(function(resolve, reject){
+              if (window.LivekitClient) return resolve(window.LivekitClient);
+              const script = document.createElement('script');
+              script.src = 'https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js';
+              script.async = true;
+              script.onload = function(){ window.LivekitClient ? resolve(window.LivekitClient) : reject(new Error('Live provider SDK unavailable')); };
+              script.onerror = function(){ reject(new Error('Live provider SDK failed to load')); };
+              document.head.appendChild(script);
+            });
+          }
+
+          async function startProviderViewer(){
+            const res = await fetch('/stories/live/' + encodeURIComponent(storyId) + '/provider-token', {
+              method:'POST',
+              headers:{ 'Accept':'application/json', 'Content-Type':'application/json' },
+              body:JSON.stringify({ role:'viewer' }),
+            });
+            const tokenData = await res.json().catch(function(){ return {}; });
+            if (!res.ok || !tokenData.ok || !tokenData.configured) return false;
+            const LK = await loadLiveKitClient();
+            const room = new LK.Room({ adaptiveStream:true, dynacast:true });
+            room.on(LK.RoomEvent.TrackSubscribed, function(track){
+              if (track.kind === 'video') {
+                track.attach(video);
+                video.muted = false;
+                video.play().catch(function(){});
+                hideWait();
+                setStatus('');
+              } else if (track.kind === 'audio') {
+                const audio = track.attach();
+                audio.autoplay = true;
+                audio.style.display = 'none';
+                document.body.appendChild(audio);
+              }
+            });
+            await room.connect(tokenData.url, tokenData.token);
+            return true;
+          }
+
           async function startViewer(){
+            startProviderViewer().then(function(joined){
+              if (joined) addChat('Tapzy', 'Welcome to the live.');
+            }).catch(function(error){ console.error(error); });
             socket.emit('live:join', { storyId, role:'viewer', name });
             addChat('Tapzy', 'Welcome to the live.');
           }
@@ -3293,7 +3439,7 @@ router.get("/stories/feed", async (req, res) => {
         ? isLive
           ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
           : isVideo
-          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
+          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay loop playsinline webkit-playsinline preload="metadata"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
@@ -3371,7 +3517,7 @@ router.get("/stories/feed", async (req, res) => {
         const media = liveUrl && isLiveStreamUrl(liveUrl)
           ? renderLiveStreamMedia(liveUrl, title, index)
           : videoUrl
-          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" loop playsinline webkit-playsinline preload="${index < 2 ? "auto" : "metadata"}"></video>`
+          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" loop playsinline webkit-playsinline preload="metadata"></video>`
           : `<div class="sf-virtual-stream sf-virtual-motion" style="--stream-bg:${escapeHtml(eventStreamGradient(index))}"><span>${escapeHtml(category)}</span></div>`;
         const when = event.startAt ? formatPrettyLocal(event.startAt) : "Live now";
         const text = event.description || `${category} from Tapzy events happening now.`;

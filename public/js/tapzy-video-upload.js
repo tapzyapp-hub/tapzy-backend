@@ -11,6 +11,8 @@
   const FPS = 24;
   const VIDEO_BITRATE = 1300000;
   const AUDIO_BITRATE = 96000;
+  const IMAGE_MAX_EDGE = 1600;
+  const IMAGE_QUALITY = 0.82;
 
   function isVideoFile(file) {
     if (!file) return false;
@@ -366,6 +368,50 @@
     });
   }
 
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => resolve({ image, url });
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Image could not be read"));
+      };
+      image.src = url;
+    });
+  }
+
+  async function compressImage(file) {
+    if (!isImageFile(file) || /^image\/(?:gif|heic|heif)$/i.test(String(file.type || ""))) return file;
+    const loaded = await loadImage(file).catch(() => null);
+    if (!loaded) return file;
+
+    const image = loaded.image;
+    const url = loaded.url;
+    const scale = Math.min(1, IMAGE_MAX_EDGE / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+    if (scale >= 1 && file.size < 2 * 1024 * 1024) {
+      URL.revokeObjectURL(url);
+      return file;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+    canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!ctx) {
+      URL.revokeObjectURL(url);
+      return file;
+    }
+
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", IMAGE_QUALITY));
+    URL.revokeObjectURL(url);
+    if (!blob || !blob.size || blob.size >= file.size * 0.95) return file;
+
+    const base = String(file.name || "tapzy-image").replace(/\.[^.]+$/, "");
+    return new File([blob], `${base}-tapzy.jpg`, { type: "image/jpeg", lastModified: Date.now() });
+  }
+
   async function captureAudioFromVideo(video) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (AudioContextClass) {
@@ -511,7 +557,13 @@
     try {
       let complete = null;
       if (supportsChunkedSubmit(form)) {
-        if (isVideoFile(file) && file.size >= START_OPTIMIZE_BYTES) {
+        if (isImageFile(file)) {
+          setStatus(form, "Optimizing image for faster upload.");
+          uploadFile = await compressImage(file);
+          if (uploadFile !== file && uploadFile.size < file.size) {
+            setStatus(form, `Image optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} - uploading now.`);
+          }
+        } else if (isVideoFile(file) && file.size >= START_OPTIMIZE_BYTES) {
           setStatus(form, "Optimizing video for faster upload 0% — keep this page open.");
           uploadFile = await compressVideo(file, (pct) => {
             setStatus(form, `Optimizing video for faster upload ${pct}% — keep this page open.`);
