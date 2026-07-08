@@ -1,4 +1,7 @@
 const router = require("express").Router();
+const fs = require("fs");
+const fsp = require("fs/promises");
+const path = require("path");
 
 
 
@@ -6,7 +9,7 @@ const prisma = require("../prisma");
 
 
 
-const { upload } = require("../upload");
+const { upload, uploadsDir, safeUploadFilename } = require("../upload");
 
 
 
@@ -38,6 +41,23 @@ function expiresIn24Hours() {
 
   return new Date(Date.now() + 24 * 60 * 60 * 1000);
 
+}
+
+const liveRecordingSessions = new Map();
+
+function liveRecordingExtension(mimetype = "") {
+  const type = String(mimetype || "").toLowerCase();
+  if (type.includes("mp4")) return ".mp4";
+  if (type.includes("quicktime")) return ".mov";
+  return ".webm";
+}
+
+async function removeLiveRecordingSession(session) {
+  if (!session) return;
+  liveRecordingSessions.delete(session.storyId);
+  if (session.removeFile) {
+    await fsp.unlink(session.finalPath).catch(() => {});
+  }
 }
 
 
@@ -1831,6 +1851,141 @@ router.post("/stories/live/start", async (req, res) => {
   }
 });
 
+router.post("/stories/live/:id/record/start", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+
+    const id = String(req.params.id || "").trim();
+    const story = await prisma.story.findFirst({ where: { id, profileId: currentProfile.id, type: "live" } });
+    if (!story) return res.status(404).json({ ok: false, error: "Live not found" });
+
+    const mimetype = String(req.body.mimetype || "video/webm").trim();
+    const ext = liveRecordingExtension(mimetype);
+    const filename = safeUploadFilename(`tapzy-live-${id}${ext}`, mimetype);
+    const finalPath = path.join(uploadsDir, filename);
+
+    const existing = liveRecordingSessions.get(id);
+    if (existing) {
+      existing.removeFile = true;
+      await removeLiveRecordingSession(existing);
+    }
+
+    await fsp.writeFile(finalPath, Buffer.alloc(0));
+    liveRecordingSessions.set(id, {
+      storyId: id,
+      profileId: currentProfile.id,
+      mimetype,
+      filename,
+      finalPath,
+      nextIndex: 0,
+      bytes: 0,
+      removeFile: false,
+      createdAt: Date.now(),
+    });
+
+    res.json({ ok: true, storyId: id, nextIndex: 0 });
+  } catch (error) {
+    console.error("Start live recording error:", error);
+    res.status(500).json({ ok: false, error: "Could not start live recording" });
+  }
+});
+
+router.post("/stories/live/:id/record/chunk", upload.single("chunk"), async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+
+    const id = String(req.params.id || "").trim();
+    const index = Number(req.body.index || 0);
+    const session = liveRecordingSessions.get(id);
+
+    if (!session || session.profileId !== currentProfile.id) {
+      if (req.file) await fsp.unlink(req.file.path).catch(() => {});
+      return res.status(404).json({ ok: false, error: "Recording session not found" });
+    }
+    if (!Number.isInteger(index) || index !== session.nextIndex) {
+      if (req.file) await fsp.unlink(req.file.path).catch(() => {});
+      return res.status(409).json({ ok: false, error: "Invalid recording chunk order", nextIndex: session.nextIndex });
+    }
+    if (!req.file) return res.status(400).json({ ok: false, error: "Missing recording chunk" });
+
+    await new Promise((resolve, reject) => {
+      const input = fs.createReadStream(req.file.path);
+      const output = fs.createWriteStream(session.finalPath, { flags: "a" });
+      input.on("error", reject);
+      output.on("error", reject);
+      output.on("finish", resolve);
+      input.pipe(output);
+    });
+    session.bytes += req.file.size || 0;
+    session.nextIndex += 1;
+    await fsp.unlink(req.file.path).catch(() => {});
+
+    res.json({ ok: true, nextIndex: session.nextIndex, bytes: session.bytes });
+  } catch (error) {
+    if (req.file) await fsp.unlink(req.file.path).catch(() => {});
+    console.error("Live recording chunk error:", error);
+    res.status(500).json({ ok: false, error: "Could not save recording chunk" });
+  }
+});
+
+router.post("/stories/live/:id/record/finish", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+
+    const id = String(req.params.id || "").trim();
+    const session = liveRecordingSessions.get(id);
+    if (!session || session.profileId !== currentProfile.id) {
+      return res.status(404).json({ ok: false, error: "Recording session not found" });
+    }
+    if (!session.bytes) {
+      session.removeFile = true;
+      await removeLiveRecordingSession(session);
+      return res.status(400).json({ ok: false, error: "Recording was empty" });
+    }
+
+    const story = await prisma.story.findFirst({ where: { id, profileId: currentProfile.id, type: "live" } });
+    if (!story) return res.status(404).json({ ok: false, error: "Live not found" });
+
+    const mediaUrl = publicAbsoluteUrl(req, `/uploads/${session.filename}`);
+    const caption = String(req.body.text || story.text || "").trim();
+    await prisma.story.update({
+      where: { id },
+      data: {
+        type: "video",
+        mediaUrl,
+        text: caption ? caption.slice(0, 220) : story.text,
+        expiresAt: expiresIn24Hours(),
+        createdAt: new Date(),
+      },
+    });
+
+    liveRecordingSessions.delete(id);
+    res.json({ ok: true, mediaUrl, feedUrl: "/stories/feed" });
+  } catch (error) {
+    console.error("Finish live recording error:", error);
+    res.status(500).json({ ok: false, error: "Could not finish live recording" });
+  }
+});
+
+router.post("/stories/live/:id/record/cancel", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    const id = String(req.params.id || "").trim();
+    const session = liveRecordingSessions.get(id);
+    if (session && currentProfile && session.profileId === currentProfile.id) {
+      session.removeFile = true;
+      await removeLiveRecordingSession(session);
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Cancel live recording error:", error);
+    res.status(500).json({ ok: false });
+  }
+});
+
 router.post("/stories/live/:id/end", async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
@@ -2339,13 +2494,27 @@ router.get("/stories/live/:id", async (req, res) => {
           let localStream = null;
           let facingMode = 'user';
           let replayRecorder = null;
-          let replayChunks = [];
+          let recordingMimeType = '';
+          let recordingStarted = false;
+          let recordingFailed = false;
+          let recordingIndex = 0;
+          let recordingQueue = Promise.resolve();
           let endingLive = false;
           let liveExitPosted = false;
           const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
           function setStatus(text){ if (status) status.textContent = (text || '').trim(); }
           function hideWait(){ if (wait) wait.style.display = 'none'; }
+          async function postJson(url, body){
+            const res = await fetch(url, {
+              method:'POST',
+              headers:{ 'Accept':'application/json', 'Content-Type':'application/json' },
+              body:JSON.stringify(body || {}),
+            });
+            const data = await res.json().catch(function(){ return {}; });
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Request failed');
+            return data;
+          }
           function replayMimeType(){
             if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
             return ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4;codecs=h264,aac','video/mp4'].find(function(type){
@@ -2360,34 +2529,66 @@ router.get("/stories/live/:id", async (req, res) => {
               try { recorder.stop(); } catch(e) { resolve(); }
             });
           }
+          async function ensureLiveRecordingSession(mimeType){
+            if (recordingStarted) return;
+            await postJson('/stories/live/' + encodeURIComponent(storyId) + '/record/start', {
+              mimetype: (mimeType || 'video/webm').split(';')[0] || 'video/webm',
+            });
+            recordingStarted = true;
+            recordingFailed = false;
+            recordingIndex = 0;
+            recordingQueue = Promise.resolve();
+          }
+          function enqueueLiveRecordingChunk(blob){
+            if (!blob || !blob.size || recordingFailed || !recordingStarted) return;
+            const index = recordingIndex;
+            recordingIndex += 1;
+            recordingQueue = recordingQueue.then(async function(){
+              if (recordingFailed) return;
+              const formData = new FormData();
+              formData.append('index', String(index));
+              formData.append('chunk', blob, 'tapzy-live-' + index + '.webm');
+              const res = await fetch('/stories/live/' + encodeURIComponent(storyId) + '/record/chunk', {
+                method:'POST',
+                headers:{ 'Accept':'application/json' },
+                body:formData,
+              });
+              const data = await res.json().catch(function(){ return {}; });
+              if (!res.ok || !data.ok) throw new Error(data.error || 'Recording chunk failed');
+            }).catch(function(error){
+              recordingFailed = true;
+              console.error(error);
+              setStatus('Live recording stopped. Live will still post.');
+            });
+          }
           async function startReplayRecorder(stream){
             if (role !== 'host' || !stream || !window.MediaRecorder) return;
             await stopReplayRecorder();
-            const mimeType = replayMimeType();
+            const mimeType = recordingMimeType || replayMimeType();
+            recordingMimeType = mimeType || 'video/webm';
             try {
+              await ensureLiveRecordingSession(recordingMimeType);
               replayRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
               replayRecorder.ondataavailable = function(event){
-                if (event.data && event.data.size) replayChunks.push(event.data);
+                enqueueLiveRecordingChunk(event.data);
               };
-              replayRecorder.start(1000);
+              replayRecorder.start(3000);
+              setStatus('Recording live...');
             } catch (error) {
+              recordingFailed = true;
               replayRecorder = null;
+              setStatus('Live recording unavailable. Live will still post.');
             }
           }
-          async function uploadLiveReplayBlob(blob){
-            const formData = new FormData();
-            const type = blob.type || 'video/webm';
-            const ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
-            formData.append('replayMedia', blob, 'tapzy-live-replay.' + ext);
-            formData.append('text', ${JSON.stringify(story.text || "")});
-            const res = await fetch('/stories/live/' + encodeURIComponent(storyId) + '/replay', {
-              method:'POST',
-              headers:{ 'Accept':'application/json' },
-              body:formData,
+          async function finishLiveRecording(){
+            if (!recordingStarted || recordingFailed) return '';
+            await stopReplayRecorder();
+            await recordingQueue;
+            if (recordingFailed || !recordingIndex) return '';
+            const data = await postJson('/stories/live/' + encodeURIComponent(storyId) + '/record/finish', {
+              text:${JSON.stringify(story.text || "")},
             });
-            const data = await res.json().catch(function(){ return {}; });
-            if (!res.ok || !data.ok) throw new Error(data.error || 'Replay upload failed');
-            return data.editUrl || ('/stories/live/' + encodeURIComponent(storyId) + '/edit');
+            return data.feedUrl || '/stories/feed';
           }
           function postLiveToStoriesBeacon(){
             if (liveExitPosted) return;
@@ -2407,7 +2608,15 @@ router.get("/stories/live/:id", async (req, res) => {
             if (liveExitPosted) return '/stories/feed';
             liveExitPosted = true;
             try { socket.emit('live:end', { storyId }); } catch(e) {}
-            try { await stopReplayRecorder(); } catch(e) {}
+            try {
+              const recordedFeedUrl = await finishLiveRecording();
+              if (recordedFeedUrl) {
+                if (localStream) localStream.getTracks().forEach(function(track){ track.stop(); });
+                return recordedFeedUrl;
+              }
+            } catch (error) {
+              console.error(error);
+            }
             if (localStream) localStream.getTracks().forEach(function(track){ track.stop(); });
             try {
               const endpoint = '/stories/live/' + encodeURIComponent(storyId) + '/end';
