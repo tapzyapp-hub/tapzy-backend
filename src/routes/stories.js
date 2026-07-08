@@ -1838,11 +1838,194 @@ router.post("/stories/live/:id/end", async (req, res) => {
     const id = String(req.params.id || "").trim();
     const story = await prisma.story.findFirst({ where: { id, profileId: currentProfile.id, type: "live" } });
     if (!story) return res.status(404).json({ ok: false });
-    await prisma.story.update({ where: { id }, data: { expiresAt: new Date() } });
-    res.json({ ok: true });
+    await prisma.story.update({
+      where: { id },
+      data: {
+        type: "live_replay_draft",
+        expiresAt: new Date(),
+      },
+    });
+    res.json({ ok: true, editUrl: `/stories/live/${encodeURIComponent(id)}/edit` });
   } catch (error) {
     console.error("End live error:", error);
     res.status(500).json({ ok: false });
+  }
+});
+
+router.post("/stories/live/:id/replay", upload.single("replayMedia"), async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false });
+
+    const id = String(req.params.id || "").trim();
+    const story = await prisma.story.findFirst({
+      where: {
+        id,
+        profileId: currentProfile.id,
+        type: { in: ["live", "live_replay_draft"] },
+      },
+    });
+    if (!story) return res.status(404).json({ ok: false });
+
+    const data = {
+      type: "live_replay_draft",
+      expiresAt: new Date(),
+    };
+
+    if (req.file) {
+      data.mediaUrl = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
+    }
+
+    const caption = String(req.body.text || "").trim();
+    if (caption) data.text = caption.slice(0, 220);
+
+    await prisma.story.update({ where: { id }, data });
+    res.json({ ok: true, editUrl: `/stories/live/${encodeURIComponent(id)}/edit` });
+  } catch (error) {
+    console.error("Save live replay error:", error);
+    res.status(500).json({ ok: false, error: "Could not save live replay" });
+  }
+});
+
+router.get("/stories/live/:id/edit", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.redirect("/auth");
+
+    const id = String(req.params.id || "").trim();
+    const story = await prisma.story.findFirst({
+      where: {
+        id,
+        profileId: currentProfile.id,
+        type: { in: ["live_replay_draft", "live", "video"] },
+      },
+    });
+    if (!story) return res.status(404).send("Live replay not found");
+
+    const hasReplay = !!story.mediaUrl && isVideoUrl(story.mediaUrl);
+    const body = `
+      <div class="wrap live-edit-wrap">
+        <section class="live-edit-card">
+          <div class="live-edit-kicker">Finished Live</div>
+          <h1>Edit Live Replay</h1>
+          <p>Review your finished live, update the caption, then post it to the home page. Posted live replays stay live for 24 hours.</p>
+
+          <div class="live-edit-preview">
+            ${
+              hasReplay
+                ? `<video src="${escapeHtml(story.mediaUrl)}" controls playsinline preload="metadata"></video>`
+                : `<div class="live-edit-empty">Replay is still processing or was not recorded on this device.</div>`
+            }
+          </div>
+
+          <form class="live-edit-form" method="POST" action="/stories/live/${escapeHtml(story.id)}/post">
+            <label>Caption</label>
+            <textarea name="text" maxlength="220" rows="3" placeholder="Add a caption...">${escapeHtml(story.text || "")}</textarea>
+            <div class="live-edit-actions">
+              <button class="live-edit-primary" type="submit" ${hasReplay ? "" : "disabled"}>Post Live Replay</button>
+              <a class="live-edit-secondary" href="/stories/feed">Not now</a>
+            </div>
+          </form>
+
+          <form method="POST" action="/stories/live/${escapeHtml(story.id)}/discard" class="live-edit-discard" onsubmit="return confirm('Discard this live replay?');">
+            <button type="submit">Discard replay</button>
+          </form>
+        </section>
+      </div>
+
+      <style>
+        .live-edit-wrap{max-width:760px;padding-bottom:110px;}
+        .live-edit-card{
+          margin-top:18px;
+          border-radius:28px;
+          border:1px solid rgba(255,255,255,.10);
+          background:radial-gradient(520px 240px at 50% 0%,rgba(47,118,255,.18),transparent 58%),linear-gradient(180deg,rgba(11,15,24,.98),rgba(3,5,10,1));
+          box-shadow:0 24px 70px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.04);
+          padding:22px;
+        }
+        .live-edit-kicker{color:#9fbaff;font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;}
+        .live-edit-card h1{margin:0;color:#fff;font-size:34px;line-height:1;font-weight:950;letter-spacing:-.04em;}
+        .live-edit-card p{margin:10px 0 18px;color:rgba(226,236,255,.76);line-height:1.45;}
+        .live-edit-preview{overflow:hidden;border-radius:22px;background:#05070d;border:1px solid rgba(255,255,255,.10);aspect-ratio:9/16;max-height:560px;}
+        .live-edit-preview video{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
+        .live-edit-empty{height:100%;display:grid;place-items:center;padding:24px;text-align:center;color:#aebbd4;font-weight:800;}
+        .live-edit-form{margin-top:18px;}
+        .live-edit-form label{display:block;margin-bottom:8px;color:#dce8ff;font-weight:900;}
+        .live-edit-form textarea{width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:#05070d;color:#fff;padding:14px;font:inherit;resize:vertical;outline:none;}
+        .live-edit-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+        .live-edit-primary,.live-edit-secondary,.live-edit-discard button{
+          min-height:48px;border-radius:999px;padding:0 18px;font:inherit;font-weight:900;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+        }
+        .live-edit-primary{border:0;background:linear-gradient(135deg,#31d6ff,#2d6bff 52%,#123fbd);color:#fff;box-shadow:0 0 30px rgba(47,118,255,.32);}
+        .live-edit-primary:disabled{opacity:.45;box-shadow:none;}
+        .live-edit-secondary{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;}
+        .live-edit-discard{margin:14px 0 0;}
+        .live-edit-discard button{border:1px solid rgba(255,85,120,.24);background:rgba(255,45,85,.10);color:#ffc8d4;}
+      </style>
+    `;
+
+    res.send(renderShell("Edit Live Replay", body, "", {
+      currentProfile,
+      pageTitle: "Edit Live",
+      pageType: "stories",
+      storiesBottomNav: true,
+    }));
+  } catch (error) {
+    console.error("Edit live replay error:", error);
+    res.status(500).send("Edit live replay error");
+  }
+});
+
+router.post("/stories/live/:id/post", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.redirect("/auth");
+
+    const id = String(req.params.id || "").trim();
+    const story = await prisma.story.findFirst({
+      where: {
+        id,
+        profileId: currentProfile.id,
+        type: { in: ["live_replay_draft", "live", "video"] },
+      },
+    });
+    if (!story) return res.status(404).send("Live replay not found");
+    if (!story.mediaUrl || !isVideoUrl(story.mediaUrl)) return res.redirect(`/stories/live/${encodeURIComponent(id)}/edit`);
+
+    const text = String(req.body.text || "").trim();
+    await prisma.story.update({
+      where: { id },
+      data: {
+        type: "video",
+        text: text ? text.slice(0, 220) : story.text,
+        expiresAt: expiresIn24Hours(),
+        createdAt: new Date(),
+      },
+    });
+
+    res.redirect("/stories/feed");
+  } catch (error) {
+    console.error("Post live replay error:", error);
+    res.status(500).send("Post live replay error");
+  }
+});
+
+router.post("/stories/live/:id/discard", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.redirect("/auth");
+    const id = String(req.params.id || "").trim();
+    await prisma.story.deleteMany({
+      where: {
+        id,
+        profileId: currentProfile.id,
+        type: { in: ["live_replay_draft", "live", "video"] },
+      },
+    });
+    res.redirect("/stories/feed");
+  } catch (error) {
+    console.error("Discard live replay error:", error);
+    res.status(500).send("Discard live replay error");
   }
 });
 
@@ -2130,10 +2313,77 @@ router.get("/stories/live/:id", async (req, res) => {
           const peers = new Map();
           let localStream = null;
           let facingMode = 'user';
+          let replayRecorder = null;
+          let replayChunks = [];
+          let endingLive = false;
           const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
           function setStatus(text){ if (status) status.textContent = (text || '').trim(); }
           function hideWait(){ if (wait) wait.style.display = 'none'; }
+          function replayMimeType(){
+            if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
+            return ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4;codecs=h264,aac','video/mp4'].find(function(type){
+              return MediaRecorder.isTypeSupported(type);
+            }) || '';
+          }
+          function stopReplayRecorder(){
+            return new Promise(function(resolve){
+              if (!replayRecorder || replayRecorder.state === 'inactive') return resolve();
+              var recorder = replayRecorder;
+              recorder.addEventListener('stop', function(){ resolve(); }, { once:true });
+              try { recorder.stop(); } catch(e) { resolve(); }
+            });
+          }
+          async function startReplayRecorder(stream){
+            if (role !== 'host' || !stream || !window.MediaRecorder) return;
+            await stopReplayRecorder();
+            const mimeType = replayMimeType();
+            try {
+              replayRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+              replayRecorder.ondataavailable = function(event){
+                if (event.data && event.data.size) replayChunks.push(event.data);
+              };
+              replayRecorder.start(1000);
+            } catch (error) {
+              replayRecorder = null;
+            }
+          }
+          async function uploadLiveReplayBlob(blob){
+            const formData = new FormData();
+            const type = blob.type || 'video/webm';
+            const ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
+            formData.append('replayMedia', blob, 'tapzy-live-replay.' + ext);
+            formData.append('text', ${JSON.stringify(story.text || "")});
+            const res = await fetch('/stories/live/' + encodeURIComponent(storyId) + '/replay', {
+              method:'POST',
+              body:formData,
+            });
+            const data = await res.json().catch(function(){ return {}; });
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Replay upload failed');
+            return data.editUrl || ('/stories/live/' + encodeURIComponent(storyId) + '/edit');
+          }
+          async function finishLiveAndOpenEditor(){
+            if (endingLive) return;
+            endingLive = true;
+            setStatus('Saving live replay...');
+            try { socket.emit('live:end', { storyId }); } catch(e) {}
+            try {
+              await stopReplayRecorder();
+              const blob = replayChunks.length ? new Blob(replayChunks, { type: (replayChunks[0] && replayChunks[0].type) || 'video/webm' }) : null;
+              if (localStream) localStream.getTracks().forEach(function(track){ track.stop(); });
+              if (blob && blob.size) {
+                const editUrl = await uploadLiveReplayBlob(blob);
+                location.href = editUrl;
+                return;
+              }
+            } catch (error) {
+              setStatus('Replay could not be saved on this device.');
+            }
+            fetch('/stories/live/' + encodeURIComponent(storyId) + '/end', { method:'POST' })
+              .then(function(res){ return res.json().catch(function(){ return {}; }); })
+              .then(function(data){ location.href = data.editUrl || ('/stories/live/' + encodeURIComponent(storyId) + '/edit'); })
+              .catch(function(){ location.href = '/stories/live/' + encodeURIComponent(storyId) + '/edit'; });
+          }
           function addChat(nameText, message, gift){
             if (!chat) return;
             const row = document.createElement('div');
@@ -2183,6 +2433,7 @@ router.get("/stories/live/:id", async (req, res) => {
             });
             syncLocalStreamToPeers();
             if (oldStream) oldStream.getTracks().forEach(track => track.stop());
+            await startReplayRecorder(localStream);
             hideWait();
             setStatus('');
           }
@@ -2305,10 +2556,7 @@ router.get("/stories/live/:id", async (req, res) => {
               return;
             }
             if (event.target.closest('[data-end]')) {
-              socket.emit('live:end', { storyId });
-              fetch('/stories/live/' + encodeURIComponent(storyId) + '/end', { method:'POST' }).finally(function(){
-                location.href = '/stories/feed';
-              });
+              finishLiveAndOpenEditor();
               return;
             }
             if (event.target.closest('[data-gifts]')) {

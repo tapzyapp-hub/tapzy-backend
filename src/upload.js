@@ -10,7 +10,7 @@ fs.mkdirSync(chunkUploadsDir, { recursive: true });
 
 // One consistent safety limit for stories, messages, and future media uploads.
 // Long videos are supported when their compressed file size fits this limit.
-const VIDEO_UPLOAD_MAX_MB = 50;
+const VIDEO_UPLOAD_MAX_MB = 150;
 const VIDEO_UPLOAD_MAX_BYTES = VIDEO_UPLOAD_MAX_MB * 1024 * 1024;
 
 function safeExtension(originalName = "", mimetype = "") {
