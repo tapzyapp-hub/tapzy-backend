@@ -289,26 +289,30 @@ function storyComposer(currentProfile, upcomingEvents) {
 
   <section class="stories-create-card tapzy-premium-card">
 
-    <div class="stories-create-head">
+    <div class="stories-composer-top">
 
-      <div>
+      <div class="stories-create-head">
 
-        <div class="stories-kicker">Tapzy Stories</div>
+        <div>
 
-        <h2 class="stories-title">Post Story</h2>
+          <div class="stories-kicker">Tapzy Stories</div>
 
-        <div class="stories-subtitle">Share a 24-hour update from your Tapzy profile.</div>
+          <h2 class="stories-title">Post Story</h2>
+
+          <div class="stories-subtitle">Share a 24-hour update from your Tapzy profile.</div>
+
+        </div>
 
       </div>
 
-    </div>
-
-    <div class="stories-composer-profile">
-      <div class="stories-composer-avatar">${avatar}</div>
-      <div>
-        <strong>${escapeHtml(displayName)}</strong>
-        <span>${escapeHtml(username)}</span>
+      <div class="stories-composer-profile">
+        <div class="stories-composer-avatar">${avatar}</div>
+        <div>
+          <strong>${escapeHtml(displayName)}</strong>
+          <span>${escapeHtml(username)}</span>
+        </div>
       </div>
+
     </div>
 
 
@@ -715,6 +719,22 @@ router.get("/stories", async (req, res) => {
 
       }
 
+      .stories-composer-top{
+        position:relative;
+        margin:-4px -2px 0;
+        padding:8px 2px 18px;
+      }
+
+      .stories-composer-top::after{
+        content:"";
+        position:absolute;
+        left:0;
+        right:0;
+        bottom:0;
+        height:1px;
+        background:linear-gradient(90deg,transparent,rgba(120,170,235,.28),transparent);
+      }
+
 
 
       .stories-title{
@@ -734,7 +754,7 @@ router.get("/stories", async (req, res) => {
 
         margin-top:10px;
 
-        max-width:520px;
+        max-width:460px;
 
         color:#aab9d0;
 
@@ -926,17 +946,21 @@ router.get("/stories", async (req, res) => {
       }
 
       .stories-composer-profile{
-        margin-top:18px;
+        margin-top:22px;
         display:flex;
         align-items:center;
         gap:13px;
-        padding:13px 0 16px;
-        border-bottom:1px solid rgba(255,255,255,.08);
+        padding:12px;
+        border-radius:22px;
+        border:1px solid rgba(255,255,255,.07);
+        background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
       }
 
       .stories-composer-avatar{
-        width:48px;
-        height:48px;
+        position:relative;
+        width:50px;
+        height:50px;
         border-radius:50%;
         display:grid;
         place-items:center;
@@ -946,6 +970,16 @@ router.get("/stories", async (req, res) => {
         font-size:20px;
         background:linear-gradient(145deg,#8fb9ff,#5068ba);
         box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 10px 24px rgba(47,118,255,.22);
+      }
+
+      .stories-composer-avatar::after{
+        content:"";
+        position:absolute;
+        inset:-5px;
+        border-radius:inherit;
+        border:1px solid rgba(82,166,255,.38);
+        box-shadow:0 0 18px rgba(47,118,255,.22);
+        pointer-events:none;
       }
 
       .stories-composer-avatar img{
