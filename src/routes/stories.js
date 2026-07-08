@@ -1787,16 +1787,31 @@ router.post("/stories/live/recorded", upload.single("media"), async (req, res) =
     if (!req.file) return res.status(400).json({ ok: false, error: "Missing live recording" });
 
     const title = String(req.body.title || "").trim() || `${currentProfile.name || currentProfile.username || "Tapzy creator"} was live`;
+    const liveStoryId = String(req.body.liveStoryId || "").trim();
     const mediaUrl = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
-    const story = await prisma.story.create({
-      data: {
-        profileId: currentProfile.id,
-        type: "video",
-        mediaUrl,
-        text: title.slice(0, 220),
-        expiresAt: expiresIn24Hours(),
-      },
-    });
+    const existingLiveStory = liveStoryId
+      ? await prisma.story.findFirst({ where: { id: liveStoryId, profileId: currentProfile.id, type: "live" } })
+      : null;
+    const story = existingLiveStory
+      ? await prisma.story.update({
+          where: { id: existingLiveStory.id },
+          data: {
+            type: "video",
+            mediaUrl,
+            text: title.slice(0, 220),
+            expiresAt: expiresIn24Hours(),
+            createdAt: new Date(),
+          },
+        })
+      : await prisma.story.create({
+          data: {
+            profileId: currentProfile.id,
+            type: "video",
+            mediaUrl,
+            text: title.slice(0, 220),
+            expiresAt: expiresIn24Hours(),
+          },
+        });
 
     res.json({ ok: true, storyId: story.id, mediaUrl, feedUrl: "/stories/feed" });
   } catch (error) {
@@ -1816,20 +1831,78 @@ router.post("/stories/live/recorded-url", async (req, res) => {
     }
 
     const title = String(req.body.title || "").trim() || `${currentProfile.name || currentProfile.username || "Tapzy creator"} was live`;
-    const story = await prisma.story.create({
-      data: {
-        profileId: currentProfile.id,
-        type: "video",
-        mediaUrl,
-        text: title.slice(0, 220),
-        expiresAt: expiresIn24Hours(),
-      },
-    });
+    const liveStoryId = String(req.body.liveStoryId || "").trim();
+    const existingLiveStory = liveStoryId
+      ? await prisma.story.findFirst({ where: { id: liveStoryId, profileId: currentProfile.id, type: "live" } })
+      : null;
+    const story = existingLiveStory
+      ? await prisma.story.update({
+          where: { id: existingLiveStory.id },
+          data: {
+            type: "video",
+            mediaUrl,
+            text: title.slice(0, 220),
+            expiresAt: expiresIn24Hours(),
+            createdAt: new Date(),
+          },
+        })
+      : await prisma.story.create({
+          data: {
+            profileId: currentProfile.id,
+            type: "video",
+            mediaUrl,
+            text: title.slice(0, 220),
+            expiresAt: expiresIn24Hours(),
+          },
+        });
 
     res.json({ ok: true, storyId: story.id, mediaUrl, feedUrl: "/stories/feed" });
   } catch (error) {
     console.error("Post recorded live URL error:", error);
     res.status(500).json({ ok: false, error: "Could not post live recording" });
+  }
+});
+
+router.post("/stories/live/now", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+
+    const title = String(req.body.title || "").trim() || `${currentProfile.name || currentProfile.username || "Tapzy creator"} is live`;
+    const story = await prisma.story.create({
+      data: {
+        profileId: currentProfile.id,
+        type: "live",
+        mediaUrl: null,
+        text: title.slice(0, 220),
+        expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
+      },
+    });
+
+    res.json({ ok: true, storyId: story.id, feedUrl: "/stories/feed" });
+  } catch (error) {
+    console.error("Create live-now story error:", error);
+    res.status(500).json({ ok: false, error: "Could not show live on Home" });
+  }
+});
+
+router.post("/stories/live/now/cancel", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+
+    const liveStoryId = String(req.body.liveStoryId || "").trim();
+    if (liveStoryId) {
+      await prisma.story.updateMany({
+        where: { id: liveStoryId, profileId: currentProfile.id, type: "live" },
+        data: { expiresAt: new Date() },
+      });
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Cancel live-now story error:", error);
+    res.status(500).json({ ok: false });
   }
 });
 
@@ -1916,6 +1989,7 @@ router.get("/stories/live/new", async (req, res) => {
           let chunks = [];
           let facingMode = 'user';
           let posting = false;
+          let liveStoryId = '';
 
           function setStatus(text){ status.textContent = text || ''; }
           function mimeType(){
@@ -1984,6 +2058,7 @@ router.get("/stories/live/new", async (req, res) => {
           async function uploadDirect(file){
             const formData = new FormData();
             formData.append('title', (titleInput.value || '').trim());
+            formData.append('liveStoryId', liveStoryId);
             formData.append('media', file, file.name || 'tapzy-live.webm');
             const res = await fetch('/stories/live/recorded', {
               method:'POST',
@@ -1997,8 +2072,21 @@ router.get("/stories/live/new", async (req, res) => {
           async function postRecordedUrl(media){
             return postJson('/stories/live/recorded-url', {
               mediaUrl:media.mediaUrl,
+              liveStoryId:liveStoryId,
               title:(titleInput.value || '').trim(),
             });
+          }
+          async function showLiveOnHome(){
+            if (liveStoryId) return;
+            const data = await postJson('/stories/live/now', {
+              title:(titleInput.value || '').trim() || ${JSON.stringify(`${displayName} is live`)},
+            });
+            liveStoryId = data.storyId || '';
+          }
+          async function cancelLiveOnHome(){
+            if (!liveStoryId) return;
+            await postJson('/stories/live/now/cancel', { liveStoryId:liveStoryId }).catch(function(){});
+            liveStoryId = '';
           }
           function stopRecorder(){
             return new Promise(function(resolve){
@@ -2019,11 +2107,12 @@ router.get("/stories/live/new", async (req, res) => {
               if (event.data && event.data.size) chunks.push(event.data);
             };
             recorder.start(1000);
+            showLiveOnHome().catch(function(error){ console.error(error); });
             root.classList.add('is-recording');
             startBtn.disabled = true;
             stopBtn.disabled = false;
             flipBtn.disabled = true;
-            setStatus('Recording...');
+            setStatus('Recording live. Home now shows you as live.');
           });
           stopBtn.addEventListener('click', async function(){
             if (posting) return;
@@ -2052,7 +2141,7 @@ router.get("/stories/live/new", async (req, res) => {
           });
           cancelBtn.addEventListener('click', function(){
             if (stream) stream.getTracks().forEach(function(track){ track.stop(); });
-            location.href = '/stories/feed';
+            cancelLiveOnHome().finally(function(){ location.href = '/stories/feed'; });
           });
           startCamera().catch(function(error){
             setStatus(error.message || 'Camera failed');
@@ -3093,7 +3182,7 @@ router.get("/stories/feed", async (req, res) => {
       orderBy: [{ createdAt: "desc" }],
       take: 100,
     });
-    stories = stories.filter((story) => !(story.type === "live" && isNativeLiveUrl(story.mediaUrl)));
+    stories = stories.filter((story) => !(story.type === "live" && story.mediaUrl && isNativeLiveUrl(story.mediaUrl)));
 
     const eventStreams = [];
     const fallbackVideos = [];
@@ -3120,7 +3209,7 @@ router.get("/stories/feed", async (req, res) => {
       const username = profile.username || "tapzy";
       const displayName = profile.name || `@${username}`;
       const isVideo = story.mediaUrl && isVideoUrl(story.mediaUrl);
-      const isLive = story.mediaUrl && story.type === "live" && (isLiveStreamUrl(story.mediaUrl) || isNativeLiveUrl(story.mediaUrl));
+      const isLive = story.type === "live" && (!story.mediaUrl || isLiveStreamUrl(story.mediaUrl) || isNativeLiveUrl(story.mediaUrl));
       const isFollowing =
         currentProfile &&
         (currentProfile.id === story.profileId || followingIds.has(story.profileId));
@@ -3128,7 +3217,9 @@ router.get("/stories/feed", async (req, res) => {
       const avatar = profile.photo
         ? `<img src="${escapeHtml(profile.photo)}" alt="" />`
         : `<span>${escapeHtml((displayName[0] || "T").toUpperCase())}</span>`;
-      const media = story.mediaUrl
+      const media = isLive && !story.mediaUrl
+        ? `<div class="sf-text-story sf-live-now-card"><span>LIVE NOW</span></div>`
+        : story.mediaUrl
         ? isLive
           ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
           : isVideo
@@ -3289,6 +3380,7 @@ router.get("/stories/feed", async (req, res) => {
         @keyframes sfStreamNoise{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-28px,24px,0)}}
         .sf-shade{pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.42) 0,transparent 24%,transparent 54%,rgba(0,0,0,.12) 65%,rgba(0,0,0,.9) 100%)}
         .sf-text-story{position:absolute;inset:0;display:grid;place-items:center;padding:52px 44px 180px;background:radial-gradient(circle at 30% 20%,#27376b 0,#14172a 35%,#06070c 78%);font-size:clamp(28px,7vw,48px);font-weight:850;line-height:1.08;text-align:center}
+        .sf-live-now-card{background:radial-gradient(circle at 50% 30%,rgba(255,40,95,.28),transparent 32%),radial-gradient(circle at 40% 70%,rgba(47,118,255,.24),transparent 36%),#05060b;color:#fff;letter-spacing:.02em}
         .sf-top{position:fixed;z-index:20;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(var(--safe-top) + 18px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.54),transparent)}
         .sf-brand{position:absolute;left:16px;top:calc(var(--safe-top) + 16px);display:grid;place-items:center;width:38px;height:38px;border:2px solid rgba(255,255,255,.9);border-radius:12px;color:#fff;text-decoration:none;background:rgba(3,6,12,.24);box-shadow:0 10px 26px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
         .tapzy-mark{display:block;width:72%;height:72%;object-fit:contain}
@@ -3549,7 +3641,7 @@ router.get("/stories/:username", async (req, res) => {
       take: 50,
 
     });
-    stories = stories.filter((story) => !(story.type === "live" && isNativeLiveUrl(story.mediaUrl)));
+    stories = stories.filter((story) => !(story.type === "live" && story.mediaUrl && isNativeLiveUrl(story.mediaUrl)));
 
 
 
