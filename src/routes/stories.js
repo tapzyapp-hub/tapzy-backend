@@ -1780,12 +1780,66 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
 });
 
+router.post("/stories/live/recorded", upload.single("media"), async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+    if (!req.file) return res.status(400).json({ ok: false, error: "Missing live recording" });
+
+    const title = String(req.body.title || "").trim() || `${currentProfile.name || currentProfile.username || "Tapzy creator"} was live`;
+    const mediaUrl = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
+    const story = await prisma.story.create({
+      data: {
+        profileId: currentProfile.id,
+        type: "video",
+        mediaUrl,
+        text: title.slice(0, 220),
+        expiresAt: expiresIn24Hours(),
+      },
+    });
+
+    res.json({ ok: true, storyId: story.id, mediaUrl, feedUrl: "/stories/feed" });
+  } catch (error) {
+    console.error("Post recorded live error:", error);
+    res.status(500).json({ ok: false, error: "Could not post live recording" });
+  }
+});
+
+router.post("/stories/live/recorded-url", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile;
+    if (!currentProfile) return res.status(401).json({ ok: false, error: "Sign in required" });
+
+    const mediaUrl = String(req.body.mediaUrl || "").trim();
+    if (!mediaUrl || !isVideoUrl(mediaUrl)) {
+      return res.status(400).json({ ok: false, error: "Missing playable live recording" });
+    }
+
+    const title = String(req.body.title || "").trim() || `${currentProfile.name || currentProfile.username || "Tapzy creator"} was live`;
+    const story = await prisma.story.create({
+      data: {
+        profileId: currentProfile.id,
+        type: "video",
+        mediaUrl,
+        text: title.slice(0, 220),
+        expiresAt: expiresIn24Hours(),
+      },
+    });
+
+    res.json({ ok: true, storyId: story.id, mediaUrl, feedUrl: "/stories/feed" });
+  } catch (error) {
+    console.error("Post recorded live URL error:", error);
+    res.status(500).json({ ok: false, error: "Could not post live recording" });
+  }
+});
+
 router.get("/stories/live/new", async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
     if (!currentProfile) return res.redirect("/auth");
 
     const displayName = currentProfile.name || currentProfile.username || "Tapzy creator";
+    const defaultTitle = `${displayName} was live`;
     res.send(`<!doctype html>
     <html lang="en">
     <head>
@@ -1797,28 +1851,214 @@ router.get("/stories/live/new", async (req, res) => {
         :root{color-scheme:dark;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         *{box-sizing:border-box}
         html,body{margin:0;width:100%;height:100%;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
-        .tl-start{position:relative;height:100%;display:grid;place-items:center;padding:calc(var(--safe-top) + 24px) 22px calc(var(--safe-bottom) + 24px);background:radial-gradient(circle at 50% 22%,rgba(47,118,255,.32),transparent 34%),linear-gradient(180deg,#080b12,#000)}
-        .tl-card{width:min(440px,100%);padding:26px;border-radius:34px;border:1px solid rgba(255,255,255,.10);background:linear-gradient(180deg,rgba(14,18,28,.92),rgba(2,3,6,.98));box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 48px rgba(47,118,255,.16);text-align:center}
-        .tl-badge{display:inline-flex;margin-bottom:18px;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);font-size:11px;font-weight:950;letter-spacing:.18em;color:#dce8ff}
-        h1{margin:0 0 10px;font-size:44px;line-height:.98;letter-spacing:-.06em}
-        p{margin:0 auto 22px;max-width:310px;color:rgba(226,236,255,.72);font-size:16px;line-height:1.4}
-        input{width:100%;min-height:54px;margin:0 0 14px;padding:0 16px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:#05070c;color:#fff;font:inherit;font-weight:750;outline:none}
-        button,a{font:inherit}
-        .tl-primary{width:100%;min-height:54px;border:0;border-radius:18px;background:linear-gradient(135deg,#31d6ff,#2d6bff 48%,#123fbd);color:#fff;font-weight:950;font-size:17px;box-shadow:0 0 34px rgba(47,118,255,.38);cursor:pointer}
-        .tl-secondary{display:inline-flex;margin-top:14px;color:rgba(255,255,255,.70);text-decoration:none;font-weight:800}
+        .tl-recorder{position:relative;height:100%;display:grid;grid-template-rows:1fr auto;background:#000;overflow:hidden}
+        video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05070c}
+        .tl-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),transparent 24%,rgba(0,0,0,.80))}
+        .tl-top{position:absolute;top:calc(var(--safe-top) + 20px);left:22px;right:22px;display:flex;align-items:center;justify-content:space-between;z-index:2}
+        .tl-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;background:rgba(15,18,26,.68);border:1px solid rgba(255,255,255,.12);font-size:12px;font-weight:950;letter-spacing:.18em}
+        .tl-dot{width:9px;height:9px;border-radius:999px;background:#ff285f;box-shadow:0 0 18px rgba(255,40,95,.75)}
+        .tl-close{width:54px;height:54px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.38);color:#fff;text-decoration:none;display:grid;place-items:center;font-size:30px;font-weight:300}
+        .tl-copy{position:absolute;left:22px;right:22px;bottom:calc(var(--safe-bottom) + 176px);z-index:2}
+        h1{margin:0 0 8px;font-size:42px;line-height:.98;letter-spacing:-.05em}
+        p{margin:0;color:rgba(255,255,255,.75);font-size:16px;line-height:1.35}
+        .tl-controls{position:absolute;left:18px;right:18px;bottom:calc(var(--safe-bottom) + 18px);z-index:2;display:grid;gap:12px}
+        input{width:100%;min-height:52px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.56);color:#fff;font:inherit;font-weight:800;outline:none}
+        .tl-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        button{min-height:56px;border:0;border-radius:999px;font:inherit;font-weight:950;font-size:17px;cursor:pointer}
+        button:disabled{opacity:.45;cursor:not-allowed}
+        .tl-primary{background:linear-gradient(135deg,#31d6ff,#2d6bff 52%,#123fbd);color:#fff;box-shadow:0 0 34px rgba(47,118,255,.38)}
+        .tl-danger{background:linear-gradient(135deg,#ff5f7e,#e90044);color:#fff;box-shadow:0 0 28px rgba(255,30,82,.25)}
+        .tl-ghost{background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.12)}
+        .tl-status{min-height:22px;text-align:center;color:#c9d7f2;font-size:13px;font-weight:800}
+        .is-recording .tl-dot{animation:pulse 1s infinite}
+        @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.72}}
       </style>
     </head>
     <body>
-      <main class="tl-start">
-        <form class="tl-card" method="POST" action="/stories/live/start">
-          <div class="tl-badge">TAPZY LIVE</div>
+      <main class="tl-recorder" id="recorder">
+        <video id="preview" autoplay muted playsinline webkit-playsinline></video>
+        <div class="tl-shade"></div>
+        <div class="tl-top">
+          <div class="tl-badge"><span class="tl-dot"></span>LIVE REC</div>
+          <a class="tl-close" href="/stories/feed" aria-label="Close">×</a>
+        </div>
+        <section class="tl-copy">
           <h1>Go Live</h1>
-          <p>Start a real WebRTC live story from your camera. Anyone can join from the story feed.</p>
-          <input name="title" maxlength="120" placeholder="${escapeHtml(displayName)} is live" autocomplete="off" />
-          <button class="tl-primary" type="submit">Start Live</button>
-          <a class="tl-secondary" href="/stories">Back</a>
-        </form>
+          <p>Record in the app. When you end it, Tapzy posts the video story for 24 hours.</p>
+        </section>
+        <section class="tl-controls">
+          <input id="title" maxlength="120" value="${escapeHtml(defaultTitle)}" autocomplete="off" />
+          <div class="tl-buttons">
+            <button class="tl-primary" id="startBtn" type="button">Start</button>
+            <button class="tl-danger" id="stopBtn" type="button" disabled>End & Post</button>
+          </div>
+          <div class="tl-buttons">
+            <button class="tl-ghost" id="flipBtn" type="button">Flip</button>
+            <button class="tl-ghost" id="cancelBtn" type="button">Cancel</button>
+          </div>
+          <div class="tl-status" id="status">Starting camera...</div>
+        </section>
       </main>
+      <script>
+        (function(){
+          const root = document.getElementById('recorder');
+          const preview = document.getElementById('preview');
+          const startBtn = document.getElementById('startBtn');
+          const stopBtn = document.getElementById('stopBtn');
+          const flipBtn = document.getElementById('flipBtn');
+          const cancelBtn = document.getElementById('cancelBtn');
+          const titleInput = document.getElementById('title');
+          const status = document.getElementById('status');
+          const CHUNK_SIZE = 8 * 1024 * 1024;
+          const DIRECT_LIMIT = 110 * 1024 * 1024;
+          let stream = null;
+          let recorder = null;
+          let chunks = [];
+          let facingMode = 'user';
+          let posting = false;
+
+          function setStatus(text){ status.textContent = text || ''; }
+          function mimeType(){
+            if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
+            return ['video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(function(type){
+              return MediaRecorder.isTypeSupported(type);
+            }) || '';
+          }
+          function inferType(file){ return file.type || 'video/webm'; }
+          async function postJson(url, body){
+            const res = await fetch(url, {
+              method:'POST',
+              headers:{ 'Accept':'application/json', 'Content-Type':'application/json' },
+              body:JSON.stringify(body || {}),
+            });
+            const data = await res.json().catch(function(){ return {}; });
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Request failed');
+            return data;
+          }
+          async function startCamera(){
+            if (stream) stream.getTracks().forEach(function(track){ track.stop(); });
+            stream = await navigator.mediaDevices.getUserMedia({
+              video:{ facingMode:facingMode, width:{ ideal:720 }, height:{ ideal:1280 } },
+              audio:true,
+            });
+            preview.srcObject = stream;
+            await preview.play().catch(function(){});
+            setStatus('Ready');
+          }
+          async function uploadChunkWithRetry(uploadId, index, blob){
+            let lastError = null;
+            for (let attempt = 0; attempt < 3; attempt += 1) {
+              try {
+                const formData = new FormData();
+                formData.append('chunk', blob, String(index) + '.part');
+                const res = await fetch('/media/chunk/' + encodeURIComponent(uploadId) + '/' + index, {
+                  method:'POST',
+                  body:formData,
+                });
+                const data = await res.json().catch(function(){ return {}; });
+                if (!res.ok || !data.ok) throw new Error(data.error || 'Chunk failed');
+                return data;
+              } catch (error) {
+                lastError = error;
+                await new Promise(function(resolve){ setTimeout(resolve, 500 * (attempt + 1)); });
+              }
+            }
+            throw lastError || new Error('Chunk failed');
+          }
+          async function uploadChunked(file){
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            const session = await postJson('/media/chunk/start', {
+              originalName:file.name || 'tapzy-live.webm',
+              type:inferType(file),
+              size:file.size,
+              totalChunks:totalChunks,
+            });
+            for (let index = 0; index < totalChunks; index += 1) {
+              const start = index * CHUNK_SIZE;
+              const chunk = file.slice(start, Math.min(file.size, start + CHUNK_SIZE));
+              await uploadChunkWithRetry(session.uploadId, index, chunk);
+              setStatus('Uploading ' + Math.round(((index + 1) / totalChunks) * 100) + '%');
+            }
+            return postJson('/media/chunk/' + encodeURIComponent(session.uploadId) + '/complete', {});
+          }
+          async function uploadDirect(file){
+            const formData = new FormData();
+            formData.append('title', (titleInput.value || '').trim());
+            formData.append('media', file, file.name || 'tapzy-live.webm');
+            const res = await fetch('/stories/live/recorded', {
+              method:'POST',
+              headers:{ 'Accept':'application/json' },
+              body:formData,
+            });
+            const data = await res.json().catch(function(){ return {}; });
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Upload failed');
+            return data;
+          }
+          async function postRecordedUrl(media){
+            return postJson('/stories/live/recorded-url', {
+              mediaUrl:media.mediaUrl,
+              title:(titleInput.value || '').trim(),
+            });
+          }
+          function stopRecorder(){
+            return new Promise(function(resolve){
+              if (!recorder || recorder.state === 'inactive') return resolve();
+              recorder.addEventListener('stop', resolve, { once:true });
+              recorder.stop();
+            });
+          }
+          startBtn.addEventListener('click', function(){
+            if (!stream || !window.MediaRecorder) {
+              setStatus('Recording is not supported on this browser.');
+              return;
+            }
+            chunks = [];
+            const type = mimeType();
+            recorder = new MediaRecorder(stream, type ? { mimeType:type } : undefined);
+            recorder.ondataavailable = function(event){
+              if (event.data && event.data.size) chunks.push(event.data);
+            };
+            recorder.start(1000);
+            root.classList.add('is-recording');
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            flipBtn.disabled = true;
+            setStatus('Recording...');
+          });
+          stopBtn.addEventListener('click', async function(){
+            if (posting) return;
+            posting = true;
+            stopBtn.disabled = true;
+            setStatus('Preparing recording...');
+            try {
+              await stopRecorder();
+              const type = (recorder && recorder.mimeType) || mimeType() || 'video/webm';
+              const ext = type.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
+              const file = new File(chunks, 'tapzy-live.' + ext, { type:type.split(';')[0] || 'video/webm' });
+              if (!file.size) throw new Error('Recording is empty');
+              setStatus('Uploading...');
+              const posted = file.size <= DIRECT_LIMIT ? await uploadDirect(file) : await postRecordedUrl(await uploadChunked(file));
+              location.href = posted.feedUrl || '/stories/feed';
+            } catch (error) {
+              console.error(error);
+              posting = false;
+              stopBtn.disabled = false;
+              setStatus(error.message || 'Could not post recording');
+            }
+          });
+          flipBtn.addEventListener('click', async function(){
+            facingMode = facingMode === 'user' ? 'environment' : 'user';
+            await startCamera().catch(function(error){ setStatus(error.message || 'Camera failed'); });
+          });
+          cancelBtn.addEventListener('click', function(){
+            if (stream) stream.getTracks().forEach(function(track){ track.stop(); });
+            location.href = '/stories/feed';
+          });
+          startCamera().catch(function(error){
+            setStatus(error.message || 'Camera failed');
+          });
+        })();
+      </script>
     </body>
     </html>`);
   } catch (error) {
@@ -1828,31 +2068,7 @@ router.get("/stories/live/new", async (req, res) => {
 });
 
 router.post("/stories/live/start", async (req, res) => {
-  try {
-    const currentProfile = req.currentProfile;
-    if (!currentProfile) return res.redirect("/auth");
-
-    const title = String(req.body.title || "").trim() || `${currentProfile.name || currentProfile.username || "Tapzy creator"} is live`;
-    const story = await prisma.story.create({
-      data: {
-        profileId: currentProfile.id,
-        type: "live",
-        mediaUrl: "",
-        text: title.slice(0, 120),
-        expiresAt: expiresIn24Hours(),
-      },
-    });
-
-    await prisma.story.update({
-      where: { id: story.id },
-      data: { mediaUrl: `/stories/live/${story.id}` },
-    });
-
-    res.redirect(`/stories/live/${story.id}?host=1`);
-  } catch (error) {
-    console.error("Start live error:", error);
-    res.status(500).send("Start live error");
-  }
+  res.redirect("/stories/live/new");
 });
 
 router.post("/stories/live/:id/record/start", async (req, res) => {
@@ -2864,7 +3080,7 @@ router.get("/stories/feed", async (req, res) => {
       following.forEach((row) => followingIds.add(row.followingProfileId));
     }
 
-    const stories = await prisma.story.findMany({
+    let stories = await prisma.story.findMany({
       where: { expiresAt: { gt: now } },
       include: {
         profile: true,
@@ -2877,6 +3093,7 @@ router.get("/stories/feed", async (req, res) => {
       orderBy: [{ createdAt: "desc" }],
       take: 100,
     });
+    stories = stories.filter((story) => !(story.type === "live" && isNativeLiveUrl(story.mediaUrl)));
 
     const eventStreams = [];
     const fallbackVideos = [];
@@ -3297,7 +3514,7 @@ router.get("/stories/:username", async (req, res) => {
 
 
 
-    const stories = await prisma.story.findMany({
+    let stories = await prisma.story.findMany({
 
       where: {
 
@@ -3332,6 +3549,7 @@ router.get("/stories/:username", async (req, res) => {
       take: 50,
 
     });
+    stories = stories.filter((story) => !(story.type === "live" && isNativeLiveUrl(story.mediaUrl)));
 
 
 
