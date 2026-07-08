@@ -279,6 +279,12 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
 
+  const displayName = currentProfile.name || currentProfile.username || "Tapzy";
+  const username = currentProfile.username ? `@${currentProfile.username}` : "Your story";
+  const avatar = currentProfile.photo
+    ? `<img src="${escapeHtml(currentProfile.photo)}" alt="${escapeHtml(displayName)}" />`
+    : `<span>${escapeHtml((displayName[0] || "T").toUpperCase())}</span>`;
+
   return `
 
   <section class="stories-create-card tapzy-premium-card">
@@ -289,12 +295,20 @@ function storyComposer(currentProfile, upcomingEvents) {
 
         <div class="stories-kicker">Tapzy Stories</div>
 
-        <h2 class="stories-title">Create a story</h2>
+        <h2 class="stories-title">Post Story</h2>
 
-        <div class="stories-subtitle">Post quick updates, event plans, or live moments. Stories expire after 24 hours.</div>
+        <div class="stories-subtitle">Share a 24-hour update from your Tapzy profile.</div>
 
       </div>
 
+    </div>
+
+    <div class="stories-composer-profile">
+      <div class="stories-composer-avatar">${avatar}</div>
+      <div>
+        <strong>${escapeHtml(displayName)}</strong>
+        <span>${escapeHtml(username)}</span>
+      </div>
     </div>
 
 
@@ -662,19 +676,19 @@ router.get("/stories", async (req, res) => {
 
         overflow:hidden;
 
-        border-radius:32px;
+        border-radius:26px;
 
-        border:1px solid rgba(255,255,255,.08);
+        border:1px solid rgba(110,150,205,.18);
 
         background:
 
-          radial-gradient(700px 260px at 50% -5%, rgba(127,210,255,.08), transparent 48%),
+          radial-gradient(520px 220px at 78% 0%, rgba(47,118,255,.14), transparent 55%),
 
-          linear-gradient(180deg, rgba(10,12,18,.98), rgba(6,6,8,1));
+          linear-gradient(180deg, rgba(8,12,20,.98), rgba(2,4,8,.98));
 
-        box-shadow:0 24px 70px rgba(0,0,0,.40);
+        box-shadow:0 20px 52px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.04);
 
-        padding:24px;
+        padding:22px;
 
       }
 
@@ -690,13 +704,14 @@ router.get("/stories", async (req, res) => {
 
       .stories-kicker{
 
-        color:#95a5bf;
+        color:#8aa5cf;
 
         text-transform:uppercase;
 
-        letter-spacing:4px;
+        letter-spacing:2.5px;
 
-        font-size:12px;
+        font-size:11px;
+        font-weight:900;
 
       }
 
@@ -706,9 +721,10 @@ router.get("/stories", async (req, res) => {
 
         margin:10px 0 0 0;
 
-        font-size:42px;
+        font-size:34px;
 
         line-height:1;
+        letter-spacing:-.035em;
 
       }
 
@@ -718,11 +734,11 @@ router.get("/stories", async (req, res) => {
 
         margin-top:10px;
 
-        max-width:680px;
+        max-width:520px;
 
-        color:#bcc8d8;
+        color:#aab9d0;
 
-        line-height:1.7;
+        line-height:1.45;
 
         font-size:15px;
 
@@ -750,7 +766,7 @@ router.get("/stories", async (req, res) => {
 
       .stories-create-form{
 
-        margin-top:18px;
+        margin-top:16px;
 
       }
 
@@ -762,7 +778,11 @@ router.get("/stories", async (req, res) => {
 
         grid-template-columns:1fr 1fr;
 
-        gap:14px;
+        gap:0;
+        border-radius:22px;
+        border:1px solid rgba(255,255,255,.075);
+        background:rgba(0,0,0,.18);
+        overflow:hidden;
 
       }
 
@@ -775,6 +795,8 @@ router.get("/stories", async (req, res) => {
         flex-direction:column;
 
         gap:8px;
+        padding:16px;
+        border-bottom:1px solid rgba(255,255,255,.07);
 
       }
 
@@ -792,9 +814,10 @@ router.get("/stories", async (req, res) => {
 
         color:#fff;
 
-        font-size:14px;
+        font-size:13px;
 
-        font-weight:800;
+        font-weight:900;
+        color:#dce8ff;
 
       }
 
@@ -810,11 +833,11 @@ router.get("/stories", async (req, res) => {
 
         min-height:52px;
 
-        border-radius:18px;
+        border-radius:16px;
 
-        border:1px solid rgba(255,255,255,.08);
+        border:1px solid rgba(255,255,255,.075);
 
-        background:linear-gradient(180deg, rgba(12,15,21,.98), rgba(4,6,10,1));
+        background:rgba(5,8,14,.86);
 
         color:#fff;
 
@@ -840,7 +863,7 @@ router.get("/stories", async (req, res) => {
 
       .stories-create-actions{
 
-        margin-top:16px;
+        margin-top:14px;
         display:flex;
         align-items:center;
         gap:10px;
@@ -862,7 +885,7 @@ router.get("/stories", async (req, res) => {
 
         padding:0 18px;
 
-        border-radius:16px;
+        border-radius:999px;
 
         text-decoration:none;
 
@@ -900,6 +923,50 @@ router.get("/stories", async (req, res) => {
           radial-gradient(circle at 20% 0%, rgba(255,255,255,.22), transparent 42%),
           linear-gradient(135deg, #31d6ff, #2d6bff 48%, #123fbd);
         box-shadow:0 0 24px rgba(47,118,255,.30);
+      }
+
+      .stories-composer-profile{
+        margin-top:18px;
+        display:flex;
+        align-items:center;
+        gap:13px;
+        padding:13px 0 16px;
+        border-bottom:1px solid rgba(255,255,255,.08);
+      }
+
+      .stories-composer-avatar{
+        width:48px;
+        height:48px;
+        border-radius:50%;
+        display:grid;
+        place-items:center;
+        overflow:hidden;
+        color:#fff;
+        font-weight:950;
+        font-size:20px;
+        background:linear-gradient(145deg,#8fb9ff,#5068ba);
+        box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 10px 24px rgba(47,118,255,.22);
+      }
+
+      .stories-composer-avatar img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+      }
+
+      .stories-composer-profile strong{
+        display:block;
+        color:#fff;
+        font-size:17px;
+        line-height:1.1;
+      }
+
+      .stories-composer-profile span{
+        display:block;
+        margin-top:4px;
+        color:#94a4bb;
+        font-size:13px;
+        font-weight:750;
       }
 
 
@@ -1284,20 +1351,18 @@ router.get("/stories", async (req, res) => {
       }
 
       .stories-upload-drop{
-        min-height:160px;
-        border-radius:22px;
-        border:1px dashed rgba(160,190,230,.22);
-        background:
-          radial-gradient(circle at 50% 0%, rgba(125,214,255,.10), transparent 60%),
-          linear-gradient(180deg, rgba(12,15,21,.98), rgba(4,6,10,1));
-        display:flex;
-        flex-direction:column;
+        min-height:88px;
+        border-radius:18px;
+        border:1px solid rgba(160,190,230,.16);
+        background:rgba(5,8,14,.78);
+        display:grid;
+        grid-template-columns:44px minmax(0,1fr);
         align-items:center;
-        justify-content:center;
-        gap:8px;
+        justify-content:start;
+        column-gap:12px;
         cursor:pointer;
-        text-align:center;
-        padding:18px;
+        text-align:left;
+        padding:14px;
         transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
       }
 
@@ -1312,22 +1377,23 @@ router.get("/stories", async (req, res) => {
       }
 
       .stories-upload-icon{
-        width:54px;
-        height:54px;
-        border-radius:18px;
+        width:44px;
+        height:44px;
+        border-radius:50%;
         display:flex;
         align-items:center;
         justify-content:center;
-        font-size:28px;
+        font-size:24px;
         color:#fff;
         background:linear-gradient(180deg, rgba(42,94,210,.94), rgba(18,43,98,.98));
-        box-shadow:0 14px 35px rgba(36,100,255,.22);
+        box-shadow:0 10px 24px rgba(36,100,255,.22);
       }
 
       .stories-upload-title{
         color:#fff;
         font-weight:900;
         font-size:15px;
+        align-self:end;
       }
 
       .stories-upload-subtitle,
@@ -1335,15 +1401,17 @@ router.get("/stories", async (req, res) => {
         color:#96a5bd;
         font-size:12px;
         font-weight:700;
+        grid-column:2;
+        align-self:start;
       }
 
       .stories-preview-card{
-        min-height:220px;
-        border-radius:24px;
-        border:1px solid rgba(255,255,255,.08);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015)),
-          #070a10;
+        min-height:190px;
+        border-radius:0;
+        border:0;
+        border-left:1px solid rgba(255,255,255,.07);
+        border-bottom:1px solid rgba(255,255,255,.07);
+        background:#05070c;
         overflow:hidden;
         display:flex;
         align-items:center;
