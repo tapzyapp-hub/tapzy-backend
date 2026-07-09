@@ -3556,16 +3556,16 @@ router.get("/stories/feed", async (req, res) => {
 
         <aside class="sf-actions" aria-label="Story actions">
           <a class="sf-avatar" href="/u/${escapeHtml(username)}">${avatar}</a>
-          <form method="POST" action="/stories/${escapeHtml(story.id)}/like" class="sf-action-form">
+          <form method="POST" action="/stories/${escapeHtml(story.id)}/like" class="sf-action-form" data-feed-like>
             <button class="sf-action ${liked ? "is-active" : ""}" type="submit" aria-label="${liked ? "Unlike" : "Like"} story">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.7-9C.7 8.8 2.2 5 6 4.4c2.2-.3 4.1.8 5 2.2.9-1.4 2.8-2.5 5-2.2 3.8.6 5.3 4.4 3.7 7.6C17.5 16.4 12 21 12 21Z"/></svg>
-              <span>${compactFeedCount(story._count.likes)}</span>
+              <span data-like-count>${compactFeedCount(story._count.likes)}</span>
             </button>
           </form>
-          <a class="sf-action" href="/stories/${escapeHtml(username)}#reply" aria-label="Reply to story">
+          <button class="sf-action" type="button" data-reply-story="${escapeHtml(story.id)}" data-reply-username="${escapeHtml(username)}" aria-label="Reply to story">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-6a3 3 0 0 1-1-2V7a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3v8Z"/></svg>
-            <span>${compactFeedCount(story._count.replies)}</span>
-          </a>
+            <span data-reply-count>${compactFeedCount(story._count.replies)}</span>
+          </button>
           ${currentProfile && currentProfile.id === story.profileId ? `
           <form method="POST" action="/stories/${escapeHtml(story.id)}/delete" class="sf-action-form" onsubmit="return confirm('Remove this story?');">
             <button class="sf-action sf-remove" type="submit" aria-label="Remove story">
@@ -3577,7 +3577,7 @@ router.get("/stories/feed", async (req, res) => {
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>
             <span>Save</span>
           </button>
-          <button class="sf-action" type="button" data-share="/stories/${escapeHtml(username)}" aria-label="Share story">
+          <button class="sf-action" type="button" data-share="/stories/feed?story=${escapeHtml(story.id)}" aria-label="Share story">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 16-8-6 16-3-6-7-2Zm7 2 9-10"/></svg>
             <span>Share</span>
           </button>
@@ -3905,6 +3905,38 @@ router.get("/stories/feed", async (req, res) => {
               save.querySelector('span').textContent = next ? 'Saved' : 'Save';
               return;
             }
+            var reply = event.target.closest('[data-reply-story]');
+            if (reply) {
+              event.preventDefault();
+              var body = window.prompt('Reply to story...');
+              body = body ? body.trim() : '';
+              if (!body) return;
+              var username = reply.getAttribute('data-reply-username') || '';
+              var storyId = reply.getAttribute('data-reply-story') || '';
+              var params = new URLSearchParams();
+              params.set('body', body);
+              params.set('storyId', storyId);
+              fetch('/stories/' + encodeURIComponent(username) + '/reply', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: params.toString(),
+                credentials: 'same-origin'
+              }).then(function(res){
+                if (res.status === 401 || res.redirected) {
+                  location.href = '/auth';
+                  return null;
+                }
+                return res.ok ? res.json().catch(function(){ return null; }) : null;
+              }).then(function(data){
+                if (!data || !data.ok) return;
+                var count = reply.querySelector('[data-reply-count]');
+                if (count && typeof data.count !== 'undefined') count.textContent = String(data.count);
+              }).catch(function(){});
+              return;
+            }
             var share = event.target.closest('[data-share]');
             if (share) {
               var shareTarget = share.getAttribute('data-share') || '';
@@ -3921,6 +3953,34 @@ router.get("/stories/feed", async (req, res) => {
               location.href = '${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}';
             }
             wakeActionRails();
+          });
+
+          document.addEventListener('submit', function(event){
+            var likeForm = event.target.closest('[data-feed-like]');
+            if (!likeForm) return;
+            event.preventDefault();
+            var button = likeForm.querySelector('button');
+            if (button) button.disabled = true;
+            fetch(likeForm.action, {
+              method: 'POST',
+              headers: { 'Accept': 'application/json' },
+              credentials: 'same-origin'
+            }).then(function(res){
+              if (res.status === 401 || res.redirected) {
+                location.href = '/auth';
+                return null;
+              }
+              return res.ok ? res.json().catch(function(){ return null; }) : null;
+            }).then(function(data){
+              if (!data || !data.ok || !button) return;
+              button.classList.toggle('is-active', !!data.liked);
+              button.setAttribute('aria-label', data.liked ? 'Unlike story' : 'Like story');
+              var count = button.querySelector('[data-like-count]');
+              if (count && typeof data.count !== 'undefined') count.textContent = String(data.count);
+            }).catch(function(){}).finally(function(){
+              if (button) button.disabled = false;
+              wakeActionRails();
+            });
           });
 
           document.querySelectorAll('[data-save]').forEach(function(save){
@@ -5344,7 +5404,7 @@ router.post("/stories/:id/delete", async (req, res) => {
 
 
 
-    if (!story) return res.redirect(backUrl(req, "/stories"));
+    if (!story) return res.redirect(backUrl(req, "/stories/feed"));
 
     if (story.profileId !== currentProfile.id) {
 
@@ -5362,7 +5422,7 @@ router.post("/stories/:id/delete", async (req, res) => {
 
 
 
-    res.redirect(backUrl(req, "/stories"));
+    res.redirect(backUrl(req, "/stories/feed"));
 
   } catch (e) {
 
@@ -5389,10 +5449,14 @@ router.post("/stories/:username/reply", async (req, res) => {
     const username = String(req.params.username || "").trim().toLowerCase();
 
     const body = String(req.body.body || "").trim();
+    const wantsJson = String(req.get("accept") || "").includes("application/json");
 
 
 
-    if (!body) return res.redirect(backUrl(req, `/stories/${username}`));
+    if (!body) {
+      if (wantsJson) return res.status(400).json({ ok: false, error: "Reply is required" });
+      return res.redirect(backUrl(req, "/stories/feed"));
+    }
 
 
 
@@ -5404,27 +5468,43 @@ router.post("/stories/:username/reply", async (req, res) => {
 
 
 
-    if (!profile) return res.status(404).send("Profile not found");
+    if (!profile) {
+      if (wantsJson) return res.status(404).json({ ok: false, error: "Profile not found" });
+      return res.status(404).send("Profile not found");
+    }
 
 
 
-    const story = await prisma.story.findFirst({
+    const requestedStoryId = String(req.body.storyId || "").trim();
 
-      where: {
+    const story = requestedStoryId
+      ? await prisma.story.findFirst({
+          where: {
+            id: requestedStoryId,
+            profileId: profile.id,
+            expiresAt: { gt: new Date() },
+          },
+        })
+      : await prisma.story.findFirst({
 
-        profileId: profile.id,
+          where: {
 
-        expiresAt: { gt: new Date() },
+            profileId: profile.id,
 
-      },
+            expiresAt: { gt: new Date() },
 
-      orderBy: { createdAt: "desc" },
+          },
 
-    });
+          orderBy: { createdAt: "desc" },
+
+        });
 
 
 
-    if (!story) return res.redirect(backUrl(req, `/stories/${username}`));
+    if (!story) {
+      if (wantsJson) return res.status(404).json({ ok: false, error: "Story not found" });
+      return res.redirect(backUrl(req, "/stories/feed"));
+    }
 
 
 
@@ -5448,7 +5528,7 @@ router.post("/stories/:username/reply", async (req, res) => {
       type: "story_reply",
       title: `${currentProfile.name || currentProfile.username || "Someone"} replied to your story`,
       body,
-      link: `/stories/${username}`,
+      link: "/stories/feed",
       entityType: "story",
       entityId: story.id,
       image: String(currentProfile.photo || "").trim() || null,
@@ -5457,7 +5537,12 @@ router.post("/stories/:username/reply", async (req, res) => {
 
 
 
-    res.redirect(backUrl(req, `/stories/${username}`));
+    if (wantsJson) {
+      const count = await prisma.storyReply.count({ where: { storyId: story.id } });
+      return res.json({ ok: true, count });
+    }
+
+    res.redirect(backUrl(req, "/stories/feed"));
 
   } catch (e) {
 
@@ -5474,7 +5559,11 @@ router.post("/stories/:username/reply", async (req, res) => {
 router.post("/stories/:id/like", async (req, res) => {
   try {
     const currentProfile = req.currentProfile;
-    if (!currentProfile) return res.redirect("/auth");
+    const wantsJson = String(req.get("accept") || "").includes("application/json");
+    if (!currentProfile) {
+      if (wantsJson) return res.status(401).json({ ok: false, error: "Auth required" });
+      return res.redirect("/auth");
+    }
 
     const storyId = String(req.params.id || "").trim();
     const story = await prisma.story.findUnique({
@@ -5489,7 +5578,10 @@ router.post("/stories/:id/like", async (req, res) => {
       },
     });
 
-    if (!story) return res.status(404).send("Story not found");
+    if (!story) {
+      if (wantsJson) return res.status(404).json({ ok: false, error: "Story not found" });
+      return res.status(404).send("Story not found");
+    }
 
     const existing = await prisma.storyLike.findFirst({
       where: { storyId, profileId: currentProfile.id },
@@ -5512,7 +5604,7 @@ router.post("/stories/:id/like", async (req, res) => {
         type: "story_like",
         title: `${currentProfile.name || currentProfile.username || "Someone"} liked your story`,
         body: story.text ? String(story.text).trim().slice(0, 120) : "",
-        link: story.profile?.username ? `/stories/${story.profile.username}` : "/stories",
+        link: "/stories/feed",
         entityType: "story",
         entityId: story.id,
         image: String(currentProfile.photo || "").trim() || null,
@@ -5520,8 +5612,12 @@ router.post("/stories/:id/like", async (req, res) => {
       });
     }
 
-    const fallback = story.profile?.username ? `/stories/${story.profile.username}` : "/stories";
-    return res.redirect(backUrl(req, fallback));
+    if (wantsJson) {
+      const count = await prisma.storyLike.count({ where: { storyId } });
+      return res.json({ ok: true, liked: !existing, count });
+    }
+
+    return res.redirect(backUrl(req, "/stories/feed"));
   } catch (e) {
     console.error(e);
     return res.status(500).send("Story like error");
