@@ -329,7 +329,13 @@ router.get("/u/:username", async (req, res) => {
     const showFollowButton = !!(currentProfile && currentProfile.id !== profile.id);
 
     const featuredStory = activeStories[0] || null;
-    const profileStoryHref = featuredStory ? `/stories/${escapeHtml(profile.username || "")}` : "/stories";
+    const profileStoryFeedItems = activeStories.map((story) => ({
+      mediaUrl: story.mediaUrl || "",
+      isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
+      text: story.text || profile.name || profile.username || "Tapzy Story",
+      time: formatStoryTimeShort(story.createdAt),
+    }));
+    const profileStoryFeedJson = JSON.stringify(profileStoryFeedItems).replace(/</g, "\\u003c");
     const quickShareRailLinks = [
       profile.phone ? `<a class="profile-story-rail-btn" href="tel:${escapeHtml(profile.phone)}"><span>Phone</span></a>` : "",
       profile.email ? `<a class="profile-story-rail-btn" href="mailto:${escapeHtml(profile.email)}"><span>Email</span></a>` : "",
@@ -555,19 +561,11 @@ router.get("/u/:username", async (req, res) => {
 
           ? `
 
-            <section class="profile-story-stage-panel" aria-label="Profile story viewer">
+            <section class="profile-story-stage-panel" aria-label="Profile story feed">
 
-              <div class="profile-story-stage">
+              <div class="profile-story-stage" data-profile-story-stage>
 
-                <div class="profile-story-stage-progress" aria-hidden="true">
-
-                  ${
-                    activeStories.length
-                      ? activeStories.slice(0, 5).map((story, index) => `<span class="${index === 0 ? "is-active" : ""}"></span>`).join("")
-                      : `<span class="is-active"></span>`
-                  }
-
-                </div>
+                <script type="application/json" data-profile-story-items>${profileStoryFeedJson}</script>
 
                 <div class="profile-story-stage-top">
 
@@ -579,15 +577,15 @@ router.get("/u/:username", async (req, res) => {
 
                   </div>
 
-                  <a class="profile-story-stage-action" href="${profileStoryHref}">${featuredStory ? "Open" : "Create"}</a>
+                  <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${featuredStory ? "" : "hidden"}>Sound</button>
 
                 </div>
 
-                <a class="profile-story-stage-media-link" href="${profileStoryHref}" aria-label="${featuredStory ? "Open profile stories" : "Create a story"}">
+                <div class="profile-story-stage-media-link" data-profile-story-frame aria-label="Profile story feed">
 
                   ${storyStageMedia(profile, featuredStory)}
 
-                </a>
+                </div>
 
                 <div class="profile-story-stage-caption">
 
@@ -595,7 +593,7 @@ router.get("/u/:username", async (req, res) => {
 
                     <strong>${escapeHtml(displayName)}</strong>
 
-                    <span>${featuredStory ? `${escapeHtml(formatStoryTimeShort(featuredStory.createdAt))} · Tapzy Story` : "No active story right now"}</span>
+                    <span data-profile-story-meta>${featuredStory ? `${escapeHtml(formatStoryTimeShort(featuredStory.createdAt))} · Tapzy Story` : "No active story right now"}</span>
 
                   </div>
 
@@ -2162,42 +2160,6 @@ router.get("/u/:username", async (req, res) => {
         z-index:2;
       }
 
-      .profile-story-stage-progress{
-        position:absolute;
-        left:24px;
-        right:24px;
-        top:22px;
-        z-index:5;
-        display:grid;
-        grid-template-columns:repeat(auto-fit, minmax(28px, 1fr));
-        gap:10px;
-      }
-
-      .profile-story-stage-progress span{
-        display:block;
-        height:5px;
-        border-radius:999px;
-        background:rgba(255,255,255,.20);
-        overflow:hidden;
-      }
-
-      .profile-story-stage-progress span::before{
-        content:"";
-        display:block;
-        width:100%;
-        height:100%;
-        transform:scaleX(.34);
-        transform-origin:left center;
-        border-radius:999px;
-        background:linear-gradient(90deg, #65d7ff, #eef8ff);
-        opacity:.46;
-      }
-
-      .profile-story-stage-progress span.is-active::before{
-        transform:scaleX(.72);
-        opacity:1;
-      }
-
       .profile-story-stage-top{
         position:absolute;
         left:24px;
@@ -2237,7 +2199,7 @@ router.get("/u/:username", async (req, res) => {
         box-shadow:0 0 18px rgba(101,215,255,.72);
       }
 
-      .profile-story-stage-action{
+      .profile-story-stage-sound{
         min-height:48px;
         padding:0 18px;
         display:inline-flex;
@@ -2245,7 +2207,6 @@ router.get("/u/:username", async (req, res) => {
         justify-content:center;
         border-radius:16px;
         color:#fff;
-        text-decoration:none;
         font-size:15px;
         font-weight:900;
         border:1px solid rgba(255,255,255,.12);
@@ -2253,7 +2214,10 @@ router.get("/u/:username", async (req, res) => {
         box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.24);
         backdrop-filter:blur(14px);
         -webkit-backdrop-filter:blur(14px);
+        cursor:pointer;
       }
+
+      .profile-story-stage-sound[hidden]{display:none;}
 
       .profile-story-stage-media-link{
         position:absolute;
@@ -3076,13 +3040,6 @@ router.get("/u/:username", async (req, res) => {
           border-radius:30px;
         }
 
-        .profile-story-stage-progress{
-          left:16px;
-          right:16px;
-          top:17px;
-          gap:7px;
-        }
-
         .profile-story-stage-top{
           left:16px;
           right:16px;
@@ -3093,7 +3050,7 @@ router.get("/u/:username", async (req, res) => {
           font-size:16px;
         }
 
-        .profile-story-stage-action{
+        .profile-story-stage-sound{
           min-height:42px;
           padding:0 14px;
           border-radius:14px;
@@ -3261,6 +3218,126 @@ router.get("/u/:username", async (req, res) => {
 
     <script>
       (function(){
+        function initProfileStoryFeed(){
+          const stage = document.querySelector('[data-profile-story-stage]');
+          if (!stage) return;
+          const frame = stage.querySelector('[data-profile-story-frame]');
+          const source = stage.querySelector('[data-profile-story-items]');
+          const meta = stage.querySelector('[data-profile-story-meta]');
+          const soundBtn = stage.querySelector('[data-profile-story-sound]');
+          if (!frame || !source) return;
+          let items = [];
+          try {
+            items = JSON.parse(source.textContent || '[]') || [];
+          } catch (_) {
+            items = [];
+          }
+          if (!items.length) {
+            if (soundBtn) soundBtn.hidden = true;
+            return;
+          }
+
+          let index = 0;
+          let timer = null;
+          let soundOn = false;
+          const hasVideo = items.some(function(item){ return !!item.isVideo; });
+          if (soundBtn) {
+            soundBtn.hidden = !hasVideo;
+            soundBtn.textContent = 'Sound';
+          }
+
+          function clearTimer(){
+            if (timer) window.clearTimeout(timer);
+            timer = null;
+          }
+
+          function updateSoundLabel(video){
+            if (!soundBtn) return;
+            soundBtn.textContent = soundOn ? 'Mute' : 'Sound';
+            if (video) video.muted = !soundOn;
+          }
+
+          function makeTextStory(item){
+            const box = document.createElement('div');
+            box.className = 'profile-story-stage-text';
+            box.textContent = item.text || 'Tapzy Story';
+            return box;
+          }
+
+          function makeImageStory(item){
+            const img = document.createElement('img');
+            img.className = 'profile-story-stage-media';
+            img.src = item.mediaUrl;
+            img.alt = item.text || 'Profile story';
+            img.loading = 'eager';
+            img.decoding = 'async';
+            return img;
+          }
+
+          function makeVideoStory(item){
+            const video = document.createElement('video');
+            video.className = 'profile-story-stage-media';
+            video.src = item.mediaUrl;
+            video.autoplay = true;
+            video.muted = !soundOn;
+            video.loop = items.length <= 1;
+            video.playsInline = true;
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
+            video.preload = 'auto';
+            video.addEventListener('ended', next);
+            video.addEventListener('error', function(){ timer = window.setTimeout(next, 1200); }, { once:true });
+            window.setTimeout(function(){
+              video.play().catch(function(){
+                video.muted = true;
+                soundOn = false;
+                updateSoundLabel(video);
+                video.play().catch(function(){});
+              });
+            }, 30);
+            return video;
+          }
+
+          function render(){
+            clearTimer();
+            const item = items[index] || items[0];
+            frame.replaceChildren();
+            let node = null;
+            if (item.mediaUrl && item.isVideo) {
+              node = makeVideoStory(item);
+            } else if (item.mediaUrl) {
+              node = makeImageStory(item);
+              timer = window.setTimeout(next, 5200);
+            } else {
+              node = makeTextStory(item);
+              timer = window.setTimeout(next, 5200);
+            }
+            frame.appendChild(node);
+            if (meta) meta.textContent = (item.time || 'Just now') + ' · Tapzy Story';
+            updateSoundLabel(item.isVideo ? node : null);
+          }
+
+          function next(){
+            if (items.length <= 1) {
+              if (!(items[0] && items[0].isVideo)) timer = window.setTimeout(render, 5200);
+              return;
+            }
+            index = (index + 1) % items.length;
+            render();
+          }
+
+          if (soundBtn) {
+            soundBtn.addEventListener('click', function(){
+              soundOn = !soundOn;
+              const video = frame.querySelector('video');
+              updateSoundLabel(video);
+              if (video) video.play().catch(function(){});
+            });
+          }
+
+          render();
+        }
+
         function initProfilePhotoViewer(){
           const viewer = document.getElementById('profilePhotoViewer');
           const openBtn = document.querySelector('[data-profile-photo-open]');
@@ -3325,8 +3402,9 @@ router.get("/u/:username", async (req, res) => {
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
         } else {
+          initProfileStoryFeed();
           initProfilePhotoViewer();
           initVideoPreviewFrames(document);
         }
