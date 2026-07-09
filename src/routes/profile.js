@@ -3776,15 +3776,39 @@ router.get("/u/:username", async (req, res) => {
             discoveryScreen.setAttribute('aria-hidden', 'false');
             renderDiscovery();
           }
-          function wake(){
+          let emptyRestoreTapCount = 0;
+          let emptyRestoreLastTapAt = 0;
+          function closeDiscoveryScreen(){
+            saveDiscoveryDwell();
+            shell.classList.remove('is-discovery-screen');
+            shell.classList.remove('is-discovery-empty');
+            if (discoveryScreen) {
+              discoveryScreen.classList.remove('is-empty');
+              discoveryScreen.setAttribute('aria-hidden', 'true');
+            }
+            clearDiscoveryTimer();
+            discoveryStarted = false;
+            activeDiscoveryId = null;
+            emptyRestoreTapCount = 0;
+            emptyRestoreLastTapAt = 0;
+          }
+          function registerEmptyRestoreTap(){
+            const now = Date.now();
+            if (now - emptyRestoreLastTapAt > 1200) emptyRestoreTapCount = 0;
+            emptyRestoreLastTapAt = now;
+            emptyRestoreTapCount += 1;
+            return emptyRestoreTapCount >= 3;
+          }
+          function wake(event){
             if (shell.classList.contains('is-discovery-screen')) {
-              saveDiscoveryDwell();
-              shell.classList.remove('is-discovery-screen');
-              shell.classList.remove('is-discovery-empty');
-              if (discoveryScreen) discoveryScreen.setAttribute('aria-hidden', 'true');
-              clearDiscoveryTimer();
-              discoveryStarted = false;
-              activeDiscoveryId = null;
+              if (shell.classList.contains('is-discovery-empty')) {
+                if (event) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }
+                if (!registerEmptyRestoreTap()) return;
+              }
+              closeDiscoveryScreen();
             }
             shell.classList.remove('is-secondary-dim');
             if (timer) window.clearTimeout(timer);
@@ -3796,9 +3820,8 @@ router.get("/u/:username", async (req, res) => {
               event.preventDefault();
               event.stopPropagation();
             }
-            wake();
+            wake(event);
           }, true);
-          shell.addEventListener('touchstart', wake, { passive:true });
           window.addEventListener('pagehide', saveDiscoveryDwell);
           wake();
         }
