@@ -440,19 +440,21 @@ module.exports = async function getEventsPage(req, res) {
         left:0;
         right:0;
         min-height:72px;
-        display:flex;
+        display:grid;
+        grid-template-columns:42px minmax(0, 1fr) 42px;
         align-items:center;
-        justify-content:center;
-        gap:24px;
-        padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
+        justify-content:normal;
+        column-gap:12px;
+        padding:calc(env(safe-area-inset-top, 0px) + 14px) clamp(14px, 4.1vw, 24px) 14px;
         background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
       }
       .events-story-brand{
-        position:absolute;
-        left:16px;
-        top:calc(env(safe-area-inset-top, 0px) + 14px);
-        width:38px;
-        height:38px;
+        position:relative;
+        left:auto;
+        top:auto;
+        width:42px;
+        height:42px;
+        grid-column:1;
         display:grid;
         place-items:center;
         border:2px solid rgba(255,255,255,.9);
@@ -465,7 +467,16 @@ module.exports = async function getEventsPage(req, res) {
         -webkit-backdrop-filter:blur(10px);
       }
       .events-story-brand img{width:72%;height:72%;object-fit:contain;display:block;}
-      .events-story-tabs{display:flex;gap:18px;align-items:center;min-width:0;}
+      .events-story-tabs{
+        display:flex;
+        gap:clamp(8px, 3vw, 18px);
+        align-items:center;
+        justify-content:center;
+        min-width:0;
+        width:100%;
+        grid-column:2;
+        overflow:hidden;
+      }
       .events-story-tab{
         position:relative;
         border:0;
@@ -473,7 +484,7 @@ module.exports = async function getEventsPage(req, res) {
         padding:8px 0;
         color:rgba(255,255,255,.68);
         font-weight:750;
-        font-size:15px;
+        font-size:clamp(11.5px, 3.25vw, 14px);
         text-decoration:none;
         white-space:nowrap;
       }
@@ -490,12 +501,13 @@ module.exports = async function getEventsPage(req, res) {
         transform:translateX(-50%);
       }
       .events-story-search{
-        position:absolute;
-        right:15px;
-        top:calc(env(safe-area-inset-top, 0px) + 15px);
-        width:40px;
-        height:40px;
+        position:relative;
+        right:auto;
+        top:auto;
+        width:42px;
+        height:42px;
         padding:7px;
+        grid-column:3;
         color:#fff;
         text-decoration:none;
       }
@@ -2594,30 +2606,22 @@ module.exports = async function getEventsPage(req, res) {
         .events-story-top{
           position:sticky;
           min-height:66px;
-          gap:0;
-          display:grid;
-          grid-template-columns:34px minmax(0, 1fr) 34px;
+          grid-template-columns:36px minmax(0, 1fr) 36px;
           column-gap:8px;
-          justify-content:normal;
-          padding:calc(env(safe-area-inset-top, 0px) + 12px) 14px 12px;
+          padding-top:calc(env(safe-area-inset-top, 0px) + 12px);
+          padding-bottom:12px;
+          padding-left:clamp(12px, 4vw, 18px);
+          padding-right:clamp(12px, 4vw, 18px);
         }
 
         .events-story-brand{
-          position:relative;
-          left:auto;
-          top:auto;
-          width:34px;
-          height:34px;
+          width:36px;
+          height:36px;
           border-radius:11px;
-          grid-column:1;
         }
 
         .events-story-tabs{
-          width:100%;
-          justify-content:center;
           gap:clamp(5px, 2vw, 8px);
-          grid-column:2;
-          overflow:hidden;
         }
 
         .events-story-tab{
@@ -2633,13 +2637,9 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .events-story-search{
-          position:relative;
-          right:auto;
-          top:auto;
-          width:34px;
-          height:34px;
+          width:36px;
+          height:36px;
           padding:6px;
-          grid-column:3;
         }
 
         @media(max-width:370px){

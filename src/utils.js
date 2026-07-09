@@ -2773,15 +2773,17 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         min-height:72px;
 
-        display:flex;
+        display:grid;
+
+        grid-template-columns:42px minmax(0, 1fr) 42px;
 
         align-items:center;
 
-        justify-content:center;
+        justify-content:normal;
 
-        gap:24px;
+        column-gap:12px;
 
-        padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
+        padding:calc(env(safe-area-inset-top, 0px) + 14px) clamp(14px, 4.1vw, 24px) 14px;
 
         background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
 
@@ -2791,15 +2793,17 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       .tz-story-brand{
 
-        position:absolute;
+        position:relative;
 
-        left:16px;
+        left:auto;
 
-        top:calc(env(safe-area-inset-top, 0px) + 14px);
+        top:auto;
 
-        width:38px;
+        width:42px;
 
-        height:38px;
+        height:42px;
+
+        grid-column:1;
 
         display:grid;
 
@@ -2843,11 +2847,19 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         display:flex;
 
-        gap:18px;
+        gap:clamp(8px, 3vw, 18px);
 
         align-items:center;
 
+        justify-content:center;
+
         min-width:0;
+
+        width:100%;
+
+        grid-column:2;
+
+        overflow:hidden;
 
       }
 
@@ -2867,7 +2879,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         font-weight:750;
 
-        font-size:14px;
+        font-size:clamp(11.5px, 3.25vw, 14px);
 
         text-decoration:none;
 
@@ -2911,17 +2923,19 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       .tz-story-search{
 
-        position:absolute;
+        position:relative;
 
-        right:15px;
+        right:auto;
 
-        top:calc(env(safe-area-inset-top, 0px) + 15px);
+        top:auto;
 
-        width:40px;
+        width:42px;
 
-        height:40px;
+        height:42px;
 
         padding:7px;
+
+        grid-column:3;
 
         color:#fff;
 
@@ -2960,30 +2974,22 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       @media(max-width:430px){
         .tz-story-top-nav{
           min-height:66px;
-          gap:0;
-          display:grid;
-          grid-template-columns:34px minmax(0, 1fr) 34px;
+          grid-template-columns:36px minmax(0, 1fr) 36px;
           column-gap:8px;
-          justify-content:normal;
-          padding:calc(env(safe-area-inset-top, 0px) + 12px) 14px 12px;
+          padding-top:calc(env(safe-area-inset-top, 0px) + 12px);
+          padding-bottom:12px;
+          padding-left:clamp(12px, 4vw, 18px);
+          padding-right:clamp(12px, 4vw, 18px);
         }
 
         .tz-story-brand{
-          position:relative;
-          left:auto;
-          top:auto;
-          width:34px;
-          height:34px;
+          width:36px;
+          height:36px;
           border-radius:11px;
-          grid-column:1;
         }
 
         .tz-story-tabs{
-          width:100%;
-          justify-content:center;
           gap:clamp(5px, 2vw, 8px);
-          grid-column:2;
-          overflow:hidden;
         }
 
         .tz-story-tab{
@@ -2999,13 +3005,9 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-search{
-          position:relative;
-          right:auto;
-          top:auto;
-          width:34px;
-          height:34px;
+          width:36px;
+          height:36px;
           padding:5px;
-          grid-column:3;
         }
       }
 
