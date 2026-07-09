@@ -2208,17 +2208,17 @@ router.get("/u/:username", async (req, res) => {
       .profile-story-stage-sound{
         position:absolute;
         right:22px;
-        bottom:20px;
+        bottom:30px;
         z-index:8;
-        width:58px;
-        height:58px;
+        width:54px;
+        height:54px;
         padding:0;
         display:inline-flex;
         align-items:center;
         justify-content:center;
         border-radius:999px;
         color:#fff;
-        font-size:24px;
+        font-size:22px;
         font-weight:900;
         border:3px solid rgba(255,255,255,.74);
         background:rgba(4,6,10,.34);
@@ -2236,7 +2236,28 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-story-stage-sound[hidden]{display:none;}
 
+      .profile-story-stage-sound::before,
+      .profile-story-stage-sound::after{
+        content:"";
+        position:absolute;
+        inset:-9px;
+        border-radius:999px;
+        pointer-events:none;
+        border:1px solid rgba(115,194,255,.34);
+        box-shadow:0 0 20px rgba(87,170,255,.20);
+        opacity:.72;
+        animation:profileSoundRing 2.15s ease-in-out infinite;
+      }
+
+      .profile-story-stage-sound::after{
+        inset:-15px;
+        opacity:.42;
+        animation-delay:.34s;
+      }
+
       .profile-story-stage-sound span{
+        position:relative;
+        z-index:1;
         line-height:1;
         transform:translateY(1px);
       }
@@ -2256,6 +2277,11 @@ router.get("/u/:username", async (req, res) => {
             0 12px 32px rgba(0,0,0,.30),
             inset 0 1px 0 rgba(255,255,255,.08);
         }
+      }
+
+      @keyframes profileSoundRing{
+        0%,100%{ transform:scale(.92); opacity:.38; }
+        50%{ transform:scale(1.05); opacity:.82; }
       }
 
       .profile-story-stage-media-link{
@@ -2352,7 +2378,7 @@ router.get("/u/:username", async (req, res) => {
       .profile-story-rail{
         position:absolute;
         left:18px;
-        right:92px;
+        right:86px;
         bottom:20px;
         z-index:6;
         width:auto;
@@ -3110,13 +3136,13 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-story-stage-sound{
           right:16px;
-          bottom:16px;
-          width:52px;
-          height:52px;
-          min-height:52px;
+          bottom:25px;
+          width:46px;
+          height:46px;
+          min-height:46px;
           padding:0;
           border-radius:999px;
-          font-size:22px;
+          font-size:19px;
         }
 
         .profile-story-stage-caption{
@@ -3135,7 +3161,7 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-story-rail{
           left:16px;
-          right:76px;
+          right:70px;
           bottom:16px;
           top:auto;
           width:auto;
