@@ -248,10 +248,14 @@ router.get("/u/:username", async (req, res) => {
 
     const quickShareOn = !!profile.quickShareEnabled;
     const quickPreview = quickShareOn ? buildQuickSharePreview(profile) : [];
+    const excludedDiscoveryProfileIds =
+      currentProfile && currentProfile.id !== profile.id
+        ? [profile.id, currentProfile.id]
+        : [profile.id];
 
 
 
-    const [activeStories, attendingEvent] = await Promise.all([
+    const [activeStories, attendingEvent, discoveryStories] = await Promise.all([
 
       prisma.story.findMany({
 
@@ -303,6 +307,20 @@ router.get("/u/:username", async (req, res) => {
 
       }),
 
+      prisma.story.findMany({
+        where: {
+          profileId: { notIn: excludedDiscoveryProfileIds },
+          expiresAt: { gt: now },
+          mediaUrl: { not: null },
+        },
+        include: {
+          profile: true,
+          _count: { select: { likes: true, views: true, replies: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+
     ]);
 
 
@@ -332,6 +350,28 @@ router.get("/u/:username", async (req, res) => {
     const showMessageButton = currentProfile && currentProfile.id !== profile.id;
 
     const showFollowButton = !!(currentProfile && currentProfile.id !== profile.id);
+
+    const profileDiscoveryItems = discoveryStories
+      .filter((story) => story.mediaUrl && !excludedDiscoveryProfileIds.includes(story.profileId))
+      .map((story) => {
+        const storyProfile = story.profile || {};
+        const storyName = storyProfile.name || storyProfile.username || "Tapzy Network™";
+        const engagementScore =
+          Number(story._count?.likes || 0) * 3 +
+          Number(story._count?.replies || 0) * 2 +
+          Number(story._count?.views || 0);
+        return {
+          id: story.id,
+          mediaUrl: story.mediaUrl || "",
+          isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
+          title: storyName,
+          meta: "Tapzy Story",
+          score: engagementScore,
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12);
+    const profileDiscoveryJson = JSON.stringify(profileDiscoveryItems).replace(/</g, "\\u003c");
 
     const featuredStory = activeStories[0] || null;
     const profileStoryFeedItems = activeStories.map((story) => ({
@@ -452,6 +492,15 @@ router.get("/u/:username", async (req, res) => {
       <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
 
         <div class="profile-showcase-bg"></div>
+        <script type="application/json" data-profile-discovery-items>${profileDiscoveryJson}</script>
+        <div class="profile-showcase-discovery" data-profile-discovery-screen aria-hidden="true">
+          <div class="profile-showcase-discovery-media" data-profile-discovery-media></div>
+          <div class="profile-showcase-discovery-shade"></div>
+          <div class="profile-showcase-discovery-copy">
+            <strong data-profile-discovery-title>Tapzy Network™</strong>
+            <span data-profile-discovery-meta>Discovery</span>
+          </div>
+        </div>
 
 
 
@@ -1418,6 +1467,85 @@ router.get("/u/:username", async (req, res) => {
 
         opacity:.95;
 
+      }
+
+      .profile-showcase-discovery{
+        position:absolute;
+        inset:0;
+        z-index:4;
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        overflow:hidden;
+        border-radius:34px;
+        background:#000;
+        transition:opacity .42s ease, visibility .42s ease;
+      }
+
+      .profile-showcase.is-discovery-screen{
+        background:#000;
+        border-color:rgba(255,255,255,.08);
+      }
+
+      .profile-showcase.is-discovery-screen .profile-showcase-bg,
+      .profile-showcase.is-discovery-screen .profile-showcase-top{
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+      }
+
+      .profile-showcase.is-discovery-screen .profile-showcase-discovery{
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+      }
+
+      .profile-showcase-discovery-media,
+      .profile-showcase-discovery-media img,
+      .profile-showcase-discovery-media video{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+      }
+
+      .profile-showcase-discovery-media img,
+      .profile-showcase-discovery-media video{
+        display:block;
+        object-fit:cover;
+        background:#000;
+      }
+
+      .profile-showcase-discovery-shade{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:linear-gradient(180deg, rgba(0,0,0,.18), transparent 42%, rgba(0,0,0,.72));
+      }
+
+      .profile-showcase-discovery-copy{
+        position:absolute;
+        left:28px;
+        right:28px;
+        bottom:24px;
+        z-index:2;
+        color:#fff;
+        text-shadow:0 2px 14px rgba(0,0,0,.72);
+      }
+
+      .profile-showcase-discovery-copy strong{
+        display:block;
+        font-size:28px;
+        line-height:1.05;
+        font-weight:950;
+      }
+
+      .profile-showcase-discovery-copy span{
+        display:block;
+        margin-top:7px;
+        color:rgba(255,255,255,.82);
+        font-size:14px;
+        font-weight:750;
       }
 
 
@@ -3073,6 +3201,10 @@ router.get("/u/:username", async (req, res) => {
 
         }
 
+        .profile-showcase-discovery{
+          border-radius:28px;
+        }
+
 
 
         .profile-showcase-top{
@@ -3450,14 +3582,118 @@ router.get("/u/:username", async (req, res) => {
         function initProfileShowcaseFade(){
           const shell = document.getElementById('tapzyProfileShell');
           if (!shell) return;
+          const source = shell.querySelector('[data-profile-discovery-items]');
+          const discoveryScreen = shell.querySelector('[data-profile-discovery-screen]');
+          const discoveryMedia = shell.querySelector('[data-profile-discovery-media]');
+          const discoveryTitle = shell.querySelector('[data-profile-discovery-title]');
+          const discoveryMeta = shell.querySelector('[data-profile-discovery-meta]');
           let timer = null;
+          let discoveryTimer = null;
+          let discoveryStartTimer = null;
+          let discoveryIndex = 0;
+          let discoveryStarted = false;
+          let activeDiscoveryId = null;
+          let activeDiscoveryStartedAt = 0;
+          let discoveryItems = [];
+          let dwellScores = {};
+          try {
+            discoveryItems = source ? JSON.parse(source.textContent || '[]') || [] : [];
+          } catch (_) {
+            discoveryItems = [];
+          }
+          try {
+            dwellScores = JSON.parse(localStorage.getItem('tapzy_profile_discovery_dwell') || '{}') || {};
+          } catch (_) {
+            dwellScores = {};
+          }
+          if (discoveryItems.length) {
+            discoveryItems.sort(function(a, b){
+              const aScore = Number(a.score || 0) + Number(dwellScores[a.id] || 0);
+              const bScore = Number(b.score || 0) + Number(dwellScores[b.id] || 0);
+              return bScore - aScore;
+            });
+          }
           function dim(){
             shell.classList.add('is-secondary-dim');
           }
+          function saveDiscoveryDwell(){
+            if (!activeDiscoveryId || !activeDiscoveryStartedAt) return;
+            const seconds = Math.max(0, Math.round((Date.now() - activeDiscoveryStartedAt) / 1000));
+            if (!seconds) return;
+            dwellScores[activeDiscoveryId] = Math.min(600, Number(dwellScores[activeDiscoveryId] || 0) + seconds);
+            try { localStorage.setItem('tapzy_profile_discovery_dwell', JSON.stringify(dwellScores)); } catch (_) {}
+            activeDiscoveryStartedAt = Date.now();
+          }
+          function clearDiscoveryTimer(){
+            if (discoveryTimer) window.clearTimeout(discoveryTimer);
+            discoveryTimer = null;
+          }
+          function scheduleDiscoveryStart(){
+            if (!discoveryItems.length) return;
+            if (discoveryStartTimer) window.clearTimeout(discoveryStartTimer);
+            discoveryStartTimer = window.setTimeout(startDiscovery, 20000);
+          }
+          function nextDiscovery(){
+            if (!discoveryItems.length) return;
+            discoveryIndex = (discoveryIndex + 1) % discoveryItems.length;
+            renderDiscovery();
+          }
+          function renderDiscovery(){
+            if (!discoveryMedia || !discoveryItems.length) return;
+            clearDiscoveryTimer();
+            saveDiscoveryDwell();
+            const item = discoveryItems[discoveryIndex] || discoveryItems[0];
+            activeDiscoveryId = item.id || null;
+            activeDiscoveryStartedAt = Date.now();
+            discoveryMedia.replaceChildren();
+            if (discoveryTitle) discoveryTitle.textContent = item.title || 'Tapzy Network™';
+            if (discoveryMeta) discoveryMeta.textContent = item.meta || 'Discovery';
+            if (item.isVideo) {
+              const video = document.createElement('video');
+              video.src = item.mediaUrl;
+              video.autoplay = true;
+              video.muted = true;
+              video.loop = discoveryItems.length <= 1;
+              video.playsInline = true;
+              video.setAttribute('playsinline', '');
+              video.setAttribute('webkit-playsinline', '');
+              video.preload = 'auto';
+              video.addEventListener('ended', nextDiscovery, { once:true });
+              video.addEventListener('error', function(){ discoveryTimer = window.setTimeout(nextDiscovery, 1200); }, { once:true });
+              discoveryMedia.appendChild(video);
+              window.setTimeout(function(){ video.play().catch(function(){}); }, 40);
+              discoveryTimer = window.setTimeout(nextDiscovery, 14000);
+            } else {
+              const img = document.createElement('img');
+              img.src = item.mediaUrl;
+              img.alt = item.title || 'Tapzy discovery story';
+              img.loading = 'eager';
+              img.decoding = 'async';
+              discoveryMedia.appendChild(img);
+              discoveryTimer = window.setTimeout(nextDiscovery, 5600);
+            }
+          }
+          function startDiscovery(){
+            if (discoveryStarted || !discoveryItems.length || !discoveryScreen || !discoveryMedia) return;
+            discoveryStartTimer = null;
+            discoveryStarted = true;
+            shell.classList.add('is-discovery-screen');
+            discoveryScreen.setAttribute('aria-hidden', 'false');
+            renderDiscovery();
+          }
           function wake(){
+            if (shell.classList.contains('is-discovery-screen')) {
+              saveDiscoveryDwell();
+              shell.classList.remove('is-discovery-screen');
+              if (discoveryScreen) discoveryScreen.setAttribute('aria-hidden', 'true');
+              clearDiscoveryTimer();
+              discoveryStarted = false;
+              activeDiscoveryId = null;
+            }
             shell.classList.remove('is-secondary-dim');
             if (timer) window.clearTimeout(timer);
             timer = window.setTimeout(dim, 4000);
+            scheduleDiscoveryStart();
           }
           shell.addEventListener('click', function(event){
             if (shell.classList.contains('is-secondary-dim')) {
@@ -3467,6 +3703,7 @@ router.get("/u/:username", async (req, res) => {
             wake();
           }, true);
           shell.addEventListener('touchstart', wake, { passive:true });
+          window.addEventListener('pagehide', saveDiscoveryDwell);
           wake();
         }
 
