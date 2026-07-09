@@ -3699,15 +3699,21 @@ router.get("/u/:username", async (req, res) => {
           const discoveryMedia = shell.querySelector('[data-profile-discovery-media]');
           const discoveryTitle = shell.querySelector('[data-profile-discovery-title]');
           const discoveryMeta = shell.querySelector('[data-profile-discovery-meta]');
+          if (!discoveryScreen || !discoveryMedia) return;
+
           let timer = null;
           let discoveryTimer = null;
           let discoveryStartTimer = null;
           let discoveryIndex = 0;
           let discoveryStarted = false;
+          let discoveryRefreshInFlight = false;
           let activeDiscoveryId = null;
           let activeDiscoveryStartedAt = 0;
+          let emptyRestoreTapCount = 0;
+          let emptyRestoreLastTapAt = 0;
           let discoveryItems = [];
           let dwellScores = {};
+
           try {
             discoveryItems = source ? JSON.parse(source.textContent || '[]') || [] : [];
           } catch (_) {
@@ -3718,7 +3724,7 @@ router.get("/u/:username", async (req, res) => {
           } catch (_) {
             dwellScores = {};
           }
-          let discoveryRefreshInFlight = false;
+
           function sortDiscoveryItems(){
             if (!discoveryItems.length) return;
             discoveryItems.sort(function(a, b){
@@ -3727,28 +3733,71 @@ router.get("/u/:username", async (req, res) => {
               return bScore - aScore;
             });
           }
-          sortDiscoveryItems();
+
+          function normalizeItem(item, index){
+            if (!item || !item.mediaUrl) return null;
+            return {
+              id: item.id || ('story-' + index + '-' + item.mediaUrl),
+              mediaUrl: item.mediaUrl,
+              isVideo: !!item.isVideo,
+              title: item.title || 'Tapzy Network',
+              meta: item.meta || 'Tapzy Story',
+              score: Number(item.score || 0)
+            };
+          }
+
+          function readItemsFromFeedHtml(html){
+            if (!html) return [];
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const slides = Array.from(doc.querySelectorAll('.sf-slide, [data-story]'));
+            const items = [];
+            slides.forEach(function(slide, index){
+              const media = slide.querySelector('video.sf-media, img.sf-media, video.story-view-media, img.story-view-media, video[src], img[src]');
+              const src = media ? (media.currentSrc || media.src || media.getAttribute('src') || '') : '';
+              if (!src) return;
+              const titleNode = slide.querySelector('.sf-title, .sf-name, .sf-user, strong, h2, h3');
+              const title = titleNode ? titleNode.textContent.trim() : 'Tapzy Network';
+              items.push({
+                id: slide.getAttribute('data-story') || ('feed-' + index + '-' + src),
+                mediaUrl: src,
+                isVideo: media.tagName && media.tagName.toLowerCase() === 'video',
+                title: title || 'Tapzy Network',
+                meta: 'Tapzy Story',
+                score: 0
+              });
+            });
+            return items;
+          }
+
+          function setDiscoveryItems(items){
+            discoveryItems = (items || []).map(normalizeItem).filter(Boolean);
+            discoveryIndex = 0;
+            sortDiscoveryItems();
+            return discoveryItems.length > 0;
+          }
+
           function refreshDiscoveryItems(){
             if (discoveryRefreshInFlight) return Promise.resolve(false);
             discoveryRefreshInFlight = true;
-            let url = window.location.pathname.replace(/\/$/, '') + '/discovery-items';
-            return fetch(url, { credentials:'same-origin', cache:'no-store', headers:{ 'Accept':'application/json' } })
+            const apiUrl = window.location.pathname.replace(/\/$/, '') + '/discovery-items';
+            return fetch(apiUrl, { credentials:'same-origin', cache:'no-store', headers:{ 'Accept':'application/json' } })
               .then(function(response){ return response.ok ? response.json() : { items: [] }; })
               .then(function(data){
-                const freshItems = Array.isArray(data && data.items) ? data.items : [];
-                if (!freshItems.length) return false;
-                discoveryItems = freshItems.filter(function(item){ return item && item.mediaUrl; });
-                if (!discoveryItems.length) return false;
-                discoveryIndex = 0;
-                sortDiscoveryItems();
-                return true;
+                const apiItems = Array.isArray(data && data.items) ? data.items : [];
+                if (setDiscoveryItems(apiItems)) return true;
+                return fetch('/stories/feed?_tapzyProfileTop=' + Date.now(), { credentials:'same-origin', cache:'no-store' })
+                  .then(function(response){ return response.ok ? response.text() : ''; })
+                  .then(function(html){ return setDiscoveryItems(readItemsFromFeedHtml(html)); })
+                  .catch(function(){ return false; });
               })
               .catch(function(){ return false; })
               .finally(function(){ discoveryRefreshInFlight = false; });
           }
+
           function dim(){
             shell.classList.add('is-secondary-dim');
           }
+
           function saveDiscoveryDwell(){
             if (!activeDiscoveryId || !activeDiscoveryStartedAt) return;
             const seconds = Math.max(0, Math.round((Date.now() - activeDiscoveryStartedAt) / 1000));
@@ -3757,49 +3806,60 @@ router.get("/u/:username", async (req, res) => {
             try { localStorage.setItem('tapzy_profile_discovery_dwell', JSON.stringify(dwellScores)); } catch (_) {}
             activeDiscoveryStartedAt = Date.now();
           }
+
           function clearDiscoveryTimer(){
             if (discoveryTimer) window.clearTimeout(discoveryTimer);
             discoveryTimer = null;
           }
+
           function scheduleDiscoveryStart(){
             if (discoveryStartTimer) window.clearTimeout(discoveryStartTimer);
             discoveryStartTimer = window.setTimeout(startDiscovery, 20000);
           }
+
           function nextDiscovery(){
-            if (!discoveryItems.length) return;
+            if (!discoveryItems.length) {
+              renderDiscovery();
+              return;
+            }
             discoveryIndex = (discoveryIndex + 1) % discoveryItems.length;
             renderDiscovery();
           }
+
+          function renderEmptyDiscovery(){
+            activeDiscoveryId = null;
+            activeDiscoveryStartedAt = 0;
+            discoveryScreen.classList.add('is-empty');
+            shell.classList.add('is-discovery-empty');
+            if (discoveryTitle) discoveryTitle.textContent = '';
+            if (discoveryMeta) discoveryMeta.textContent = '';
+            const empty = document.createElement('div');
+            empty.className = 'profile-showcase-discovery-empty';
+            discoveryMedia.replaceChildren(empty);
+            refreshDiscoveryItems().then(function(found){
+              if (found && discoveryStarted) renderDiscovery();
+            });
+            discoveryTimer = window.setTimeout(function(){
+              if (discoveryStarted && shell.classList.contains('is-discovery-empty')) renderDiscovery();
+            }, 7000);
+          }
+
           function renderDiscovery(){
             if (!discoveryMedia) return;
             clearDiscoveryTimer();
             saveDiscoveryDwell();
-            discoveryMedia.replaceChildren();
             discoveryScreen.classList.remove('is-empty');
             shell.classList.remove('is-discovery-empty');
             if (!discoveryItems.length) {
-              activeDiscoveryId = null;
-              activeDiscoveryStartedAt = 0;
-              discoveryScreen.classList.add('is-empty');
-              shell.classList.add('is-discovery-empty');
-              if (discoveryTitle) discoveryTitle.textContent = '';
-              if (discoveryMeta) discoveryMeta.textContent = '';
-              const empty = document.createElement('div');
-              empty.className = 'profile-showcase-discovery-empty';
-              discoveryMedia.appendChild(empty);
-              refreshDiscoveryItems().then(function(found){
-                if (found && discoveryStarted) renderDiscovery();
-              });
-              discoveryTimer = window.setTimeout(function(){
-                if (discoveryStarted && shell.classList.contains('is-discovery-empty')) renderDiscovery();
-              }, 10000);
+              renderEmptyDiscovery();
               return;
             }
             const item = discoveryItems[discoveryIndex] || discoveryItems[0];
             activeDiscoveryId = item.id || null;
             activeDiscoveryStartedAt = Date.now();
-            if (discoveryTitle) discoveryTitle.textContent = item.title || 'Tapzy Network™';
-            if (discoveryMeta) discoveryMeta.textContent = item.meta || 'Discovery';
+            discoveryMedia.replaceChildren();
+            if (discoveryTitle) discoveryTitle.textContent = item.title || 'Tapzy Network';
+            if (discoveryMeta) discoveryMeta.textContent = item.meta || 'Tapzy Story';
             if (item.isVideo) {
               const video = document.createElement('video');
               video.src = item.mediaUrl;
@@ -3811,7 +3871,7 @@ router.get("/u/:username", async (req, res) => {
               video.setAttribute('webkit-playsinline', '');
               video.preload = 'auto';
               video.addEventListener('ended', nextDiscovery, { once:true });
-              video.addEventListener('error', function(){ discoveryTimer = window.setTimeout(nextDiscovery, 1200); }, { once:true });
+              video.addEventListener('error', function(){ discoveryTimer = window.setTimeout(nextDiscovery, 1000); }, { once:true });
               discoveryMedia.appendChild(video);
               window.setTimeout(function(){ video.play().catch(function(){}); }, 40);
               discoveryTimer = window.setTimeout(nextDiscovery, 14000);
@@ -3821,20 +3881,21 @@ router.get("/u/:username", async (req, res) => {
               img.alt = item.title || 'Tapzy discovery story';
               img.loading = 'eager';
               img.decoding = 'async';
+              img.addEventListener('error', function(){ discoveryTimer = window.setTimeout(nextDiscovery, 1000); }, { once:true });
               discoveryMedia.appendChild(img);
               discoveryTimer = window.setTimeout(nextDiscovery, 5600);
             }
           }
+
           function startDiscovery(){
             if (discoveryStarted || !discoveryScreen || !discoveryMedia) return;
             discoveryStartTimer = null;
             discoveryStarted = true;
             shell.classList.add('is-discovery-screen');
             discoveryScreen.setAttribute('aria-hidden', 'false');
-            renderDiscovery();
+            refreshDiscoveryItems().then(function(){ renderDiscovery(); });
           }
-          let emptyRestoreTapCount = 0;
-          let emptyRestoreLastTapAt = 0;
+
           function closeDiscoveryScreen(){
             saveDiscoveryDwell();
             shell.classList.remove('is-discovery-screen');
@@ -3849,6 +3910,7 @@ router.get("/u/:username", async (req, res) => {
             emptyRestoreTapCount = 0;
             emptyRestoreLastTapAt = 0;
           }
+
           function registerEmptyRestoreTap(){
             const now = Date.now();
             if (now - emptyRestoreLastTapAt > 1200) emptyRestoreTapCount = 0;
@@ -3856,6 +3918,7 @@ router.get("/u/:username", async (req, res) => {
             emptyRestoreTapCount += 1;
             return emptyRestoreTapCount >= 3;
           }
+
           function wake(event){
             if (shell.classList.contains('is-discovery-screen')) {
               if (shell.classList.contains('is-discovery-empty')) {
@@ -3872,6 +3935,7 @@ router.get("/u/:username", async (req, res) => {
             timer = window.setTimeout(dim, 4000);
             scheduleDiscoveryStart();
           }
+
           shell.addEventListener('click', function(event){
             if (shell.classList.contains('is-secondary-dim')) {
               event.preventDefault();
@@ -3880,9 +3944,9 @@ router.get("/u/:username", async (req, res) => {
             wake(event);
           }, true);
           window.addEventListener('pagehide', saveDiscoveryDwell);
+          sortDiscoveryItems();
           wake();
         }
-
         function initProfileStoryFeed(){
           const stage = document.querySelector('[data-profile-story-stage]');
           if (!stage) return;
