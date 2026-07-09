@@ -520,6 +520,13 @@ module.exports = async function getEventsPage(req, res) {
         .events-story-tab{font-size:10px;}
         .events-story-search{width:30px;height:30px;padding:5px;}
       }
+      @media(max-width:320px){
+        .events-story-top{gap:4px;padding-left:32px;padding-right:30px;}
+        .events-story-brand{left:6px;width:28px;height:28px;border-radius:9px;}
+        .events-story-tabs{gap:4px;}
+        .events-story-tab{font-size:9.4px;}
+        .events-story-search{right:4px;width:28px;height:28px;padding:4px;}
+      }
 
       .mobile-only{ display:none; }
 

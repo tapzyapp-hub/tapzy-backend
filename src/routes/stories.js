@@ -3714,6 +3714,13 @@ router.get("/stories/feed", async (req, res) => {
           .sf-tab{font-size:10px}
           .sf-search{width:30px;height:30px;padding:5px}
         }
+        @media(max-width:320px){
+          .sf-top{gap:4px;padding-left:32px;padding-right:30px}
+          .sf-brand{left:6px;width:28px;height:28px;border-radius:9px}
+          .sf-tabs{gap:4px}
+          .sf-tab{font-size:9.4px}
+          .sf-search{right:4px;width:28px;height:28px;padding:4px}
+        }
         .sf-copy{position:absolute;z-index:4;left:18px;right:92px;bottom:calc(var(--safe-bottom) + 82px);text-shadow:0 2px 12px rgba(0,0,0,.7)}
         .sf-author{display:block;width:max-content;max-width:100%;margin-bottom:8px;color:#fff;text-decoration:none;font-size:17px;font-weight:850}
         .sf-copy p{margin:0 0 8px;font-size:15px;line-height:1.35}

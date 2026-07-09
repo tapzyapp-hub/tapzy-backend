@@ -3025,6 +3025,36 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
       }
 
+      @media(max-width:320px){
+        .tz-story-top-nav{
+          gap:4px;
+          padding-left:32px;
+          padding-right:30px;
+        }
+
+        .tz-story-brand{
+          left:6px;
+          width:28px;
+          height:28px;
+          border-radius:9px;
+        }
+
+        .tz-story-tabs{
+          gap:4px;
+        }
+
+        .tz-story-tab{
+          font-size:9.4px;
+        }
+
+        .tz-story-search{
+          right:4px;
+          width:28px;
+          height:28px;
+          padding:4px;
+        }
+      }
+
 
 
       body.tz-has-stories-top-nav{
