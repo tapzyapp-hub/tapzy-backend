@@ -248,10 +248,7 @@ router.get("/u/:username", async (req, res) => {
 
     const quickShareOn = !!profile.quickShareEnabled;
     const quickPreview = quickShareOn ? buildQuickSharePreview(profile) : [];
-    const excludedDiscoveryProfileIds =
-      currentProfile && currentProfile.id !== profile.id
-        ? [profile.id, currentProfile.id]
-        : [profile.id];
+    const excludedDiscoveryProfileIds = currentProfile ? [currentProfile.id] : [];
 
 
 
