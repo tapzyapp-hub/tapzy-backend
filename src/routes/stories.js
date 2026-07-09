@@ -3489,6 +3489,9 @@ router.get("/stories/feed", async (req, res) => {
         likes: currentProfile
           ? { where: { profileId: currentProfile.id }, select: { id: true } }
           : false,
+        views: currentProfile
+          ? { where: { viewerId: currentProfile.id }, select: { id: true } }
+          : false,
       },
       orderBy: [{ createdAt: "desc" }],
       take: 100,
@@ -3506,7 +3509,7 @@ router.get("/stories/feed", async (req, res) => {
       });
       const seenIds = new Set(unseen.map((row) => row.storyId));
       const viewRows = stories
-        .filter((story) => !seenIds.has(story.id))
+        .filter((story) => story.profileId !== currentProfile.id && !seenIds.has(story.id))
         .map((story) => ({ storyId: story.id, viewerId: currentProfile.id }));
       if (viewRows.length) {
         await prisma.storyView.createMany({ data: viewRows, skipDuplicates: true });
@@ -3543,6 +3546,14 @@ router.get("/stories/feed", async (req, res) => {
         : "";
       const ageHours = Math.max(0, Math.floor((Date.now() - new Date(story.createdAt).getTime()) / 3600000));
       const age = ageHours < 1 ? "Just now" : `${ageHours}h`;
+      const ownViewOffset =
+        currentProfile &&
+        currentProfile.id === story.profileId &&
+        story.views &&
+        story.views.length
+          ? 1
+          : 0;
+      const viewCount = Math.max(0, (story._count.views || 0) - ownViewOffset);
 
       return `
       <article class="sf-slide" data-story="${escapeHtml(story.id)}" data-following="${isFollowing ? "1" : "0"}" data-event="${story.event ? "1" : "0"}">
@@ -3563,13 +3574,12 @@ router.get("/stories/feed", async (req, res) => {
               <span data-like-count>${compactFeedCount(story._count.likes)}</span>
             </button>
           </form>
-          <div class="sf-action sf-views" aria-label="${compactFeedCount(story._count.views)} views" data-view-flip>
+          <div class="sf-action sf-views" aria-label="${compactFeedCount(viewCount)} views" data-view-flip>
             <svg class="sf-view-eye" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M2.5 12s3.4-5.2 9.5-5.2S21.5 12 21.5 12s-3.4 5.2-9.5 5.2S2.5 12 2.5 12Z"></path>
               <circle cx="12" cy="12" r="2.7"></circle>
-              <path class="sf-view-lashes" d="M7.4 6.4 6.2 4.1M10 5.5 9.6 3M12.7 5.4 13 2.9M15.4 6.1 16.7 3.9"></path>
             </svg>
-            <span data-view-count>${compactFeedCount(story._count.views)}</span>
+            <span data-view-count>${compactFeedCount(viewCount)}</span>
           </div>
           <button class="sf-action" type="button" data-reply-story="${escapeHtml(story.id)}" data-reply-username="${escapeHtml(username)}" aria-label="Reply to story">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-6a3 3 0 0 1-1-2V7a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3v8Z"/></svg>
@@ -3754,7 +3764,6 @@ router.get("/stories/feed", async (req, res) => {
         .sf-views{min-height:40px;cursor:default}
         .sf-views .sf-view-eye{display:block;fill:none;stroke:#fff;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;opacity:1;transform:translateY(0) scale(1);transition:opacity .24s ease,transform .24s ease}
         .sf-views .sf-view-eye circle{fill:#fff;stroke:#fff}
-        .sf-views .sf-view-lashes{fill:none;stroke:#fff;stroke-width:2.1}
         .sf-views span{display:block;opacity:0;max-height:0;overflow:hidden;transform:translateY(-3px) scale(.92);transition:opacity .24s ease,transform .24s ease,max-height .24s ease}
         .sf-views.is-count .sf-view-eye{opacity:0;transform:translateY(3px) scale(.92)}
         .sf-views.is-count span{opacity:1;max-height:14px;transform:translateY(0) scale(1)}
@@ -3825,7 +3834,7 @@ router.get("/stories/feed", async (req, res) => {
           if (viewFlips.length) {
             setInterval(function(){
               viewFlips.forEach(function(item){ item.classList.toggle('is-count'); });
-            }, 2000);
+            }, 3500);
           }
           function setActionRailsIdle(idle){
             actionRails.forEach(function(rail){ rail.classList.toggle('is-idle', !!idle); });
@@ -4179,7 +4188,7 @@ router.get("/stories/:username", async (req, res) => {
 
 
 
-    if (currentProfile) {
+    if (currentProfile && currentProfile.id !== profile.id) {
 
       for (const story of stories) {
 
@@ -4255,7 +4264,14 @@ router.get("/stories/:username", async (req, res) => {
           : `<div class="story-view-text-only">${escapeHtml(story.text || "@"+(profile.username || "user"))}</div>`;
 
         const likeCount = storyLikeCounts.get(story.id) || 0;
-        const viewCount = story._count?.views || 0;
+        const ownViewOffset =
+          currentProfile &&
+          currentProfile.id === profile.id &&
+          story.views &&
+          story.views.length
+            ? 1
+            : 0;
+        const viewCount = Math.max(0, (story._count?.views || 0) - ownViewOffset);
 
 
 
