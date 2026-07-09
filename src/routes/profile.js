@@ -596,14 +596,25 @@ router.get("/u/:username", async (req, res) => {
                   </div>
 
                 </div>
-
-                <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${featuredStory ? "" : "hidden"} aria-label="Turn story sound on"><span aria-hidden="true">🔊</span></button>
-
-                ${
-                  quickShareRailLinks
-                    ? `<aside class="profile-story-rail" aria-label="Quick share">${quickShareRailLinks}</aside>`
-                    : ""
-                }
+                <div class="profile-story-taskbar" data-profile-story-taskbar>
+                  ${
+                    quickShareRailLinks
+                      ? `<aside class="profile-story-rail" aria-label="Quick share">${quickShareRailLinks}</aside>`
+                      : `<div class="profile-story-rail" aria-hidden="true"></div>`
+                  }
+                  <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${featuredStory ? "" : "hidden"} aria-label="Turn story sound on">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-on">
+                      <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                      <path d="M16 8.5a5 5 0 0 1 0 7"></path>
+                      <path d="M18.5 6a8.5 8.5 0 0 1 0 12"></path>
+                    </svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-off">
+                      <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                      <path d="M17 9l4 4"></path>
+                      <path d="M21 9l-4 4"></path>
+                    </svg>
+                  </button>
+                </div>
 
               </div>
 
@@ -2206,10 +2217,8 @@ router.get("/u/:username", async (req, res) => {
       }
 
       .profile-story-stage-sound{
-        position:absolute;
-        right:30px;
-        bottom:29px;
-        z-index:8;
+        position:relative;
+        flex:0 0 auto;
         width:43px;
         height:43px;
         padding:0;
@@ -2253,11 +2262,27 @@ router.get("/u/:username", async (req, res) => {
         animation-delay:.34s;
       }
 
+      .profile-story-stage-sound svg,
       .profile-story-stage-sound span{
         position:relative;
         z-index:1;
-        line-height:1;
-        transform:translateY(1px);
+      }
+
+      .profile-story-stage-sound svg{
+        width:100%;
+        height:100%;
+        padding:10px;
+        fill:none;
+        stroke:currentColor;
+        stroke-width:2;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+        box-sizing:border-box;
+      }
+
+      .profile-sound-icon-off{display:none;}
+      .profile-story-stage-sound.is-muted .profile-sound-icon-on{display:none;}
+      .profile-story-stage-sound.is-muted .profile-sound-icon-off{display:block;}
       }
 
       @keyframes profileSoundPulse{
@@ -2373,29 +2398,36 @@ router.get("/u/:username", async (req, res) => {
         font-weight:650;
       }
 
-      .profile-story-rail{
+      .profile-story-taskbar{
         position:absolute;
         left:18px;
         right:18px;
         bottom:20px;
         z-index:6;
-        width:auto;
-        max-height:none;
-        padding:10px 76px 10px 10px;
         display:flex;
-        flex-direction:row;
+        align-items:center;
         gap:8px;
-        overflow-x:auto;
-        overflow-y:hidden;
+        padding:10px;
         border-radius:28px;
         border:1px solid rgba(255,255,255,.10);
         background:rgba(4,7,12,.40);
         box-shadow:0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
         backdrop-filter:blur(16px);
         -webkit-backdrop-filter:blur(16px);
+        transition:opacity .32s ease, transform .32s ease;
+      }
+
+      .profile-story-rail{
+        flex:1 1 auto;
+        min-width:0;
+        max-height:none;
+        display:flex;
+        flex-direction:row;
+        gap:8px;
+        overflow-x:auto;
+        overflow-y:hidden;
         scrollbar-width:none;
         scroll-snap-type:x proximity;
-        transition:opacity .32s ease, transform .32s ease;
       }
 
       .profile-story-rail::-webkit-scrollbar{display:none;}
@@ -2423,8 +2455,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-story-stage.is-controls-dim .profile-story-stage-top,
       .profile-story-stage.is-controls-dim .profile-story-stage-caption,
-      .profile-story-stage.is-controls-dim .profile-story-rail,
-      .profile-story-stage.is-controls-dim .profile-story-stage-sound{
+      .profile-story-stage.is-controls-dim .profile-story-taskbar{
         opacity:.05;
         pointer-events:none;
         transform:translateY(6px);
@@ -3133,8 +3164,6 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-stage-sound{
-          right:27px;
-          bottom:26px;
           width:43px;
           height:43px;
           min-height:43px;
@@ -3157,20 +3186,23 @@ router.get("/u/:username", async (req, res) => {
           font-size:15px;
         }
 
-        .profile-story-rail{
+        .profile-story-taskbar{
           left:16px;
           right:16px;
           bottom:16px;
-          top:auto;
-          width:auto;
-          max-height:none;
-          transform:none;
-          flex-direction:row;
           border-radius:24px;
+          gap:7px;
+          padding:8px;
+        }
+
+        .profile-story-rail{
+          flex:1 1 auto;
+          min-width:0;
+          max-height:none;
+          flex-direction:row;
           overflow-x:auto;
           overflow-y:hidden;
           gap:7px;
-          padding:8px 66px 8px 8px;
         }
 
         .profile-story-rail-btn{
@@ -3331,7 +3363,6 @@ router.get("/u/:username", async (req, res) => {
           const hasVideo = items.some(function(item){ return !!item.isVideo; });
           if (soundBtn) {
             soundBtn.hidden = !hasVideo;
-            soundBtn.innerHTML = '<span aria-hidden="true">🔊</span>';
             soundBtn.setAttribute('aria-label', 'Turn story sound on');
           }
 
@@ -3356,7 +3387,7 @@ router.get("/u/:username", async (req, res) => {
 
           function updateSoundLabel(video){
             if (!soundBtn) return;
-            soundBtn.innerHTML = soundOn ? '<span aria-hidden="true">🔇</span>' : '<span aria-hidden="true">🔊</span>';
+            soundBtn.classList.toggle('is-muted', !soundOn);
             soundBtn.setAttribute('aria-label', soundOn ? 'Mute story sound' : 'Turn story sound on');
             if (video) video.muted = !soundOn;
           }
