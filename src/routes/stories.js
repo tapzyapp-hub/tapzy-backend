@@ -3521,7 +3521,8 @@ router.get("/stories/feed", async (req, res) => {
       const isLive = story.type === "live" && (!story.mediaUrl || isLiveStreamUrl(story.mediaUrl) || isNativeLiveUrl(story.mediaUrl));
       const isFollowing =
         currentProfile &&
-        (currentProfile.id === story.profileId || followingIds.has(story.profileId));
+        currentProfile.id !== story.profileId &&
+        followingIds.has(story.profileId);
       const liked = !!(currentProfile && story.likes && story.likes.length);
       const avatar = profile.photo
         ? `<img src="${escapeHtml(profile.photo)}" alt="" />`
