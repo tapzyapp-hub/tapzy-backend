@@ -5,7 +5,13 @@ const crypto = require("crypto");
 
 const prisma = require("../prisma");
 
-const { upload, uploadsDir } = require("../upload");
+const {
+  upload,
+  uploadsDir,
+  isCloudinaryConfigured,
+  uploadBufferToCloudinary,
+  uploadFileToCloudinary,
+} = require("../upload");
 
 const {
 
@@ -5017,17 +5023,50 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
     let photo = profile.photo;
     let savedCroppedPhoto = false;
 
-    function saveCroppedPhotoData(dataUrl) {
+    async function saveCroppedPhotoData(dataUrl) {
       const value = String(dataUrl || "");
       const match = value.match(/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i);
       if (!match) return null;
-      const mimeExt = match[1].toLowerCase() === "png" ? "png" : match[1].toLowerCase() === "webp" ? "webp" : "jpg";
+      const sourceType = match[1].toLowerCase();
+      const mimeExt = sourceType === "png" ? "png" : sourceType === "webp" ? "webp" : "jpg";
+      const contentType = mimeExt === "png" ? "image/png" : mimeExt === "webp" ? "image/webp" : "image/jpeg";
       const buffer = Buffer.from(match[2], "base64");
       if (!buffer.length || buffer.length > 8 * 1024 * 1024) return null;
+      if (isCloudinaryConfigured()) {
+        try {
+          const uploaded = await uploadBufferToCloudinary(buffer, {
+            resourceType: "image",
+            contentType,
+            filename: `tapzy-profile-photo.${mimeExt}`,
+            publicId: `profile-${profile.id || profile.username}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+          });
+          if (uploaded && uploaded.url) return uploaded.url;
+        } catch (error) {
+          console.warn("Profile cropped photo cloud upload failed; using local fallback.", error && error.message ? error.message : error);
+        }
+      }
       fs.mkdirSync(uploadsDir, { recursive: true });
       const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}-cropped.${mimeExt}`;
       fs.writeFileSync(path.join(uploadsDir, filename), buffer);
       return publicAbsoluteUrl(req, `/uploads/${filename}`);
+    }
+
+    async function saveUploadedProfilePhoto(file) {
+      if (!file) return null;
+      if (isCloudinaryConfigured() && file.path) {
+        try {
+          const uploaded = await uploadFileToCloudinary(file.path, {
+            resourceType: "image",
+            contentType: file.mimetype || "image/jpeg",
+            filename: file.originalname || file.filename || "tapzy-profile-photo.jpg",
+            publicId: `profile-${profile.id || profile.username}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+          });
+          if (uploaded && uploaded.url) return uploaded.url;
+        } catch (error) {
+          console.warn("Profile photo cloud upload failed; using local fallback.", error && error.message ? error.message : error);
+        }
+      }
+      return publicAbsoluteUrl(req, `/uploads/${file.filename}`);
     }
 
     if (removePhoto) {
@@ -5036,12 +5075,12 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
     } else {
 
-      const croppedPhotoUrl = saveCroppedPhotoData(req.body.croppedPhotoData);
+      const croppedPhotoUrl = await saveCroppedPhotoData(req.body.croppedPhotoData);
       if (croppedPhotoUrl) {
         photo = croppedPhotoUrl;
         savedCroppedPhoto = true;
       } else if (req.file) {
-        photo = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
+        photo = await saveUploadedProfilePhoto(req.file);
       }
 
     }

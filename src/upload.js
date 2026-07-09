@@ -97,12 +97,95 @@ const upload = multer({
   },
 });
 
+function cloudinaryConfig() {
+  const cloudName = String(process.env.CLOUDINARY_CLOUD_NAME || "").trim();
+  const apiKey = String(process.env.CLOUDINARY_API_KEY || "").trim();
+  const apiSecret = String(process.env.CLOUDINARY_API_SECRET || "").trim();
+
+  if (!cloudName || !apiKey || !apiSecret) return null;
+  return { cloudName, apiKey, apiSecret };
+}
+
+function isCloudinaryConfigured() {
+  return !!cloudinaryConfig();
+}
+
+function signCloudinaryParams(params, apiSecret) {
+  const payload = Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null && String(value) !== "")
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
+
+  return crypto.createHash("sha1").update(`${payload}${apiSecret}`).digest("hex");
+}
+
+async function uploadBufferToCloudinary(buffer, options = {}) {
+  const config = cloudinaryConfig();
+  if (!config) return null;
+  if (!buffer || !buffer.length) return null;
+  if (typeof fetch !== "function" || typeof FormData !== "function" || typeof Blob !== "function") {
+    throw new Error("Cloudinary upload requires Node fetch/FormData support");
+  }
+
+  const resourceType = String(options.resourceType || "image").trim() || "image";
+  const folderRoot = String(process.env.CLOUDINARY_UPLOAD_FOLDER || "tapzy-media").trim() || "tapzy-media";
+  const folder = String(options.folder || `${folderRoot}/profile-photos`).trim();
+  const timestamp = Math.floor(Date.now() / 1000);
+  const publicId = String(options.publicId || "").trim();
+  const contentType = String(options.contentType || "image/jpeg").trim() || "image/jpeg";
+  const filename = String(options.filename || "tapzy-profile-photo.jpg").trim() || "tapzy-profile-photo.jpg";
+
+  const signedParams = {
+    folder,
+    timestamp,
+  };
+  if (publicId) signedParams.public_id = publicId;
+
+  const signature = signCloudinaryParams(signedParams, config.apiSecret);
+  const form = new FormData();
+  form.append("file", new Blob([buffer], { type: contentType }), filename);
+  form.append("api_key", config.apiKey);
+  form.append("signature", signature);
+  Object.entries(signedParams).forEach(([key, value]) => form.append(key, String(value)));
+
+  const endpoint = `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/${encodeURIComponent(resourceType)}/upload`;
+  const response = await fetch(endpoint, { method: "POST", body: form });
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch (_) {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message = payload && payload.error && payload.error.message ? payload.error.message : text;
+    throw new Error(`Cloudinary upload failed: ${String(message || response.status).slice(0, 240)}`);
+  }
+
+  return {
+    url: payload && (payload.secure_url || payload.url) ? payload.secure_url || payload.url : null,
+    publicId: payload && payload.public_id ? payload.public_id : null,
+    raw: payload,
+  };
+}
+
+async function uploadFileToCloudinary(filePath, options = {}) {
+  if (!filePath) return null;
+  const buffer = await fs.promises.readFile(filePath);
+  return uploadBufferToCloudinary(buffer, options);
+}
+
 module.exports = {
   upload,
   uploadsDir,
   chunkUploadsDir,
   safeUploadFilename,
   safeExtension,
+  isCloudinaryConfigured,
+  uploadBufferToCloudinary,
+  uploadFileToCloudinary,
   VIDEO_UPLOAD_MAX_MB,
   VIDEO_UPLOAD_MAX_BYTES,
 };
