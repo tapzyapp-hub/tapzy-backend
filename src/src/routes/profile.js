@@ -119,6 +119,24 @@ function formatStoryTimeShort(date) {
 
 }
 
+function profileDiscoveryItemFromStory(story) {
+  const storyProfile = story.profile || {};
+  const storyName = storyProfile.name || storyProfile.username || "Tapzy Network\u2122";
+  const engagementScore =
+    Number(story._count?.likes || 0) * 3 +
+    Number(story._count?.replies || 0) * 2 +
+    Number(story._count?.views || 0);
+  return {
+    id: story.id,
+    mediaUrl: story.mediaUrl || "",
+    isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
+    title: storyName,
+    meta: "Tapzy Story",
+    score: engagementScore,
+  };
+}
+
+
 function tapzyMarkImg(className = "tapzy-mark") {
   return `<img class="${escapeHtml(className)}" src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />`;
 }
@@ -208,6 +226,36 @@ function storyStageMedia(profile, story) {
 
 
 
+router.get("/u/:username/discovery-items", async (req, res) => {
+  try {
+    const currentProfile = req.currentProfile || null;
+    const now = new Date();
+    const excludedDiscoveryProfileIds = currentProfile ? [currentProfile.id] : [];
+    const stories = await prisma.story.findMany({
+      where: {
+        profileId: excludedDiscoveryProfileIds.length ? { notIn: excludedDiscoveryProfileIds } : undefined,
+        expiresAt: { gt: now },
+        mediaUrl: { not: null },
+      },
+      include: {
+        profile: true,
+        _count: { select: { likes: true, views: true, replies: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+    const items = stories
+      .filter((story) => story.mediaUrl && !excludedDiscoveryProfileIds.includes(story.profileId))
+      .map(profileDiscoveryItemFromStory)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12);
+    res.setHeader("Cache-Control", "no-store");
+    return res.json({ ok: true, items });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, items: [] });
+  }
+});
 router.get("/u/:username", async (req, res) => {
 
   try {
@@ -350,22 +398,7 @@ router.get("/u/:username", async (req, res) => {
 
     const profileDiscoveryItems = discoveryStories
       .filter((story) => story.mediaUrl && !excludedDiscoveryProfileIds.includes(story.profileId))
-      .map((story) => {
-        const storyProfile = story.profile || {};
-        const storyName = storyProfile.name || storyProfile.username || "Tapzy Network™";
-        const engagementScore =
-          Number(story._count?.likes || 0) * 3 +
-          Number(story._count?.replies || 0) * 2 +
-          Number(story._count?.views || 0);
-        return {
-          id: story.id,
-          mediaUrl: story.mediaUrl || "",
-          isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
-          title: storyName,
-          meta: "Tapzy Story",
-          score: engagementScore,
-        };
-      })
+      .map(profileDiscoveryItemFromStory)
       .sort((a, b) => b.score - a.score)
       .slice(0, 12);
     const profileDiscoveryJson = JSON.stringify(profileDiscoveryItems).replace(/</g, "\\u003c");
@@ -3698,23 +3731,14 @@ router.get("/u/:username", async (req, res) => {
           function refreshDiscoveryItems(){
             if (discoveryRefreshInFlight) return Promise.resolve(false);
             discoveryRefreshInFlight = true;
-            let url;
-            try {
-              url = new URL(window.location.href);
-              url.searchParams.set('_tapzyDiscoveryRefresh', String(Date.now()));
-            } catch (_) {
-              url = window.location.href;
-            }
-            return fetch(String(url), { credentials:'same-origin', cache:'no-store' })
-              .then(function(response){ return response.ok ? response.text() : ''; })
-              .then(function(html){
-                if (!html) return false;
-                const doc = new DOMParser().parseFromString(html, 'text/html');
-                const freshSource = doc.querySelector('[data-profile-discovery-items]');
-                let freshItems = [];
-                try { freshItems = freshSource ? JSON.parse(freshSource.textContent || '[]') || [] : []; } catch (_) { freshItems = []; }
+            let url = window.location.pathname.replace(/\/$/, '') + '/discovery-items';
+            return fetch(url, { credentials:'same-origin', cache:'no-store', headers:{ 'Accept':'application/json' } })
+              .then(function(response){ return response.ok ? response.json() : { items: [] }; })
+              .then(function(data){
+                const freshItems = Array.isArray(data && data.items) ? data.items : [];
                 if (!freshItems.length) return false;
-                discoveryItems = freshItems;
+                discoveryItems = freshItems.filter(function(item){ return item && item.mediaUrl; });
+                if (!discoveryItems.length) return false;
                 discoveryIndex = 0;
                 sortDiscoveryItems();
                 return true;
