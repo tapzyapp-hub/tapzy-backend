@@ -5,7 +5,13 @@ const crypto = require("crypto");
 
 const prisma = require("../prisma");
 
-const { upload, uploadsDir } = require("../upload");
+const {
+  upload,
+  uploadsDir,
+  isCloudinaryConfigured,
+  uploadBufferToCloudinary,
+  uploadFileToCloudinary,
+} = require("../upload");
 
 const {
 
@@ -50,6 +56,11 @@ function isVideoUrl(url) {
     value.endsWith(".mov") ||
 
     value.endsWith(".webm") ||
+    value.endsWith(".m4v") ||
+    value.endsWith(".3gp") ||
+    value.endsWith(".3gpp") ||
+    value.endsWith(".avi") ||
+    value.endsWith(".hevc") ||
 
     value.includes("/video/")
 
@@ -108,6 +119,10 @@ function formatStoryTimeShort(date) {
 
 }
 
+function tapzyMarkImg(className = "tapzy-mark") {
+  return `<img class="${escapeHtml(className)}" src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />`;
+}
+
 
 
 function storyTrayCard(profile, story, isOwner) {
@@ -162,6 +177,35 @@ function storyTrayCard(profile, story, isOwner) {
 
 }
 
+function storyStageMedia(profile, story) {
+  if (!story) {
+    return `
+      <div class="profile-story-stage-empty">
+        <div class="profile-story-stage-empty-mark">${tapzyMarkImg("tapzy-mark profile-story-stage-empty-logo")}</div>
+        <div class="profile-story-stage-empty-title">No active stories</div>
+        <div class="profile-story-stage-empty-sub">Create a 24-hour update to fill this space.</div>
+      </div>
+    `;
+  }
+
+  const label = escapeHtml(story.text || profile.name || profile.username || "Tapzy Story");
+  if (!story.mediaUrl) {
+    return `<div class="profile-story-stage-text">${label}</div>`;
+  }
+
+  if (isVideoUrl(story.mediaUrl)) {
+    return renderVideoFrame(story.mediaUrl, {
+      className: "profile-story-stage-media",
+      controls: false,
+      muted: true,
+      preload: "auto",
+      ariaLabel: "Play profile story preview",
+    });
+  }
+
+  return `<img class="profile-story-stage-media" src="${escapeHtml(story.mediaUrl)}" alt="${label}" loading="lazy" decoding="async" />`;
+}
+
 
 
 router.get("/u/:username", async (req, res) => {
@@ -202,11 +246,16 @@ router.get("/u/:username", async (req, res) => {
 
     const followState = await getFollowState(currentProfile?.id, profile.id);
 
-    const quickPreview = buildQuickSharePreview(profile);
+    const quickShareOn = !!profile.quickShareEnabled;
+    const quickPreview = quickShareOn ? buildQuickSharePreview(profile) : [];
+    const excludedDiscoveryProfileIds =
+      currentProfile && currentProfile.id !== profile.id
+        ? [profile.id, currentProfile.id]
+        : [profile.id];
 
 
 
-    const [activeStories, attendingEvent] = await Promise.all([
+    const [activeStories, attendingEvent, discoveryStories] = await Promise.all([
 
       prisma.story.findMany({
 
@@ -258,6 +307,20 @@ router.get("/u/:username", async (req, res) => {
 
       }),
 
+      prisma.story.findMany({
+        where: {
+          profileId: { notIn: excludedDiscoveryProfileIds },
+          expiresAt: { gt: now },
+          mediaUrl: { not: null },
+        },
+        include: {
+          profile: true,
+          _count: { select: { likes: true, views: true, replies: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+
     ]);
 
 
@@ -287,6 +350,55 @@ router.get("/u/:username", async (req, res) => {
     const showMessageButton = currentProfile && currentProfile.id !== profile.id;
 
     const showFollowButton = !!(currentProfile && currentProfile.id !== profile.id);
+
+    const profileDiscoveryItems = discoveryStories
+      .filter((story) => story.mediaUrl && !excludedDiscoveryProfileIds.includes(story.profileId))
+      .map((story) => {
+        const storyProfile = story.profile || {};
+        const storyName = storyProfile.name || storyProfile.username || "Tapzy Network™";
+        const engagementScore =
+          Number(story._count?.likes || 0) * 3 +
+          Number(story._count?.replies || 0) * 2 +
+          Number(story._count?.views || 0);
+        return {
+          id: story.id,
+          mediaUrl: story.mediaUrl || "",
+          isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
+          title: storyName,
+          meta: "Tapzy Story",
+          score: engagementScore,
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12);
+    const profileDiscoveryJson = JSON.stringify(profileDiscoveryItems).replace(/</g, "\\u003c");
+
+    const featuredStory = activeStories[0] || null;
+    const profileStoryFeedItems = activeStories.map((story) => ({
+      mediaUrl: story.mediaUrl || "",
+      isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
+      text: story.text || profile.name || profile.username || "Tapzy Story",
+      time: formatStoryTimeShort(story.createdAt),
+    }));
+    const hasProfileStoryVideo = profileStoryFeedItems.some((story) => story.isVideo);
+    const profileStoryFeedJson = JSON.stringify(profileStoryFeedItems).replace(/</g, "\\u003c");
+    const quickShareRailLinks = quickShareOn ? [
+      profile.shareNameEnabled && (profile.name || displayName) ? `<button class="profile-story-rail-btn" type="button" data-copy-share="${escapeHtml(profile.name || displayName)}"><span>Name</span></button>` : "",
+      profile.sharePhoneEnabled && profile.phone ? `<a class="profile-story-rail-btn" href="tel:${escapeHtml(profile.phone)}"><span>Phone</span></a>` : "",
+      profile.shareEmailEnabled && profile.email ? `<a class="profile-story-rail-btn" href="mailto:${escapeHtml(profile.email)}"><span>Email</span></a>` : "",
+      profile.shareWebsiteEnabled && profile.website ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.website))}" target="_blank" rel="noopener noreferrer"><span>Website</span></a>` : "",
+      profile.shareInstagramEnabled && profile.instagram ? `<a class="profile-story-rail-btn" href="https://instagram.com/${escapeHtml(stripAt(profile.instagram))}" target="_blank" rel="noopener noreferrer"><span>Instagram</span></a>` : "",
+      profile.shareTiktokEnabled && profile.tiktok ? `<a class="profile-story-rail-btn" href="https://www.tiktok.com/@${escapeHtml(stripAt(profile.tiktok))}" target="_blank" rel="noopener noreferrer"><span>TikTok</span></a>` : "",
+      profile.shareLinkedinEnabled && profile.linkedin ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.linkedin))}" target="_blank" rel="noopener noreferrer"><span>LinkedIn</span></a>` : "",
+      profile.shareTwitterEnabled && profile.twitter ? `<a class="profile-story-rail-btn" href="https://x.com/${escapeHtml(stripAt(profile.twitter))}" target="_blank" rel="noopener noreferrer"><span>X</span></a>` : "",
+      profile.shareFacebookEnabled && profile.facebook ? `<a class="profile-story-rail-btn" href="https://facebook.com/${escapeHtml(stripAt(profile.facebook))}" target="_blank" rel="noopener noreferrer"><span>Facebook</span></a>` : "",
+      profile.shareYoutubeEnabled && profile.youtube ? `<a class="profile-story-rail-btn" href="https://youtube.com/@${escapeHtml(stripAt(profile.youtube))}" target="_blank" rel="noopener noreferrer"><span>YouTube</span></a>` : "",
+      profile.shareGithubEnabled && profile.github ? `<a class="profile-story-rail-btn" href="https://github.com/${escapeHtml(stripAt(profile.github))}" target="_blank" rel="noopener noreferrer"><span>GitHub</span></a>` : "",
+      profile.shareSnapchatEnabled && profile.snapchat ? `<a class="profile-story-rail-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer"><span>Snapchat</span></a>` : "",
+      profile.shareWhatsappEnabled && profile.whatsapp ? `<a class="profile-story-rail-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span></a>` : "",
+      profile.shareTelegramEnabled && profile.telegram ? `<a class="profile-story-rail-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer"><span>Telegram</span></a>` : "",
+    ].filter(Boolean).join("") : "";
+    const showProfileStoryTaskbar = !!quickShareRailLinks || hasProfileStoryVideo;
 
 
 
@@ -380,6 +492,15 @@ router.get("/u/:username", async (req, res) => {
       <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
 
         <div class="profile-showcase-bg"></div>
+        <script type="application/json" data-profile-discovery-items>${profileDiscoveryJson}</script>
+        <div class="profile-showcase-discovery" data-profile-discovery-screen aria-hidden="true">
+          <div class="profile-showcase-discovery-media" data-profile-discovery-media></div>
+          <div class="profile-showcase-discovery-shade"></div>
+          <div class="profile-showcase-discovery-copy">
+            <strong data-profile-discovery-title>Tapzy Network™</strong>
+            <span data-profile-discovery-meta>Discovery</span>
+          </div>
+        </div>
 
 
 
@@ -435,9 +556,9 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-              <a class="profile-pill-btn profile-pill-btn-dark" href="/qr/${escapeHtml(profile.username || "")}">QR</a>
+              <a class="profile-pill-btn profile-pill-btn-dark profile-showcase-secondary" href="/qr/${escapeHtml(profile.username || "")}">QR</a>
 
-              <a class="profile-pill-btn profile-pill-btn-dark" href="/vcard/${escapeHtml(profile.username || "")}">Save Contact</a>
+              <a class="profile-pill-btn profile-pill-btn-dark profile-showcase-secondary" href="/vcard/${escapeHtml(profile.username || "")}">Save Contact</a>
 
             </div>
 
@@ -493,33 +614,71 @@ router.get("/u/:username", async (req, res) => {
 
       ${
 
-        activeStories.length
+        activeStories.length || isOwner || quickPreview.length
 
           ? `
 
-            <section class="profile-panel" style="margin-top:18px;">
+            <section class="profile-story-stage-panel" aria-label="Profile story feed">
 
-              <div class="profile-panel-row">
+              <div class="profile-story-stage" data-profile-story-stage>
 
-                <div>
+                <script type="application/json" data-profile-story-items>${profileStoryFeedJson}</script>
 
-                  <h3 class="profile-panel-heading">Stories</h3>
+                <div class="profile-story-stage-top">
 
-                  <div class="profile-panel-subheading">Live 24-hour updates from this profile.</div>
+                  <div class="profile-story-stage-identity">
+
+                    <span class="profile-story-stage-dot"></span>
+
+                    <span>Tapzy Network™</span>
+
+                  </div>
 
                 </div>
 
+                <div class="profile-story-stage-media-link" data-profile-story-frame aria-label="Profile story feed">
 
+                  ${storyStageMedia(profile, featuredStory)}
 
-                <a class="profile-mini-action" href="/stories/${escapeHtml(profile.username || "")}">Open Stories</a>
+                </div>
 
-              </div>
+                <div class="profile-story-stage-caption">
 
+                  <div>
 
+                    <strong>${escapeHtml(displayName)}</strong>
 
-              <div class="profile-stories-tray">
+                    ${
+                      featuredStory
+                        ? `<span data-profile-story-meta>${escapeHtml(formatStoryTimeShort(featuredStory.createdAt))} · Tapzy Story</span>`
+                        : ""
+                    }
 
-                ${activeStories.map((story) => storyTrayCard(profile, story, isOwner)).join("")}
+                  </div>
+
+                </div>
+                ${quickShareRailLinks ? `<div class="profile-story-copy-toast" data-profile-story-copy-toast>Copied name</div>` : ""}
+                ${showProfileStoryTaskbar ? `
+                  <div class="profile-story-taskbar" data-profile-story-taskbar>
+                    ${
+                      quickShareRailLinks
+                        ? `<aside class="profile-story-rail" aria-label="Quick share">${quickShareRailLinks}</aside>`
+                        : `<div class="profile-story-rail" aria-hidden="true"></div>`
+                    }
+                    <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${hasProfileStoryVideo ? "" : "hidden"} aria-label="Turn story sound on">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-on">
+                        <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                        <path d="M16 8.5a5 5 0 0 1 0 7"></path>
+                        <path d="M18.5 6a8.5 8.5 0 0 1 0 12"></path>
+                      </svg>
+                      <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-off">
+                        <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                        <path d="M17 9l4 4"></path>
+                        <path d="M21 9l-4 4"></path>
+                      </svg>
+                    </button>
+                  </div>
+                ` : ""}
 
               </div>
 
@@ -527,33 +686,7 @@ router.get("/u/:username", async (req, res) => {
 
           `
 
-          : isOwner
-
-            ? `
-
-              <section class="profile-panel" style="margin-top:18px;">
-
-                <div class="profile-panel-row">
-
-                  <div>
-
-                    <h3 class="profile-panel-heading">Stories</h3>
-
-                    <div class="profile-panel-subheading">You do not have any active stories right now.</div>
-
-                  </div>
-
-
-
-                  <a class="profile-mini-action" href="/stories">Create Story</a>
-
-                </div>
-
-              </section>
-
-            `
-
-            : ""
+          : ""
 
       }
 
@@ -578,148 +711,6 @@ router.get("/u/:username", async (req, res) => {
                   : ""
 
               }
-
-            </section>
-
-          `
-
-          : ""
-
-      }
-
-
-
-      ${
-
-        quickPreview.length
-
-          ? `
-
-            <section class="profile-panel" style="margin-top:18px;">
-
-              <h3 class="profile-panel-heading">Quick Share</h3>
-
-              <div class="profile-panel-subheading">Tap to connect instantly.</div>
-
-
-
-              <div class="profile-quick-actions">
-
-                ${profile.phone ? `<a class="profile-quick-btn" href="tel:${escapeHtml(profile.phone)}">Phone</a>` : ""}
-
-                ${profile.email ? `<a class="profile-quick-btn" href="mailto:${escapeHtml(profile.email)}">Email</a>` : ""}
-
-                ${
-
-                  profile.website
-
-                    ? `<a class="profile-quick-btn" href="${escapeHtml(safeUrl(profile.website))}" target="_blank" rel="noopener noreferrer">Website</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.instagram
-
-                    ? `<a class="profile-quick-btn" href="https://instagram.com/${escapeHtml(stripAt(profile.instagram))}" target="_blank" rel="noopener noreferrer">Instagram</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.tiktok
-
-                    ? `<a class="profile-quick-btn" href="https://www.tiktok.com/@${escapeHtml(stripAt(profile.tiktok))}" target="_blank" rel="noopener noreferrer">TikTok</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.linkedin
-
-                    ? `<a class="profile-quick-btn" href="${escapeHtml(safeUrl(profile.linkedin))}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.twitter
-
-                    ? `<a class="profile-quick-btn" href="https://x.com/${escapeHtml(stripAt(profile.twitter))}" target="_blank" rel="noopener noreferrer">X</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.facebook
-
-                    ? `<a class="profile-quick-btn" href="https://facebook.com/${escapeHtml(stripAt(profile.facebook))}" target="_blank" rel="noopener noreferrer">Facebook</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.youtube
-
-                    ? `<a class="profile-quick-btn" href="https://youtube.com/@${escapeHtml(stripAt(profile.youtube))}" target="_blank" rel="noopener noreferrer">YouTube</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.github
-
-                    ? `<a class="profile-quick-btn" href="https://github.com/${escapeHtml(stripAt(profile.github))}" target="_blank" rel="noopener noreferrer">GitHub</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.snapchat
-
-                    ? `<a class="profile-quick-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer">Snapchat</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.whatsapp
-
-                    ? `<a class="profile-quick-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.telegram
-
-                    ? `<a class="profile-quick-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer">Telegram</a>`
-
-                    : ""
-
-                }
-
-              </div>
 
             </section>
 
@@ -1478,6 +1469,167 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
+      .profile-showcase-discovery{
+        position:absolute;
+        inset:0;
+        z-index:4;
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        overflow:hidden;
+        border-radius:34px;
+        background:#000;
+        transition:opacity .42s ease, visibility .42s ease;
+      }
+
+      .profile-showcase.is-discovery-screen{
+        background:#000;
+        border-color:rgba(255,255,255,.08);
+      }
+
+      .profile-showcase.is-discovery-screen .profile-showcase-bg,
+      .profile-showcase.is-discovery-screen .profile-showcase-top{
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+      }
+
+      .profile-showcase.is-discovery-screen .profile-showcase-discovery{
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+      }
+
+      .profile-showcase.is-discovery-screen.is-discovery-empty .profile-showcase-top{
+        opacity:1;
+        visibility:visible;
+        pointer-events:none;
+        position:relative;
+        z-index:6;
+      }
+
+      .profile-showcase.is-discovery-screen.is-discovery-empty .profile-showcase-main{
+        opacity:0;
+        visibility:hidden;
+      }
+
+      .profile-showcase.is-discovery-screen.is-discovery-empty .profile-showcase-avatar-wrap{
+        opacity:1;
+        visibility:visible;
+      }
+
+      .profile-showcase-discovery-media,
+      .profile-showcase-discovery-media img,
+      .profile-showcase-discovery-media video{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+      }
+
+      .profile-showcase-discovery-media img,
+      .profile-showcase-discovery-media video{
+        display:block;
+        object-fit:cover;
+        background:#000;
+      }
+      .profile-showcase-discovery.is-empty .profile-showcase-discovery-shade,
+      .profile-showcase-discovery.is-empty .profile-showcase-discovery-copy{
+        display:none;
+      }
+
+      .profile-showcase-discovery-empty{
+        position:absolute;
+        inset:0;
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+        justify-content:flex-start;
+        gap:18px;
+        padding:28px;
+        color:#fff;
+        background:#000;
+      }
+
+      .profile-showcase-discovery-empty{
+        z-index:5;
+      }
+
+      .profile-showcase-discovery-empty-avatar{
+        width:140px;
+        height:140px;
+        border-radius:30px;
+        overflow:hidden;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#fff;
+        font-size:54px;
+        font-weight:900;
+        border:3px solid rgba(115,194,255,.92);
+        background:linear-gradient(180deg,rgba(5,8,14,.98),rgba(0,0,0,1));
+        box-shadow:0 0 26px rgba(87,170,255,.28),0 0 54px rgba(48,110,255,.18);
+      }
+
+      .profile-showcase-discovery-empty-avatar img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+      }
+
+      .profile-showcase-discovery-empty-copy{
+        margin-top:auto;
+        max-width:330px;
+      }
+
+      .profile-showcase-discovery-empty-copy strong{
+        display:block;
+        font-size:26px;
+        line-height:1.08;
+        font-weight:950;
+      }
+
+      .profile-showcase-discovery-empty-copy span{
+        display:block;
+        margin-top:8px;
+        color:rgba(255,255,255,.72);
+        font-size:14px;
+        line-height:1.42;
+        font-weight:750;
+      }
+
+      .profile-showcase-discovery-shade{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:linear-gradient(180deg, rgba(0,0,0,.18), transparent 42%, rgba(0,0,0,.72));
+      }
+
+      .profile-showcase-discovery-copy{
+        position:absolute;
+        left:28px;
+        right:28px;
+        bottom:24px;
+        z-index:2;
+        color:#fff;
+        text-shadow:0 2px 14px rgba(0,0,0,.72);
+      }
+
+      .profile-showcase-discovery-copy strong{
+        display:block;
+        font-size:28px;
+        line-height:1.05;
+        font-weight:950;
+      }
+
+      .profile-showcase-discovery-copy span{
+        display:block;
+        margin-top:7px;
+        color:rgba(255,255,255,.82);
+        font-size:14px;
+        font-weight:750;
+      }
+
 
 
       .profile-showcase-top{
@@ -1658,6 +1810,7 @@ router.get("/u/:username", async (req, res) => {
         overflow:hidden;
 
         text-overflow:ellipsis;
+        transition:opacity .32s ease, transform .32s ease;
 
       }
 
@@ -1680,7 +1833,6 @@ router.get("/u/:username", async (req, res) => {
         overflow:hidden;
 
         text-overflow:ellipsis;
-
       }
 
 
@@ -1699,6 +1851,18 @@ router.get("/u/:username", async (req, res) => {
 
         width:auto;
 
+      }
+
+      .profile-showcase-secondary{
+        transition:opacity .32s ease, transform .32s ease;
+      }
+
+      .profile-showcase.is-secondary-dim .profile-showcase-name,
+      .profile-showcase.is-secondary-dim .profile-showcase-handle,
+      .profile-showcase.is-secondary-dim .profile-showcase-secondary{
+        opacity:0;
+        pointer-events:none;
+        transform:translateY(5px);
       }
 
 
@@ -2058,12 +2222,20 @@ router.get("/u/:username", async (req, res) => {
         gap:14px;
 
         overflow-x:auto;
+        overflow-y:hidden;
 
-        padding-top:16px;
+        padding:16px 2px 8px;
 
         -webkit-overflow-scrolling:touch;
+        scroll-snap-type:x proximity;
+        scroll-padding-inline:2px;
+        overscroll-behavior-x:contain;
+        touch-action:pan-x pan-y;
+        scrollbar-width:none;
 
       }
+
+      .profile-stories-tray::-webkit-scrollbar{display:none;}
 
 
 
@@ -2076,9 +2248,11 @@ router.get("/u/:username", async (req, res) => {
         text-decoration:none;
 
         flex:0 0 auto;
-        touch-action:none;
+        touch-action:pan-x pan-y;
+        scroll-snap-align:start;
+        scroll-snap-stop:normal;
         user-select:none;
-        cursor:grab;
+        cursor:pointer;
 
       }
 
@@ -2201,6 +2375,416 @@ router.get("/u/:username", async (req, res) => {
 
         font-size:12px;
 
+      }
+
+      .profile-story-stage-panel{
+        margin-top:18px;
+      }
+
+      .profile-story-stage{
+        position:relative;
+        min-height:min(760px, calc(100svh - 116px));
+        border-radius:34px;
+        overflow:hidden;
+        border:1px solid rgba(115,194,255,.18);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.12), transparent 42%),
+          linear-gradient(180deg, rgba(7,10,18,.98), rgba(0,0,0,1));
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.03),
+          0 0 44px rgba(87,170,255,.12),
+          0 24px 70px rgba(0,0,0,.60),
+          inset 0 1px 0 rgba(255,255,255,.05);
+      }
+
+      .profile-story-stage::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(0,0,0,.50) 0%, transparent 22%, transparent 58%, rgba(0,0,0,.76) 100%),
+          radial-gradient(circle at 92% 50%, rgba(4,8,16,.56), transparent 28%);
+        z-index:2;
+        transition:opacity .32s ease;
+      }
+
+      .profile-story-stage.is-controls-dim::after{
+        opacity:.08;
+      }
+
+      .profile-story-stage-top{
+        position:absolute;
+        left:24px;
+        right:24px;
+        top:42px;
+        z-index:5;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        transition:opacity .32s ease, transform .32s ease;
+      }
+
+      .profile-story-stage-identity{
+        min-width:0;
+        display:flex;
+        align-items:center;
+        gap:9px;
+        color:#fff;
+        font-size:19px;
+        font-weight:950;
+        text-shadow:0 2px 14px rgba(0,0,0,.72);
+      }
+
+      .profile-story-stage-identity span:last-child{
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      .profile-story-stage-dot{
+        width:13px;
+        height:13px;
+        flex:0 0 auto;
+        border-radius:999px;
+        background:#65d7ff;
+        box-shadow:0 0 18px rgba(101,215,255,.72);
+      }
+
+      .profile-story-stage-sound{
+        position:relative;
+        flex:0 0 auto;
+        width:43px;
+        height:43px;
+        padding:0;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:999px;
+        color:#fff;
+        font-size:20px;
+        font-weight:900;
+        border:2px solid rgba(255,255,255,.65);
+        background:rgba(0,0,0,.40);
+        box-shadow:
+          0 12px 30px rgba(0,0,0,.30),
+          inset 0 1px 0 rgba(255,255,255,.08);
+        backdrop-filter:blur(14px);
+        -webkit-backdrop-filter:blur(14px);
+        cursor:pointer;
+        transition:opacity .32s ease, transform .32s ease, border-color .22s ease, box-shadow .22s ease;
+        animation:profileSoundPulse 1.9s ease-in-out infinite;
+      }
+
+      .profile-story-stage-sound[hidden]{display:none;}
+
+      .profile-story-stage-sound::before,
+      .profile-story-stage-sound::after{
+        content:"";
+        position:absolute;
+        inset:-8px;
+        border-radius:999px;
+        pointer-events:none;
+        border:1px solid rgba(255,255,255,.38);
+        box-shadow:0 0 18px rgba(255,255,255,.12), 0 0 24px rgba(87,170,255,.18);
+        opacity:.72;
+        animation:profileSoundRing 2.15s ease-in-out infinite;
+      }
+
+      .profile-story-stage-sound::after{
+        inset:-14px;
+        opacity:.42;
+        animation-delay:.34s;
+      }
+
+      .profile-story-stage-sound svg,
+      .profile-story-stage-sound span{
+        position:relative;
+        z-index:1;
+      }
+
+      .profile-story-stage-sound svg{
+        width:100%;
+        height:100%;
+        padding:10px;
+        fill:none;
+        stroke:currentColor;
+        stroke-width:2;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+        box-sizing:border-box;
+      }
+
+      .profile-sound-icon-off{display:none;}
+      .profile-story-stage-sound.is-muted .profile-sound-icon-on{display:none;}
+      .profile-story-stage-sound.is-muted .profile-sound-icon-off{display:block;}
+      }
+
+      @keyframes profileSoundPulse{
+        0%,100%{
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,.10),
+            0 0 0 0 rgba(255,255,255,.16),
+            0 12px 32px rgba(0,0,0,.30),
+            inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        50%{
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,.12),
+            0 0 0 9px rgba(255,255,255,.08),
+            0 12px 32px rgba(0,0,0,.30),
+            inset 0 1px 0 rgba(255,255,255,.08);
+        }
+      }
+
+      @keyframes profileSoundRing{
+        0%,100%{ transform:scale(.92); opacity:.38; }
+        50%{ transform:scale(1.05); opacity:.82; }
+      }
+
+      .profile-story-stage-media-link{
+        position:absolute;
+        inset:0;
+        display:block;
+        color:#fff;
+        text-decoration:none;
+        z-index:1;
+      }
+
+      .profile-story-stage-media-link .tz-video-frame{
+        width:100%;
+        height:100%;
+      }
+
+      .profile-story-stage-media{
+        width:100%;
+        height:100%;
+        display:block;
+        object-fit:cover;
+      }
+
+      .profile-story-stage-text,
+      .profile-story-stage-empty{
+        width:100%;
+        height:100%;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        padding:32px 32px 122px;
+        text-align:center;
+        background:
+          radial-gradient(circle at 50% 18%, rgba(95,182,255,.22), transparent 38%),
+          linear-gradient(180deg, rgba(10,16,28,.98), rgba(0,0,0,1));
+        font-size:28px;
+        line-height:1.2;
+        font-weight:950;
+      }
+
+      .profile-story-stage-empty-mark{
+        position:relative;
+        width:86px;
+        height:86px;
+        border-radius:24px;
+        display:grid;
+        place-items:center;
+        background:linear-gradient(145deg, #2f76ff, #1145ad);
+        color:#fff;
+        box-shadow:0 18px 44px rgba(35,102,231,.34), inset 0 1px 0 rgba(255,255,255,.16);
+        animation:profileStageLogoPulse 2.25s ease-in-out infinite;
+        will-change:transform,box-shadow;
+        z-index:1;
+      }
+
+      .profile-story-stage-empty-mark::before{
+        content:"";
+        position:absolute;
+        inset:-12px;
+        border-radius:32px;
+        background:radial-gradient(circle, rgba(47,118,255,.36), rgba(47,118,255,0) 70%);
+        animation:profileStageLogoHalo 2.25s ease-out infinite;
+        z-index:-1;
+      }
+
+      .profile-story-stage-empty-mark::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:24px;
+        background:linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,0) 45%);
+        pointer-events:none;
+      }
+
+      .profile-story-stage-empty-logo{
+        width:66%;
+        height:66%;
+        object-fit:contain;
+        filter:drop-shadow(0 3px 8px rgba(0,0,0,.22));
+        animation:profileStageLogoInnerPulse 2.25s ease-in-out infinite;
+      }
+
+      @keyframes profileStageLogoPulse{
+        0%,100%{transform:scale(1);box-shadow:0 18px 44px rgba(35,102,231,.34), inset 0 1px 0 rgba(255,255,255,.16);}
+        50%{transform:scale(1.075);box-shadow:0 22px 62px rgba(35,102,231,.58), 0 0 32px rgba(79,145,255,.38), inset 0 1px 0 rgba(255,255,255,.22);}
+      }
+
+      @keyframes profileStageLogoHalo{
+        0%{opacity:.48;transform:scale(.86);}
+        60%{opacity:.16;transform:scale(1.32);}
+        100%{opacity:0;transform:scale(1.45);}
+      }
+
+      @keyframes profileStageLogoInnerPulse{
+        0%,100%{transform:scale(1);}
+        50%{transform:scale(1.035);}
+      }
+
+      .profile-story-stage-empty-title{
+        color:#fff;
+        font-size:28px;
+        font-weight:950;
+      }
+
+      .profile-story-stage-empty-sub{
+        max-width:300px;
+        color:#c8d5e6;
+        font-size:15px;
+        line-height:1.5;
+        font-weight:750;
+      }
+
+      .profile-story-stage-caption{
+        position:absolute;
+        left:24px;
+        right:118px;
+        bottom:24px;
+        z-index:5;
+        color:#fff;
+        text-shadow:0 2px 14px rgba(0,0,0,.72);
+        transition:opacity .32s ease, transform .32s ease;
+      }
+
+      .profile-story-stage-caption strong{
+        display:block;
+        font-size:28px;
+        line-height:1.05;
+        font-weight:950;
+      }
+
+      .profile-story-stage-caption span{
+        display:block;
+        margin-top:8px;
+        color:#d8e2f0;
+        font-size:17px;
+        font-weight:650;
+      }
+
+      .profile-story-taskbar{
+        position:absolute;
+        left:18px;
+        right:18px;
+        bottom:20px;
+        z-index:6;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        padding:10px;
+        border-radius:28px;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(4,7,12,.40);
+        box-shadow:0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+        backdrop-filter:blur(16px);
+        -webkit-backdrop-filter:blur(16px);
+        transition:opacity .32s ease, transform .32s ease;
+      }
+
+      .profile-story-rail{
+        flex:1 1 auto;
+        min-width:0;
+        max-height:none;
+        display:flex;
+        flex-direction:row;
+        gap:8px;
+        overflow-x:auto;
+        overflow-y:hidden;
+        scrollbar-width:none;
+        scroll-snap-type:x proximity;
+      }
+
+      .profile-story-rail::-webkit-scrollbar{display:none;}
+
+      .profile-story-rail-btn{
+        appearance:none;
+        -webkit-appearance:none;
+        width:calc((100% - 24px) / 4);
+        min-width:calc((100% - 24px) / 4);
+        min-height:58px;
+        border-radius:18px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:7px;
+        color:#fff;
+        text-decoration:none;
+        text-align:center;
+        font-size:10px;
+        line-height:1.12;
+        font-family:inherit;
+        font-weight:950;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(255,255,255,.06);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+        scroll-snap-align:start;
+        cursor:pointer;
+      }
+
+      .profile-story-stage.is-controls-dim .profile-story-stage-top,
+      .profile-story-stage.is-controls-dim .profile-story-stage-caption,
+      .profile-story-stage.is-controls-dim .profile-story-taskbar{
+        opacity:.05;
+        pointer-events:none;
+        transform:translateY(6px);
+      }
+
+      .profile-story-stage.is-controls-dim .profile-story-stage-top{
+        transform:translateY(-6px);
+      }
+
+      .profile-story-rail-btn:hover,
+      .profile-story-rail-btn:focus-visible,
+      .profile-story-rail-btn.is-copied{
+        border-color:rgba(115,194,255,.82);
+        background:rgba(115,194,255,.14);
+        box-shadow:0 0 18px rgba(87,170,255,.24), inset 0 1px 0 rgba(255,255,255,.08);
+      }
+
+      .profile-story-copy-toast{
+        position:absolute;
+        left:50%;
+        bottom:98px;
+        z-index:8;
+        transform:translateX(-50%) translateY(8px);
+        opacity:0;
+        pointer-events:none;
+        padding:9px 14px;
+        border-radius:999px;
+        border:1px solid rgba(115,194,255,.24);
+        background:rgba(5,9,16,.82);
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        box-shadow:0 14px 34px rgba(0,0,0,.34), 0 0 22px rgba(87,170,255,.16);
+        backdrop-filter:blur(14px);
+        -webkit-backdrop-filter:blur(14px);
+        transition:opacity .22s ease, transform .22s ease;
+      }
+
+      .profile-story-copy-toast.is-visible{
+        opacity:1;
+        transform:translateX(-50%) translateY(0);
       }
 
 
@@ -2436,6 +3020,207 @@ router.get("/u/:username", async (req, res) => {
         transform:translateY(-1px);
       }
 
+      /* Match the public profile surface to the Discovery page UI. */
+      .profile-wrap{
+        max-width:1120px;
+      }
+
+      .profile-showcase,
+      .profile-panel{
+        border-radius:34px;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
+        box-shadow:
+          0 18px 40px rgba(0,0,0,.28),
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 0 0 1px rgba(115,194,255,.03);
+        backdrop-filter:blur(8px);
+      }
+
+      .profile-showcase{
+        padding:28px;
+      }
+
+      .profile-panel{
+        padding:24px;
+      }
+
+      .profile-showcase::before,
+      .profile-panel::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        opacity:.04;
+        background-image:radial-gradient(rgba(255,255,255,.92) .6px, transparent .6px);
+        background-size:10px 10px;
+        z-index:0;
+      }
+
+      .profile-showcase::after,
+      .profile-panel::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        border-radius:33px;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.018), transparent 34%),
+          radial-gradient(420px 180px at 72% 14%, rgba(115,194,255,.035), transparent 62%);
+        z-index:0;
+      }
+
+      .profile-showcase > *,
+      .profile-panel > *{
+        position:relative;
+        z-index:1;
+      }
+
+      .profile-showcase-bg{
+        inset:0;
+        border-radius:34px;
+        background:
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
+        opacity:1;
+      }
+
+      .profile-showcase-avatar-wrap{
+        width:132px;
+        height:132px;
+      }
+
+      .profile-showcase-avatar{
+        width:132px;
+        height:132px;
+        border-radius:22px;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(130,200,255,.14), transparent 55%),
+          linear-gradient(180deg,#162033,#0d1118);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 0 18px rgba(127,210,255,.11),
+          0 12px 28px rgba(0,0,0,.24);
+      }
+
+      .profile-showcase-avatar-wrap::before,
+      .profile-showcase-avatar-wrap::after{
+        border-radius:26px;
+        opacity:.45;
+        filter:blur(14px);
+      }
+
+      .profile-showcase-name{
+        font-size:clamp(36px, 7vw, 52px);
+        letter-spacing:-1.25px;
+      }
+
+      .profile-showcase-handle{
+        color:#d9e4f2;
+      }
+
+      .profile-panel-heading{
+        font-size:28px;
+        line-height:1.02;
+        letter-spacing:-.9px;
+      }
+
+      .profile-panel-subheading,
+      .profile-section-text{
+        color:#bcc8d8;
+        line-height:1.55;
+      }
+
+      .profile-section-title{
+        letter-spacing:-.55px;
+      }
+
+      .profile-pill-btn,
+      .profile-mini-action,
+      .profile-quick-btn,
+      .profile-showcase-actions .btn,
+      .profile-showcase-actions form .btn{
+        min-height:48px;
+        border-radius:20px;
+        border:1px solid rgba(255,255,255,.08);
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        color:#fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 8px 16px rgba(0,0,0,.16);
+        transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+      }
+
+      .profile-pill-btn:hover,
+      .profile-pill-btn:focus-visible,
+      .profile-mini-action:hover,
+      .profile-mini-action:focus-visible,
+      .profile-quick-btn:hover,
+      .profile-quick-btn:focus-visible,
+      .profile-showcase-actions .btn:hover,
+      .profile-showcase-actions .btn:focus-visible{
+        transform:translateY(-1px);
+        border-color:rgba(115,194,255,.92) !important;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 18px rgba(87,170,255,.30),
+          0 0 46px rgba(48,110,255,.22),
+          0 10px 24px rgba(0,0,0,.24) !important;
+      }
+
+      .profile-pill-btn:active,
+      .profile-mini-action:active,
+      .profile-quick-btn:active,
+      .profile-showcase-actions .btn:active{
+        transform:scale(.985);
+      }
+
+      .profile-showcase-avatar-wrap::before,
+      .profile-showcase-avatar-wrap:hover::before,
+      .profile-showcase-avatar-wrap:focus-within::before{
+        inset:-10px;
+        border-radius:34px;
+        background:
+          radial-gradient(circle at 50% 18%, rgba(115,194,255,.48), transparent 58%),
+          linear-gradient(180deg, rgba(115,194,255,.42), rgba(55,108,210,.18)) !important;
+        opacity:.86 !important;
+        filter:blur(11px) !important;
+        transform:none !important;
+        transition:none !important;
+      }
+
+      .profile-showcase-avatar-wrap::after,
+      .profile-showcase-avatar-wrap:hover::after,
+      .profile-showcase-avatar-wrap:focus-within::after{
+        inset:-18px;
+        border-radius:40px;
+        background:radial-gradient(circle at 50% 50%, rgba(85,179,255,.42), transparent 62%) !important;
+        opacity:.78 !important;
+        filter:blur(18px) !important;
+        transform:none !important;
+        transition:none !important;
+      }
+
+      .profile-showcase-avatar,
+      .profile-showcase-avatar:hover,
+      .profile-showcase-avatar:focus-visible{
+        border-color:rgba(115,194,255,.92) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 0 0 1px rgba(255,255,255,.02),
+          0 0 22px rgba(87,170,255,.22),
+          0 0 42px rgba(48,110,255,.16),
+          0 12px 28px rgba(0,0,0,.24) !important;
+        transform:none !important;
+        transition:none !important;
+      }
+
       @media(max-width:700px){
 
         .tapzy-tap-card{
@@ -2496,6 +3281,10 @@ router.get("/u/:username", async (req, res) => {
 
           border-radius:28px;
 
+        }
+
+        .profile-showcase-discovery{
+          border-radius:28px;
         }
 
 
@@ -2678,6 +3467,78 @@ router.get("/u/:username", async (req, res) => {
 
         }
 
+        .profile-story-stage{
+          min-height:min(680px, calc(100dvh - 152px));
+          border-radius:30px;
+        }
+
+        .profile-story-stage-top{
+          left:16px;
+          right:16px;
+          top:34px;
+        }
+
+        .profile-story-stage-identity{
+          font-size:16px;
+        }
+
+        .profile-story-stage-sound{
+          width:43px;
+          height:43px;
+          min-height:43px;
+          padding:0;
+          border-radius:999px;
+          font-size:20px;
+        }
+
+        .profile-story-stage-caption{
+          left:18px;
+          right:18px;
+          bottom:96px;
+        }
+
+        .profile-story-stage-caption strong{
+          font-size:24px;
+        }
+
+        .profile-story-stage-caption span{
+          font-size:15px;
+        }
+
+        .profile-story-taskbar{
+          left:16px;
+          right:16px;
+          bottom:max(16px, env(safe-area-inset-bottom));
+          border-radius:24px;
+          gap:7px;
+          padding:8px;
+        }
+
+        .profile-story-stage-empty,
+        .profile-story-stage-text{
+          padding-bottom:118px;
+        }
+
+        .profile-story-rail{
+          flex:1 1 auto;
+          min-width:0;
+          max-height:none;
+          flex-direction:row;
+          overflow-x:auto;
+          overflow-y:hidden;
+          gap:7px;
+        }
+
+        .profile-story-rail-btn{
+          width:calc((100% - 21px) / 4);
+          min-width:calc((100% - 21px) / 4);
+          min-height:48px;
+          padding:8px 6px;
+          border-radius:16px;
+          flex:0 0 auto;
+          font-size:10px;
+        }
+
       }
 
     
@@ -2800,6 +3661,389 @@ router.get("/u/:username", async (req, res) => {
 
     <script>
       (function(){
+        function initProfileShowcaseFade(){
+          const shell = document.getElementById('tapzyProfileShell');
+          if (!shell) return;
+          const source = shell.querySelector('[data-profile-discovery-items]');
+          const discoveryScreen = shell.querySelector('[data-profile-discovery-screen]');
+          const discoveryMedia = shell.querySelector('[data-profile-discovery-media]');
+          const discoveryTitle = shell.querySelector('[data-profile-discovery-title]');
+          const discoveryMeta = shell.querySelector('[data-profile-discovery-meta]');
+          let timer = null;
+          let discoveryTimer = null;
+          let discoveryStartTimer = null;
+          let discoveryIndex = 0;
+          let discoveryStarted = false;
+          let activeDiscoveryId = null;
+          let activeDiscoveryStartedAt = 0;
+          let discoveryItems = [];
+          let dwellScores = {};
+          try {
+            discoveryItems = source ? JSON.parse(source.textContent || '[]') || [] : [];
+          } catch (_) {
+            discoveryItems = [];
+          }
+          try {
+            dwellScores = JSON.parse(localStorage.getItem('tapzy_profile_discovery_dwell') || '{}') || {};
+          } catch (_) {
+            dwellScores = {};
+          }
+          let discoveryRefreshInFlight = false;
+          function sortDiscoveryItems(){
+            if (!discoveryItems.length) return;
+            discoveryItems.sort(function(a, b){
+              const aScore = Number(a.score || 0) + Number(dwellScores[a.id] || 0);
+              const bScore = Number(b.score || 0) + Number(dwellScores[b.id] || 0);
+              return bScore - aScore;
+            });
+          }
+          sortDiscoveryItems();
+          function refreshDiscoveryItems(){
+            if (discoveryRefreshInFlight) return Promise.resolve(false);
+            discoveryRefreshInFlight = true;
+            let url;
+            try {
+              url = new URL(window.location.href);
+              url.searchParams.set('_tapzyDiscoveryRefresh', String(Date.now()));
+            } catch (_) {
+              url = window.location.href;
+            }
+            return fetch(String(url), { credentials:'same-origin', cache:'no-store' })
+              .then(function(response){ return response.ok ? response.text() : ''; })
+              .then(function(html){
+                if (!html) return false;
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const freshSource = doc.querySelector('[data-profile-discovery-items]');
+                let freshItems = [];
+                try { freshItems = freshSource ? JSON.parse(freshSource.textContent || '[]') || [] : []; } catch (_) { freshItems = []; }
+                if (!freshItems.length) return false;
+                discoveryItems = freshItems;
+                discoveryIndex = 0;
+                sortDiscoveryItems();
+                return true;
+              })
+              .catch(function(){ return false; })
+              .finally(function(){ discoveryRefreshInFlight = false; });
+          }
+          function dim(){
+            shell.classList.add('is-secondary-dim');
+          }
+          function saveDiscoveryDwell(){
+            if (!activeDiscoveryId || !activeDiscoveryStartedAt) return;
+            const seconds = Math.max(0, Math.round((Date.now() - activeDiscoveryStartedAt) / 1000));
+            if (!seconds) return;
+            dwellScores[activeDiscoveryId] = Math.min(600, Number(dwellScores[activeDiscoveryId] || 0) + seconds);
+            try { localStorage.setItem('tapzy_profile_discovery_dwell', JSON.stringify(dwellScores)); } catch (_) {}
+            activeDiscoveryStartedAt = Date.now();
+          }
+          function clearDiscoveryTimer(){
+            if (discoveryTimer) window.clearTimeout(discoveryTimer);
+            discoveryTimer = null;
+          }
+          function scheduleDiscoveryStart(){
+            if (discoveryStartTimer) window.clearTimeout(discoveryStartTimer);
+            discoveryStartTimer = window.setTimeout(startDiscovery, 20000);
+          }
+          function nextDiscovery(){
+            if (!discoveryItems.length) return;
+            discoveryIndex = (discoveryIndex + 1) % discoveryItems.length;
+            renderDiscovery();
+          }
+          function renderDiscovery(){
+            if (!discoveryMedia) return;
+            clearDiscoveryTimer();
+            saveDiscoveryDwell();
+            discoveryMedia.replaceChildren();
+            discoveryScreen.classList.remove('is-empty');
+            shell.classList.remove('is-discovery-empty');
+            if (!discoveryItems.length) {
+              activeDiscoveryId = null;
+              activeDiscoveryStartedAt = 0;
+              discoveryScreen.classList.add('is-empty');
+              shell.classList.add('is-discovery-empty');
+              if (discoveryTitle) discoveryTitle.textContent = '';
+              if (discoveryMeta) discoveryMeta.textContent = '';
+              const empty = document.createElement('div');
+              empty.className = 'profile-showcase-discovery-empty';
+              discoveryMedia.appendChild(empty);
+              refreshDiscoveryItems().then(function(found){
+                if (found && discoveryStarted) renderDiscovery();
+              });
+              discoveryTimer = window.setTimeout(function(){
+                if (discoveryStarted && shell.classList.contains('is-discovery-empty')) renderDiscovery();
+              }, 10000);
+              return;
+            }
+            const item = discoveryItems[discoveryIndex] || discoveryItems[0];
+            activeDiscoveryId = item.id || null;
+            activeDiscoveryStartedAt = Date.now();
+            if (discoveryTitle) discoveryTitle.textContent = item.title || 'Tapzy Network�';
+            if (discoveryMeta) discoveryMeta.textContent = item.meta || 'Discovery';
+            if (item.isVideo) {
+              const video = document.createElement('video');
+              video.src = item.mediaUrl;
+              video.autoplay = true;
+              video.muted = true;
+              video.loop = discoveryItems.length <= 1;
+              video.playsInline = true;
+              video.setAttribute('playsinline', '');
+              video.setAttribute('webkit-playsinline', '');
+              video.preload = 'auto';
+              video.addEventListener('ended', nextDiscovery, { once:true });
+              video.addEventListener('error', function(){ discoveryTimer = window.setTimeout(nextDiscovery, 1200); }, { once:true });
+              discoveryMedia.appendChild(video);
+              window.setTimeout(function(){ video.play().catch(function(){}); }, 40);
+              discoveryTimer = window.setTimeout(nextDiscovery, 14000);
+            } else {
+              const img = document.createElement('img');
+              img.src = item.mediaUrl;
+              img.alt = item.title || 'Tapzy discovery story';
+              img.loading = 'eager';
+              img.decoding = 'async';
+              discoveryMedia.appendChild(img);
+              discoveryTimer = window.setTimeout(nextDiscovery, 5600);
+            }
+          }
+          function startDiscovery(){
+            if (discoveryStarted || !discoveryScreen || !discoveryMedia) return;
+            discoveryStartTimer = null;
+            discoveryStarted = true;
+            shell.classList.add('is-discovery-screen');
+            discoveryScreen.setAttribute('aria-hidden', 'false');
+            renderDiscovery();
+          }
+          let emptyRestoreTapCount = 0;
+          let emptyRestoreLastTapAt = 0;
+          function closeDiscoveryScreen(){
+            saveDiscoveryDwell();
+            shell.classList.remove('is-discovery-screen');
+            shell.classList.remove('is-discovery-empty');
+            if (discoveryScreen) {
+              discoveryScreen.classList.remove('is-empty');
+              discoveryScreen.setAttribute('aria-hidden', 'true');
+            }
+            clearDiscoveryTimer();
+            discoveryStarted = false;
+            activeDiscoveryId = null;
+            emptyRestoreTapCount = 0;
+            emptyRestoreLastTapAt = 0;
+          }
+          function registerEmptyRestoreTap(){
+            const now = Date.now();
+            if (now - emptyRestoreLastTapAt > 1200) emptyRestoreTapCount = 0;
+            emptyRestoreLastTapAt = now;
+            emptyRestoreTapCount += 1;
+            return emptyRestoreTapCount >= 3;
+          }
+          function wake(event){
+            if (shell.classList.contains('is-discovery-screen')) {
+              if (shell.classList.contains('is-discovery-empty')) {
+                if (event) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }
+                if (!registerEmptyRestoreTap()) return;
+              }
+              closeDiscoveryScreen();
+            }
+            shell.classList.remove('is-secondary-dim');
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(dim, 4000);
+            scheduleDiscoveryStart();
+          }
+          shell.addEventListener('click', function(event){
+            if (shell.classList.contains('is-secondary-dim')) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            wake(event);
+          }, true);
+          window.addEventListener('pagehide', saveDiscoveryDwell);
+          wake();
+        }
+
+        function initProfileStoryFeed(){
+          const stage = document.querySelector('[data-profile-story-stage]');
+          if (!stage) return;
+          const frame = stage.querySelector('[data-profile-story-frame]');
+          const source = stage.querySelector('[data-profile-story-items]');
+          const meta = stage.querySelector('[data-profile-story-meta]');
+          const soundBtn = stage.querySelector('[data-profile-story-sound]');
+          const copyToast = stage.querySelector('[data-profile-story-copy-toast]');
+          if (!frame || !source) return;
+          let items = [];
+          try {
+            items = JSON.parse(source.textContent || '[]') || [];
+          } catch (_) {
+            items = [];
+          }
+          if (!items.length) {
+            if (soundBtn) soundBtn.hidden = true;
+            return;
+          }
+
+          let index = 0;
+          let timer = null;
+          let controlsTimer = null;
+          let soundOn = false;
+          const hasVideo = items.some(function(item){ return !!item.isVideo; });
+          if (soundBtn) {
+            soundBtn.hidden = !hasVideo;
+            soundBtn.setAttribute('aria-label', 'Turn story sound on');
+          }
+
+          function clearTimer(){
+            if (timer) window.clearTimeout(timer);
+            timer = null;
+          }
+
+          function hideControls(){
+            stage.classList.add('is-controls-dim');
+          }
+
+          function scheduleControlsFade(){
+            if (controlsTimer) window.clearTimeout(controlsTimer);
+            controlsTimer = window.setTimeout(hideControls, 4000);
+          }
+
+          function showControls(){
+            stage.classList.remove('is-controls-dim');
+            scheduleControlsFade();
+          }
+
+          function updateSoundLabel(video){
+            if (!soundBtn) return;
+            soundBtn.classList.toggle('is-muted', !soundOn);
+            soundBtn.setAttribute('aria-label', soundOn ? 'Mute story sound' : 'Turn story sound on');
+            if (video) video.muted = !soundOn;
+          }
+
+          function makeTextStory(item){
+            const box = document.createElement('div');
+            box.className = 'profile-story-stage-text';
+            box.textContent = item.text || 'Tapzy Story';
+            return box;
+          }
+
+          function makeImageStory(item){
+            const img = document.createElement('img');
+            img.className = 'profile-story-stage-media';
+            img.src = item.mediaUrl;
+            img.alt = item.text || 'Profile story';
+            img.loading = 'eager';
+            img.decoding = 'async';
+            return img;
+          }
+
+          function makeVideoStory(item){
+            const video = document.createElement('video');
+            video.className = 'profile-story-stage-media';
+            video.src = item.mediaUrl;
+            video.autoplay = true;
+            video.muted = !soundOn;
+            video.loop = items.length <= 1;
+            video.playsInline = true;
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
+            video.preload = 'auto';
+            video.addEventListener('ended', next);
+            video.addEventListener('error', function(){ timer = window.setTimeout(next, 1200); }, { once:true });
+            window.setTimeout(function(){
+              video.play().catch(function(){
+                video.muted = true;
+                soundOn = false;
+                updateSoundLabel(video);
+                video.play().catch(function(){});
+              });
+            }, 30);
+            return video;
+          }
+
+          function render(){
+            clearTimer();
+            const item = items[index] || items[0];
+            frame.replaceChildren();
+            let node = null;
+            if (item.mediaUrl && item.isVideo) {
+              node = makeVideoStory(item);
+            } else if (item.mediaUrl) {
+              node = makeImageStory(item);
+              timer = window.setTimeout(next, 5200);
+            } else {
+              node = makeTextStory(item);
+              timer = window.setTimeout(next, 5200);
+            }
+            frame.appendChild(node);
+            if (meta) meta.textContent = (item.time || 'Just now') + ' · Tapzy Story';
+            updateSoundLabel(item.isVideo ? node : null);
+            showControls();
+          }
+
+          function next(){
+            if (items.length <= 1) {
+              if (!(items[0] && items[0].isVideo)) timer = window.setTimeout(render, 5200);
+              return;
+            }
+            index = (index + 1) % items.length;
+            render();
+          }
+
+          if (soundBtn) {
+            soundBtn.addEventListener('click', function(e){
+              e.stopPropagation();
+              soundOn = !soundOn;
+              const video = frame.querySelector('video');
+              updateSoundLabel(video);
+              if (video) video.play().catch(function(){});
+              showControls();
+            });
+          }
+
+          stage.querySelectorAll('.profile-story-rail-btn').forEach(function(link){
+            link.addEventListener('click', function(e){
+              if (stage.classList.contains('is-controls-dim')) {
+                e.preventDefault();
+                e.stopPropagation();
+                showControls();
+                return;
+              }
+              const copyValue = link.getAttribute('data-copy-share');
+              if (copyValue) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(copyValue).catch(function(){});
+                }
+                link.classList.add('is-copied');
+                if (copyToast) {
+                  copyToast.textContent = 'Copied name';
+                  copyToast.classList.add('is-visible');
+                  window.setTimeout(function(){ copyToast.classList.remove('is-visible'); }, 1100);
+                }
+                window.setTimeout(function(){ link.classList.remove('is-copied'); }, 900);
+                return;
+              }
+              const href = link.getAttribute('href');
+              if (!href) return;
+              e.preventDefault();
+              e.stopPropagation();
+              if (link.target === '_blank') {
+                const opened = window.open(href, '_blank', 'noopener,noreferrer');
+                if (!opened) window.location.href = href;
+              } else {
+                window.location.href = href;
+              }
+            });
+          });
+
+          stage.addEventListener('pointerdown', function(e){
+            if (e.target && e.target.closest('a, button')) return;
+            showControls();
+          });
+
+          render();
+        }
+
         function initProfilePhotoViewer(){
           const viewer = document.getElementById('profilePhotoViewer');
           const openBtn = document.querySelector('[data-profile-photo-open]');
@@ -2828,7 +4072,7 @@ router.get("/u/:username", async (req, res) => {
             const video = frame.querySelector('video');
             const preview = frame.querySelector('[data-video-preview]');
             if (!video || !preview) return;
-            const markReady = function(){ frame.classList.add('is-ready'); };
+            const markReady = function(){ if (video.dataset.previewSeeked === '1') frame.classList.add('is-ready'); };
             const markPlaying = function(){ frame.classList.add('is-playing'); frame.classList.add('is-ready'); };
             const markPaused = function(){ frame.classList.remove('is-playing'); };
             const warmPreviewFrame = function(){
@@ -2840,28 +4084,34 @@ router.get("/u/:username", async (req, res) => {
                 video.preload = 'auto';
                 if (video.readyState === 0) video.load();
                 if (video.readyState >= 1 && !video.dataset.previewSeeked) {
-                  video.dataset.previewSeeked = '1';
-                  const target = Math.min(0.12, Math.max(0.01, (video.duration || 1) - 0.01));
+                  video.dataset.previewSeeked = 'pending';
+                  const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
+                  const target = Math.min(Math.max(0.65, duration * 0.08), Math.max(0.01, duration - 0.05));
                   video.currentTime = target;
                 }
               } catch (err) {}
             };
+            video.addEventListener('seeked', function(){
+              video.dataset.previewSeeked = '1';
+              frame.classList.add('is-ready');
+            });
             preview.addEventListener('click', function(){ video.play().catch(function(){}); });
             preview.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.play().catch(function(){}); } });
             video.addEventListener('loadedmetadata', warmPreviewFrame, { once: true });
-            video.addEventListener('loadeddata', markReady, { once: true });
+            video.addEventListener('loadeddata', warmPreviewFrame, { once: true });
             video.addEventListener('canplay', markReady, { once: true });
-            video.addEventListener('seeked', markReady, { once: true });
             video.addEventListener('play', markPlaying);
             video.addEventListener('playing', markPlaying);
             video.addEventListener('pause', markPaused);
             warmPreviewFrame();
-            if (video.readyState >= 2) markReady();
+            if (video.readyState >= 1) warmPreviewFrame();
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ initProfileShowcaseFade(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
         } else {
+          initProfileShowcaseFade();
+          initProfileStoryFeed();
           initProfilePhotoViewer();
           initVideoPreviewFrames(document);
         }
@@ -2881,6 +4131,10 @@ router.get("/u/:username", async (req, res) => {
         pageTitle: profile.username || "Profile",
 
         pageType: "profile",
+
+        storiesBottomNav: true,
+
+        storiesTopNavActive: "discover",
 
         metaDescription: `${displayName} on Tapzy Network™. View profile, quick share links, stories, and contact details.`,
 
@@ -3921,17 +5175,25 @@ router.get("/edit/:username", async (req, res) => {
         position:fixed;
         inset:0;
         z-index:9999;
+        width:100vw;
+        height:100vh;
+        height:100dvh;
+        max-height:100dvh;
         background:#05060a;
         display:none;
         flex-direction:column;
         color:#fff;
         touch-action:none;
+        overscroll-behavior:none;
+        overflow:hidden;
+        isolation:isolate;
       }
 
       .tz-photo-crop-modal.is-open{display:flex;}
 
       .tz-photo-crop-topbar{
-        height:72px;
+        flex:0 0 auto;
+        min-height:72px;
         padding:14px 18px;
         padding-top:max(14px, env(safe-area-inset-top));
         display:flex;
@@ -3965,7 +5227,9 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-photo-crop-stage{
         position:relative;
-        flex:1;
+        flex:1 1 auto;
+        min-height:0;
+        width:100%;
         overflow:hidden;
         display:flex;
         align-items:center;
@@ -3979,8 +5243,9 @@ router.get("/edit/:username", async (req, res) => {
         position:absolute;
         left:50%;
         top:50%;
-        width:82vw;
+        width:min(86vw, 560px);
         max-width:520px;
+        max-height:none;
         height:auto;
         transform:translate(-50%, -50%) scale(1);
         transform-origin:center center;
@@ -3993,31 +5258,45 @@ router.get("/edit/:username", async (req, res) => {
         position:absolute;
         inset:0;
         pointer-events:none;
-        background:radial-gradient(circle at center, transparent 0 32vw, rgba(0,0,0,.58) calc(32vw + 2px));
+        background:transparent;
       }
 
       .tz-photo-crop-ring{
         position:absolute;
         left:50%;
         top:50%;
-        width:64vw;
-        height:64vw;
+        width:min(70vw, 52dvh, 420px);
+        aspect-ratio:1 / 1;
         max-width:420px;
-        max-height:420px;
         transform:translate(-50%, -50%);
-        border-radius:50%;
+        border-radius:clamp(24px, 7vw, 36px);
         border:2px solid rgba(255,255,255,.92);
-        box-shadow:0 0 0 999px rgba(0,0,0,.34), 0 0 36px rgba(115,194,255,.20);
+        box-shadow:
+          0 0 0 999px rgba(0,0,0,.54),
+          0 0 36px rgba(115,194,255,.20),
+          inset 0 1px 0 rgba(255,255,255,.16);
         pointer-events:none;
       }
 
       .tz-photo-crop-hint{
+        flex:0 0 auto;
         padding:16px 18px max(22px, env(safe-area-inset-bottom));
         text-align:center;
         color:rgba(255,255,255,.72);
         font-size:14px;
         background:rgba(5,6,10,.92);
         border-top:1px solid rgba(255,255,255,.08);
+      }
+
+      @supports not (height:100dvh){
+        .tz-photo-crop-modal{height:100vh;max-height:100vh;}
+        .tz-photo-crop-ring{width:min(70vw, 420px);}
+      }
+
+      @media(max-height:640px){
+        .tz-photo-crop-topbar{min-height:60px;padding-top:max(10px, env(safe-area-inset-top));padding-bottom:10px;}
+        .tz-photo-crop-hint{padding-top:12px;padding-bottom:max(14px, env(safe-area-inset-bottom));}
+        .tz-photo-crop-ring{width:min(68vw, 48dvh, 360px);}
       }
 
 
@@ -4231,6 +5510,91 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
+      /* Match Edit Profile to the final public profile page treatment. */
+      .tz-edit-hero,
+      .tz-edit-section{
+        border-radius:34px;
+        border:1px solid rgba(255,255,255,.08);
+        background:
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.24), transparent 58%),
+          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
+        box-shadow:
+          0 18px 40px rgba(0,0,0,.28),
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 0 0 1px rgba(115,194,255,.03);
+        backdrop-filter:blur(8px);
+      }
+
+      .tz-edit-hero{
+        padding:28px;
+      }
+
+      .tz-edit-section{
+        padding:24px;
+      }
+
+      .tz-edit-hero::after,
+      .tz-edit-section::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        border-radius:33px;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.018), transparent 34%),
+          radial-gradient(420px 180px at 72% 14%, rgba(115,194,255,.035), transparent 62%);
+        z-index:0;
+      }
+
+      .tz-edit-hero-bg{
+        border-radius:34px;
+        background:
+          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
+          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
+      }
+
+      .tz-edit-hero > *,
+      .tz-edit-section > *{
+        position:relative;
+        z-index:1;
+      }
+
+      .tz-edit-btn,
+      .tz-edit-savebtn{
+        min-height:52px;
+        border-radius:20px;
+        border:1px solid rgba(255,255,255,.08);
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        color:#fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.04),
+          0 8px 16px rgba(0,0,0,.16);
+        transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+      }
+
+      .tz-edit-btn:hover,
+      .tz-edit-btn:focus-visible,
+      .tz-edit-savebtn:hover,
+      .tz-edit-savebtn:focus-visible{
+        transform:translateY(-1px);
+        border-color:rgba(115,194,255,.92);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 18px rgba(87,170,255,.30),
+          0 0 46px rgba(48,110,255,.22),
+          0 10px 24px rgba(0,0,0,.24);
+      }
+
+      .tz-edit-btn:active,
+      .tz-edit-savebtn:active{
+        transform:scale(.985);
+      }
+
+
+
       @media(max-width:700px){
 
         .wrap.tz-edit-wrap{
@@ -4271,6 +5635,21 @@ router.get("/edit/:username", async (req, res) => {
         .tz-edit-hero-bg{
 
           border-radius:28px;
+
+        }
+
+        .tz-edit-section{
+
+          padding:20px;
+
+          border-radius:28px;
+
+        }
+
+        .tz-edit-hero::after,
+        .tz-edit-section::after{
+
+          border-radius:27px;
 
         }
 
@@ -4370,6 +5749,7 @@ router.get("/edit/:username", async (req, res) => {
         var doneBtn = document.querySelector('[data-photo-crop-done]');
         var cancelBtn = document.querySelector('[data-photo-crop-cancel]');
         var croppedPhotoData = document.querySelector('[data-cropped-photo-data]');
+        var photoPickTrigger = document.querySelector('[data-photo-pick-trigger]');
         var selectedUrl = '';
         var dragging = false;
         var lastX = 0;
@@ -4377,6 +5757,11 @@ router.get("/edit/:username", async (req, res) => {
         var state = { tx:0, ty:0, scale:1 };
         var pointers = {};
         var lastDistance = 0;
+        var lockedScrollY = 0;
+
+        if (modal && modal.parentNode !== document.body) {
+          document.body.appendChild(modal);
+        }
 
         function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
         function syncHidden(){
@@ -4413,25 +5798,38 @@ router.get("/edit/:username", async (req, res) => {
         }
         function forceOpenModal(){
           if (!modal) return;
+          lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
           modal.classList.add('is-open');
           modal.setAttribute('aria-hidden', 'false');
           modal.style.setProperty('display', 'flex', 'important');
           modal.style.setProperty('position', 'fixed', 'important');
           modal.style.setProperty('inset', '0', 'important');
           modal.style.setProperty('z-index', '999999', 'important');
+          modal.style.setProperty('height', '100dvh', 'important');
           document.documentElement.style.overflow = 'hidden';
           document.body.style.overflow = 'hidden';
+          document.body.style.position = 'fixed';
+          document.body.style.top = '-' + lockedScrollY + 'px';
+          document.body.style.left = '0';
+          document.body.style.right = '0';
+          document.body.style.width = '100%';
         }
         function closeModal(){
           if (!modal) return;
           modal.classList.remove('is-open');
           modal.setAttribute('aria-hidden', 'true');
           modal.style.display = '';
+          modal.style.height = '';
           document.documentElement.style.overflow = '';
           document.documentElement.style.overflowX = 'hidden';
           document.body.style.overflow = '';
           document.body.style.overflowX = 'hidden';
-          window.scrollTo(0, window.scrollY);
+          document.body.style.position = '';
+          document.body.style.top = '';
+          document.body.style.left = '';
+          document.body.style.right = '';
+          document.body.style.width = '';
+          window.scrollTo(0, lockedScrollY || 0);
           pointers = {};
           dragging = false;
         }
@@ -4481,6 +5879,12 @@ router.get("/edit/:username", async (req, res) => {
           file.addEventListener('change', function(){ loadSelectedFile(file); });
           file.addEventListener('input', function(){ loadSelectedFile(file); });
         }
+        if (photoPickTrigger && file) {
+          photoPickTrigger.addEventListener('click', function(e){
+            e.preventDefault();
+            try { file.click(); } catch(_) {}
+          });
+        }
 
         function getDistance(){
           var ids = Object.keys(pointers);
@@ -4490,7 +5894,53 @@ router.get("/edit/:username", async (req, res) => {
           return Math.sqrt(dx*dx + dy*dy);
         }
         if (stage) {
+          if (window.PointerEvent) {
+            stage.addEventListener('pointerdown', function(e){
+              if (!selectedUrl) return;
+              e.preventDefault();
+              pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+              try { stage.setPointerCapture(e.pointerId); } catch(_) {}
+              if (Object.keys(pointers).length === 1) {
+                dragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+              }
+              if (Object.keys(pointers).length >= 2) lastDistance = getDistance();
+            });
+            stage.addEventListener('pointermove', function(e){
+              if (!selectedUrl || !pointers[e.pointerId]) return;
+              e.preventDefault();
+              pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+              var ids = Object.keys(pointers);
+              if (ids.length >= 2) {
+                var d = getDistance();
+                if (lastDistance > 0 && d > 0) state.scale = clamp(state.scale * (d / lastDistance), 1, 2.4);
+                lastDistance = d;
+              } else if (dragging) {
+                state.tx += e.clientX - lastX;
+                state.ty += e.clientY - lastY;
+                lastX = e.clientX;
+                lastY = e.clientY;
+              }
+              applyTransforms();
+            });
+            function endPointerCrop(e){
+              delete pointers[e.pointerId];
+              try { stage.releasePointerCapture(e.pointerId); } catch(_) {}
+              lastDistance = getDistance();
+              if (!Object.keys(pointers).length) dragging = false;
+              if (Object.keys(pointers).length === 1) {
+                var remaining = pointers[Object.keys(pointers)[0]];
+                lastX = remaining.x;
+                lastY = remaining.y;
+                dragging = true;
+              }
+            }
+            stage.addEventListener('pointerup', endPointerCrop);
+            stage.addEventListener('pointercancel', endPointerCrop);
+          }
           stage.addEventListener('mousedown', function(e){
+            if (window.PointerEvent) return;
             if (!selectedUrl) return;
             dragging = true; lastX = e.clientX; lastY = e.clientY; e.preventDefault();
           });
@@ -4503,6 +5953,7 @@ router.get("/edit/:username", async (req, res) => {
           });
           window.addEventListener('mouseup', function(){ dragging = false; });
           stage.addEventListener('touchstart', function(e){
+            if (window.PointerEvent) return;
             if (!selectedUrl) return;
             e.preventDefault();
             for (var i=0;i<e.changedTouches.length;i++) pointers[e.changedTouches[i].identifier] = {x:e.changedTouches[i].clientX,y:e.changedTouches[i].clientY};
@@ -4510,6 +5961,7 @@ router.get("/edit/:username", async (req, res) => {
             if (e.touches.length >= 2) lastDistance = getDistance();
           }, {passive:false});
           stage.addEventListener('touchmove', function(e){
+            if (window.PointerEvent) return;
             if (!selectedUrl) return;
             e.preventDefault();
             for (var i=0;i<e.changedTouches.length;i++) pointers[e.changedTouches[i].identifier] = {x:e.changedTouches[i].clientX,y:e.changedTouches[i].clientY};
@@ -4526,6 +5978,7 @@ router.get("/edit/:username", async (req, res) => {
             applyTransforms();
           }, {passive:false});
           stage.addEventListener('touchend', function(e){
+            if (window.PointerEvent) return;
             for (var i=0;i<e.changedTouches.length;i++) delete pointers[e.changedTouches[i].identifier];
             lastDistance = getDistance();
           });
@@ -4558,6 +6011,17 @@ router.get("/edit/:username", async (req, res) => {
             ctx.drawImage(cropImg, dx, dy, dw, dh);
             var dataUrl = canvas.toDataURL('image/jpeg', 0.92);
             if (croppedPhotoData) croppedPhotoData.value = dataUrl;
+            selectedUrl = dataUrl;
+            state = { tx:0, ty:0, scale:1 };
+            if (x) x.value = '50';
+            if (y) y.value = '50';
+            if (scaleInput) scaleInput.value = '100';
+            var preview = ensurePreview();
+            if (preview) {
+              preview.src = dataUrl;
+              preview.style.objectPosition = '50% 50%';
+              preview.style.transform = 'scale(1)';
+            }
             if (file && window.DataTransfer) {
               canvas.toBlob(function(blob){
                 try {
@@ -4593,6 +6057,8 @@ router.get("/edit/:username", async (req, res) => {
         pageTitle: "Edit Profile",
 
         pageType: "edit",
+
+        storiesBottomNav: true,
 
         metaDescription: `Edit ${profile.username}'s Tapzy Network™ profile, quick share settings, contact details, and social links.`,
 
@@ -4635,18 +6101,52 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
 
     let photo = profile.photo;
+    let savedCroppedPhoto = false;
 
-    function saveCroppedPhotoData(dataUrl) {
+    async function saveCroppedPhotoData(dataUrl) {
       const value = String(dataUrl || "");
       const match = value.match(/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i);
       if (!match) return null;
-      const mimeExt = match[1].toLowerCase() === "png" ? "png" : match[1].toLowerCase() === "webp" ? "webp" : "jpg";
+      const sourceType = match[1].toLowerCase();
+      const mimeExt = sourceType === "png" ? "png" : sourceType === "webp" ? "webp" : "jpg";
+      const contentType = mimeExt === "png" ? "image/png" : mimeExt === "webp" ? "image/webp" : "image/jpeg";
       const buffer = Buffer.from(match[2], "base64");
       if (!buffer.length || buffer.length > 8 * 1024 * 1024) return null;
+      if (isCloudinaryConfigured()) {
+        try {
+          const uploaded = await uploadBufferToCloudinary(buffer, {
+            resourceType: "image",
+            contentType,
+            filename: `tapzy-profile-photo.${mimeExt}`,
+            publicId: `profile-${profile.id || profile.username}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+          });
+          if (uploaded && uploaded.url) return uploaded.url;
+        } catch (error) {
+          console.warn("Profile cropped photo cloud upload failed; using local fallback.", error && error.message ? error.message : error);
+        }
+      }
       fs.mkdirSync(uploadsDir, { recursive: true });
       const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}-cropped.${mimeExt}`;
       fs.writeFileSync(path.join(uploadsDir, filename), buffer);
       return publicAbsoluteUrl(req, `/uploads/${filename}`);
+    }
+
+    async function saveUploadedProfilePhoto(file) {
+      if (!file) return null;
+      if (isCloudinaryConfigured() && file.path) {
+        try {
+          const uploaded = await uploadFileToCloudinary(file.path, {
+            resourceType: "image",
+            contentType: file.mimetype || "image/jpeg",
+            filename: file.originalname || file.filename || "tapzy-profile-photo.jpg",
+            publicId: `profile-${profile.id || profile.username}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+          });
+          if (uploaded && uploaded.url) return uploaded.url;
+        } catch (error) {
+          console.warn("Profile photo cloud upload failed; using local fallback.", error && error.message ? error.message : error);
+        }
+      }
+      return publicAbsoluteUrl(req, `/uploads/${file.filename}`);
     }
 
     if (removePhoto) {
@@ -4655,11 +6155,12 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
     } else {
 
-      const croppedPhotoUrl = saveCroppedPhotoData(req.body.croppedPhotoData);
+      const croppedPhotoUrl = await saveCroppedPhotoData(req.body.croppedPhotoData);
       if (croppedPhotoUrl) {
         photo = croppedPhotoUrl;
+        savedCroppedPhoto = true;
       } else if (req.file) {
-        photo = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
+        photo = await saveUploadedProfilePhoto(req.file);
       }
 
     }
@@ -4677,9 +6178,9 @@ router.post("/edit/:username", upload.single("photo"), async (req, res) => {
 
 
     const profilePhotoFitData = {
-      profilePhotoPositionX: clampPercent(req.body.profilePhotoPositionX, 50),
-      profilePhotoPositionY: clampPercent(req.body.profilePhotoPositionY, 50),
-      profilePhotoScale: Math.max(100, Math.min(180, Math.round(Number(req.body.profilePhotoScale || 100) || 100))),
+      profilePhotoPositionX: savedCroppedPhoto ? 50 : clampPercent(req.body.profilePhotoPositionX, 50),
+      profilePhotoPositionY: savedCroppedPhoto ? 50 : clampPercent(req.body.profilePhotoPositionY, 50),
+      profilePhotoScale: savedCroppedPhoto ? 100 : Math.max(100, Math.min(180, Math.round(Number(req.body.profilePhotoScale || 100) || 100))),
     };
 
     const profileUpdateData = {
