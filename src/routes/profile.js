@@ -595,7 +595,11 @@ router.get("/u/:username", async (req, res) => {
 
                     <strong>${escapeHtml(displayName)}</strong>
 
-                    <span data-profile-story-meta>${featuredStory ? `${escapeHtml(formatStoryTimeShort(featuredStory.createdAt))} · Tapzy Story` : "No active story right now"}</span>
+                    ${
+                      featuredStory
+                        ? `<span data-profile-story-meta>${escapeHtml(formatStoryTimeShort(featuredStory.createdAt))} · Tapzy Story</span>`
+                        : ""
+                    }
 
                   </div>
 
