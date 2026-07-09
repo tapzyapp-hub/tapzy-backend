@@ -1642,7 +1642,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase.is-secondary-dim .profile-showcase-handle,
       .profile-showcase.is-secondary-dim .profile-showcase-secondary{
-        opacity:.05;
+        opacity:0;
         pointer-events:none;
         transform:translateY(5px);
       }
