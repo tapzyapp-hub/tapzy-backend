@@ -246,7 +246,8 @@ router.get("/u/:username", async (req, res) => {
 
     const followState = await getFollowState(currentProfile?.id, profile.id);
 
-    const quickPreview = buildQuickSharePreview(profile);
+    const quickShareOn = !!profile.quickShareEnabled;
+    const quickPreview = quickShareOn ? buildQuickSharePreview(profile) : [];
 
 
 
@@ -339,8 +340,9 @@ router.get("/u/:username", async (req, res) => {
       text: story.text || profile.name || profile.username || "Tapzy Story",
       time: formatStoryTimeShort(story.createdAt),
     }));
+    const hasProfileStoryVideo = profileStoryFeedItems.some((story) => story.isVideo);
     const profileStoryFeedJson = JSON.stringify(profileStoryFeedItems).replace(/</g, "\\u003c");
-    const quickShareRailLinks = [
+    const quickShareRailLinks = quickShareOn ? [
       profile.shareNameEnabled && (profile.name || displayName) ? `<button class="profile-story-rail-btn" type="button" data-copy-share="${escapeHtml(profile.name || displayName)}"><span>Name</span></button>` : "",
       profile.sharePhoneEnabled && profile.phone ? `<a class="profile-story-rail-btn" href="tel:${escapeHtml(profile.phone)}"><span>Phone</span></a>` : "",
       profile.shareEmailEnabled && profile.email ? `<a class="profile-story-rail-btn" href="mailto:${escapeHtml(profile.email)}"><span>Email</span></a>` : "",
@@ -355,7 +357,8 @@ router.get("/u/:username", async (req, res) => {
       profile.shareSnapchatEnabled && profile.snapchat ? `<a class="profile-story-rail-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer"><span>Snapchat</span></a>` : "",
       profile.shareWhatsappEnabled && profile.whatsapp ? `<a class="profile-story-rail-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span></a>` : "",
       profile.shareTelegramEnabled && profile.telegram ? `<a class="profile-story-rail-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer"><span>Telegram</span></a>` : "",
-    ].filter(Boolean).join("");
+    ].filter(Boolean).join("") : "";
+    const showProfileStoryTaskbar = !!quickShareRailLinks || hasProfileStoryVideo;
 
 
 
@@ -605,25 +608,28 @@ router.get("/u/:username", async (req, res) => {
                   </div>
 
                 </div>
-                <div class="profile-story-taskbar" data-profile-story-taskbar>
-                  ${
-                    quickShareRailLinks
-                      ? `<aside class="profile-story-rail" aria-label="Quick share">${quickShareRailLinks}</aside>`
-                      : `<div class="profile-story-rail" aria-hidden="true"></div>`
-                  }
-                  <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${featuredStory ? "" : "hidden"} aria-label="Turn story sound on">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-on">
-                      <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
-                      <path d="M16 8.5a5 5 0 0 1 0 7"></path>
-                      <path d="M18.5 6a8.5 8.5 0 0 1 0 12"></path>
-                    </svg>
-                    <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-off">
-                      <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
-                      <path d="M17 9l4 4"></path>
-                      <path d="M21 9l-4 4"></path>
-                    </svg>
-                  </button>
-                </div>
+                ${quickShareRailLinks ? `<div class="profile-story-copy-toast" data-profile-story-copy-toast>Copied name</div>` : ""}
+                ${showProfileStoryTaskbar ? `
+                  <div class="profile-story-taskbar" data-profile-story-taskbar>
+                    ${
+                      quickShareRailLinks
+                        ? `<aside class="profile-story-rail" aria-label="Quick share">${quickShareRailLinks}</aside>`
+                        : `<div class="profile-story-rail" aria-hidden="true"></div>`
+                    }
+                    <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${hasProfileStoryVideo ? "" : "hidden"} aria-label="Turn story sound on">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-on">
+                        <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                        <path d="M16 8.5a5 5 0 0 1 0 7"></path>
+                        <path d="M18.5 6a8.5 8.5 0 0 1 0 12"></path>
+                      </svg>
+                      <svg viewBox="0 0 24 24" aria-hidden="true" class="profile-sound-icon profile-sound-icon-off">
+                        <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                        <path d="M17 9l4 4"></path>
+                        <path d="M21 9l-4 4"></path>
+                      </svg>
+                    </button>
+                  </div>
+                ` : ""}
 
               </div>
 
@@ -2544,6 +2550,32 @@ router.get("/u/:username", async (req, res) => {
         box-shadow:0 0 18px rgba(87,170,255,.24), inset 0 1px 0 rgba(255,255,255,.08);
       }
 
+      .profile-story-copy-toast{
+        position:absolute;
+        left:50%;
+        bottom:98px;
+        z-index:8;
+        transform:translateX(-50%) translateY(8px);
+        opacity:0;
+        pointer-events:none;
+        padding:9px 14px;
+        border-radius:999px;
+        border:1px solid rgba(115,194,255,.24);
+        background:rgba(5,9,16,.82);
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        box-shadow:0 14px 34px rgba(0,0,0,.34), 0 0 22px rgba(87,170,255,.16);
+        backdrop-filter:blur(14px);
+        -webkit-backdrop-filter:blur(14px);
+        transition:opacity .22s ease, transform .22s ease;
+      }
+
+      .profile-story-copy-toast.is-visible{
+        opacity:1;
+        transform:translateX(-50%) translateY(0);
+      }
+
 
 
       .profile-quick-actions{
@@ -3444,6 +3476,7 @@ router.get("/u/:username", async (req, res) => {
           const source = stage.querySelector('[data-profile-story-items]');
           const meta = stage.querySelector('[data-profile-story-meta]');
           const soundBtn = stage.querySelector('[data-profile-story-sound]');
+          const copyToast = stage.querySelector('[data-profile-story-copy-toast]');
           if (!frame || !source) return;
           let items = [];
           try {
@@ -3589,6 +3622,11 @@ router.get("/u/:username", async (req, res) => {
                   navigator.clipboard.writeText(copyValue).catch(function(){});
                 }
                 link.classList.add('is-copied');
+                if (copyToast) {
+                  copyToast.textContent = 'Copied name';
+                  copyToast.classList.add('is-visible');
+                  window.setTimeout(function(){ copyToast.classList.remove('is-visible'); }, 1100);
+                }
                 window.setTimeout(function(){ link.classList.remove('is-copied'); }, 900);
                 return;
               }
