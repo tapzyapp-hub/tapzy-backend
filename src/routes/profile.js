@@ -2207,20 +2207,20 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-story-stage-sound{
         position:absolute;
-        left:22px;
+        right:22px;
         bottom:20px;
         z-index:8;
-        width:72px;
-        height:72px;
+        width:58px;
+        height:58px;
         padding:0;
         display:inline-flex;
         align-items:center;
         justify-content:center;
         border-radius:999px;
         color:#fff;
-        font-size:30px;
+        font-size:24px;
         font-weight:900;
-        border:4px solid rgba(255,255,255,.74);
+        border:3px solid rgba(255,255,255,.74);
         background:rgba(4,6,10,.34);
         box-shadow:
           0 0 0 1px rgba(255,255,255,.10),
@@ -2351,8 +2351,8 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-story-rail{
         position:absolute;
-        left:108px;
-        right:18px;
+        left:18px;
+        right:92px;
         bottom:20px;
         z-index:6;
         width:auto;
@@ -2360,7 +2360,7 @@ router.get("/u/:username", async (req, res) => {
         padding:10px;
         display:flex;
         flex-direction:row;
-        gap:10px;
+        gap:8px;
         overflow-x:auto;
         overflow-y:hidden;
         border-radius:26px;
@@ -2377,8 +2377,8 @@ router.get("/u/:username", async (req, res) => {
       .profile-story-rail::-webkit-scrollbar{display:none;}
 
       .profile-story-rail-btn{
-        width:92px;
-        min-width:92px;
+        width:calc((100% - 24px) / 4);
+        min-width:calc((100% - 24px) / 4);
         min-height:58px;
         border-radius:18px;
         display:flex;
@@ -3109,14 +3109,14 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-stage-sound{
-          left:16px;
+          right:16px;
           bottom:16px;
-          width:64px;
-          height:64px;
-          min-height:64px;
+          width:52px;
+          height:52px;
+          min-height:52px;
           padding:0;
           border-radius:999px;
-          font-size:26px;
+          font-size:22px;
         }
 
         .profile-story-stage-caption{
@@ -3134,8 +3134,8 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-rail{
-          left:92px;
-          right:16px;
+          left:16px;
+          right:76px;
           bottom:16px;
           top:auto;
           width:auto;
@@ -3145,14 +3145,15 @@ router.get("/u/:username", async (req, res) => {
           border-radius:24px;
           overflow-x:auto;
           overflow-y:hidden;
+          gap:7px;
           padding:8px;
         }
 
         .profile-story-rail-btn{
-          width:82px;
-          min-width:82px;
+          width:calc((100% - 21px) / 4);
+          min-width:calc((100% - 21px) / 4);
           min-height:48px;
-          padding:8px 10px;
+          padding:8px 6px;
           border-radius:16px;
           flex:0 0 auto;
           font-size:10px;
