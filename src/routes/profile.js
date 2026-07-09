@@ -503,9 +503,9 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-              <a class="profile-pill-btn profile-pill-btn-dark" href="/qr/${escapeHtml(profile.username || "")}">QR</a>
+              <a class="profile-pill-btn profile-pill-btn-dark profile-showcase-secondary" href="/qr/${escapeHtml(profile.username || "")}">QR</a>
 
-              <a class="profile-pill-btn profile-pill-btn-dark" href="/vcard/${escapeHtml(profile.username || "")}">Save Contact</a>
+              <a class="profile-pill-btn profile-pill-btn-dark profile-showcase-secondary" href="/vcard/${escapeHtml(profile.username || "")}">Save Contact</a>
 
             </div>
 
@@ -1593,6 +1593,7 @@ router.get("/u/:username", async (req, res) => {
         overflow:hidden;
 
         text-overflow:ellipsis;
+        transition:opacity .32s ease, transform .32s ease;
 
       }
 
@@ -1615,7 +1616,6 @@ router.get("/u/:username", async (req, res) => {
         overflow:hidden;
 
         text-overflow:ellipsis;
-
       }
 
 
@@ -1634,6 +1634,17 @@ router.get("/u/:username", async (req, res) => {
 
         width:auto;
 
+      }
+
+      .profile-showcase-secondary{
+        transition:opacity .32s ease, transform .32s ease;
+      }
+
+      .profile-showcase.is-secondary-dim .profile-showcase-handle,
+      .profile-showcase.is-secondary-dim .profile-showcase-secondary{
+        opacity:.05;
+        pointer-events:none;
+        transform:translateY(5px);
       }
 
 
@@ -3392,6 +3403,29 @@ router.get("/u/:username", async (req, res) => {
 
     <script>
       (function(){
+        function initProfileShowcaseFade(){
+          const shell = document.getElementById('tapzyProfileShell');
+          if (!shell) return;
+          let timer = null;
+          function dim(){
+            shell.classList.add('is-secondary-dim');
+          }
+          function wake(){
+            shell.classList.remove('is-secondary-dim');
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(dim, 4000);
+          }
+          shell.addEventListener('click', function(event){
+            if (shell.classList.contains('is-secondary-dim')) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            wake();
+          }, true);
+          shell.addEventListener('touchstart', wake, { passive:true });
+          wake();
+        }
+
         function initProfileStoryFeed(){
           const stage = document.querySelector('[data-profile-story-stage]');
           if (!stage) return;
@@ -3600,8 +3634,9 @@ router.get("/u/:username", async (req, res) => {
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ initProfileShowcaseFade(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
         } else {
+          initProfileShowcaseFade();
           initProfileStoryFeed();
           initProfilePhotoViewer();
           initVideoPreviewFrames(document);
