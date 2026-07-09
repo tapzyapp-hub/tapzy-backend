@@ -1515,6 +1515,61 @@ router.get("/u/:username", async (req, res) => {
         object-fit:cover;
         background:#000;
       }
+      .profile-showcase-discovery-empty{
+        position:absolute;
+        inset:0;
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+        justify-content:flex-start;
+        gap:18px;
+        padding:28px;
+        color:#fff;
+        background:#000;
+      }
+
+      .profile-showcase-discovery-empty-avatar{
+        width:140px;
+        height:140px;
+        border-radius:30px;
+        overflow:hidden;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#fff;
+        font-size:54px;
+        font-weight:900;
+        border:3px solid rgba(115,194,255,.92);
+        background:linear-gradient(180deg,rgba(5,8,14,.98),rgba(0,0,0,1));
+        box-shadow:0 0 26px rgba(87,170,255,.28),0 0 54px rgba(48,110,255,.18);
+      }
+
+      .profile-showcase-discovery-empty-avatar img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+      }
+
+      .profile-showcase-discovery-empty-copy{
+        margin-top:auto;
+        max-width:330px;
+      }
+
+      .profile-showcase-discovery-empty-copy strong{
+        display:block;
+        font-size:26px;
+        line-height:1.08;
+        font-weight:950;
+      }
+
+      .profile-showcase-discovery-empty-copy span{
+        display:block;
+        margin-top:8px;
+        color:rgba(255,255,255,.72);
+        font-size:14px;
+        line-height:1.42;
+        font-weight:750;
+      }
 
       .profile-showcase-discovery-shade{
         position:absolute;
@@ -3629,7 +3684,6 @@ router.get("/u/:username", async (req, res) => {
             discoveryTimer = null;
           }
           function scheduleDiscoveryStart(){
-            if (!discoveryItems.length) return;
             if (discoveryStartTimer) window.clearTimeout(discoveryStartTimer);
             discoveryStartTimer = window.setTimeout(startDiscovery, 20000);
           }
@@ -3674,7 +3728,7 @@ router.get("/u/:username", async (req, res) => {
             }
           }
           function startDiscovery(){
-            if (discoveryStarted || !discoveryItems.length || !discoveryScreen || !discoveryMedia) return;
+            if (discoveryStarted || !discoveryScreen || !discoveryMedia) return;
             discoveryStartTimer = null;
             discoveryStarted = true;
             shell.classList.add('is-discovery-screen');
