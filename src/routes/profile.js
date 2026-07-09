@@ -4145,17 +4145,25 @@ router.get("/edit/:username", async (req, res) => {
         position:fixed;
         inset:0;
         z-index:9999;
+        width:100vw;
+        height:100vh;
+        height:100dvh;
+        max-height:100dvh;
         background:#05060a;
         display:none;
         flex-direction:column;
         color:#fff;
         touch-action:none;
+        overscroll-behavior:none;
+        overflow:hidden;
+        isolation:isolate;
       }
 
       .tz-photo-crop-modal.is-open{display:flex;}
 
       .tz-photo-crop-topbar{
-        height:72px;
+        flex:0 0 auto;
+        min-height:72px;
         padding:14px 18px;
         padding-top:max(14px, env(safe-area-inset-top));
         display:flex;
@@ -4189,7 +4197,9 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-photo-crop-stage{
         position:relative;
-        flex:1;
+        flex:1 1 auto;
+        min-height:0;
+        width:100%;
         overflow:hidden;
         display:flex;
         align-items:center;
@@ -4203,8 +4213,9 @@ router.get("/edit/:username", async (req, res) => {
         position:absolute;
         left:50%;
         top:50%;
-        width:82vw;
+        width:min(86vw, 560px);
         max-width:520px;
+        max-height:none;
         height:auto;
         transform:translate(-50%, -50%) scale(1);
         transform-origin:center center;
@@ -4224,7 +4235,7 @@ router.get("/edit/:username", async (req, res) => {
         position:absolute;
         left:50%;
         top:50%;
-        width:min(64vw, 420px);
+        width:min(70vw, 52dvh, 420px);
         aspect-ratio:1 / 1;
         max-width:420px;
         transform:translate(-50%, -50%);
@@ -4238,12 +4249,24 @@ router.get("/edit/:username", async (req, res) => {
       }
 
       .tz-photo-crop-hint{
+        flex:0 0 auto;
         padding:16px 18px max(22px, env(safe-area-inset-bottom));
         text-align:center;
         color:rgba(255,255,255,.72);
         font-size:14px;
         background:rgba(5,6,10,.92);
         border-top:1px solid rgba(255,255,255,.08);
+      }
+
+      @supports not (height:100dvh){
+        .tz-photo-crop-modal{height:100vh;max-height:100vh;}
+        .tz-photo-crop-ring{width:min(70vw, 420px);}
+      }
+
+      @media(max-height:640px){
+        .tz-photo-crop-topbar{min-height:60px;padding-top:max(10px, env(safe-area-inset-top));padding-bottom:10px;}
+        .tz-photo-crop-hint{padding-top:12px;padding-bottom:max(14px, env(safe-area-inset-bottom));}
+        .tz-photo-crop-ring{width:min(68vw, 48dvh, 360px);}
       }
 
 
@@ -4703,6 +4726,11 @@ router.get("/edit/:username", async (req, res) => {
         var state = { tx:0, ty:0, scale:1 };
         var pointers = {};
         var lastDistance = 0;
+        var lockedScrollY = 0;
+
+        if (modal && modal.parentNode !== document.body) {
+          document.body.appendChild(modal);
+        }
 
         function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
         function syncHidden(){
@@ -4739,25 +4767,38 @@ router.get("/edit/:username", async (req, res) => {
         }
         function forceOpenModal(){
           if (!modal) return;
+          lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
           modal.classList.add('is-open');
           modal.setAttribute('aria-hidden', 'false');
           modal.style.setProperty('display', 'flex', 'important');
           modal.style.setProperty('position', 'fixed', 'important');
           modal.style.setProperty('inset', '0', 'important');
           modal.style.setProperty('z-index', '999999', 'important');
+          modal.style.setProperty('height', '100dvh', 'important');
           document.documentElement.style.overflow = 'hidden';
           document.body.style.overflow = 'hidden';
+          document.body.style.position = 'fixed';
+          document.body.style.top = '-' + lockedScrollY + 'px';
+          document.body.style.left = '0';
+          document.body.style.right = '0';
+          document.body.style.width = '100%';
         }
         function closeModal(){
           if (!modal) return;
           modal.classList.remove('is-open');
           modal.setAttribute('aria-hidden', 'true');
           modal.style.display = '';
+          modal.style.height = '';
           document.documentElement.style.overflow = '';
           document.documentElement.style.overflowX = 'hidden';
           document.body.style.overflow = '';
           document.body.style.overflowX = 'hidden';
-          window.scrollTo(0, window.scrollY);
+          document.body.style.position = '';
+          document.body.style.top = '';
+          document.body.style.left = '';
+          document.body.style.right = '';
+          document.body.style.width = '';
+          window.scrollTo(0, lockedScrollY || 0);
           pointers = {};
           dragging = false;
         }
