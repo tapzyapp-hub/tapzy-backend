@@ -3574,7 +3574,7 @@ router.get("/stories/feed", async (req, res) => {
               <span data-like-count>${compactFeedCount(story._count.likes)}</span>
             </button>
           </form>
-          <div class="sf-action sf-views" aria-label="${compactFeedCount(viewCount)} views" data-view-flip>
+          <div class="sf-action sf-views" aria-label="${compactFeedCount(viewCount)} views">
             <svg class="sf-view-eye" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M2.5 12s3.4-5.2 9.5-5.2S21.5 12 21.5 12s-3.4 5.2-9.5 5.2S2.5 12 2.5 12Z"></path>
               <circle cx="12" cy="12" r="2.7"></circle>
@@ -3761,12 +3761,9 @@ router.get("/stories/feed", async (req, res) => {
         .sf-action span{line-height:1;letter-spacing:.01em}
         .sf-action.is-active svg{fill:#ff315f;stroke:#ff315f}
         .sf-save.is-saved svg{fill:#2f76ff;stroke:#fff}
-        .sf-views{min-height:40px;cursor:default}
-        .sf-views .sf-view-eye{display:block;fill:none;stroke:#fff;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;opacity:1;transform:translateY(0) scale(1);transition:opacity .24s ease,transform .24s ease}
+        .sf-views{cursor:default}
+        .sf-views .sf-view-eye{display:block;fill:none;stroke:#fff;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
         .sf-views .sf-view-eye circle{fill:#fff;stroke:#fff}
-        .sf-views span{display:block;opacity:0;max-height:0;overflow:hidden;transform:translateY(-3px) scale(.92);transition:opacity .24s ease,transform .24s ease,max-height .24s ease}
-        .sf-views.is-count .sf-view-eye{opacity:0;transform:translateY(3px) scale(.92)}
-        .sf-views.is-count span{opacity:1;max-height:14px;transform:translateY(0) scale(1)}
         .sf-sound{width:43px;height:43px;border-radius:50%;border:2px solid rgba(255,255,255,.65);background:rgba(0,0,0,.4);padding:10px;cursor:pointer}
         .sf-bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;height:calc(64px + var(--safe-bottom));padding:7px 10px var(--safe-bottom);display:flex;align-items:center;justify-content:space-around;background:#030303;border-top:1px solid rgba(255,255,255,.08)}
         .sf-nav{min-width:55px;display:flex;flex-direction:column;align-items:center;gap:2px;color:rgba(255,255,255,.72);text-decoration:none;font-size:10px;font-weight:650}
@@ -3828,14 +3825,8 @@ router.get("/stories/feed", async (req, res) => {
           var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab[data-filter]'));
           var empty = document.querySelector('.sf-no-results');
           var actionRails = Array.prototype.slice.call(document.querySelectorAll('.sf-actions'));
-          var viewFlips = Array.prototype.slice.call(document.querySelectorAll('[data-view-flip]'));
           var actionIdleTimer = null;
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
-          if (viewFlips.length) {
-            setInterval(function(){
-              viewFlips.forEach(function(item){ item.classList.toggle('is-count'); });
-            }, 3500);
-          }
           function setActionRailsIdle(idle){
             actionRails.forEach(function(rail){ rail.classList.toggle('is-idle', !!idle); });
           }
