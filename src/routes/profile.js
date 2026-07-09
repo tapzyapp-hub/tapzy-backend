@@ -119,6 +119,10 @@ function formatStoryTimeShort(date) {
 
 }
 
+function tapzyMarkImg(className = "tapzy-mark") {
+  return `<img class="${escapeHtml(className)}" src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />`;
+}
+
 
 
 function storyTrayCard(profile, story, isOwner) {
@@ -177,7 +181,7 @@ function storyStageMedia(profile, story) {
   if (!story) {
     return `
       <div class="profile-story-stage-empty">
-        <div class="profile-story-stage-empty-mark">T</div>
+        <div class="profile-story-stage-empty-mark">${tapzyMarkImg("tapzy-mark profile-story-stage-empty-logo")}</div>
         <div class="profile-story-stage-empty-title">No active stories</div>
         <div class="profile-story-stage-empty-sub">Create a 24-hour update to fill this space.</div>
       </div>
@@ -573,7 +577,7 @@ router.get("/u/:username", async (req, res) => {
 
                     <span class="profile-story-stage-dot"></span>
 
-                    <span>${escapeHtml(displayName)}</span>
+                    <span>Tapzy Network™</span>
 
                   </div>
 
@@ -2348,14 +2352,61 @@ router.get("/u/:username", async (req, res) => {
       }
 
       .profile-story-stage-empty-mark{
+        position:relative;
         width:86px;
         height:86px;
         border-radius:24px;
         display:grid;
         place-items:center;
         background:linear-gradient(145deg, #2f76ff, #1145ad);
-        box-shadow:0 0 36px rgba(47,118,255,.42);
-        font-size:42px;
+        color:#fff;
+        box-shadow:0 18px 44px rgba(35,102,231,.34), inset 0 1px 0 rgba(255,255,255,.16);
+        animation:profileStageLogoPulse 2.25s ease-in-out infinite;
+        will-change:transform,box-shadow;
+        z-index:1;
+      }
+
+      .profile-story-stage-empty-mark::before{
+        content:"";
+        position:absolute;
+        inset:-12px;
+        border-radius:32px;
+        background:radial-gradient(circle, rgba(47,118,255,.36), rgba(47,118,255,0) 70%);
+        animation:profileStageLogoHalo 2.25s ease-out infinite;
+        z-index:-1;
+      }
+
+      .profile-story-stage-empty-mark::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:24px;
+        background:linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,0) 45%);
+        pointer-events:none;
+      }
+
+      .profile-story-stage-empty-logo{
+        width:66%;
+        height:66%;
+        object-fit:contain;
+        filter:drop-shadow(0 3px 8px rgba(0,0,0,.22));
+        animation:profileStageLogoInnerPulse 2.25s ease-in-out infinite;
+      }
+
+      @keyframes profileStageLogoPulse{
+        0%,100%{transform:scale(1);box-shadow:0 18px 44px rgba(35,102,231,.34), inset 0 1px 0 rgba(255,255,255,.16);}
+        50%{transform:scale(1.075);box-shadow:0 22px 62px rgba(35,102,231,.58), 0 0 32px rgba(79,145,255,.38), inset 0 1px 0 rgba(255,255,255,.22);}
+      }
+
+      @keyframes profileStageLogoHalo{
+        0%{opacity:.48;transform:scale(.86);}
+        60%{opacity:.16;transform:scale(1.32);}
+        100%{opacity:0;transform:scale(1.45);}
+      }
+
+      @keyframes profileStageLogoInnerPulse{
+        0%,100%{transform:scale(1);}
+        50%{transform:scale(1.035);}
       }
 
       .profile-story-stage-empty-title{
