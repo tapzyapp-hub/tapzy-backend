@@ -1326,6 +1326,7 @@ router.get("/stories", async (req, res) => {
         text-align:left;
         padding:14px;
         transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+        overflow:hidden;
       }
 
       .stories-upload-drop:hover{
@@ -1356,6 +1357,11 @@ router.get("/stories", async (req, res) => {
         font-weight:900;
         font-size:15px;
         align-self:end;
+        min-width:0;
+        max-width:100%;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
       }
 
       .stories-upload-subtitle,
@@ -1365,6 +1371,11 @@ router.get("/stories", async (req, res) => {
         font-weight:700;
         grid-column:2;
         align-self:start;
+        min-width:0;
+        max-width:100%;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
       }
 
       .stories-preview-card{
