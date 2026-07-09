@@ -3699,15 +3699,15 @@ router.get("/stories/feed", async (req, res) => {
         .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-5px;width:26px;height:3px;border-radius:5px;background:#fff;transform:translateX(-50%)}
         .sf-search{position:absolute;right:15px;top:calc(var(--safe-top) + 16px);width:40px;height:40px;border:0;background:none;padding:7px;cursor:pointer}
         .sf-search svg,.sf-action svg,.sf-sound svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-        @media(max-width:380px){
-          .sf-top{min-height:66px;gap:7px;padding:calc(var(--safe-top) + 14px) 42px 13px}
-          .sf-brand{left:9px;top:calc(var(--safe-top) + 13px);width:34px;height:34px;border-radius:11px}
-          .sf-tabs{gap:7px}
-          .sf-tab{font-size:11px;font-weight:800;padding:7px 0}
+        @media(max-width:430px){
+          .sf-top{min-height:66px;gap:12px;padding:calc(var(--safe-top) + 15px) 50px 14px}
+          .sf-brand{left:14px;top:calc(var(--safe-top) + 14px);width:36px;height:36px;border-radius:12px}
+          .sf-tabs{gap:12px}
+          .sf-tab{font-size:13px;font-weight:800;padding:7px 0}
           .sf-tab.is-active::after{bottom:-4px;width:24px;height:3px}
-          .sf-search{right:7px;top:calc(var(--safe-top) + 12px);width:34px;height:34px;padding:5px}
+          .sf-search{right:12px;top:calc(var(--safe-top) + 14px);width:36px;height:36px;padding:5px}
         }
-        @media(max-width:340px){
+        @media(max-width:360px){
           .sf-top{gap:5px;padding-left:36px;padding-right:34px}
           .sf-brand{width:30px;height:30px}
           .sf-tabs{gap:5px}
