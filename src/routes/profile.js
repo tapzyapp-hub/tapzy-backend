@@ -341,19 +341,20 @@ router.get("/u/:username", async (req, res) => {
     }));
     const profileStoryFeedJson = JSON.stringify(profileStoryFeedItems).replace(/</g, "\\u003c");
     const quickShareRailLinks = [
-      profile.phone ? `<a class="profile-story-rail-btn" href="tel:${escapeHtml(profile.phone)}"><span>Phone</span></a>` : "",
-      profile.email ? `<a class="profile-story-rail-btn" href="mailto:${escapeHtml(profile.email)}"><span>Email</span></a>` : "",
-      profile.website ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.website))}" target="_blank" rel="noopener noreferrer"><span>Website</span></a>` : "",
-      profile.instagram ? `<a class="profile-story-rail-btn" href="https://instagram.com/${escapeHtml(stripAt(profile.instagram))}" target="_blank" rel="noopener noreferrer"><span>Instagram</span></a>` : "",
-      profile.tiktok ? `<a class="profile-story-rail-btn" href="https://www.tiktok.com/@${escapeHtml(stripAt(profile.tiktok))}" target="_blank" rel="noopener noreferrer"><span>TikTok</span></a>` : "",
-      profile.linkedin ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.linkedin))}" target="_blank" rel="noopener noreferrer"><span>LinkedIn</span></a>` : "",
-      profile.twitter ? `<a class="profile-story-rail-btn" href="https://x.com/${escapeHtml(stripAt(profile.twitter))}" target="_blank" rel="noopener noreferrer"><span>X</span></a>` : "",
-      profile.facebook ? `<a class="profile-story-rail-btn" href="https://facebook.com/${escapeHtml(stripAt(profile.facebook))}" target="_blank" rel="noopener noreferrer"><span>Facebook</span></a>` : "",
-      profile.youtube ? `<a class="profile-story-rail-btn" href="https://youtube.com/@${escapeHtml(stripAt(profile.youtube))}" target="_blank" rel="noopener noreferrer"><span>YouTube</span></a>` : "",
-      profile.github ? `<a class="profile-story-rail-btn" href="https://github.com/${escapeHtml(stripAt(profile.github))}" target="_blank" rel="noopener noreferrer"><span>GitHub</span></a>` : "",
-      profile.snapchat ? `<a class="profile-story-rail-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer"><span>Snapchat</span></a>` : "",
-      profile.whatsapp ? `<a class="profile-story-rail-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span></a>` : "",
-      profile.telegram ? `<a class="profile-story-rail-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer"><span>Telegram</span></a>` : "",
+      profile.shareNameEnabled && (profile.name || displayName) ? `<button class="profile-story-rail-btn" type="button" data-copy-share="${escapeHtml(profile.name || displayName)}"><span>Name</span></button>` : "",
+      profile.sharePhoneEnabled && profile.phone ? `<a class="profile-story-rail-btn" href="tel:${escapeHtml(profile.phone)}"><span>Phone</span></a>` : "",
+      profile.shareEmailEnabled && profile.email ? `<a class="profile-story-rail-btn" href="mailto:${escapeHtml(profile.email)}"><span>Email</span></a>` : "",
+      profile.shareWebsiteEnabled && profile.website ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.website))}" target="_blank" rel="noopener noreferrer"><span>Website</span></a>` : "",
+      profile.shareInstagramEnabled && profile.instagram ? `<a class="profile-story-rail-btn" href="https://instagram.com/${escapeHtml(stripAt(profile.instagram))}" target="_blank" rel="noopener noreferrer"><span>Instagram</span></a>` : "",
+      profile.shareTiktokEnabled && profile.tiktok ? `<a class="profile-story-rail-btn" href="https://www.tiktok.com/@${escapeHtml(stripAt(profile.tiktok))}" target="_blank" rel="noopener noreferrer"><span>TikTok</span></a>` : "",
+      profile.shareLinkedinEnabled && profile.linkedin ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.linkedin))}" target="_blank" rel="noopener noreferrer"><span>LinkedIn</span></a>` : "",
+      profile.shareTwitterEnabled && profile.twitter ? `<a class="profile-story-rail-btn" href="https://x.com/${escapeHtml(stripAt(profile.twitter))}" target="_blank" rel="noopener noreferrer"><span>X</span></a>` : "",
+      profile.shareFacebookEnabled && profile.facebook ? `<a class="profile-story-rail-btn" href="https://facebook.com/${escapeHtml(stripAt(profile.facebook))}" target="_blank" rel="noopener noreferrer"><span>Facebook</span></a>` : "",
+      profile.shareYoutubeEnabled && profile.youtube ? `<a class="profile-story-rail-btn" href="https://youtube.com/@${escapeHtml(stripAt(profile.youtube))}" target="_blank" rel="noopener noreferrer"><span>YouTube</span></a>` : "",
+      profile.shareGithubEnabled && profile.github ? `<a class="profile-story-rail-btn" href="https://github.com/${escapeHtml(stripAt(profile.github))}" target="_blank" rel="noopener noreferrer"><span>GitHub</span></a>` : "",
+      profile.shareSnapchatEnabled && profile.snapchat ? `<a class="profile-story-rail-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer"><span>Snapchat</span></a>` : "",
+      profile.shareWhatsappEnabled && profile.whatsapp ? `<a class="profile-story-rail-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span></a>` : "",
+      profile.shareTelegramEnabled && profile.telegram ? `<a class="profile-story-rail-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer"><span>Telegram</span></a>` : "",
     ].filter(Boolean).join("");
 
 
@@ -2356,7 +2357,7 @@ router.get("/u/:username", async (req, res) => {
         align-items:center;
         justify-content:center;
         gap:12px;
-        padding:32px;
+        padding:32px 32px 122px;
         text-align:center;
         background:
           radial-gradient(circle at 50% 18%, rgba(95,182,255,.22), transparent 38%),
@@ -2499,6 +2500,8 @@ router.get("/u/:username", async (req, res) => {
       .profile-story-rail::-webkit-scrollbar{display:none;}
 
       .profile-story-rail-btn{
+        appearance:none;
+        -webkit-appearance:none;
         width:calc((100% - 24px) / 4);
         min-width:calc((100% - 24px) / 4);
         min-height:58px;
@@ -2512,11 +2515,13 @@ router.get("/u/:username", async (req, res) => {
         text-align:center;
         font-size:10px;
         line-height:1.12;
+        font-family:inherit;
         font-weight:950;
         border:1px solid rgba(255,255,255,.10);
         background:rgba(255,255,255,.06);
         box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
         scroll-snap-align:start;
+        cursor:pointer;
       }
 
       .profile-story-stage.is-controls-dim .profile-story-stage-top,
@@ -2532,7 +2537,8 @@ router.get("/u/:username", async (req, res) => {
       }
 
       .profile-story-rail-btn:hover,
-      .profile-story-rail-btn:focus-visible{
+      .profile-story-rail-btn:focus-visible,
+      .profile-story-rail-btn.is-copied{
         border-color:rgba(115,194,255,.82);
         background:rgba(115,194,255,.14);
         box-shadow:0 0 18px rgba(87,170,255,.24), inset 0 1px 0 rgba(255,255,255,.08);
@@ -3215,7 +3221,7 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-stage{
-          min-height:min(680px, calc(100svh - 96px));
+          min-height:min(680px, calc(100dvh - 152px));
           border-radius:30px;
         }
 
@@ -3255,10 +3261,15 @@ router.get("/u/:username", async (req, res) => {
         .profile-story-taskbar{
           left:16px;
           right:16px;
-          bottom:16px;
+          bottom:max(16px, env(safe-area-inset-bottom));
           border-radius:24px;
           gap:7px;
           padding:8px;
+        }
+
+        .profile-story-stage-empty,
+        .profile-story-stage-text{
+          padding-bottom:118px;
         }
 
         .profile-story-rail{
@@ -3561,6 +3572,38 @@ router.get("/u/:username", async (req, res) => {
               showControls();
             });
           }
+
+          stage.querySelectorAll('.profile-story-rail-btn').forEach(function(link){
+            link.addEventListener('click', function(e){
+              if (stage.classList.contains('is-controls-dim')) {
+                e.preventDefault();
+                e.stopPropagation();
+                showControls();
+                return;
+              }
+              const copyValue = link.getAttribute('data-copy-share');
+              if (copyValue) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(copyValue).catch(function(){});
+                }
+                link.classList.add('is-copied');
+                window.setTimeout(function(){ link.classList.remove('is-copied'); }, 900);
+                return;
+              }
+              const href = link.getAttribute('href');
+              if (!href) return;
+              e.preventDefault();
+              e.stopPropagation();
+              if (link.target === '_blank') {
+                const opened = window.open(href, '_blank', 'noopener,noreferrer');
+                if (!opened) window.location.href = href;
+              } else {
+                window.location.href = href;
+              }
+            });
+          });
 
           stage.addEventListener('pointerdown', function(e){
             if (e.target && e.target.closest('a, button')) return;
@@ -5275,6 +5318,7 @@ router.get("/edit/:username", async (req, res) => {
         var doneBtn = document.querySelector('[data-photo-crop-done]');
         var cancelBtn = document.querySelector('[data-photo-crop-cancel]');
         var croppedPhotoData = document.querySelector('[data-cropped-photo-data]');
+        var photoPickTrigger = document.querySelector('[data-photo-pick-trigger]');
         var selectedUrl = '';
         var dragging = false;
         var lastX = 0;
@@ -5404,6 +5448,12 @@ router.get("/edit/:username", async (req, res) => {
           file.addEventListener('change', function(){ loadSelectedFile(file); });
           file.addEventListener('input', function(){ loadSelectedFile(file); });
         }
+        if (photoPickTrigger && file) {
+          photoPickTrigger.addEventListener('click', function(e){
+            e.preventDefault();
+            try { file.click(); } catch(_) {}
+          });
+        }
 
         function getDistance(){
           var ids = Object.keys(pointers);
@@ -5413,7 +5463,53 @@ router.get("/edit/:username", async (req, res) => {
           return Math.sqrt(dx*dx + dy*dy);
         }
         if (stage) {
+          if (window.PointerEvent) {
+            stage.addEventListener('pointerdown', function(e){
+              if (!selectedUrl) return;
+              e.preventDefault();
+              pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+              try { stage.setPointerCapture(e.pointerId); } catch(_) {}
+              if (Object.keys(pointers).length === 1) {
+                dragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+              }
+              if (Object.keys(pointers).length >= 2) lastDistance = getDistance();
+            });
+            stage.addEventListener('pointermove', function(e){
+              if (!selectedUrl || !pointers[e.pointerId]) return;
+              e.preventDefault();
+              pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+              var ids = Object.keys(pointers);
+              if (ids.length >= 2) {
+                var d = getDistance();
+                if (lastDistance > 0 && d > 0) state.scale = clamp(state.scale * (d / lastDistance), 1, 2.4);
+                lastDistance = d;
+              } else if (dragging) {
+                state.tx += e.clientX - lastX;
+                state.ty += e.clientY - lastY;
+                lastX = e.clientX;
+                lastY = e.clientY;
+              }
+              applyTransforms();
+            });
+            function endPointerCrop(e){
+              delete pointers[e.pointerId];
+              try { stage.releasePointerCapture(e.pointerId); } catch(_) {}
+              lastDistance = getDistance();
+              if (!Object.keys(pointers).length) dragging = false;
+              if (Object.keys(pointers).length === 1) {
+                var remaining = pointers[Object.keys(pointers)[0]];
+                lastX = remaining.x;
+                lastY = remaining.y;
+                dragging = true;
+              }
+            }
+            stage.addEventListener('pointerup', endPointerCrop);
+            stage.addEventListener('pointercancel', endPointerCrop);
+          }
           stage.addEventListener('mousedown', function(e){
+            if (window.PointerEvent) return;
             if (!selectedUrl) return;
             dragging = true; lastX = e.clientX; lastY = e.clientY; e.preventDefault();
           });
@@ -5426,6 +5522,7 @@ router.get("/edit/:username", async (req, res) => {
           });
           window.addEventListener('mouseup', function(){ dragging = false; });
           stage.addEventListener('touchstart', function(e){
+            if (window.PointerEvent) return;
             if (!selectedUrl) return;
             e.preventDefault();
             for (var i=0;i<e.changedTouches.length;i++) pointers[e.changedTouches[i].identifier] = {x:e.changedTouches[i].clientX,y:e.changedTouches[i].clientY};
@@ -5433,6 +5530,7 @@ router.get("/edit/:username", async (req, res) => {
             if (e.touches.length >= 2) lastDistance = getDistance();
           }, {passive:false});
           stage.addEventListener('touchmove', function(e){
+            if (window.PointerEvent) return;
             if (!selectedUrl) return;
             e.preventDefault();
             for (var i=0;i<e.changedTouches.length;i++) pointers[e.changedTouches[i].identifier] = {x:e.changedTouches[i].clientX,y:e.changedTouches[i].clientY};
@@ -5449,6 +5547,7 @@ router.get("/edit/:username", async (req, res) => {
             applyTransforms();
           }, {passive:false});
           stage.addEventListener('touchend', function(e){
+            if (window.PointerEvent) return;
             for (var i=0;i<e.changedTouches.length;i++) delete pointers[e.changedTouches[i].identifier];
             lastDistance = getDistance();
           });
