@@ -1647,6 +1647,7 @@ router.get("/u/:username", async (req, res) => {
         transition:opacity .32s ease, transform .32s ease;
       }
 
+      .profile-showcase.is-secondary-dim .profile-showcase-name,
       .profile-showcase.is-secondary-dim .profile-showcase-handle,
       .profile-showcase.is-secondary-dim .profile-showcase-secondary{
         opacity:0;
