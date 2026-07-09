@@ -2595,25 +2595,33 @@ module.exports = async function getEventsPage(req, res) {
           position:sticky;
           min-height:66px;
           gap:0;
-          padding:calc(env(safe-area-inset-top, 0px) + 12px) 44px 12px;
+          display:grid;
+          grid-template-columns:34px minmax(0, 1fr) 34px;
+          column-gap:8px;
+          justify-content:normal;
+          padding:calc(env(safe-area-inset-top, 0px) + 12px) 14px 12px;
         }
 
         .events-story-brand{
-          left:10px;
-          top:calc(env(safe-area-inset-top, 0px) + 12px);
+          position:relative;
+          left:auto;
+          top:auto;
           width:34px;
           height:34px;
           border-radius:11px;
+          grid-column:1;
         }
 
         .events-story-tabs{
           width:100%;
           justify-content:center;
-          gap:clamp(6px, 2.2vw, 10px);
+          gap:clamp(5px, 2vw, 8px);
+          grid-column:2;
+          overflow:hidden;
         }
 
         .events-story-tab{
-          font-size:clamp(11px, 3.05vw, 12px);
+          font-size:clamp(10.5px, 2.9vw, 11.5px);
           font-weight:800;
           padding:7px 0;
         }
@@ -2625,32 +2633,34 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .events-story-search{
-          right:8px;
-          top:calc(env(safe-area-inset-top, 0px) + 11px);
-          width:36px;
-          height:36px;
+          position:relative;
+          right:auto;
+          top:auto;
+          width:34px;
+          height:34px;
           padding:6px;
+          grid-column:3;
         }
 
         @media(max-width:370px){
           .events-story-top{
-            padding-left:40px;
-            padding-right:38px;
+            grid-template-columns:30px minmax(0, 1fr) 30px;
+            column-gap:5px;
+            padding-left:10px;
+            padding-right:10px;
           }
 
           .events-story-brand{
-            left:8px;
-            width:32px;
-            height:32px;
+            width:30px;
+            height:30px;
           }
 
           .events-story-tabs{gap:5px;}
-          .events-story-tab{font-size:10.5px;}
+          .events-story-tab{font-size:10px;}
 
           .events-story-search{
-            right:6px;
-            width:32px;
-            height:32px;
+            width:30px;
+            height:30px;
             padding:5px;
           }
         }

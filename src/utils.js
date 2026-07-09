@@ -2961,25 +2961,33 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         .tz-story-top-nav{
           min-height:66px;
           gap:0;
-          padding:calc(env(safe-area-inset-top, 0px) + 12px) 44px 12px;
+          display:grid;
+          grid-template-columns:34px minmax(0, 1fr) 34px;
+          column-gap:8px;
+          justify-content:normal;
+          padding:calc(env(safe-area-inset-top, 0px) + 12px) 14px 12px;
         }
 
         .tz-story-brand{
-          left:10px;
-          top:calc(env(safe-area-inset-top, 0px) + 12px);
+          position:relative;
+          left:auto;
+          top:auto;
           width:34px;
           height:34px;
           border-radius:11px;
+          grid-column:1;
         }
 
         .tz-story-tabs{
           width:100%;
           justify-content:center;
-          gap:clamp(6px, 2.2vw, 10px);
+          gap:clamp(5px, 2vw, 8px);
+          grid-column:2;
+          overflow:hidden;
         }
 
         .tz-story-tab{
-          font-size:clamp(11px, 3.05vw, 12px);
+          font-size:clamp(10.5px, 2.9vw, 11.5px);
           font-weight:800;
           padding:7px 0;
         }
@@ -2991,24 +2999,27 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-search{
-          right:8px;
-          top:calc(env(safe-area-inset-top, 0px) + 11px);
-          width:36px;
-          height:36px;
-          padding:6px;
+          position:relative;
+          right:auto;
+          top:auto;
+          width:34px;
+          height:34px;
+          padding:5px;
+          grid-column:3;
         }
       }
 
       @media(max-width:370px){
         .tz-story-top-nav{
-          padding-left:40px;
-          padding-right:38px;
+          grid-template-columns:30px minmax(0, 1fr) 30px;
+          column-gap:5px;
+          padding-left:10px;
+          padding-right:10px;
         }
 
         .tz-story-brand{
-          left:8px;
-          width:32px;
-          height:32px;
+          width:30px;
+          height:30px;
           border-width:2px;
         }
 
@@ -3017,13 +3028,12 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-tab{
-          font-size:10.5px;
+          font-size:10px;
         }
 
         .tz-story-search{
-          right:6px;
-          width:32px;
-          height:32px;
+          width:30px;
+          height:30px;
           padding:5px;
         }
       }
