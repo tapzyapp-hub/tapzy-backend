@@ -1515,6 +1515,11 @@ router.get("/u/:username", async (req, res) => {
         object-fit:cover;
         background:#000;
       }
+      .profile-showcase-discovery.is-empty .profile-showcase-discovery-shade,
+      .profile-showcase-discovery.is-empty .profile-showcase-discovery-copy{
+        display:none;
+      }
+
       .profile-showcase-discovery-empty{
         position:absolute;
         inset:0;
@@ -1526,6 +1531,10 @@ router.get("/u/:username", async (req, res) => {
         padding:28px;
         color:#fff;
         background:#000;
+      }
+
+      .profile-showcase-discovery-empty{
+        z-index:5;
       }
 
       .profile-showcase-discovery-empty-avatar{
@@ -3693,14 +3702,32 @@ router.get("/u/:username", async (req, res) => {
             renderDiscovery();
           }
           function renderDiscovery(){
-            if (!discoveryMedia || !discoveryItems.length) return;
+            if (!discoveryMedia) return;
             clearDiscoveryTimer();
             saveDiscoveryDwell();
+            discoveryMedia.replaceChildren();
+            discoveryScreen.classList.remove('is-empty');
+            if (!discoveryItems.length) {
+              activeDiscoveryId = null;
+              activeDiscoveryStartedAt = 0;
+              discoveryScreen.classList.add('is-empty');
+              if (discoveryTitle) discoveryTitle.textContent = '';
+              if (discoveryMeta) discoveryMeta.textContent = '';
+              const empty = document.createElement('div');
+              empty.className = 'profile-showcase-discovery-empty';
+              const avatarBox = document.createElement('div');
+              avatarBox.className = 'profile-showcase-discovery-empty-avatar';
+              const avatar = shell.querySelector('.profile-showcase-avatar');
+              if (avatar) avatarBox.innerHTML = avatar.innerHTML;
+              else avatarBox.textContent = 'T';
+              empty.appendChild(avatarBox);
+              discoveryMedia.appendChild(empty);
+              return;
+            }
             const item = discoveryItems[discoveryIndex] || discoveryItems[0];
             activeDiscoveryId = item.id || null;
             activeDiscoveryStartedAt = Date.now();
-            discoveryMedia.replaceChildren();
-            if (discoveryTitle) discoveryTitle.textContent = item.title || 'Tapzy Networkâ„¢';
+            if (discoveryTitle) discoveryTitle.textContent = item.title || 'Tapzy Network™';
             if (discoveryMeta) discoveryMeta.textContent = item.meta || 'Discovery';
             if (item.isVideo) {
               const video = document.createElement('video');
