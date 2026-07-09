@@ -2858,6 +2858,82 @@ module.exports = async function getEventsPage(req, res) {
         }
       }
 
+      @media(max-width:430px){
+        .events-story-top{
+          min-height:66px !important;
+          gap:12px !important;
+          padding:calc(env(safe-area-inset-top, 0px) + 15px) 50px 14px !important;
+        }
+
+        .events-story-brand{
+          left:14px !important;
+          top:calc(env(safe-area-inset-top, 0px) + 14px) !important;
+          width:36px !important;
+          height:36px !important;
+          border-radius:12px !important;
+        }
+
+        .events-story-tabs{
+          gap:12px !important;
+        }
+
+        .events-story-tab{
+          font-size:13px !important;
+          font-weight:800 !important;
+          padding:7px 0 !important;
+        }
+
+        .events-story-tab.is-active::after{
+          bottom:-4px !important;
+          width:24px !important;
+          height:3px !important;
+        }
+
+        .events-story-search{
+          right:12px !important;
+          top:calc(env(safe-area-inset-top, 0px) + 14px) !important;
+          width:36px !important;
+          height:36px !important;
+          padding:6px !important;
+        }
+      }
+
+      @media(max-width:360px){
+        .events-story-top{
+          gap:5px !important;
+          padding-left:36px !important;
+          padding-right:34px !important;
+        }
+
+        .events-story-brand{
+          left:6px !important;
+          width:30px !important;
+          height:30px !important;
+        }
+
+        .events-story-tabs{gap:5px !important;}
+        .events-story-tab{font-size:10px !important;}
+        .events-story-search{right:4px !important;width:30px !important;height:30px !important;padding:5px !important;}
+      }
+
+      @media(max-width:320px){
+        .events-story-top{
+          gap:4px !important;
+          padding-left:32px !important;
+          padding-right:30px !important;
+        }
+
+        .events-story-brand{
+          width:28px !important;
+          height:28px !important;
+          border-radius:9px !important;
+        }
+
+        .events-story-tabs{gap:4px !important;}
+        .events-story-tab{font-size:9.4px !important;}
+        .events-story-search{width:28px !important;height:28px !important;padding:4px !important;}
+      }
+
     </style>
 
 
