@@ -2207,25 +2207,23 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-story-stage-sound{
         position:absolute;
-        right:22px;
-        bottom:30px;
+        right:30px;
+        bottom:29px;
         z-index:8;
-        width:54px;
-        height:54px;
+        width:43px;
+        height:43px;
         padding:0;
         display:inline-flex;
         align-items:center;
         justify-content:center;
         border-radius:999px;
         color:#fff;
-        font-size:22px;
+        font-size:20px;
         font-weight:900;
-        border:3px solid rgba(255,255,255,.74);
-        background:rgba(4,6,10,.34);
+        border:2px solid rgba(255,255,255,.65);
+        background:rgba(0,0,0,.40);
         box-shadow:
-          0 0 0 1px rgba(255,255,255,.10),
-          0 0 24px rgba(255,255,255,.12),
-          0 12px 32px rgba(0,0,0,.30),
+          0 12px 30px rgba(0,0,0,.30),
           inset 0 1px 0 rgba(255,255,255,.08);
         backdrop-filter:blur(14px);
         -webkit-backdrop-filter:blur(14px);
@@ -2240,17 +2238,17 @@ router.get("/u/:username", async (req, res) => {
       .profile-story-stage-sound::after{
         content:"";
         position:absolute;
-        inset:-9px;
+        inset:-8px;
         border-radius:999px;
         pointer-events:none;
-        border:1px solid rgba(115,194,255,.34);
-        box-shadow:0 0 20px rgba(87,170,255,.20);
+        border:1px solid rgba(255,255,255,.38);
+        box-shadow:0 0 18px rgba(255,255,255,.12), 0 0 24px rgba(87,170,255,.18);
         opacity:.72;
         animation:profileSoundRing 2.15s ease-in-out infinite;
       }
 
       .profile-story-stage-sound::after{
-        inset:-15px;
+        inset:-14px;
         opacity:.42;
         animation-delay:.34s;
       }
@@ -2378,20 +2376,20 @@ router.get("/u/:username", async (req, res) => {
       .profile-story-rail{
         position:absolute;
         left:18px;
-        right:86px;
+        right:18px;
         bottom:20px;
         z-index:6;
         width:auto;
         max-height:none;
-        padding:10px;
+        padding:10px 76px 10px 10px;
         display:flex;
         flex-direction:row;
         gap:8px;
         overflow-x:auto;
         overflow-y:hidden;
-        border-radius:26px;
+        border-radius:28px;
         border:1px solid rgba(255,255,255,.10);
-        background:rgba(4,7,12,.34);
+        background:rgba(4,7,12,.40);
         box-shadow:0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
         backdrop-filter:blur(16px);
         -webkit-backdrop-filter:blur(16px);
@@ -3135,14 +3133,14 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-stage-sound{
-          right:16px;
-          bottom:25px;
-          width:46px;
-          height:46px;
-          min-height:46px;
+          right:27px;
+          bottom:26px;
+          width:43px;
+          height:43px;
+          min-height:43px;
           padding:0;
           border-radius:999px;
-          font-size:19px;
+          font-size:20px;
         }
 
         .profile-story-stage-caption{
@@ -3161,7 +3159,7 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-story-rail{
           left:16px;
-          right:70px;
+          right:16px;
           bottom:16px;
           top:auto;
           width:auto;
@@ -3172,7 +3170,7 @@ router.get("/u/:username", async (req, res) => {
           overflow-x:auto;
           overflow-y:hidden;
           gap:7px;
-          padding:8px;
+          padding:8px 66px 8px 8px;
         }
 
         .profile-story-rail-btn{
