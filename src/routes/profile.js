@@ -577,8 +577,6 @@ router.get("/u/:username", async (req, res) => {
 
                   </div>
 
-                  <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${featuredStory ? "" : "hidden"}>Sound</button>
-
                 </div>
 
                 <div class="profile-story-stage-media-link" data-profile-story-frame aria-label="Profile story feed">
@@ -598,6 +596,8 @@ router.get("/u/:username", async (req, res) => {
                   </div>
 
                 </div>
+
+                <button class="profile-story-stage-sound" type="button" data-profile-story-sound ${featuredStory ? "" : "hidden"} aria-label="Turn story sound on"><span aria-hidden="true">🔊</span></button>
 
                 ${
                   quickShareRailLinks
@@ -2158,6 +2158,11 @@ router.get("/u/:username", async (req, res) => {
           linear-gradient(180deg, rgba(0,0,0,.50) 0%, transparent 22%, transparent 58%, rgba(0,0,0,.76) 100%),
           radial-gradient(circle at 92% 50%, rgba(4,8,16,.56), transparent 28%);
         z-index:2;
+        transition:opacity .32s ease;
+      }
+
+      .profile-story-stage.is-controls-dim::after{
+        opacity:.08;
       }
 
       .profile-story-stage-top{
@@ -2170,6 +2175,7 @@ router.get("/u/:username", async (req, res) => {
         align-items:center;
         justify-content:space-between;
         gap:12px;
+        transition:opacity .32s ease, transform .32s ease;
       }
 
       .profile-story-stage-identity{
@@ -2200,24 +2206,57 @@ router.get("/u/:username", async (req, res) => {
       }
 
       .profile-story-stage-sound{
-        min-height:48px;
-        padding:0 18px;
+        position:absolute;
+        left:22px;
+        bottom:20px;
+        z-index:8;
+        width:72px;
+        height:72px;
+        padding:0;
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        border-radius:16px;
+        border-radius:999px;
         color:#fff;
-        font-size:15px;
+        font-size:30px;
         font-weight:900;
-        border:1px solid rgba(255,255,255,.12);
-        background:rgba(5,8,14,.62);
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.24);
+        border:4px solid rgba(255,255,255,.74);
+        background:rgba(4,6,10,.34);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.10),
+          0 0 24px rgba(255,255,255,.12),
+          0 12px 32px rgba(0,0,0,.30),
+          inset 0 1px 0 rgba(255,255,255,.08);
         backdrop-filter:blur(14px);
         -webkit-backdrop-filter:blur(14px);
         cursor:pointer;
+        transition:opacity .32s ease, transform .32s ease, border-color .22s ease, box-shadow .22s ease;
+        animation:profileSoundPulse 1.9s ease-in-out infinite;
       }
 
       .profile-story-stage-sound[hidden]{display:none;}
+
+      .profile-story-stage-sound span{
+        line-height:1;
+        transform:translateY(1px);
+      }
+
+      @keyframes profileSoundPulse{
+        0%,100%{
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,.10),
+            0 0 0 0 rgba(255,255,255,.16),
+            0 12px 32px rgba(0,0,0,.30),
+            inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        50%{
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,.12),
+            0 0 0 9px rgba(255,255,255,.08),
+            0 12px 32px rgba(0,0,0,.30),
+            inset 0 1px 0 rgba(255,255,255,.08);
+        }
+      }
 
       .profile-story-stage-media-link{
         position:absolute;
@@ -2292,6 +2331,7 @@ router.get("/u/:username", async (req, res) => {
         z-index:5;
         color:#fff;
         text-shadow:0 2px 14px rgba(0,0,0,.72);
+        transition:opacity .32s ease, transform .32s ease;
       }
 
       .profile-story-stage-caption strong{
@@ -2311,31 +2351,35 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-story-rail{
         position:absolute;
+        left:108px;
         right:18px;
-        top:50%;
+        bottom:20px;
         z-index:6;
-        width:76px;
-        max-height:calc(100% - 160px);
-        padding:12px 8px;
-        transform:translateY(-50%);
+        width:auto;
+        max-height:none;
+        padding:10px;
         display:flex;
-        flex-direction:column;
+        flex-direction:row;
         gap:10px;
-        overflow:auto;
-        border-radius:999px;
+        overflow-x:auto;
+        overflow-y:hidden;
+        border-radius:26px;
         border:1px solid rgba(255,255,255,.10);
         background:rgba(4,7,12,.34);
         box-shadow:0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
         backdrop-filter:blur(16px);
         -webkit-backdrop-filter:blur(16px);
         scrollbar-width:none;
+        scroll-snap-type:x proximity;
+        transition:opacity .32s ease, transform .32s ease;
       }
 
       .profile-story-rail::-webkit-scrollbar{display:none;}
 
       .profile-story-rail-btn{
-        width:60px;
-        min-height:54px;
+        width:92px;
+        min-width:92px;
+        min-height:58px;
         border-radius:18px;
         display:flex;
         align-items:center;
@@ -2350,6 +2394,20 @@ router.get("/u/:username", async (req, res) => {
         border:1px solid rgba(255,255,255,.10);
         background:rgba(255,255,255,.06);
         box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+        scroll-snap-align:start;
+      }
+
+      .profile-story-stage.is-controls-dim .profile-story-stage-top,
+      .profile-story-stage.is-controls-dim .profile-story-stage-caption,
+      .profile-story-stage.is-controls-dim .profile-story-rail,
+      .profile-story-stage.is-controls-dim .profile-story-stage-sound{
+        opacity:.05;
+        pointer-events:none;
+        transform:translateY(6px);
+      }
+
+      .profile-story-stage.is-controls-dim .profile-story-stage-top{
+        transform:translateY(-6px);
       }
 
       .profile-story-rail-btn:hover,
@@ -3051,10 +3109,14 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-stage-sound{
-          min-height:42px;
-          padding:0 14px;
-          border-radius:14px;
-          font-size:13px;
+          left:16px;
+          bottom:16px;
+          width:64px;
+          height:64px;
+          min-height:64px;
+          padding:0;
+          border-radius:999px;
+          font-size:26px;
         }
 
         .profile-story-stage-caption{
@@ -3072,7 +3134,7 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-rail{
-          left:16px;
+          left:92px;
           right:16px;
           bottom:16px;
           top:auto;
@@ -3087,8 +3149,8 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-story-rail-btn{
-          width:auto;
-          min-width:64px;
+          width:82px;
+          min-width:82px;
           min-height:48px;
           padding:8px 10px;
           border-radius:16px;
@@ -3239,11 +3301,13 @@ router.get("/u/:username", async (req, res) => {
 
           let index = 0;
           let timer = null;
+          let controlsTimer = null;
           let soundOn = false;
           const hasVideo = items.some(function(item){ return !!item.isVideo; });
           if (soundBtn) {
             soundBtn.hidden = !hasVideo;
-            soundBtn.textContent = 'Sound';
+            soundBtn.innerHTML = '<span aria-hidden="true">🔊</span>';
+            soundBtn.setAttribute('aria-label', 'Turn story sound on');
           }
 
           function clearTimer(){
@@ -3251,9 +3315,24 @@ router.get("/u/:username", async (req, res) => {
             timer = null;
           }
 
+          function hideControls(){
+            stage.classList.add('is-controls-dim');
+          }
+
+          function scheduleControlsFade(){
+            if (controlsTimer) window.clearTimeout(controlsTimer);
+            controlsTimer = window.setTimeout(hideControls, 4000);
+          }
+
+          function showControls(){
+            stage.classList.remove('is-controls-dim');
+            scheduleControlsFade();
+          }
+
           function updateSoundLabel(video){
             if (!soundBtn) return;
-            soundBtn.textContent = soundOn ? 'Mute' : 'Sound';
+            soundBtn.innerHTML = soundOn ? '<span aria-hidden="true">🔇</span>' : '<span aria-hidden="true">🔊</span>';
+            soundBtn.setAttribute('aria-label', soundOn ? 'Mute story sound' : 'Turn story sound on');
             if (video) video.muted = !soundOn;
           }
 
@@ -3315,6 +3394,7 @@ router.get("/u/:username", async (req, res) => {
             frame.appendChild(node);
             if (meta) meta.textContent = (item.time || 'Just now') + ' · Tapzy Story';
             updateSoundLabel(item.isVideo ? node : null);
+            showControls();
           }
 
           function next(){
@@ -3327,13 +3407,20 @@ router.get("/u/:username", async (req, res) => {
           }
 
           if (soundBtn) {
-            soundBtn.addEventListener('click', function(){
+            soundBtn.addEventListener('click', function(e){
+              e.stopPropagation();
               soundOn = !soundOn;
               const video = frame.querySelector('video');
               updateSoundLabel(video);
               if (video) video.play().catch(function(){});
+              showControls();
             });
           }
+
+          stage.addEventListener('pointerdown', function(e){
+            if (e.target && e.target.closest('a, button')) return;
+            showControls();
+          });
 
           render();
         }
