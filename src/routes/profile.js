@@ -1500,6 +1500,24 @@ router.get("/u/:username", async (req, res) => {
         pointer-events:auto;
       }
 
+      .profile-showcase.is-discovery-screen.is-discovery-empty .profile-showcase-top{
+        opacity:1;
+        visibility:visible;
+        pointer-events:none;
+        position:relative;
+        z-index:6;
+      }
+
+      .profile-showcase.is-discovery-screen.is-discovery-empty .profile-showcase-main{
+        opacity:0;
+        visibility:hidden;
+      }
+
+      .profile-showcase.is-discovery-screen.is-discovery-empty .profile-showcase-avatar-wrap{
+        opacity:1;
+        visibility:visible;
+      }
+
       .profile-showcase-discovery-media,
       .profile-showcase-discovery-media img,
       .profile-showcase-discovery-media video{
@@ -3707,20 +3725,16 @@ router.get("/u/:username", async (req, res) => {
             saveDiscoveryDwell();
             discoveryMedia.replaceChildren();
             discoveryScreen.classList.remove('is-empty');
+            shell.classList.remove('is-discovery-empty');
             if (!discoveryItems.length) {
               activeDiscoveryId = null;
               activeDiscoveryStartedAt = 0;
               discoveryScreen.classList.add('is-empty');
+              shell.classList.add('is-discovery-empty');
               if (discoveryTitle) discoveryTitle.textContent = '';
               if (discoveryMeta) discoveryMeta.textContent = '';
               const empty = document.createElement('div');
               empty.className = 'profile-showcase-discovery-empty';
-              const avatarBox = document.createElement('div');
-              avatarBox.className = 'profile-showcase-discovery-empty-avatar';
-              const avatar = shell.querySelector('.profile-showcase-avatar');
-              if (avatar) avatarBox.innerHTML = avatar.innerHTML;
-              else avatarBox.textContent = 'T';
-              empty.appendChild(avatarBox);
               discoveryMedia.appendChild(empty);
               return;
             }
@@ -3766,6 +3780,7 @@ router.get("/u/:username", async (req, res) => {
             if (shell.classList.contains('is-discovery-screen')) {
               saveDiscoveryDwell();
               shell.classList.remove('is-discovery-screen');
+              shell.classList.remove('is-discovery-empty');
               if (discoveryScreen) discoveryScreen.setAttribute('aria-hidden', 'true');
               clearDiscoveryTimer();
               discoveryStarted = false;
