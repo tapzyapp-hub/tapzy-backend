@@ -173,6 +173,35 @@ function storyTrayCard(profile, story, isOwner) {
 
 }
 
+function storyStageMedia(profile, story) {
+  if (!story) {
+    return `
+      <div class="profile-story-stage-empty">
+        <div class="profile-story-stage-empty-mark">T</div>
+        <div class="profile-story-stage-empty-title">No active stories</div>
+        <div class="profile-story-stage-empty-sub">Create a 24-hour update to fill this space.</div>
+      </div>
+    `;
+  }
+
+  const label = escapeHtml(story.text || profile.name || profile.username || "Tapzy Story");
+  if (!story.mediaUrl) {
+    return `<div class="profile-story-stage-text">${label}</div>`;
+  }
+
+  if (isVideoUrl(story.mediaUrl)) {
+    return renderVideoFrame(story.mediaUrl, {
+      className: "profile-story-stage-media",
+      controls: false,
+      muted: true,
+      preload: "auto",
+      ariaLabel: "Play profile story preview",
+    });
+  }
+
+  return `<img class="profile-story-stage-media" src="${escapeHtml(story.mediaUrl)}" alt="${label}" loading="lazy" decoding="async" />`;
+}
+
 
 
 router.get("/u/:username", async (req, res) => {
@@ -298,6 +327,24 @@ router.get("/u/:username", async (req, res) => {
     const showMessageButton = currentProfile && currentProfile.id !== profile.id;
 
     const showFollowButton = !!(currentProfile && currentProfile.id !== profile.id);
+
+    const featuredStory = activeStories[0] || null;
+    const profileStoryHref = featuredStory ? `/stories/${escapeHtml(profile.username || "")}` : "/stories";
+    const quickShareRailLinks = [
+      profile.phone ? `<a class="profile-story-rail-btn" href="tel:${escapeHtml(profile.phone)}"><span>Phone</span></a>` : "",
+      profile.email ? `<a class="profile-story-rail-btn" href="mailto:${escapeHtml(profile.email)}"><span>Email</span></a>` : "",
+      profile.website ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.website))}" target="_blank" rel="noopener noreferrer"><span>Website</span></a>` : "",
+      profile.instagram ? `<a class="profile-story-rail-btn" href="https://instagram.com/${escapeHtml(stripAt(profile.instagram))}" target="_blank" rel="noopener noreferrer"><span>Instagram</span></a>` : "",
+      profile.tiktok ? `<a class="profile-story-rail-btn" href="https://www.tiktok.com/@${escapeHtml(stripAt(profile.tiktok))}" target="_blank" rel="noopener noreferrer"><span>TikTok</span></a>` : "",
+      profile.linkedin ? `<a class="profile-story-rail-btn" href="${escapeHtml(safeUrl(profile.linkedin))}" target="_blank" rel="noopener noreferrer"><span>LinkedIn</span></a>` : "",
+      profile.twitter ? `<a class="profile-story-rail-btn" href="https://x.com/${escapeHtml(stripAt(profile.twitter))}" target="_blank" rel="noopener noreferrer"><span>X</span></a>` : "",
+      profile.facebook ? `<a class="profile-story-rail-btn" href="https://facebook.com/${escapeHtml(stripAt(profile.facebook))}" target="_blank" rel="noopener noreferrer"><span>Facebook</span></a>` : "",
+      profile.youtube ? `<a class="profile-story-rail-btn" href="https://youtube.com/@${escapeHtml(stripAt(profile.youtube))}" target="_blank" rel="noopener noreferrer"><span>YouTube</span></a>` : "",
+      profile.github ? `<a class="profile-story-rail-btn" href="https://github.com/${escapeHtml(stripAt(profile.github))}" target="_blank" rel="noopener noreferrer"><span>GitHub</span></a>` : "",
+      profile.snapchat ? `<a class="profile-story-rail-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer"><span>Snapchat</span></a>` : "",
+      profile.whatsapp ? `<a class="profile-story-rail-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span></a>` : "",
+      profile.telegram ? `<a class="profile-story-rail-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer"><span>Telegram</span></a>` : "",
+    ].filter(Boolean).join("");
 
 
 
@@ -504,33 +551,61 @@ router.get("/u/:username", async (req, res) => {
 
       ${
 
-        activeStories.length
+        activeStories.length || isOwner || quickPreview.length
 
           ? `
 
-            <section class="profile-panel" style="margin-top:18px;">
+            <section class="profile-story-stage-panel" aria-label="Profile story viewer">
 
-              <div class="profile-panel-row">
+              <div class="profile-story-stage">
 
-                <div>
+                <div class="profile-story-stage-progress" aria-hidden="true">
 
-                  <h3 class="profile-panel-heading">Stories</h3>
-
-                  <div class="profile-panel-subheading">Live 24-hour updates from this profile.</div>
+                  ${
+                    activeStories.length
+                      ? activeStories.slice(0, 5).map((story, index) => `<span class="${index === 0 ? "is-active" : ""}"></span>`).join("")
+                      : `<span class="is-active"></span>`
+                  }
 
                 </div>
 
+                <div class="profile-story-stage-top">
 
+                  <div class="profile-story-stage-identity">
 
-                <a class="profile-mini-action" href="/stories/${escapeHtml(profile.username || "")}">Open Stories</a>
+                    <span class="profile-story-stage-dot"></span>
 
-              </div>
+                    <span>${escapeHtml(displayName)}</span>
 
+                  </div>
 
+                  <a class="profile-story-stage-action" href="${profileStoryHref}">${featuredStory ? "Open" : "Create"}</a>
 
-              <div class="profile-stories-tray">
+                </div>
 
-                ${activeStories.map((story) => storyTrayCard(profile, story, isOwner)).join("")}
+                <a class="profile-story-stage-media-link" href="${profileStoryHref}" aria-label="${featuredStory ? "Open profile stories" : "Create a story"}">
+
+                  ${storyStageMedia(profile, featuredStory)}
+
+                </a>
+
+                <div class="profile-story-stage-caption">
+
+                  <div>
+
+                    <strong>${escapeHtml(displayName)}</strong>
+
+                    <span>${featuredStory ? `${escapeHtml(formatStoryTimeShort(featuredStory.createdAt))} · Tapzy Story` : "No active story right now"}</span>
+
+                  </div>
+
+                </div>
+
+                ${
+                  quickShareRailLinks
+                    ? `<aside class="profile-story-rail" aria-label="Quick share">${quickShareRailLinks}</aside>`
+                    : ""
+                }
 
               </div>
 
@@ -538,33 +613,7 @@ router.get("/u/:username", async (req, res) => {
 
           `
 
-          : isOwner
-
-            ? `
-
-              <section class="profile-panel" style="margin-top:18px;">
-
-                <div class="profile-panel-row">
-
-                  <div>
-
-                    <h3 class="profile-panel-heading">Stories</h3>
-
-                    <div class="profile-panel-subheading">You do not have any active stories right now.</div>
-
-                  </div>
-
-
-
-                  <a class="profile-mini-action" href="/stories">Create Story</a>
-
-                </div>
-
-              </section>
-
-            `
-
-            : ""
+          : ""
 
       }
 
@@ -589,148 +638,6 @@ router.get("/u/:username", async (req, res) => {
                   : ""
 
               }
-
-            </section>
-
-          `
-
-          : ""
-
-      }
-
-
-
-      ${
-
-        quickPreview.length
-
-          ? `
-
-            <section class="profile-panel" style="margin-top:18px;">
-
-              <h3 class="profile-panel-heading">Quick Share</h3>
-
-              <div class="profile-panel-subheading">Tap to connect instantly.</div>
-
-
-
-              <div class="profile-quick-actions">
-
-                ${profile.phone ? `<a class="profile-quick-btn" href="tel:${escapeHtml(profile.phone)}">Phone</a>` : ""}
-
-                ${profile.email ? `<a class="profile-quick-btn" href="mailto:${escapeHtml(profile.email)}">Email</a>` : ""}
-
-                ${
-
-                  profile.website
-
-                    ? `<a class="profile-quick-btn" href="${escapeHtml(safeUrl(profile.website))}" target="_blank" rel="noopener noreferrer">Website</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.instagram
-
-                    ? `<a class="profile-quick-btn" href="https://instagram.com/${escapeHtml(stripAt(profile.instagram))}" target="_blank" rel="noopener noreferrer">Instagram</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.tiktok
-
-                    ? `<a class="profile-quick-btn" href="https://www.tiktok.com/@${escapeHtml(stripAt(profile.tiktok))}" target="_blank" rel="noopener noreferrer">TikTok</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.linkedin
-
-                    ? `<a class="profile-quick-btn" href="${escapeHtml(safeUrl(profile.linkedin))}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.twitter
-
-                    ? `<a class="profile-quick-btn" href="https://x.com/${escapeHtml(stripAt(profile.twitter))}" target="_blank" rel="noopener noreferrer">X</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.facebook
-
-                    ? `<a class="profile-quick-btn" href="https://facebook.com/${escapeHtml(stripAt(profile.facebook))}" target="_blank" rel="noopener noreferrer">Facebook</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.youtube
-
-                    ? `<a class="profile-quick-btn" href="https://youtube.com/@${escapeHtml(stripAt(profile.youtube))}" target="_blank" rel="noopener noreferrer">YouTube</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.github
-
-                    ? `<a class="profile-quick-btn" href="https://github.com/${escapeHtml(stripAt(profile.github))}" target="_blank" rel="noopener noreferrer">GitHub</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.snapchat
-
-                    ? `<a class="profile-quick-btn" href="https://www.snapchat.com/add/${escapeHtml(stripAt(profile.snapchat))}" target="_blank" rel="noopener noreferrer">Snapchat</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.whatsapp
-
-                    ? `<a class="profile-quick-btn" href="https://wa.me/${String(profile.whatsapp).replace(/[^\d]/g, "")}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`
-
-                    : ""
-
-                }
-
-                ${
-
-                  profile.telegram
-
-                    ? `<a class="profile-quick-btn" href="https://t.me/${escapeHtml(stripAt(profile.telegram))}" target="_blank" rel="noopener noreferrer">Telegram</a>`
-
-                    : ""
-
-                }
-
-              </div>
 
             </section>
 
@@ -2224,6 +2131,270 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
+      .profile-story-stage-panel{
+        margin-top:18px;
+      }
+
+      .profile-story-stage{
+        position:relative;
+        min-height:min(760px, calc(100svh - 116px));
+        border-radius:34px;
+        overflow:hidden;
+        border:1px solid rgba(115,194,255,.18);
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.12), transparent 42%),
+          linear-gradient(180deg, rgba(7,10,18,.98), rgba(0,0,0,1));
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.03),
+          0 0 44px rgba(87,170,255,.12),
+          0 24px 70px rgba(0,0,0,.60),
+          inset 0 1px 0 rgba(255,255,255,.05);
+      }
+
+      .profile-story-stage::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(0,0,0,.50) 0%, transparent 22%, transparent 58%, rgba(0,0,0,.76) 100%),
+          radial-gradient(circle at 92% 50%, rgba(4,8,16,.56), transparent 28%);
+        z-index:2;
+      }
+
+      .profile-story-stage-progress{
+        position:absolute;
+        left:24px;
+        right:24px;
+        top:22px;
+        z-index:5;
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(28px, 1fr));
+        gap:10px;
+      }
+
+      .profile-story-stage-progress span{
+        display:block;
+        height:5px;
+        border-radius:999px;
+        background:rgba(255,255,255,.20);
+        overflow:hidden;
+      }
+
+      .profile-story-stage-progress span::before{
+        content:"";
+        display:block;
+        width:100%;
+        height:100%;
+        transform:scaleX(.34);
+        transform-origin:left center;
+        border-radius:999px;
+        background:linear-gradient(90deg, #65d7ff, #eef8ff);
+        opacity:.46;
+      }
+
+      .profile-story-stage-progress span.is-active::before{
+        transform:scaleX(.72);
+        opacity:1;
+      }
+
+      .profile-story-stage-top{
+        position:absolute;
+        left:24px;
+        right:24px;
+        top:42px;
+        z-index:5;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+      }
+
+      .profile-story-stage-identity{
+        min-width:0;
+        display:flex;
+        align-items:center;
+        gap:9px;
+        color:#fff;
+        font-size:19px;
+        font-weight:950;
+        text-shadow:0 2px 14px rgba(0,0,0,.72);
+      }
+
+      .profile-story-stage-identity span:last-child{
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      .profile-story-stage-dot{
+        width:13px;
+        height:13px;
+        flex:0 0 auto;
+        border-radius:999px;
+        background:#65d7ff;
+        box-shadow:0 0 18px rgba(101,215,255,.72);
+      }
+
+      .profile-story-stage-action{
+        min-height:48px;
+        padding:0 18px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:16px;
+        color:#fff;
+        text-decoration:none;
+        font-size:15px;
+        font-weight:900;
+        border:1px solid rgba(255,255,255,.12);
+        background:rgba(5,8,14,.62);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.24);
+        backdrop-filter:blur(14px);
+        -webkit-backdrop-filter:blur(14px);
+      }
+
+      .profile-story-stage-media-link{
+        position:absolute;
+        inset:0;
+        display:block;
+        color:#fff;
+        text-decoration:none;
+        z-index:1;
+      }
+
+      .profile-story-stage-media-link .tz-video-frame{
+        width:100%;
+        height:100%;
+      }
+
+      .profile-story-stage-media{
+        width:100%;
+        height:100%;
+        display:block;
+        object-fit:cover;
+      }
+
+      .profile-story-stage-text,
+      .profile-story-stage-empty{
+        width:100%;
+        height:100%;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        padding:32px;
+        text-align:center;
+        background:
+          radial-gradient(circle at 50% 18%, rgba(95,182,255,.22), transparent 38%),
+          linear-gradient(180deg, rgba(10,16,28,.98), rgba(0,0,0,1));
+        font-size:28px;
+        line-height:1.2;
+        font-weight:950;
+      }
+
+      .profile-story-stage-empty-mark{
+        width:86px;
+        height:86px;
+        border-radius:24px;
+        display:grid;
+        place-items:center;
+        background:linear-gradient(145deg, #2f76ff, #1145ad);
+        box-shadow:0 0 36px rgba(47,118,255,.42);
+        font-size:42px;
+      }
+
+      .profile-story-stage-empty-title{
+        color:#fff;
+        font-size:28px;
+        font-weight:950;
+      }
+
+      .profile-story-stage-empty-sub{
+        max-width:300px;
+        color:#c8d5e6;
+        font-size:15px;
+        line-height:1.5;
+        font-weight:750;
+      }
+
+      .profile-story-stage-caption{
+        position:absolute;
+        left:24px;
+        right:118px;
+        bottom:24px;
+        z-index:5;
+        color:#fff;
+        text-shadow:0 2px 14px rgba(0,0,0,.72);
+      }
+
+      .profile-story-stage-caption strong{
+        display:block;
+        font-size:28px;
+        line-height:1.05;
+        font-weight:950;
+      }
+
+      .profile-story-stage-caption span{
+        display:block;
+        margin-top:8px;
+        color:#d8e2f0;
+        font-size:17px;
+        font-weight:650;
+      }
+
+      .profile-story-rail{
+        position:absolute;
+        right:18px;
+        top:50%;
+        z-index:6;
+        width:76px;
+        max-height:calc(100% - 160px);
+        padding:12px 8px;
+        transform:translateY(-50%);
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        overflow:auto;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(4,7,12,.34);
+        box-shadow:0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+        backdrop-filter:blur(16px);
+        -webkit-backdrop-filter:blur(16px);
+        scrollbar-width:none;
+      }
+
+      .profile-story-rail::-webkit-scrollbar{display:none;}
+
+      .profile-story-rail-btn{
+        width:60px;
+        min-height:54px;
+        border-radius:18px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:7px;
+        color:#fff;
+        text-decoration:none;
+        text-align:center;
+        font-size:10px;
+        line-height:1.12;
+        font-weight:950;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(255,255,255,.06);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+      }
+
+      .profile-story-rail-btn:hover,
+      .profile-story-rail-btn:focus-visible{
+        border-color:rgba(115,194,255,.82);
+        background:rgba(115,194,255,.14);
+        box-shadow:0 0 18px rgba(87,170,255,.24), inset 0 1px 0 rgba(255,255,255,.08);
+      }
+
 
 
       .profile-quick-actions{
@@ -2898,6 +3069,74 @@ router.get("/u/:username", async (req, res) => {
 
           font-size:13px;
 
+        }
+
+        .profile-story-stage{
+          min-height:min(680px, calc(100svh - 96px));
+          border-radius:30px;
+        }
+
+        .profile-story-stage-progress{
+          left:16px;
+          right:16px;
+          top:17px;
+          gap:7px;
+        }
+
+        .profile-story-stage-top{
+          left:16px;
+          right:16px;
+          top:34px;
+        }
+
+        .profile-story-stage-identity{
+          font-size:16px;
+        }
+
+        .profile-story-stage-action{
+          min-height:42px;
+          padding:0 14px;
+          border-radius:14px;
+          font-size:13px;
+        }
+
+        .profile-story-stage-caption{
+          left:18px;
+          right:18px;
+          bottom:96px;
+        }
+
+        .profile-story-stage-caption strong{
+          font-size:24px;
+        }
+
+        .profile-story-stage-caption span{
+          font-size:15px;
+        }
+
+        .profile-story-rail{
+          left:16px;
+          right:16px;
+          bottom:16px;
+          top:auto;
+          width:auto;
+          max-height:none;
+          transform:none;
+          flex-direction:row;
+          border-radius:24px;
+          overflow-x:auto;
+          overflow-y:hidden;
+          padding:8px;
+        }
+
+        .profile-story-rail-btn{
+          width:auto;
+          min-width:64px;
+          min-height:48px;
+          padding:8px 10px;
+          border-radius:16px;
+          flex:0 0 auto;
+          font-size:10px;
         }
 
       }
