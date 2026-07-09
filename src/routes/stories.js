@@ -3568,8 +3568,8 @@ router.get("/stories/feed", async (req, res) => {
           </a>
           ${currentProfile && currentProfile.id === story.profileId ? `
           <form method="POST" action="/stories/${escapeHtml(story.id)}/delete" class="sf-action-form" onsubmit="return confirm('Remove this story?');">
-            <button class="sf-action" type="submit" aria-label="Remove story">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6h10l-1 15H8L7 6Zm2-3h6l1 2H8l1-2Zm-4 2h14v2H5V5Z"/></svg>
+            <button class="sf-action sf-remove" type="submit" aria-label="Remove story">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M6 6l12 12"></path></svg>
               <span>Remove</span>
             </button>
           </form>` : ""}
@@ -3729,7 +3729,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-actions{position:absolute;z-index:5;right:9px;bottom:calc(var(--safe-bottom) + 78px);display:flex;flex-direction:column;align-items:center;gap:10px;width:58px;padding:8px 3px;border-radius:29px;background:linear-gradient(180deg,rgba(5,8,14,.16),rgba(5,8,14,.04));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
         .sf-actions.is-idle{opacity:.18;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;transition:opacity .28s ease,background .28s ease,backdrop-filter .28s ease}
         .sf-actions:not(.is-idle){transition:opacity .22s ease,background .22s ease,backdrop-filter .22s ease}
-        .sf-avatar{position:relative;width:46px;height:46px;border:2px solid rgba(255,255,255,.65);border-radius:50%;overflow:visible;display:grid;place-items:center;background:linear-gradient(180deg,#111827,#02040a);color:#fff;text-decoration:none;font-weight:950;box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.10) inset}
+        .sf-avatar{position:relative;width:46px;height:46px;border:2px solid rgba(255,255,255,.65);border-radius:50%;overflow:visible;display:grid;place-items:center;background:rgba(0,0,0,.4);color:#fff;text-decoration:none;font-weight:950;box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.10) inset}
         .sf-avatar::before,.sf-avatar::after{content:"";position:absolute;inset:-5px;border-radius:inherit;border:1px solid rgba(82,166,255,.54);box-shadow:0 0 18px rgba(47,118,255,.30);animation:sfAvatarPulse 2.2s ease-out infinite;pointer-events:none}
         .sf-avatar::after{inset:-10px;animation-delay:.75s;opacity:.42}
         .sf-avatar-tapzy{background:linear-gradient(145deg,#2f76ff,#1145ad);box-shadow:0 0 24px rgba(47,118,255,.34)}
@@ -3738,6 +3738,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-action-form{margin:0}
         .sf-action{display:flex;flex-direction:column;align-items:center;gap:3px;width:54px;padding:4px 0;border:0;border-radius:18px;background:rgba(255,255,255,.02);color:#fff;text-decoration:none;font-size:11px;font-weight:850;cursor:pointer;text-shadow:0 2px 10px rgba(0,0,0,.7);filter:drop-shadow(0 7px 14px rgba(0,0,0,.32))}
         .sf-action svg{width:28px;height:28px;fill:#fff;stroke:#fff;filter:drop-shadow(0 7px 14px rgba(0,0,0,.48))}
+        .sf-remove svg{fill:none;stroke:#fff;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
         .sf-action span{line-height:1;letter-spacing:.01em}
         .sf-action.is-active svg{fill:#ff315f;stroke:#ff315f}
         .sf-save.is-saved svg{fill:#2f76ff;stroke:#fff}
