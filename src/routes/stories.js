@@ -3699,6 +3699,21 @@ router.get("/stories/feed", async (req, res) => {
         .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-5px;width:26px;height:3px;border-radius:5px;background:#fff;transform:translateX(-50%)}
         .sf-search{position:absolute;right:15px;top:calc(var(--safe-top) + 16px);width:40px;height:40px;border:0;background:none;padding:7px;cursor:pointer}
         .sf-search svg,.sf-action svg,.sf-sound svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+        @media(max-width:380px){
+          .sf-top{min-height:66px;gap:7px;padding:calc(var(--safe-top) + 14px) 42px 13px}
+          .sf-brand{left:9px;top:calc(var(--safe-top) + 13px);width:34px;height:34px;border-radius:11px}
+          .sf-tabs{gap:7px}
+          .sf-tab{font-size:11px;font-weight:800;padding:7px 0}
+          .sf-tab.is-active::after{bottom:-4px;width:24px;height:3px}
+          .sf-search{right:7px;top:calc(var(--safe-top) + 12px);width:34px;height:34px;padding:5px}
+        }
+        @media(max-width:340px){
+          .sf-top{gap:5px;padding-left:36px;padding-right:34px}
+          .sf-brand{width:30px;height:30px}
+          .sf-tabs{gap:5px}
+          .sf-tab{font-size:10px}
+          .sf-search{width:30px;height:30px;padding:5px}
+        }
         .sf-copy{position:absolute;z-index:4;left:18px;right:92px;bottom:calc(var(--safe-bottom) + 82px);text-shadow:0 2px 12px rgba(0,0,0,.7)}
         .sf-author{display:block;width:max-content;max-width:100%;margin-bottom:8px;color:#fff;text-decoration:none;font-size:17px;font-weight:850}
         .sf-copy p{margin:0 0 8px;font-size:15px;line-height:1.35}

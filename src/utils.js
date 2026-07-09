@@ -2773,17 +2773,15 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         min-height:72px;
 
-        display:grid;
-
-        grid-template-columns:42px minmax(0, 1fr) 42px;
+        display:flex;
 
         align-items:center;
 
-        justify-content:normal;
+        justify-content:center;
 
-        column-gap:12px;
+        gap:26px;
 
-        padding:calc(env(safe-area-inset-top, 0px) + 14px) clamp(14px, 4.1vw, 24px) 14px;
+        padding:calc(env(safe-area-inset-top, 0px) + 18px) 58px 16px;
 
         background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
 
@@ -2793,17 +2791,15 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       .tz-story-brand{
 
-        position:relative;
+        position:absolute;
 
-        left:auto;
+        left:16px;
 
-        top:auto;
+        top:calc(env(safe-area-inset-top, 0px) + 16px);
 
-        width:42px;
+        width:38px;
 
-        height:42px;
-
-        grid-column:1;
+        height:38px;
 
         display:grid;
 
@@ -2847,19 +2843,11 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         display:flex;
 
-        gap:clamp(8px, 3vw, 18px);
+        gap:18px;
 
         align-items:center;
 
-        justify-content:center;
-
         min-width:0;
-
-        width:100%;
-
-        grid-column:2;
-
-        overflow:hidden;
 
       }
 
@@ -2879,7 +2867,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         font-weight:750;
 
-        font-size:clamp(11.5px, 3.25vw, 14px);
+        font-size:15px;
 
         text-decoration:none;
 
@@ -2923,19 +2911,17 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       .tz-story-search{
 
-        position:relative;
+        position:absolute;
 
-        right:auto;
+        right:15px;
 
-        top:auto;
+        top:calc(env(safe-area-inset-top, 0px) + 16px);
 
-        width:42px;
+        width:40px;
 
-        height:42px;
+        height:40px;
 
         padding:7px;
-
-        grid-column:3;
 
         color:#fff;
 
@@ -2971,29 +2957,27 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       }
 
-      @media(max-width:430px){
+      @media(max-width:380px){
         .tz-story-top-nav{
           min-height:66px;
-          grid-template-columns:36px minmax(0, 1fr) 36px;
-          column-gap:8px;
-          padding-top:calc(env(safe-area-inset-top, 0px) + 12px);
-          padding-bottom:12px;
-          padding-left:clamp(12px, 4vw, 18px);
-          padding-right:clamp(12px, 4vw, 18px);
+          gap:7px;
+          padding:calc(env(safe-area-inset-top, 0px) + 14px) 42px 13px;
         }
 
         .tz-story-brand{
-          width:36px;
-          height:36px;
+          left:9px;
+          top:calc(env(safe-area-inset-top, 0px) + 13px);
+          width:34px;
+          height:34px;
           border-radius:11px;
         }
 
         .tz-story-tabs{
-          gap:clamp(5px, 2vw, 8px);
+          gap:7px;
         }
 
         .tz-story-tab{
-          font-size:clamp(10.5px, 2.9vw, 11.5px);
+          font-size:11px;
           font-weight:800;
           padding:7px 0;
         }
@@ -3005,18 +2989,19 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-search{
-          width:36px;
-          height:36px;
+          right:7px;
+          top:calc(env(safe-area-inset-top, 0px) + 12px);
+          width:34px;
+          height:34px;
           padding:5px;
         }
       }
 
-      @media(max-width:370px){
+      @media(max-width:340px){
         .tz-story-top-nav{
-          grid-template-columns:30px minmax(0, 1fr) 30px;
-          column-gap:5px;
-          padding-left:10px;
-          padding-right:10px;
+          gap:5px;
+          padding-left:36px;
+          padding-right:34px;
         }
 
         .tz-story-brand{

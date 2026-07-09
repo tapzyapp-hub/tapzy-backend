@@ -2779,9 +2779,9 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         justify-content:center;
 
-        gap:24px;
+        gap:26px;
 
-        padding:calc(env(safe-area-inset-top, 0px) + 16px) 58px 14px;
+        padding:calc(env(safe-area-inset-top, 0px) + 18px) 58px 16px;
 
         background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
 
@@ -2795,7 +2795,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         left:16px;
 
-        top:calc(env(safe-area-inset-top, 0px) + 14px);
+        top:calc(env(safe-area-inset-top, 0px) + 16px);
 
         width:38px;
 
@@ -2867,7 +2867,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         font-weight:750;
 
-        font-size:14px;
+        font-size:15px;
 
         text-decoration:none;
 
@@ -2915,7 +2915,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         right:15px;
 
-        top:calc(env(safe-area-inset-top, 0px) + 15px);
+        top:calc(env(safe-area-inset-top, 0px) + 16px);
 
         width:40px;
 
@@ -2957,29 +2957,27 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       }
 
-      @media(max-width:430px){
+      @media(max-width:380px){
         .tz-story-top-nav{
           min-height:66px;
-          gap:0;
-          padding:calc(env(safe-area-inset-top, 0px) + 12px) 44px 12px;
+          gap:7px;
+          padding:calc(env(safe-area-inset-top, 0px) + 14px) 42px 13px;
         }
 
         .tz-story-brand{
-          left:10px;
-          top:calc(env(safe-area-inset-top, 0px) + 12px);
+          left:9px;
+          top:calc(env(safe-area-inset-top, 0px) + 13px);
           width:34px;
           height:34px;
           border-radius:11px;
         }
 
         .tz-story-tabs{
-          width:100%;
-          justify-content:center;
-          gap:clamp(6px, 2.2vw, 10px);
+          gap:7px;
         }
 
         .tz-story-tab{
-          font-size:clamp(11px, 3.05vw, 12px);
+          font-size:11px;
           font-weight:800;
           padding:7px 0;
         }
@@ -2991,24 +2989,24 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-search{
-          right:8px;
-          top:calc(env(safe-area-inset-top, 0px) + 11px);
-          width:36px;
-          height:36px;
-          padding:6px;
+          right:7px;
+          top:calc(env(safe-area-inset-top, 0px) + 12px);
+          width:34px;
+          height:34px;
+          padding:5px;
         }
       }
 
-      @media(max-width:370px){
+      @media(max-width:340px){
         .tz-story-top-nav{
-          padding-left:40px;
-          padding-right:38px;
+          gap:5px;
+          padding-left:36px;
+          padding-right:34px;
         }
 
         .tz-story-brand{
-          left:8px;
-          width:32px;
-          height:32px;
+          width:30px;
+          height:30px;
           border-width:2px;
         }
 
@@ -3017,13 +3015,12 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-tab{
-          font-size:10.5px;
+          font-size:10px;
         }
 
         .tz-story-search{
-          right:6px;
-          width:32px;
-          height:32px;
+          width:30px;
+          height:30px;
           padding:5px;
         }
       }

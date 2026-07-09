@@ -440,21 +440,19 @@ module.exports = async function getEventsPage(req, res) {
         left:0;
         right:0;
         min-height:72px;
-        display:grid;
-        grid-template-columns:42px minmax(0, 1fr) 42px;
+        display:flex;
         align-items:center;
-        justify-content:normal;
-        column-gap:12px;
-        padding:calc(env(safe-area-inset-top, 0px) + 14px) clamp(14px, 4.1vw, 24px) 14px;
+        justify-content:center;
+        gap:26px;
+        padding:calc(env(safe-area-inset-top, 0px) + 18px) 58px 16px;
         background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
       }
       .events-story-brand{
-        position:relative;
-        left:auto;
-        top:auto;
-        width:42px;
-        height:42px;
-        grid-column:1;
+        position:absolute;
+        left:16px;
+        top:calc(env(safe-area-inset-top, 0px) + 16px);
+        width:38px;
+        height:38px;
         display:grid;
         place-items:center;
         border:2px solid rgba(255,255,255,.9);
@@ -469,13 +467,9 @@ module.exports = async function getEventsPage(req, res) {
       .events-story-brand img{width:72%;height:72%;object-fit:contain;display:block;}
       .events-story-tabs{
         display:flex;
-        gap:clamp(8px, 3vw, 18px);
+        gap:18px;
         align-items:center;
-        justify-content:center;
         min-width:0;
-        width:100%;
-        grid-column:2;
-        overflow:hidden;
       }
       .events-story-tab{
         position:relative;
@@ -484,7 +478,7 @@ module.exports = async function getEventsPage(req, res) {
         padding:8px 0;
         color:rgba(255,255,255,.68);
         font-weight:750;
-        font-size:clamp(11.5px, 3.25vw, 14px);
+        font-size:15px;
         text-decoration:none;
         white-space:nowrap;
       }
@@ -501,17 +495,31 @@ module.exports = async function getEventsPage(req, res) {
         transform:translateX(-50%);
       }
       .events-story-search{
-        position:relative;
-        right:auto;
-        top:auto;
-        width:42px;
-        height:42px;
+        position:absolute;
+        right:15px;
+        top:calc(env(safe-area-inset-top, 0px) + 16px);
+        width:40px;
+        height:40px;
         padding:7px;
-        grid-column:3;
         color:#fff;
         text-decoration:none;
       }
       .events-story-search svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+      @media(max-width:380px){
+        .events-story-top{min-height:66px;gap:7px;padding:calc(env(safe-area-inset-top, 0px) + 14px) 42px 13px;}
+        .events-story-brand{left:9px;top:calc(env(safe-area-inset-top, 0px) + 13px);width:34px;height:34px;border-radius:11px;}
+        .events-story-tabs{gap:7px;}
+        .events-story-tab{font-size:11px;font-weight:800;padding:7px 0;}
+        .events-story-tab.is-active::after{bottom:-4px;width:24px;height:3px;}
+        .events-story-search{right:7px;top:calc(env(safe-area-inset-top, 0px) + 12px);width:34px;height:34px;padding:6px;}
+      }
+      @media(max-width:340px){
+        .events-story-top{gap:5px;padding-left:36px;padding-right:34px;}
+        .events-story-brand{width:30px;height:30px;}
+        .events-story-tabs{gap:5px;}
+        .events-story-tab{font-size:10px;}
+        .events-story-search{width:30px;height:30px;padding:5px;}
+      }
 
       .mobile-only{ display:none; }
 
@@ -2605,49 +2613,48 @@ module.exports = async function getEventsPage(req, res) {
 
         .events-story-top{
           position:sticky;
-          min-height:66px;
-          grid-template-columns:36px minmax(0, 1fr) 36px;
-          column-gap:8px;
-          padding-top:calc(env(safe-area-inset-top, 0px) + 12px);
-          padding-bottom:12px;
-          padding-left:clamp(12px, 4vw, 18px);
-          padding-right:clamp(12px, 4vw, 18px);
+          min-height:72px;
+          gap:26px;
+          padding:calc(env(safe-area-inset-top, 0px) + 18px) 58px 16px;
         }
 
         .events-story-brand{
-          width:36px;
-          height:36px;
-          border-radius:11px;
+          left:16px;
+          top:calc(env(safe-area-inset-top, 0px) + 16px);
+          width:38px;
+          height:38px;
+          border-radius:12px;
         }
 
         .events-story-tabs{
-          gap:clamp(5px, 2vw, 8px);
+          gap:18px;
         }
 
         .events-story-tab{
-          font-size:clamp(10.5px, 2.9vw, 11.5px);
-          font-weight:800;
-          padding:7px 0;
+          font-size:15px;
+          font-weight:750;
+          padding:8px 0;
         }
 
         .events-story-tab.is-active::after{
-          bottom:-4px;
-          width:24px;
+          bottom:-5px;
+          width:26px;
           height:3px;
         }
 
         .events-story-search{
-          width:36px;
-          height:36px;
-          padding:6px;
+          right:15px;
+          top:calc(env(safe-area-inset-top, 0px) + 16px);
+          width:40px;
+          height:40px;
+          padding:7px;
         }
 
-        @media(max-width:370px){
+        @media(max-width:340px){
           .events-story-top{
-            grid-template-columns:30px minmax(0, 1fr) 30px;
-            column-gap:5px;
-            padding-left:10px;
-            padding-right:10px;
+            gap:5px;
+            padding-left:36px;
+            padding-right:34px;
           }
 
           .events-story-brand{
