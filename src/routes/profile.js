@@ -489,7 +489,7 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
+      <section id="tapzyProfileShell" class="profile-showcase">
 
         <div class="profile-showcase-bg"></div>
         <script type="application/json" data-profile-discovery-items>${profileDiscoveryJson}</script>
@@ -769,11 +769,11 @@ router.get("/u/:username", async (req, res) => {
 
       .tapzy-profile-hidden{
 
-        opacity:0;
+        opacity:1;
 
-        transform:translateY(10px) scale(.985);
+        transform:none;
 
-        pointer-events:none;
+        pointer-events:auto;
 
       }
 
@@ -1433,9 +1433,7 @@ router.get("/u/:username", async (req, res) => {
 
         border:1px solid rgba(255,255,255,.08);
 
-        background:
-
-          linear-gradient(180deg, rgba(3,5,12,.98), rgba(0,0,0,1));
+        background:#000;
 
         box-shadow:
 
@@ -1459,11 +1457,7 @@ router.get("/u/:username", async (req, res) => {
 
         border-radius:34px;
 
-        background:
-
-          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
-
-          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
+        background:#000;
 
         opacity:.95;
 
@@ -3041,6 +3035,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase{
         padding:28px;
+        background:#000;
       }
 
       .profile-panel{
@@ -3081,9 +3076,7 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase-bg{
         inset:0;
         border-radius:34px;
-        background:
-          radial-gradient(500px 300px at 72% 22%, rgba(36,80,125,.42), transparent 58%),
-          radial-gradient(380px 220px at 18% 10%, rgba(20,42,88,.16), transparent 52%);
+        background:#000;
         opacity:1;
       }
 
