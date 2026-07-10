@@ -85,15 +85,25 @@ router.get("/auth", async (req, res) => {
     const authSuccessMessage = success ? '<div class="authMessage authMessage-success">' + escapeHtml(success) + '</div>' : "";
     const authCss = `
       <style>
-        body.auth-page-shell{background:#050608;color:#fff;}
-        body.auth-page-shell .siteShell{background:radial-gradient(520px 320px at 50% -8%, rgba(65,150,255,.24), transparent 58%), #050608;}
-        .authWrap{max-width:460px;margin:0 auto;padding:clamp(18px,5vw,34px) 16px 120px;}
-        .authCard{position:relative;overflow:hidden;border-radius:30px;padding:24px;background:linear-gradient(180deg,rgba(24,31,42,.94),rgba(10,12,18,.96));border:1px solid rgba(255,255,255,.12);box-shadow:0 24px 70px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.10);}
-        .authCard::before{content:"";position:absolute;inset:-30% -20% auto;height:220px;background:radial-gradient(circle at 50% 0%, rgba(95,180,255,.32), transparent 62%);pointer-events:none;}
-        .authHero{position:relative;text-align:center;margin-bottom:18px;}
-        .authLogo{width:58px;height:58px;margin:0 auto 12px;border-radius:18px;display:grid;place-items:center;background:#fff;color:#050608;font-weight:950;font-size:32px;box-shadow:0 12px 34px rgba(74,164,255,.28);}
+        body.auth-page-shell{background:#030407;color:#fff;}
+        body.auth-page-shell .topbar,body.auth-page-shell .tz-stories-top-nav,body.auth-page-shell .tz-stories-bottom-nav{display:none!important;}
+        body.auth-page-shell .siteShell{min-height:100svh;background:radial-gradient(560px 360px at 50% -10%, rgba(85,174,255,.24), transparent 58%),radial-gradient(420px 300px at 0% 28%,rgba(47,118,255,.13),transparent 62%),#030407;}
+        .authWrap{max-width:480px;margin:0 auto;padding:clamp(18px,5vw,34px) 14px 112px;}
+        .authBrand{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 18px;color:#fff;}
+        .authBrandMark{display:flex;align-items:center;gap:10px;font-weight:950;font-size:19px;letter-spacing:0;}
+        .authBrandMark span:last-child{color:rgba(231,238,255,.64);font-weight:750;}
+        .authLogoMini{width:42px;height:42px;border-radius:14px;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;background:rgba(255,255,255,.06);box-shadow:0 12px 28px rgba(0,0,0,.22);}
+        .authLogoMini img{width:74%;height:74%;object-fit:contain;}
+        .authHelpLink{color:rgba(223,238,255,.72);text-decoration:none;font-size:13px;font-weight:850;}
+        .authCard{position:relative;overflow:hidden;border-radius:30px;padding:24px;background:linear-gradient(180deg,rgba(22,29,40,.96),rgba(8,11,17,.98));border:1px solid rgba(255,255,255,.13);box-shadow:0 24px 70px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.10);}
+        .authCard::before{content:"";position:absolute;inset:-42% -25% auto;height:260px;background:radial-gradient(circle at 50% 0%,rgba(113,202,255,.36),transparent 62%);pointer-events:none;}
+        .authCard::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) .7px,transparent .7px);background-size:11px 11px;opacity:.08;pointer-events:none;}
+        .authHero,.authModeSwitch,.authPanel,.authMessage,.authSpeedNote{position:relative;z-index:1;}
+        .authHero{text-align:left;margin-bottom:18px;}
+        .authBadge{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.11);color:rgba(230,240,255,.76);font-size:12px;font-weight:900;}
+        .authBadge::before{content:"";width:7px;height:7px;border-radius:999px;background:#62d8ff;box-shadow:0 0 16px rgba(98,216,255,.9);}
         .authHero h1{margin:0;font-size:clamp(36px,11vw,48px);line-height:.95;letter-spacing:0;font-weight:950;}
-        .authHero p{margin:10px auto 0;max-width:300px;color:rgba(255,255,255,.70);font-size:15px;line-height:1.35;}
+        .authHero p{margin:12px 0 0;max-width:360px;color:rgba(232,240,255,.72);font-size:15px;line-height:1.42;}
         .authModeSwitch{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;margin:18px 0;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);}
         .authModeSwitch button{appearance:none;border:0;border-radius:14px;min-height:44px;background:transparent;color:rgba(255,255,255,.72);font-weight:900;font-size:15px;cursor:pointer;}
         .authModeSwitch button.is-active{background:#fff;color:#06101d;box-shadow:0 8px 24px rgba(120,190,255,.18);}
@@ -102,7 +112,10 @@ router.get("/auth", async (req, res) => {
         .authPanel h2{margin:0 0 6px;font-size:26px;line-height:1.05;letter-spacing:0;font-weight:950;}
         .authHint{margin:0 0 16px;color:rgba(255,255,255,.62);font-size:14px;line-height:1.35;}
         .authPanel label{display:block;margin:12px 0 7px;color:rgba(255,255,255,.76);font-size:13px;font-weight:850;}
-        .authPanel input{width:100%;min-height:54px;border-radius:17px;border:1px solid rgba(190,225,255,.24);background:rgba(3,8,14,.42);color:#fff;padding:0 16px;font-size:16px;font-weight:750;outline:none;box-sizing:border-box;}
+        .authInputWrap{position:relative;}
+        .authPanel input{width:100%;min-height:54px;border-radius:17px;border:1px solid rgba(190,225,255,.24);background:rgba(3,8,14,.50);color:#fff;padding:0 16px;font-size:16px;font-weight:800;outline:none;box-sizing:border-box;}
+        .authInputWrap input[data-password-input]{padding-right:76px;}
+        .authPasswordToggle{position:absolute;right:8px;top:8px;min-height:38px;padding:0 12px;border:0;border-radius:12px;background:rgba(255,255,255,.08);color:#dfefff;font:inherit;font-size:12px;font-weight:950;}
         .authPanel input:focus{border-color:rgba(130,205,255,.68);box-shadow:0 0 0 3px rgba(72,165,255,.14);}
         .authPrimary{width:100%;min-height:56px;margin-top:16px;border:0;border-radius:18px;background:linear-gradient(180deg,#fff,#dceeff);color:#06101d;font-size:17px;font-weight:950;box-shadow:0 14px 32px rgba(112,190,255,.20);}
         .authForgot{display:block;width:max-content;margin:13px auto 0;color:#9fd2ff;text-decoration:none;font-size:14px;font-weight:800;}
@@ -110,17 +123,20 @@ router.get("/auth", async (req, res) => {
         .authMessage{border-radius:18px;padding:12px 14px;margin-bottom:14px;font-size:14px;font-weight:800;line-height:1.35;}
         .authMessage-error{border:1px solid rgba(255,111,111,.26);color:#ffd6d6;background:rgba(70,16,24,.58);}
         .authMessage-success{border:1px solid rgba(103,255,178,.22);color:#ccffe5;background:rgba(16,70,44,.42);}
+        .authSpeedNote{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px;color:rgba(225,238,255,.54);font-size:12px;font-weight:800;}
+        .authSpeedNote span{width:6px;height:6px;border-radius:99px;background:#62d8ff;box-shadow:0 0 12px rgba(98,216,255,.85);}
         @media(max-width:430px){.authWrap{padding:14px 12px 96px}.authCard{padding:18px;border-radius:24px}.authPanel{padding:15px;border-radius:20px}.authHero h1{font-size:40px}.authLogo{width:50px;height:50px;border-radius:16px;font-size:28px}.authModeSwitch button{font-size:14px;min-height:42px}.authPanel h2{font-size:23px}.authPanel input,.authPrimary{min-height:52px}}
       </style>
     `;
 
     const body = `
       <div class="authWrap">
+        <div class="authBrand"><div class="authBrandMark"><span class="authLogoMini"><img src="/images/tapzy-mark-white.png" alt="" /></span><strong>Tapzy</strong><span>Network</span></div><a class="authHelpLink" href="/">Home</a></div>
         <div class="authCard" data-auth-card>
           <div class="authHero">
-            <div class="authLogo">T</div>
-            <h1>Tapzy</h1>
-            <p>Log in or create an account to save your profile, events, messages, and stories.</p>
+            <div class="authBadge">Secure account access</div>
+            <h1>Your Tapzy starts here.</h1>
+            <p>Log in or create an account to keep your profile, events, messages, and stories synced.</p>
           </div>
 
           ${authErrorMessage}
@@ -137,9 +153,9 @@ router.get("/auth", async (req, res) => {
             <form method="POST" action="/auth/login" autocomplete="on">
               ${redirectInput}
               <label for="loginEmail">Email</label>
-              <input id="loginEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
+              <div class="authInputWrap"><input id="loginEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required /></div>
               <label for="loginPassword">Password</label>
-              <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Your password" required />
+              <div class="authInputWrap"><input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Your password" data-password-input required /><button class="authPasswordToggle" type="button" data-password-toggle="loginPassword">Show</button></div>
               <button class="authPrimary" type="submit">Log in</button>
             </form>
             <a class="authForgot" href="/auth/forgot-password">Forgot password?</a>
@@ -151,13 +167,14 @@ router.get("/auth", async (req, res) => {
             <form method="POST" action="/auth/register" autocomplete="on">
               ${redirectInput}
               <label for="createEmail">Email</label>
-              <input id="createEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
+              <div class="authInputWrap"><input id="createEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required /></div>
               <label for="createPassword">Password</label>
-              <input id="createPassword" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" minlength="8" required />
+              <div class="authInputWrap"><input id="createPassword" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" minlength="8" data-password-input required /><button class="authPasswordToggle" type="button" data-password-toggle="createPassword">Show</button></div>
               <button class="authPrimary" type="submit">Create account</button>
             </form>
             <p class="authFinePrint">Already have an account? Tap Log in above.</p>
           </section>
+          <div class="authSpeedNote"><span></span>Fast sign-in, saved on this device</div>
         </div>
       </div>
 
@@ -167,6 +184,15 @@ router.get("/auth", async (req, res) => {
           if (!card) return;
           var tabs = card.querySelectorAll('[data-auth-tab]');
           var panels = card.querySelectorAll('[data-auth-panel]');
+          card.querySelectorAll('[data-password-toggle]').forEach(function(button){
+            button.addEventListener('click', function(){
+              var input = document.getElementById(button.getAttribute('data-password-toggle'));
+              if (!input) return;
+              var show = input.type === 'password';
+              input.type = show ? 'text' : 'password';
+              button.textContent = show ? 'Hide' : 'Show';
+            });
+          });
           tabs.forEach(function(tab){
             tab.addEventListener('click', function(){
               var mode = tab.getAttribute('data-auth-tab');

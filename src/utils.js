@@ -975,7 +975,9 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
     ${extraHead}
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <script defer src="/js/tapzy-performance.js?v=20260706-fast-start-upload"></script>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <link rel="dns-prefetch" href="//res.cloudinary.com" />
+    <script defer src="/js/tapzy-performance.js?v=20260710-faster-first-paint"></script>
     <script defer src="/js/tapzy-video-upload.js?v=20260710-cloud-first-video"></script>
 
     <style>

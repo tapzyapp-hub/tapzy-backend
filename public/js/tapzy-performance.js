@@ -13,9 +13,12 @@
 
   function optimizeMedia(root) {
     root = root || document;
-    root.querySelectorAll("img:not([loading])").forEach(function (img) {
-      img.setAttribute("loading", "lazy");
+    var images = Array.prototype.slice.call(root.querySelectorAll("img:not([loading])"));
+    images.forEach(function (img, index) {
+      var firstScreen = index < 3 || !!img.closest(".profile-showcase,.authCard,.event-card,.js-event-card:first-child,.stories-profile-card");
+      img.setAttribute("loading", firstScreen ? "eager" : "lazy");
       img.setAttribute("decoding", "async");
+      if (firstScreen && !img.hasAttribute("fetchpriority")) img.setAttribute("fetchpriority", "high");
     });
     root.querySelectorAll('img[loading="lazy"]:not([fetchpriority])').forEach(function (img) {
       img.setAttribute("fetchpriority", "low");
