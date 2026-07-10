@@ -240,13 +240,6 @@ module.exports = async function getEventsPage(req, res) {
       ` : ""}
 
       <section class="events-section mobile-only events-mobile-feed">
-        <div class="events-mobile-feed-head">
-          <div>
-            <div class="events-kicker">Discover</div>
-            <h2 class="events-section-title">Live Event Feed</h2>
-          </div>
-          <div class="muted">${mainFeedTotal} events</div>
-        </div>
         <div id="mobileFeedGrid" class="events-grid mobile-events-grid">
           ${mainFeedInitial.map((event) => renderEventCard(event, currentProfile, goingSet, goingCounts)).join("")}
         </div>
@@ -298,16 +291,6 @@ module.exports = async function getEventsPage(req, res) {
       </section>
 
       <section class="events-section desktop-only">
-
-        <div class="row-between" style="margin-bottom:14px;">
-
-          <h2 class="events-section-title">Live Event Feed</h2>
-
-          <div class="muted">${mainFeedTotal} total</div>
-
-        </div>
-
-
 
         <div id="mainFeedGrid" class="events-grid">
 
