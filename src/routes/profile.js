@@ -3156,7 +3156,7 @@ router.get("/u/:username", async (req, res) => {
         transition:opacity .22s ease, visibility .22s ease;
       }
 
-      .profile-photo-viewer.is-open{
+      .profile-photo-viewer.is-open[data-user-open="1"]{
         opacity:1;
         visibility:visible;
         pointer-events:auto;
@@ -5158,18 +5158,24 @@ router.get("/u/:username", async (req, res) => {
         function initProfileShowcaseFade(){
           const shell = document.getElementById('tapzyProfileShell');
           if (!shell) return;
+          if (shell.dataset.fadeBound === '1') return;
+          shell.dataset.fadeBound = '1';
           const profileWrap = shell.closest('.profile-wrap');
           let timer = null;
           let restoreTapCount = 0;
+          function resetProfileLayout(){
+            restoreTapCount = 0;
+            shell.classList.remove('is-secondary-dim', 'is-event-selected');
+            if (profileWrap) profileWrap.classList.remove('is-profile-condensed');
+          }
+          resetProfileLayout();
           function dim(){
             restoreTapCount = 0;
             shell.classList.add('is-secondary-dim');
             if (profileWrap) profileWrap.classList.add('is-profile-condensed');
           }
           function wake(){
-            restoreTapCount = 0;
-            shell.classList.remove('is-secondary-dim');
-            if (profileWrap) profileWrap.classList.remove('is-profile-condensed');
+            resetProfileLayout();
             if (timer) window.clearTimeout(timer);
             timer = window.setTimeout(dim, 30000);
           }
@@ -5184,6 +5190,11 @@ router.get("/u/:username", async (req, res) => {
           document.addEventListener('touchstart', function(){
             if (!shell.classList.contains('is-secondary-dim')) wake();
           }, { passive:true, capture:true });
+          window.addEventListener('pageshow', wake);
+          window.addEventListener('pagehide', resetProfileLayout);
+          window.addEventListener('beforeunload', resetProfileLayout);
+          document.addEventListener('visibilitychange', function(){ if (document.hidden) resetProfileLayout(); else wake(); });
+          requestAnimationFrame(wake);
           wake();
         }
 
@@ -5465,21 +5476,28 @@ router.get("/u/:username", async (req, res) => {
           const openBtn = document.querySelector('[data-profile-photo-open]');
           if (!viewer || !openBtn) return;
           const closeBtns = viewer.querySelectorAll('[data-profile-photo-close]');
-          const openViewer = function(){
+          const closeViewer = function(){
+            viewer.classList.remove('is-open');
+            viewer.removeAttribute('data-user-open');
+            viewer.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+          };
+          closeViewer();
+          const openViewer = function(event){
+            if (event) event.stopPropagation();
+            viewer.setAttribute('data-user-open', '1');
             viewer.classList.add('is-open');
             viewer.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
-          };
-          const closeViewer = function(){
-            viewer.classList.remove('is-open');
-            viewer.setAttribute('aria-hidden', 'true');
-            document.body.style.overflow = '';
           };
           openBtn.addEventListener('click', openViewer);
           closeBtns.forEach(function(btn){ btn.addEventListener('click', closeViewer); });
           document.addEventListener('keydown', function(e){
             if (e.key === 'Escape' && viewer.classList.contains('is-open')) closeViewer();
           });
+          window.addEventListener('pagehide', closeViewer);
+          window.addEventListener('beforeunload', closeViewer);
+          document.addEventListener('visibilitychange', function(){ if (document.hidden) closeViewer(); });
         }
         function initVideoPreviewFrames(root){
           (root || document).querySelectorAll('[data-video-frame]').forEach(function(frame){

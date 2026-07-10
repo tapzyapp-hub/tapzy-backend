@@ -31,6 +31,14 @@ const {
 } = require("../utils");
 const { createNotification } = require("../services/notificationService");
 
+const TAPZY_SOUND_LIBRARY = [
+  { id: "tapzy-pulse", title: "Tapzy Pulse", artist: "Tapzy Originals", posts: "212.4K", duration: "0:24", url: "/sounds/tapzy-pulse.wav", tone: "pink" },
+  { id: "blue-hour", title: "Blue Hour Drift", artist: "Tapzy Originals", posts: "188.9K", duration: "0:31", url: "/sounds/blue-hour-drift.wav", tone: "blue" },
+  { id: "city-flicker", title: "City Flicker", artist: "Tapzy Sounds", posts: "94.7K", duration: "0:20", url: "/sounds/city-flicker.wav", tone: "dark" },
+  { id: "cloud-lift", title: "Cloud Lift", artist: "Tapzy Network", posts: "305.1K", duration: "0:28", url: "/sounds/cloud-lift.wav", tone: "sky" },
+  { id: "night-drive", title: "Night Drive", artist: "Tapzy Originals", posts: "167.2K", duration: "0:35", url: "/sounds/night-drive.wav", tone: "violet" },
+];
+
 function extractMentions(value) {
   const matches = String(value || "").match(/@([a-zA-Z0-9_\.]+)/g) || [];
   return Array.from(new Set(matches.map((item) => item.slice(1).toLowerCase()).filter(Boolean)));
@@ -248,6 +256,16 @@ function storyRing(profile, storyCount, hasLiveStory) {
 
 
 function storyComposer(currentProfile, upcomingEvents) {
+  const soundRows = TAPZY_SOUND_LIBRARY.map((sound, index) => `
+    <button class="stories-sound-row${index === 0 ? " is-featured" : ""}" type="button" data-sound-choice data-sound-id="${escapeHtml(sound.id)}" data-sound-title="${escapeHtml(sound.title)}" data-sound-artist="${escapeHtml(sound.artist)}" data-sound-url="${escapeHtml(sound.url)}" data-sound-duration="${escapeHtml(sound.duration)}">
+      <span class="stories-sound-cover stories-sound-cover-${escapeHtml(sound.tone)}"><span></span></span>
+      <span class="stories-sound-info">
+        <strong>${escapeHtml(sound.title)}</strong>
+        <em>${escapeHtml(sound.artist)} � ${escapeHtml(sound.posts)} posts � ${escapeHtml(sound.duration)}</em>
+      </span>
+      <span class="stories-sound-save" aria-hidden="true"></span>
+    </button>
+  `).join("");
 
   if (!currentProfile) {
 
@@ -321,15 +339,39 @@ function storyComposer(currentProfile, upcomingEvents) {
 
           <label>Music or sound</label>
 
-          <label class="stories-music-picker" data-music-picker>
-            <span class="stories-music-picker-main">Add a song or sound file</span>
-            <span class="stories-music-picker-sub" data-music-file-name>MP3, M4A, AAC, WAV, OGG, or WebM audio</span>
-            <input type="file" name="storyMusic" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.webm" data-story-music />
-          </label>
+          <button class="stories-music-picker" type="button" data-open-sound-sheet aria-haspopup="dialog">
+            <span class="stories-music-picker-main" data-music-display>Add music, sound, or artist name</span>
+            <span class="stories-music-picker-sub" data-music-file-name>Choose from Tapzy sounds or import your own</span>
+          </button>
+          <input type="hidden" name="musicTitle" value="" data-music-title />
+          <input type="hidden" name="storyMusicUrl" value="" data-music-url />
+          <input type="file" name="storyMusic" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.webm" data-story-music hidden />
 
-          <input name="musicTitle" maxlength="80" placeholder="Optional music label or artist name" data-music-title />
+          <div class="stories-sound-sheet" data-sound-sheet aria-hidden="true">
+            <div class="stories-sound-backdrop" data-close-sound-sheet></div>
+            <section class="stories-sound-panel" role="dialog" aria-modal="true" aria-label="Choose sound">
+              <div class="stories-sound-grabber"></div>
+              <div class="stories-sound-tabs" role="tablist">
+                <button type="button" class="is-active" data-sound-tab="hot">Hot</button>
+                <button type="button" data-sound-tab="for-you">For You</button>
+                <button type="button" data-sound-tab="favorites">Favorites</button>
+                <button type="button" data-sound-tab="recent">Recent</button>
+                <button type="button" class="stories-sound-search" data-focus-sound-search aria-label="Search sounds"></button>
+              </div>
+              <div class="stories-sound-searchbox">
+                <input type="search" placeholder="Search sounds" data-sound-search />
+              </div>
+              <div class="stories-sound-list" data-sound-list>
+                ${soundRows}
+              </div>
+              <div class="stories-sound-actions">
+                <button type="button" data-import-sound>Import sound</button>
+                <button type="button" data-clear-sound>Remove sound</button>
+              </div>
+            </section>
+          </div>
 
-          <div class="stories-event-hint">Your music plays with the story after upload.</div>
+          <div class="stories-event-hint">Pick a Tapzy sound, search the library, or import your own audio.</div>
 
         </div>
 
@@ -1541,10 +1583,40 @@ router.get("/stories", async (req, res) => {
 
     
       /* Story music/caption premium controls */
-      .stories-music-picker{display:flex;flex-direction:column;gap:4px;justify-content:center;min-height:86px;padding:18px;border-radius:24px;border:1px dashed rgba(120,190,255,.34);background:rgba(6,10,18,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);cursor:pointer}
-        .stories-music-picker input{position:absolute;opacity:0;pointer-events:none}
-        .stories-music-picker-main{font-size:17px;font-weight:950;color:#fff}
+      .stories-music-picker{display:flex;width:100%;flex-direction:column;gap:5px;justify-content:center;min-height:78px;padding:18px 20px;border-radius:24px;border:1px solid rgba(120,190,255,.22);background:linear-gradient(180deg,rgba(10,14,24,.88),rgba(5,8,14,.78));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 16px 40px rgba(0,0,0,.18);cursor:pointer;text-align:left;color:#fff}
+        .stories-music-picker-main{font-size:20px;font-weight:950;color:#f7f9ff;line-height:1.08;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .stories-music-picker-sub{font-size:13px;font-weight:750;color:rgba(220,232,255,.68);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .stories-sound-sheet{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-end;justify-content:center}
+        .stories-sound-sheet.is-open{display:flex}
+        .stories-sound-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+        .stories-sound-panel{position:relative;width:min(640px,100%);max-height:min(76vh,760px);display:flex;flex-direction:column;border-radius:28px 28px 0 0;background:#f8f8fb;color:#080b12;box-shadow:0 -24px 80px rgba(0,0,0,.38);overflow:hidden}
+        .stories-sound-grabber{width:68px;height:5px;border-radius:999px;background:#c8c8ce;margin:10px auto 8px}
+        .stories-sound-tabs{display:grid;grid-template-columns:repeat(4,1fr) 44px;align-items:center;gap:4px;padding:0 18px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+        .stories-sound-tabs button{min-height:52px;border:0;background:transparent;color:#888;font:inherit;font-size:16px;font-weight:800;position:relative}
+        .stories-sound-tabs button.is-active{color:#05070d}
+        .stories-sound-tabs button.is-active::after{content:"";position:absolute;left:24%;right:24%;bottom:0;height:3px;border-radius:999px;background:#05070d}
+        .stories-sound-search::before{content:"";display:block;width:22px;height:22px;margin:auto;border:3px solid currentColor;border-radius:999px}
+        .stories-sound-search::after{content:"";position:absolute;width:10px;height:3px;border-radius:999px;background:currentColor;right:8px;bottom:16px;transform:rotate(45deg)}
+        .stories-sound-searchbox{padding:10px 20px 0}
+        .stories-sound-searchbox input{width:100%;height:42px;border-radius:16px;border:1px solid rgba(0,0,0,.08);background:#eceef3;color:#111;padding:0 14px;font-size:15px;font-weight:750;outline:none}
+        .stories-sound-list{overflow:auto;-webkit-overflow-scrolling:touch;padding:10px 0 8px}
+        .stories-sound-row{display:grid;width:100%;grid-template-columns:58px 1fr 34px;gap:12px;align-items:center;border:0;background:transparent;color:#05070d;text-align:left;padding:8px 20px}
+        .stories-sound-row[hidden]{display:none}
+        .stories-sound-row.is-selected{background:#f0f2f7}
+        .stories-sound-cover{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;overflow:hidden;background:#10131c;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+        .stories-sound-cover span{width:22px;height:22px;border-left:5px solid #fff;border-right:5px solid #fff;transform:skew(-10deg);opacity:.86}
+        .stories-sound-cover-pink{background:radial-gradient(circle at 25% 20%,#ff3b76,transparent 36%),linear-gradient(135deg,#0d111a,#141414)}
+        .stories-sound-cover-blue{background:radial-gradient(circle at 30% 20%,#50d7ff,transparent 38%),linear-gradient(135deg,#101a34,#112a6b)}
+        .stories-sound-cover-dark{background:radial-gradient(circle at 70% 35%,#fff,transparent 18%),linear-gradient(135deg,#08090d,#292b33)}
+        .stories-sound-cover-sky{background:linear-gradient(135deg,#9edcff,#3178c6)}
+        .stories-sound-cover-violet{background:radial-gradient(circle at 30% 30%,#b393ff,transparent 35%),linear-gradient(135deg,#11101d,#39235e)}
+        .stories-sound-info{min-width:0;display:flex;flex-direction:column;gap:4px}
+        .stories-sound-info strong{font-size:16px;line-height:1.1;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .stories-sound-info em{font-style:normal;font-size:13px;font-weight:700;color:#8a8d95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .stories-sound-save{width:22px;height:28px;border:3px solid #111;border-bottom:0;border-radius:4px 4px 2px 2px;opacity:.86;clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+        .stories-sound-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 20px max(18px,env(safe-area-inset-bottom));border-top:1px solid rgba(0,0,0,.08);background:#fff}
+        .stories-sound-actions button{min-height:48px;border:0;border-radius:16px;background:#10131b;color:#fff;font:inherit;font-weight:900}
+        .stories-sound-actions [data-clear-sound]{background:#eef0f5;color:#111}
         .stories-music-field input{
         width:100%;
         min-height:52px;
@@ -1601,10 +1673,72 @@ router.get("/stories", async (req, res) => {
           updateCount();
         }
 
+        const musicDisplay = form.querySelector('[data-music-display]');
+        const musicTitleInput = form.querySelector('[data-music-title]');
+        const musicUrlInput = form.querySelector('[data-music-url]');
+        const soundSheet = form.querySelector('[data-sound-sheet]');
+        const soundSearch = form.querySelector('[data-sound-search]');
+        const soundRows = Array.from(form.querySelectorAll('[data-sound-choice]'));
+
+        function setSelectedSound(title, sub, url){
+          if (musicDisplay) musicDisplay.textContent = title || 'Add music, sound, or artist name';
+          if (musicName) musicName.textContent = sub || 'Choose from Tapzy sounds or import your own';
+          if (musicTitleInput) musicTitleInput.value = title || '';
+          if (musicUrlInput) musicUrlInput.value = url || '';
+        }
+        function openSoundSheet(){
+          if (!soundSheet) return;
+          soundSheet.classList.add('is-open');
+          soundSheet.setAttribute('aria-hidden', 'false');
+          document.documentElement.style.overflow = 'hidden';
+        }
+        function closeSoundSheet(){
+          if (!soundSheet) return;
+          soundSheet.classList.remove('is-open');
+          soundSheet.setAttribute('aria-hidden', 'true');
+          document.documentElement.style.overflow = '';
+        }
+        form.querySelectorAll('[data-open-sound-sheet]').forEach(function(btn){ btn.addEventListener('click', openSoundSheet); });
+        form.querySelectorAll('[data-close-sound-sheet]').forEach(function(btn){ btn.addEventListener('click', closeSoundSheet); });
+        form.querySelectorAll('[data-focus-sound-search]').forEach(function(btn){ btn.addEventListener('click', function(){ if (soundSearch) soundSearch.focus(); }); });
+        form.querySelectorAll('[data-sound-tab]').forEach(function(tab){
+          tab.addEventListener('click', function(){
+            form.querySelectorAll('[data-sound-tab]').forEach(function(item){ item.classList.toggle('is-active', item === tab); });
+          });
+        });
+        soundRows.forEach(function(row){
+          row.addEventListener('click', function(){
+            soundRows.forEach(function(item){ item.classList.toggle('is-selected', item === row); });
+            setSelectedSound(row.dataset.soundTitle || 'Original sound', (row.dataset.soundArtist || 'Tapzy') + ' � ' + (row.dataset.soundDuration || ''), row.dataset.soundUrl || '');
+            closeSoundSheet();
+          });
+        });
+        if (soundSearch) {
+          soundSearch.addEventListener('input', function(){
+            const q = String(soundSearch.value || '').trim().toLowerCase();
+            soundRows.forEach(function(row){
+              const hay = ((row.dataset.soundTitle || '') + ' ' + (row.dataset.soundArtist || '')).toLowerCase();
+              row.hidden = !!q && hay.indexOf(q) === -1;
+            });
+          }, { passive:true });
+        }
+        const importSound = form.querySelector('[data-import-sound]');
+        if (importSound && musicInput) importSound.addEventListener('click', function(){ musicInput.click(); });
+        const clearSound = form.querySelector('[data-clear-sound]');
+        if (clearSound) clearSound.addEventListener('click', function(){
+          if (musicInput) musicInput.value = '';
+          soundRows.forEach(function(row){ row.classList.remove('is-selected'); });
+          setSelectedSound('', '', '');
+          closeSoundSheet();
+        });
         if (musicInput && musicName) {
           musicInput.addEventListener('change', function(){
             const music = musicInput.files && musicInput.files[0];
-            musicName.textContent = music ? music.name : 'MP3, M4A, AAC, WAV, OGG, or WebM audio';
+            if (music) {
+              soundRows.forEach(function(row){ row.classList.remove('is-selected'); });
+              setSelectedSound(music.name.replace(/\.[^.]+$/, ''), 'Imported sound � ' + music.name, '');
+              closeSoundSheet();
+            }
           });
         }
 
@@ -1773,6 +1907,7 @@ router.post("/stories", upload.fields([{ name: "storyMedia", maxCount: 1 }, { na
 
     const baseText = String(req.body.text || "").trim();
     const musicTitle = String(req.body.musicTitle || "").trim();
+    const selectedMusicUrl = String(req.body.storyMusicUrl || "").trim();
     const text = baseText || null;
     const mediaFile = req.files && req.files.storyMedia && req.files.storyMedia[0] ? req.files.storyMedia[0] : null;
     const musicFile = req.files && req.files.storyMusic && req.files.storyMusic[0] ? req.files.storyMusic[0] : null;
@@ -1855,7 +1990,8 @@ router.post("/stories", upload.fields([{ name: "storyMedia", maxCount: 1 }, { na
 
 
 
-    const audioUrl = musicFile ? publicAbsoluteUrl(req, `/uploads/${musicFile.filename}`) : null;
+    const libraryAudioUrl = selectedMusicUrl && selectedMusicUrl.startsWith("/sounds/") ? publicAbsoluteUrl(req, selectedMusicUrl) : null;
+    const audioUrl = musicFile ? publicAbsoluteUrl(req, `/uploads/${musicFile.filename}`) : libraryAudioUrl;
 
     const createdStory = await prisma.story.create({
 
