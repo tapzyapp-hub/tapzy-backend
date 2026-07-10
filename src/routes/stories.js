@@ -321,9 +321,15 @@ function storyComposer(currentProfile, upcomingEvents) {
 
           <label>Music or sound</label>
 
-          <input name="musicTitle" maxlength="80" placeholder="Add music, sound, or artist name" data-music-title />
+          <label class="stories-music-picker" data-music-picker>
+            <span class="stories-music-picker-main">Add a song or sound file</span>
+            <span class="stories-music-picker-sub" data-music-file-name>MP3, M4A, AAC, WAV, OGG, or WebM audio</span>
+            <input type="file" name="storyMusic" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.webm" data-story-music />
+          </label>
 
-          <div class="stories-event-hint">Shows on your story as a music label, like TikTok, WhatsApp, and Instagram.</div>
+          <input name="musicTitle" maxlength="80" placeholder="Optional music label or artist name" data-music-title />
+
+          <div class="stories-event-hint">Your music plays with the story after upload.</div>
 
         </div>
 
@@ -1535,7 +1541,11 @@ router.get("/stories", async (req, res) => {
 
     
       /* Story music/caption premium controls */
-      .stories-music-field input{
+      .stories-music-picker{display:flex;flex-direction:column;gap:4px;justify-content:center;min-height:86px;padding:18px;border-radius:24px;border:1px dashed rgba(120,190,255,.34);background:rgba(6,10,18,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);cursor:pointer}
+        .stories-music-picker input{position:absolute;opacity:0;pointer-events:none}
+        .stories-music-picker-main{font-size:17px;font-weight:950;color:#fff}
+        .stories-music-picker-sub{font-size:13px;font-weight:750;color:rgba(220,232,255,.68);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .stories-music-field input{
         width:100%;
         min-height:52px;
         border-radius:18px;
@@ -1567,6 +1577,8 @@ router.get("/stories", async (req, res) => {
         const textarea = form.querySelector('textarea[name="text"]');
         const count = form.querySelector('[data-caption-count]');
         const file = form.querySelector('input[name="storyMedia"]');
+        const musicInput = form.querySelector('[data-story-music]');
+        const musicName = form.querySelector('[data-music-file-name]');
         const liveUrl = form.querySelector('[data-live-url]');
         const label = form.querySelector('[data-upload-label]');
         const preview = form.querySelector('[data-story-preview]');
@@ -1587,6 +1599,13 @@ router.get("/stories", async (req, res) => {
         if (textarea) {
           textarea.addEventListener('input', updateCount, { passive:true });
           updateCount();
+        }
+
+        if (musicInput && musicName) {
+          musicInput.addEventListener('change', function(){
+            const music = musicInput.files && musicInput.files[0];
+            musicName.textContent = music ? music.name : 'MP3, M4A, AAC, WAV, OGG, or WebM audio';
+          });
         }
 
         let activePreviewUrl = null;
@@ -1742,7 +1761,7 @@ router.get("/stories", async (req, res) => {
 
 
 
-router.post("/stories", upload.single("storyMedia"), async (req, res) => {
+router.post("/stories", upload.fields([{ name: "storyMedia", maxCount: 1 }, { name: "storyMusic", maxCount: 1 }]), async (req, res) => {
 
   try {
 
@@ -1754,8 +1773,10 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
     const baseText = String(req.body.text || "").trim();
     const musicTitle = String(req.body.musicTitle || "").trim();
-    const musicLine = musicTitle ? "Music: " + musicTitle.slice(0, 80) : "";
-    const text = [baseText, musicLine].filter(Boolean).join("\n") || null;
+    const text = baseText || null;
+    const mediaFile = req.files && req.files.storyMedia && req.files.storyMedia[0] ? req.files.storyMedia[0] : null;
+    const musicFile = req.files && req.files.storyMusic && req.files.storyMusic[0] ? req.files.storyMusic[0] : null;
+    const musicLabel = musicTitle ? musicTitle.slice(0, 80) : (musicFile ? String(musicFile.originalname || "Story sound").replace(/\.[^.]+$/, "").slice(0, 80) : "");
 
     const requestedType = String(req.body.type || "").trim().toLowerCase();
     const requestedLiveUrl = String(req.body.liveUrl || "").trim();
@@ -1802,9 +1823,9 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
     let mediaUrl = null;
 
-    if (req.file) {
+    if (mediaFile) {
 
-      mediaUrl = publicAbsoluteUrl(req, `/uploads/${req.file.filename}`);
+      mediaUrl = publicAbsoluteUrl(req, `/uploads/${mediaFile.filename}`);
 
     } else if (chunkedMediaUrl) {
 
@@ -1820,7 +1841,7 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
     let type = "text";
 
-    if (!req.file && requestedLiveUrl && mediaUrl) type = "live";
+    if (!mediaFile && requestedLiveUrl && mediaUrl) type = "live";
 
     else if (requestedType === "video") type = "video";
 
@@ -1834,6 +1855,8 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
 
 
+    const audioUrl = musicFile ? publicAbsoluteUrl(req, `/uploads/${musicFile.filename}`) : null;
+
     const createdStory = await prisma.story.create({
 
       data: {
@@ -1845,6 +1868,10 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
         type,
 
         mediaUrl,
+
+        audioUrl,
+
+        audioTitle: musicLabel || null,
 
         text,
 
@@ -3592,6 +3619,10 @@ router.get("/stories/feed", async (req, res) => {
       const username = profile.username || "tapzy";
       const displayName = profile.name || `@${username}`;
       const isVideo = story.mediaUrl && isVideoUrl(story.mediaUrl);
+      const storyAudioUrl = String(story.audioUrl || "").trim();
+      const storyAudioTitle = String(story.audioTitle || "").trim();
+      const storyAudio = storyAudioUrl ? `<audio src="${escapeHtml(storyAudioUrl)}" loop preload="metadata" data-story-audio></audio>` : "";
+      const storyMusicChip = storyAudioUrl ? `<div class="sf-music-chip">${escapeHtml(storyAudioTitle || "Original sound")}</div>` : "";
       const isLive = story.type === "live" && (!story.mediaUrl || isLiveStreamUrl(story.mediaUrl) || isNativeLiveUrl(story.mediaUrl));
       const isFollowing =
         currentProfile &&
@@ -3628,11 +3659,12 @@ router.get("/stories/feed", async (req, res) => {
 
       return `
       <article class="sf-slide" data-story="${escapeHtml(story.id)}" data-following="${isFollowing ? "1" : "0"}" data-event="${story.event ? "1" : "0"}">
-        <div class="sf-media-wrap">${media}<div class="sf-shade"></div></div>
+        <div class="sf-media-wrap">${media}${storyAudio}<div class="sf-shade"></div></div>
 
         <div class="sf-copy">
           ${eventLabel}
           <a class="sf-author" href="/u/${escapeHtml(username)}">${escapeHtml(displayName)}</a>
+          ${storyMusicChip}
           ${story.text ? `<p>${escapeHtml(story.text)}</p>` : ""}
           <div class="sf-meta">${escapeHtml(age)} · Tapzy Story</div>
         </div>
@@ -3671,7 +3703,7 @@ router.get("/stories/feed", async (req, res) => {
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 16-8-6 16-3-6-7-2Zm7 2 9-10"/></svg>
             <span>Share</span>
           </button>
-          ${isVideo ? `
+          ${(isVideo || storyAudioUrl) ? `
           <button class="sf-sound is-active" type="button" data-sound aria-label="Mute story">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12-1c1.4 1.2 1.4 6.8 0 8m3-11c3 3 3 11 0 14"/></svg>
           </button>` : ""}
@@ -3814,6 +3846,8 @@ router.get("/stories/feed", async (req, res) => {
         .sf-copy{position:absolute;z-index:4;left:18px;right:92px;bottom:calc(var(--safe-bottom) + 82px);text-shadow:0 2px 12px rgba(0,0,0,.7)}
         .sf-author{display:block;width:max-content;max-width:100%;margin-bottom:8px;color:#fff;text-decoration:none;font-size:17px;font-weight:850}
         .sf-copy p{margin:0 0 8px;font-size:15px;line-height:1.35}
+        .sf-music-chip{display:inline-flex;align-items:center;max-width:100%;margin:0 0 8px;padding:7px 11px;border-radius:999px;background:rgba(8,12,20,.52);border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 28px rgba(0,0,0,.24);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:12px;font-weight:850;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .sf-music-chip::before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:999px;background:#71d8ff;box-shadow:0 0 14px rgba(113,216,255,.9)}
         .sf-meta{font-size:13px;color:rgba(255,255,255,.8)}
         .sf-event{display:inline-flex;margin-bottom:11px;padding:7px 10px;border-radius:9px;background:rgba(12,18,35,.64);backdrop-filter:blur(12px);color:#fff;text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.18)}
         .sf-actions{position:absolute;z-index:5;right:9px;bottom:calc(var(--safe-bottom) + 78px);display:flex;flex-direction:column;align-items:center;gap:10px;width:58px;padding:8px 3px;border-radius:29px;background:linear-gradient(180deg,rgba(5,8,14,.16),rgba(5,8,14,.04));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
@@ -3916,26 +3950,44 @@ router.get("/stories/feed", async (req, res) => {
             tapzySoundUnlocked = true;
             localStorage.setItem('tapzy_story_sound', '1');
           }
+          function playStoryAudio(slide){
+            var audio = slide && slide.querySelector ? slide.querySelector('audio[data-story-audio]') : null;
+            if (!audio) return;
+            audio.volume = 1;
+            audio.play().catch(function(){});
+          }
+          function pauseStoryAudio(slide){
+            var audio = slide && slide.querySelector ? slide.querySelector('audio[data-story-audio]') : null;
+            if (!audio) return;
+            audio.pause();
+          }
           function activateVideoSound(slide){
             var video = slide && slide.querySelector ? slide.querySelector('video') : null;
-            if (!video) return;
-            forceSound(video);
-            var sound = slide.querySelector('[data-sound]');
+            if (video) {
+              forceSound(video);
+              video.play().catch(function(){});
+            }
+            playStoryAudio(slide);
+            var sound = slide && slide.querySelector ? slide.querySelector('[data-sound]') : null;
             if (sound) {
               sound.classList.add('is-active');
               sound.setAttribute('aria-label', 'Mute story');
             }
-            video.play().catch(function(){});
           }
           var observer = new IntersectionObserver(function(entries){
             entries.forEach(function(entry){
               var video = entry.target.querySelector('video');
-              if (!video) return;
+              var audio = entry.target.querySelector('audio[data-story-audio]');
+              if (!video && !audio) return;
               if (entry.isIntersecting && entry.intersectionRatio > .65) {
                 if (tapzySoundUnlocked) activateVideoSound(entry.target);
-                else video.play().catch(function(){});
+                else {
+                  if (video) video.play().catch(function(){});
+                  if (audio) audio.play().catch(function(){});
+                }
               } else {
-                video.pause();
+                if (video) video.pause();
+                pauseStoryAudio(entry.target);
               }
             });
           }, { root: feed, threshold: [.2,.65] });
@@ -3969,18 +4021,25 @@ router.get("/stories/feed", async (req, res) => {
             if (rail) wakeActionRails();
             var sound = event.target.closest('[data-sound]');
             if (sound) {
-              var video = sound.closest('.sf-slide').querySelector('video');
-              if (video) {
-                if (!tapzySoundUnlocked || video.muted) {
-                  forceSound(video);
+              var slide = sound.closest('.sf-slide');
+              var video = slide.querySelector('video');
+              var audio = slide.querySelector('audio[data-story-audio]');
+              if (video || audio) {
+                if (!tapzySoundUnlocked || (video && video.muted)) {
+                  if (video) forceSound(video);
+                  tapzySoundUnlocked = true;
+                  localStorage.setItem('tapzy_story_sound', '1');
+                  if (audio) audio.play().catch(function(){});
                 } else {
-                  video.muted = true;
+                  if (video) video.muted = true;
+                  if (audio) audio.pause();
                   localStorage.setItem('tapzy_story_sound', '0');
                   tapzySoundUnlocked = false;
                 }
-                video.play().catch(function(){});
-                sound.classList.toggle('is-active', !video.muted);
-                sound.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Mute story');
+                if (video) video.play().catch(function(){});
+                var active = tapzySoundUnlocked;
+                sound.classList.toggle('is-active', active);
+                sound.setAttribute('aria-label', active ? 'Mute story' : 'Turn sound on');
               }
               return;
             }
@@ -4309,6 +4368,10 @@ router.get("/stories/:username", async (req, res) => {
       .map((story, index) => {
 
         const isVideoStory = story.mediaUrl && isVideoUrl(story.mediaUrl);
+        const storyAudioUrl = String(story.audioUrl || "").trim();
+        const storyAudioTitle = String(story.audioTitle || "").trim();
+        const storyAudio = storyAudioUrl ? `<audio src="${escapeHtml(storyAudioUrl)}" loop preload="metadata" data-story-audio></audio>` : "";
+        const storyMusicChip = storyAudioUrl ? `<div class="story-music-chip">${escapeHtml(storyAudioTitle || "Original sound")}</div>` : "";
         const isLiveStory = story.mediaUrl && story.type === "live" && (isLiveStreamUrl(story.mediaUrl) || isNativeLiveUrl(story.mediaUrl));
 
         const media = story.mediaUrl
@@ -4408,6 +4471,7 @@ router.get("/stories/:username", async (req, res) => {
           <div class="story-stage">
 
             ${media}
+            ${storyAudio}
 
             <div class="story-stage-overlay"></div>
 
@@ -4416,6 +4480,7 @@ router.get("/stories/:username", async (req, res) => {
             <div class="story-stage-bottom">
 
               ${eventPill}
+              ${storyMusicChip}
 
               ${story.text ? `<div class="story-caption">${escapeHtml(story.text)}</div>` : ""}
 
@@ -4430,7 +4495,7 @@ router.get("/stories/:username", async (req, res) => {
                 <div class="story-metric">${escapeHtml(String(likeCount))} like${likeCount === 1 ? "" : "s"}</div>
                 <div class="story-metric">${escapeHtml(String(viewCount))} view${viewCount === 1 ? "" : "s"}</div>
                 <div class="story-social-spacer"></div>
-                ${isVideoStory ? `<button class="story-sound-btn" type="button" data-story-sound>Mute</button>` : ""}
+                ${(isVideoStory || storyAudioUrl) ? `<button class="story-sound-btn" type="button" data-story-sound>Mute</button>` : ""}
               </div>
 
             </div>
@@ -4925,7 +4990,29 @@ router.get("/stories/:username", async (req, res) => {
       }
 
 
-        .story-sound-btn{
+        .story-music-chip{
+        display:inline-flex;
+        align-items:center;
+        width:max-content;
+        max-width:100%;
+        min-height:34px;
+        padding:0 12px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(8,10,16,.58);
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        box-shadow:0 12px 30px rgba(0,0,0,.26);
+        backdrop-filter:blur(12px);
+        -webkit-backdrop-filter:blur(12px);
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .story-music-chip::before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:999px;background:#71d8ff;box-shadow:0 0 14px rgba(113,216,255,.9)}
+
+      .story-sound-btn{
           min-height:34px;
           padding:0 12px;
           font-size:11px;
@@ -5299,6 +5386,25 @@ router.get("/stories/:username", async (req, res) => {
           });
         }
 
+        function currentAudio(){
+          const panel = currentPanel();
+          return panel ? panel.querySelector("audio[data-story-audio]") : null;
+        }
+
+        function pauseInactiveAudio(){
+          panels.forEach((panel, i) => {
+            const audio = panel.querySelector("audio[data-story-audio]");
+            if (audio && i !== index) audio.pause();
+          });
+        }
+
+        function playCurrentAudio(){
+          const audio = currentAudio();
+          if (!audio) return;
+          audio.volume = 1;
+          audio.play().catch(function(){});
+        }
+
         function preloadNext(nextIndex){
           const nextPanel = panels[nextIndex + 1];
           if (!nextPanel) return;
@@ -5377,31 +5483,40 @@ router.get("/stories/:username", async (req, res) => {
           resetAllVisibleBars();
           paintProgress(0);
           pauseInactiveVideos();
+          pauseInactiveAudio();
           preloadNext(nextIndex);
 
           const video = currentVideo();
           if (video) startVideoProgress(video);
-          else startImageProgress();
+          else {
+            playCurrentAudio();
+            startImageProgress();
+          }
         }
 
         document.addEventListener("click", function(e){
           const soundButton = e.target.closest("[data-story-sound]");
           if (soundButton) {
             const video = currentVideo();
-            if (video) {
-              if (!tapzyViewerSoundUnlocked || video.muted || soundButton.textContent !== "Mute") {
-                forceViewerSound(video);
+            const audio = currentAudio();
+            if (video || audio) {
+              if (!tapzyViewerSoundUnlocked || (video && video.muted) || soundButton.textContent !== "Mute") {
+                if (video) forceViewerSound(video);
+                tapzyViewerSoundUnlocked = true;
+                localStorage.setItem("tapzy_story_sound", "1");
+                if (audio) audio.play().catch(function(){});
               } else {
-                video.muted = true;
+                if (video) video.muted = true;
+                if (audio) audio.pause();
                 tapzyViewerSoundUnlocked = false;
                 localStorage.setItem("tapzy_story_sound", "0");
               }
-              video.play().catch(function(){
+              if (video) video.play().catch(function(){
                 video.muted = true;
                 tapzyViewerSoundUnlocked = false;
                 localStorage.setItem("tapzy_story_sound", "0");
               });
-              soundButton.textContent = video.muted ? "Sound on" : "Mute";
+              soundButton.textContent = tapzyViewerSoundUnlocked ? "Mute" : "Sound on";
             }
             return;
           }

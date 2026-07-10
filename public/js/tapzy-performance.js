@@ -4,6 +4,7 @@
 
   var pageCache = new Map();
   var PREFETCH_TTL = 1000 * 60 * 2;
+  var MAX_PAGE_CACHE = 6;
 
   function idle(fn) {
     if ("requestIdleCallback" in window) return window.requestIdleCallback(fn, { timeout: 1200 });
@@ -16,14 +17,35 @@
       img.setAttribute("loading", "lazy");
       img.setAttribute("decoding", "async");
     });
+    root.querySelectorAll('img[loading="lazy"]:not([fetchpriority])').forEach(function (img) {
+      img.setAttribute("fetchpriority", "low");
+    });
     root.querySelectorAll("video").forEach(function (video) {
       if (!video.hasAttribute("preload")) video.setAttribute("preload", "metadata");
       video.setAttribute("playsinline", "");
     });
   }
 
+  function shouldConserveResources() {
+    var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection && (connection.saveData || /(?:2g|slow-2g)/i.test(connection.effectiveType || ""))) return true;
+    if (navigator.deviceMemory && navigator.deviceMemory <= 2) return true;
+    return false;
+  }
+
+  function rememberPage(key, html) {
+    if (!html) return;
+    pageCache.set(key, { html: html, time: Date.now() });
+    while (pageCache.size > MAX_PAGE_CACHE) {
+      var first = pageCache.keys().next().value;
+      if (!first) break;
+      pageCache.delete(first);
+    }
+  }
+
   function canPrefetch(url) {
     if (!url || url.origin !== location.origin) return false;
+    if (shouldConserveResources()) return false;
     if (url.hash && url.pathname === location.pathname && url.search === location.search) return false;
     if (/\.(?:jpg|jpeg|png|webp|gif|mp4|mov|webm|m4v|mp3|wav|ogg|m4a|aac|pdf|zip)$/i.test(url.pathname)) return false;
     if (/^\/(?:auth|logout|admin|api)\b/i.test(url.pathname)) return false;
@@ -70,7 +92,7 @@
       return res.text();
     }).then(function (html) {
       if (!/<body[\s>]/i.test(html)) return null;
-      pageCache.set(key, { html: html, time: Date.now() });
+      rememberPage(key, html);
       return html;
     }).catch(function () { return null; });
   }
@@ -87,6 +109,7 @@
   }
 
   function installInstantNavigation() {
+    if (shouldConserveResources()) return;
     var hoverTimer = null;
 
     document.addEventListener("mouseover", function (event) {
@@ -209,6 +232,38 @@
     navigator.serviceWorker.register("/sw.js").catch(function () {});
   }
 
+  function installOffscreenVideoSaver() {
+    if (!("IntersectionObserver" in window)) return null;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var video = entry.target;
+        if (!video || video.srcObject || video.closest("[data-keep-video-live]")) return;
+        if (entry.isIntersecting) {
+          if (video.dataset.tapzyPausedOffscreen === "1" && (video.autoplay || video.closest(".is-autoplay") || video.closest(".sf-slide") || video.closest(".story-view-panel"))) {
+            video.dataset.tapzyPausedOffscreen = "0";
+            video.play().catch(function () {});
+          }
+          return;
+        }
+        if (!video.paused && !video.closest("[data-video-frame].is-playing")) {
+          video.dataset.tapzyPausedOffscreen = "1";
+          video.pause();
+        }
+      });
+    }, { rootMargin: "180px 0px", threshold: 0.01 });
+
+    function watch(root) {
+      (root || document).querySelectorAll("video").forEach(function (video) {
+        if (video.__tapzyVideoObserved) return;
+        video.__tapzyVideoObserved = true;
+        observer.observe(video);
+      });
+    }
+
+    watch(document);
+    return watch;
+  }
+
   function installSmartUploads() {
     document.addEventListener("submit", function (event) {
       var form = event.target;
@@ -256,6 +311,7 @@
   }
 
   optimizeMedia(document);
+  var watchNewVideos = installOffscreenVideoSaver();
   idle(installInstantNavigation);
   idle(installSmartUploads);
   idle(installServiceWorker);
@@ -265,6 +321,7 @@
       mutations.forEach(function (mutation) {
         mutation.addedNodes && mutation.addedNodes.forEach(function (node) {
           if (node && node.nodeType === 1) optimizeMedia(node);
+          if (node && node.nodeType === 1 && watchNewVideos) watchNewVideos(node);
         });
       });
     });

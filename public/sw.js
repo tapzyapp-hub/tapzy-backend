@@ -1,4 +1,4 @@
-const TAPZY_CACHE = "tapzy-static-v12";
+const TAPZY_CACHE = "tapzy-static-v13";
 const STATIC_ASSETS = [
   "/js/tapzy-performance.js",
   "/images/tapzy-logo-white.png",
@@ -26,6 +26,8 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.startsWith("/uploads/")) {
+    const isCacheableImage = /\.(?:jpg|jpeg|png|webp|gif|heic|heif)$/i.test(url.pathname);
+    if (!isCacheableImage) return;
     event.respondWith(
       caches.open(TAPZY_CACHE).then((cache) => cache.match(req).then((cached) => {
         return cached || fetch(req).then((res) => {

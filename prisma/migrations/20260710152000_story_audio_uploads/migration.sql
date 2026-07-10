@@ -1,0 +1,2 @@
+ALTER TABLE "Story" ADD COLUMN "audioUrl" TEXT;
+ALTER TABLE "Story" ADD COLUMN "audioTitle" TEXT;

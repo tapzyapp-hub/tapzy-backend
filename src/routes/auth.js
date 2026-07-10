@@ -123,19 +123,19 @@ router.get("/auth", async (req, res) => {
             <p>Log in or create an account to save your profile, events, messages, and stories.</p>
           </div>
 
-          \${authErrorMessage}
-          \${authSuccessMessage}
+          ${authErrorMessage}
+          ${authSuccessMessage}
 
           <div class="authModeSwitch" role="tablist" aria-label="Choose account action">
-            <button type="button" class="\${isCreateMode ? "" : "is-active"}" data-auth-tab="login" aria-selected="\${isCreateMode ? "false" : "true"}">Log in</button>
-            <button type="button" class="\${isCreateMode ? "is-active" : ""}" data-auth-tab="create" aria-selected="\${isCreateMode ? "true" : "false"}">Create</button>
+            <button type="button" class="${isCreateMode ? "" : "is-active"}" data-auth-tab="login" aria-selected="${isCreateMode ? "false" : "true"}">Log in</button>
+            <button type="button" class="${isCreateMode ? "is-active" : ""}" data-auth-tab="create" aria-selected="${isCreateMode ? "true" : "false"}">Create</button>
           </div>
 
-          <section class="authPanel \${isCreateMode ? "" : "is-active"}" data-auth-panel="login">
+          <section class="authPanel ${isCreateMode ? "" : "is-active"}" data-auth-panel="login">
             <h2>Welcome back</h2>
             <p class="authHint">Use the email and password for your Tapzy account.</p>
             <form method="POST" action="/auth/login" autocomplete="on">
-              \${redirectInput}
+              ${redirectInput}
               <label for="loginEmail">Email</label>
               <input id="loginEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
               <label for="loginPassword">Password</label>
@@ -145,11 +145,11 @@ router.get("/auth", async (req, res) => {
             <a class="authForgot" href="/auth/forgot-password">Forgot password?</a>
           </section>
 
-          <section class="authPanel \${isCreateMode ? "is-active" : ""}" data-auth-panel="create">
+          <section class="authPanel ${isCreateMode ? "is-active" : ""}" data-auth-panel="create">
             <h2>Create account</h2>
             <p class="authHint">Start with your email and a password. You can finish your profile after.</p>
             <form method="POST" action="/auth/register" autocomplete="on">
-              \${redirectInput}
+              ${redirectInput}
               <label for="createEmail">Email</label>
               <input id="createEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
               <label for="createPassword">Password</label>
@@ -183,7 +183,7 @@ router.get("/auth", async (req, res) => {
         })();
       </script>
 
-      \${renderTapzyAssistant({
+      ${renderTapzyAssistant({
         username: "User",
         isAuthPage: true,
         pageType: "auth",

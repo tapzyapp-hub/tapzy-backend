@@ -535,6 +535,8 @@ model Story {
   eventId      String?
   type         String   @default("image")
   mediaUrl     String?
+  audioUrl     String?
+  audioTitle   String?
   text         String?
   thumbnailUrl String?
   expiresAt    DateTime
