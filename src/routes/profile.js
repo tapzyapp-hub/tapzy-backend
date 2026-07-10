@@ -4742,6 +4742,84 @@ router.get("/u/:username", async (req, res) => {
       }
       /* End weather profile name area polish */
 
+
+      /* Final premium weather card micro-polish */
+      .profile-showcase.is-weather-live{
+        overflow:hidden;
+      }
+
+      .profile-showcase.is-weather-live::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        z-index:2;
+        pointer-events:none;
+        border-radius:inherit;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.26), transparent 18%, transparent 72%, rgba(255,255,255,.14)),
+          linear-gradient(90deg, rgba(255,255,255,.16), transparent 18%, transparent 82%, rgba(255,255,255,.12));
+        mix-blend-mode:screen;
+        opacity:.70;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-main::before{
+        left:-22px !important;
+        right:-34px !important;
+        top:-18px !important;
+        bottom:-18px !important;
+        border-radius:34px !important;
+        background:
+          radial-gradient(ellipse at 24% 44%, rgba(255,255,255,.20), transparent 50%),
+          radial-gradient(ellipse at 42% 58%, rgba(51,140,195,.16), transparent 60%),
+          linear-gradient(90deg, rgba(20,86,139,.18), rgba(255,255,255,.05) 56%, transparent 100%) !important;
+        filter:blur(10px) !important;
+        opacity:.82 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-main::after{
+        left:-10px !important;
+        right:18% !important;
+        bottom:-4px !important;
+        opacity:.52 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-avatar{
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.48),
+          0 0 0 2px rgba(87,184,255,.38),
+          0 14px 34px rgba(22,93,145,.26),
+          inset 0 1px 0 rgba(255,255,255,.18) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-avatar-wrap::before{
+        opacity:.86 !important;
+        filter:blur(18px) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-label{
+        top:16px !important;
+        right:16px !important;
+        min-height:36px !important;
+        padding:0 14px !important;
+        background:rgba(58,111,153,.34) !important;
+        backdrop-filter:blur(18px) saturate(1.22) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-pill-btn,
+      .profile-showcase.is-weather-live .profile-showcase-actions .btn{
+        backdrop-filter:blur(18px) saturate(1.18) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.18),
+          inset 0 -1px 0 rgba(6,39,67,.18),
+          0 10px 24px rgba(18,77,122,.18) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-pill-btn::before,
+      .profile-showcase.is-weather-live .profile-showcase-actions .btn::before{
+        opacity:.38 !important;
+      }
+      /* End final premium weather card micro-polish */
+
 </style>
 
 
