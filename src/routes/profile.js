@@ -3440,6 +3440,33 @@ router.get("/u/:username", async (req, res) => {
         min-height:min(900px, calc(100svh - 72px));
       }
 
+      .profile-wrap > .profile-panel{
+        max-height:1200px;
+        overflow:hidden;
+        transition:
+          opacity .28s ease,
+          max-height .42s ease,
+          margin .42s ease,
+          padding .42s ease,
+          border-width .42s ease;
+      }
+
+      .profile-wrap.is-profile-condensed > .profile-panel{
+        opacity:0;
+        max-height:0;
+        margin-top:0 !important;
+        margin-bottom:0 !important;
+        padding-top:0;
+        padding-bottom:0;
+        border-width:0;
+        pointer-events:none;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-story-stage-panel{
+        margin-top:12px;
+      }
+
+
       @media(max-width:700px){
         .profile-showcase.is-secondary-dim{
           padding:10px;
