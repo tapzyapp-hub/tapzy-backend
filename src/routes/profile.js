@@ -2204,11 +2204,13 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-event-card-panel .event-title{
         margin:0;
-        font-size:31px;
-        line-height:1.06;
-        letter-spacing:-.9px;
+        font-size:clamp(30px, 4.2vw, 42px);
+        line-height:1.01;
+        letter-spacing:0;
         color:#fff;
         font-weight:950;
+        text-wrap:balance;
+        max-width:96%;
       }
 
       .profile-event-card-panel .event-copy{
@@ -2376,9 +2378,12 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-event-card-panel .event-title{
-          font-size:clamp(34px, 10vw, 48px);
-          line-height:.98;
-          letter-spacing:-1.4px;
+          font-size:clamp(32px, 9.4vw, 46px);
+          line-height:1.01;
+          letter-spacing:0;
+          font-weight:950;
+          text-wrap:balance;
+          max-width:100%;
         }
 
         .profile-event-card-panel .event-copy{
