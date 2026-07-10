@@ -85,18 +85,18 @@ router.get("/auth", async (req, res) => {
     const authSuccessMessage = success ? '<div class="authMessage authMessage-success">' + escapeHtml(success) + '</div>' : "";
     const authCss = `
       <style>
-        body.auth-page-shell{background:#030407;color:#fff;}
-        body.auth-page-shell .topbar,body.auth-page-shell .tz-stories-top-nav,body.auth-page-shell .tz-stories-bottom-nav{display:none!important;}
-        body.auth-page-shell .siteShell{min-height:100svh;background:radial-gradient(560px 360px at 50% -10%, rgba(85,174,255,.24), transparent 58%),radial-gradient(420px 300px at 0% 28%,rgba(47,118,255,.13),transparent 62%),#030407;}
-        .authWrap{max-width:480px;margin:0 auto;padding:clamp(18px,5vw,34px) 14px 112px;}
-        .authBrand{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 18px;color:#fff;}
+        body.auth-page-shell,html:has(body.auth-page-shell){background:#000;color:#fff;}
+        body.auth-page-shell header,body.auth-page-shell .topbar,body.auth-page-shell .siteHeader,body.auth-page-shell .nav,body.auth-page-shell .tz-menu,body.auth-page-shell .tz-menu-bar,body.auth-page-shell .tz-brand,body.auth-page-shell .tz-menu-btn,body.auth-page-shell .tz-stories-top-nav,body.auth-page-shell .tz-stories-bottom-nav{display:none!important;}
+        body.auth-page-shell .siteShell,body.auth-page-shell main,body.auth-page-shell .pageShell{min-height:100svh;background:#000!important;}
+        .authWrap{max-width:480px;margin:0 auto;padding:10px 14px 112px;}
+        .authBrand{display:flex;align-items:center;justify-content:space-between;margin:0 2px 14px;color:#fff;}
         .authBrandMark{display:flex;align-items:center;gap:10px;font-weight:950;font-size:19px;letter-spacing:0;}
         .authBrandMark span:last-child{color:rgba(231,238,255,.64);font-weight:750;}
         .authLogoMini{width:42px;height:42px;border-radius:14px;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;background:rgba(255,255,255,.06);box-shadow:0 12px 28px rgba(0,0,0,.22);}
         .authLogoMini img{width:74%;height:74%;object-fit:contain;}
         .authHelpLink{color:rgba(223,238,255,.72);text-decoration:none;font-size:13px;font-weight:850;}
-        .authCard{position:relative;overflow:hidden;border-radius:30px;padding:24px;background:linear-gradient(180deg,rgba(22,29,40,.96),rgba(8,11,17,.98));border:1px solid rgba(255,255,255,.13);box-shadow:0 24px 70px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.10);}
-        .authCard::before{content:"";position:absolute;inset:-42% -25% auto;height:260px;background:radial-gradient(circle at 50% 0%,rgba(113,202,255,.36),transparent 62%);pointer-events:none;}
+        .authCard{position:relative;overflow:hidden;border-radius:30px;padding:24px;background:linear-gradient(180deg,rgba(16,20,29,.98),rgba(3,4,7,1));border:1px solid rgba(255,255,255,.10);box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);}
+        .authCard::before{content:"";position:absolute;inset:-48% -25% auto;height:250px;background:radial-gradient(circle at 50% 0%,rgba(82,164,255,.16),transparent 64%);pointer-events:none;}
         .authCard::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) .7px,transparent .7px);background-size:11px 11px;opacity:.08;pointer-events:none;}
         .authHero,.authModeSwitch,.authPanel,.authMessage,.authSpeedNote{position:relative;z-index:1;}
         .authHero{text-align:left;margin-bottom:18px;}
@@ -125,7 +125,7 @@ router.get("/auth", async (req, res) => {
         .authMessage-success{border:1px solid rgba(103,255,178,.22);color:#ccffe5;background:rgba(16,70,44,.42);}
         .authSpeedNote{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px;color:rgba(225,238,255,.54);font-size:12px;font-weight:800;}
         .authSpeedNote span{width:6px;height:6px;border-radius:99px;background:#62d8ff;box-shadow:0 0 12px rgba(98,216,255,.85);}
-        @media(max-width:430px){.authWrap{padding:14px 12px 96px}.authCard{padding:18px;border-radius:24px}.authPanel{padding:15px;border-radius:20px}.authHero h1{font-size:40px}.authLogo{width:50px;height:50px;border-radius:16px;font-size:28px}.authModeSwitch button{font-size:14px;min-height:42px}.authPanel h2{font-size:23px}.authPanel input,.authPrimary{min-height:52px}}
+        @media(max-width:430px){.authWrap{padding:10px 12px 96px}.authCard{padding:18px;border-radius:24px}.authPanel{padding:15px;border-radius:20px}.authHero h1{font-size:40px}.authLogo{width:50px;height:50px;border-radius:16px;font-size:28px}.authModeSwitch button{font-size:14px;min-height:42px}.authPanel h2{font-size:23px}.authPanel input,.authPrimary{min-height:52px}}
       </style>
     `;
 
