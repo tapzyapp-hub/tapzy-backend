@@ -4421,6 +4421,267 @@ router.get("/u/:username", async (req, res) => {
         from{ transform:translate3d(-18px, 8px, 0) rotate(-3deg); opacity:.34; }
         to{ transform:translate3d(18px, -8px, 0) rotate(-3deg); opacity:.62; }
       }
+
+
+      .profile-showcase.is-weather-live{
+        border-color:rgba(230,246,255,.30) !important;
+        box-shadow:
+          0 18px 52px rgba(0,0,0,.30),
+          inset 0 1px 0 rgba(255,255,255,.22),
+          inset 0 -1px 0 rgba(42,94,145,.26) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 44% -5%, rgba(255,255,255,1) 0%, rgba(255,255,255,.92) 7%, rgba(246,250,255,.66) 16%, rgba(255,240,184,.20) 27%, transparent 39%),
+          radial-gradient(ellipse at 44% 18%, rgba(255,255,255,.38), transparent 24%),
+          radial-gradient(circle at 58% 82%, rgba(255,255,255,.20), transparent 7%),
+          linear-gradient(180deg, #8ec6ec 0%, #63a9dc 38%, #3f8fd0 70%, #226da9 100%) !important;
+        filter:saturate(.96) contrast(.98) brightness(1.12) !important;
+      }
+
+      .profile-weather-sun{
+        left:28%;
+        top:-26%;
+        width:250px;
+        height:250px;
+        background:radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,.94) 16%, rgba(255,250,220,.45) 31%, rgba(255,230,140,.10) 50%, transparent 72%) !important;
+        filter:blur(2px);
+      }
+
+      .profile-weather-wisp{
+        width:680px;
+        height:150px;
+        background:
+          radial-gradient(ellipse at 16% 46%, rgba(255,255,255,.40), transparent 28%),
+          radial-gradient(ellipse at 42% 40%, rgba(255,255,255,.30), transparent 30%),
+          radial-gradient(ellipse at 72% 52%, rgba(255,255,255,.22), transparent 28%),
+          linear-gradient(90deg, transparent, rgba(255,255,255,.28), rgba(255,255,255,.18), transparent) !important;
+        filter:blur(13px);
+        mix-blend-mode:screen;
+      }
+
+      .profile-weather-wisp-a{
+        left:-34%;
+        top:4%;
+        opacity:.86 !important;
+        transform:rotate(-5deg);
+      }
+
+      .profile-weather-wisp-b{
+        left:-4%;
+        top:23%;
+        width:740px;
+        opacity:.54 !important;
+        transform:rotate(-6deg);
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-wisp{
+        opacity:.72 !important;
+      }
+
+      .profile-weather-lens-a{
+        width:92px;
+        height:92px;
+        left:58%;
+        top:78%;
+        opacity:.16 !important;
+        background:rgba(255,255,255,.18) !important;
+      }
+
+      .profile-weather-lens-b{
+        width:44px;
+        height:44px;
+        left:47%;
+        top:39%;
+        opacity:.12 !important;
+        background:rgba(255,255,255,.16) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene::before{
+        background:
+          linear-gradient(110deg, transparent 0 18%, rgba(255,255,255,.26) 28%, rgba(255,255,255,.08) 42%, transparent 62% 100%),
+          radial-gradient(circle at 44% 12%, rgba(255,255,255,.32), transparent 18%) !important;
+        opacity:.58 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-top::before{
+        background:linear-gradient(180deg, transparent, rgba(18,78,128,.30), rgba(0,0,0,.24)) !important;
+        opacity:.70 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-name,
+      .profile-showcase.is-weather-live .profile-showcase-handle{
+        text-shadow:0 2px 20px rgba(28,66,105,.40), 0 1px 2px rgba(0,0,0,.28) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-label{
+        background:rgba(35,85,130,.34) !important;
+        border-color:rgba(255,255,255,.24) !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 12px 28px rgba(20,74,122,.22) !important;
+      }
+
+      .profile-showcase.weather-sunny .profile-showcase-bg,
+      .profile-showcase.weather-clear .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 44% -5%, rgba(255,255,255,1) 0%, rgba(255,255,255,.92) 7%, rgba(246,250,255,.66) 16%, rgba(255,240,184,.20) 27%, transparent 39%),
+          radial-gradient(ellipse at 44% 18%, rgba(255,255,255,.38), transparent 24%),
+          radial-gradient(circle at 58% 82%, rgba(255,255,255,.20), transparent 7%),
+          linear-gradient(180deg, #8ec6ec 0%, #63a9dc 38%, #3f8fd0 70%, #226da9 100%) !important;
+      }
+
+      /* Premium iOS-style live weather final tuning */
+      .profile-showcase.is-weather-live{
+        background:#78bce9 !important;
+        border-color:rgba(235,248,255,.62) !important;
+        box-shadow:
+          0 18px 46px rgba(0,0,0,.24),
+          0 0 0 1px rgba(76,181,255,.34),
+          inset 0 1px 0 rgba(255,255,255,.55),
+          inset 0 -1px 0 rgba(25,98,156,.26) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-bg,
+      .profile-showcase.weather-sunny .profile-showcase-bg,
+      .profile-showcase.weather-clear .profile-showcase-bg{
+        opacity:1 !important;
+        background:
+          radial-gradient(circle at 46% -10%, rgba(255,255,255,1) 0%, rgba(255,255,255,.98) 7%, rgba(255,255,255,.76) 15%, rgba(255,242,192,.28) 24%, transparent 38%),
+          radial-gradient(ellipse at 46% 12%, rgba(255,255,255,.42), transparent 25%),
+          radial-gradient(circle at 62% 92%, rgba(255,255,255,.20), transparent 9%),
+          radial-gradient(ellipse at 18% 80%, rgba(67,176,230,.34), transparent 36%),
+          linear-gradient(180deg, #9bd4f3 0%, #76bdea 34%, #4fa3da 66%, #2f83c3 100%) !important;
+        filter:saturate(1.02) contrast(.95) brightness(1.14) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene{
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.22), transparent 20%, rgba(255,255,255,.05) 58%, rgba(25,108,174,.18)),
+          radial-gradient(ellipse at 50% 7%, rgba(255,255,255,.30), transparent 30%) !important;
+        mix-blend-mode:normal;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene::before{
+        background:
+          linear-gradient(108deg, transparent 0 16%, rgba(255,255,255,.34) 27%, rgba(255,255,255,.13) 43%, transparent 64% 100%),
+          linear-gradient(98deg, transparent 0 36%, rgba(255,255,255,.18) 46%, transparent 60% 100%) !important;
+        filter:blur(3px);
+        opacity:.72 !important;
+        animation:profileWeatherRay 11s ease-in-out infinite alternate;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene::after{
+        content:"";
+        position:absolute;
+        left:-18%;
+        right:-18%;
+        top:5%;
+        height:58%;
+        background:
+          linear-gradient(168deg, transparent 0 10%, rgba(255,255,255,.38) 20%, transparent 34% 100%),
+          linear-gradient(174deg, transparent 0 28%, rgba(255,255,255,.30) 38%, transparent 52% 100%),
+          radial-gradient(ellipse at 34% 22%, rgba(255,255,255,.30), transparent 28%),
+          radial-gradient(ellipse at 74% 34%, rgba(255,255,255,.22), transparent 24%) !important;
+        filter:blur(12px);
+        opacity:.78 !important;
+        transform:rotate(-4deg);
+        animation:profileWeatherWisp 28s linear infinite;
+      }
+
+      .profile-weather-sun{
+        left:31% !important;
+        top:-35% !important;
+        width:320px !important;
+        height:320px !important;
+        background:radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,.97) 12%, rgba(255,251,229,.72) 24%, rgba(255,236,156,.20) 43%, transparent 69%) !important;
+        filter:blur(2px) !important;
+        opacity:1;
+      }
+
+      .profile-showcase.weather-cloudy .profile-weather-sun,
+      .profile-showcase.weather-fog .profile-weather-sun{ opacity:.62; }
+
+      .profile-weather-wisp{
+        height:170px !important;
+        background:
+          radial-gradient(ellipse at 14% 42%, rgba(255,255,255,.48), transparent 27%),
+          radial-gradient(ellipse at 43% 38%, rgba(255,255,255,.36), transparent 29%),
+          radial-gradient(ellipse at 74% 48%, rgba(255,255,255,.28), transparent 30%),
+          linear-gradient(92deg, transparent 0%, rgba(255,255,255,.33) 28%, rgba(255,255,255,.18) 54%, transparent 92%) !important;
+        filter:blur(15px) !important;
+        mix-blend-mode:screen !important;
+      }
+
+      .profile-weather-wisp-a{
+        left:-38% !important;
+        top:2% !important;
+        width:760px !important;
+        opacity:.92 !important;
+      }
+
+      .profile-weather-wisp-b{
+        left:-2% !important;
+        top:20% !important;
+        width:820px !important;
+        opacity:.66 !important;
+      }
+
+      .profile-weather-cloud{
+        background:
+          radial-gradient(ellipse at 26% 48%, rgba(255,255,255,.54), transparent 30%),
+          radial-gradient(ellipse at 55% 42%, rgba(255,255,255,.42), transparent 32%),
+          radial-gradient(ellipse at 80% 58%, rgba(255,255,255,.28), transparent 34%),
+          linear-gradient(90deg, transparent, rgba(255,255,255,.23), transparent) !important;
+        filter:blur(18px) !important;
+        mix-blend-mode:screen !important;
+      }
+
+      .profile-weather-cloud-a{ left:-30% !important; top:25% !important; width:420px !important; opacity:.45 !important; }
+      .profile-weather-cloud-b{ left:34% !important; top:44% !important; width:500px !important; opacity:.30 !important; }
+
+      .profile-weather-lens-a{
+        left:57% !important;
+        top:77% !important;
+        width:96px !important;
+        height:96px !important;
+        background:rgba(255,255,255,.22) !important;
+        box-shadow:0 0 44px rgba(255,255,255,.10) inset !important;
+        opacity:.18 !important;
+      }
+
+      .profile-weather-lens-b{
+        left:45% !important;
+        top:34% !important;
+        background:rgba(255,255,255,.18) !important;
+        opacity:.16 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-top::before{
+        background:linear-gradient(180deg, transparent 0%, rgba(41,126,190,.05) 42%, rgba(13,69,121,.22) 100%) !important;
+        opacity:.58 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-name,
+      .profile-showcase.is-weather-live .profile-showcase-handle{
+        text-shadow:0 2px 18px rgba(20,77,130,.36), 0 1px 2px rgba(0,0,0,.20) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-label{
+        background:rgba(38,91,136,.42) !important;
+        border-color:rgba(255,255,255,.26) !important;
+        color:rgba(255,255,255,.94) !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 10px 24px rgba(20,80,130,.18) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-pill-btn,
+      .profile-showcase.is-weather-live .profile-showcase-actions .btn{
+        background:rgba(20,58,90,.58) !important;
+        border-color:rgba(255,255,255,.16) !important;
+        color:#fff !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 10px 24px rgba(18,77,122,.22) !important;
+      }
+      /* End premium iOS-style live weather final tuning */
+
 </style>
 
 
