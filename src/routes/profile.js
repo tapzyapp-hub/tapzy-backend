@@ -4820,6 +4820,44 @@ router.get("/u/:username", async (req, res) => {
       }
       /* End final premium weather card micro-polish */
 
+
+      /* Remove weather card edge glare */
+      .profile-showcase.is-weather-live{
+        border-color:rgba(209,239,255,.42) !important;
+        box-shadow:
+          0 16px 40px rgba(0,0,0,.20),
+          0 0 0 1px rgba(76,181,255,.22),
+          inset 0 1px 0 rgba(255,255,255,.28) !important;
+      }
+
+      .profile-showcase.is-weather-live::after{
+        inset:0 !important;
+        border-radius:inherit !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.13), transparent 22%, transparent 78%, rgba(255,255,255,.05)) !important;
+        opacity:.32 !important;
+        mix-blend-mode:normal !important;
+      }
+
+      .profile-showcase.is-weather-live.is-secondary-dim::after,
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live::after{
+        opacity:.18 !important;
+        background:linear-gradient(180deg, rgba(255,255,255,.10), transparent 48%, rgba(255,255,255,.03)) !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live{
+        border-color:rgba(206,238,255,.34) !important;
+        box-shadow:
+          0 10px 28px rgba(0,0,0,.18),
+          0 0 0 1px rgba(76,181,255,.16),
+          inset 0 1px 0 rgba(255,255,255,.18) !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live .profile-showcase-bg{
+        border-radius:inherit !important;
+      }
+      /* End remove weather card edge glare */
+
 </style>
 
 
