@@ -261,7 +261,7 @@ function storyComposer(currentProfile, upcomingEvents) {
       <span class="stories-sound-cover stories-sound-cover-${escapeHtml(sound.tone)}"><span></span></span>
       <span class="stories-sound-info">
         <strong>${escapeHtml(sound.title)}</strong>
-        <em>${escapeHtml(sound.artist)} · ${escapeHtml(sound.posts)} posts · ${escapeHtml(sound.duration)}</em>
+        <em>${escapeHtml(sound.artist)} ï¿½ ${escapeHtml(sound.posts)} posts ï¿½ ${escapeHtml(sound.duration)}</em>
       </span>
       <span class="stories-sound-save" aria-hidden="true"></span>
     </button>
@@ -1709,7 +1709,7 @@ router.get("/stories", async (req, res) => {
         soundRows.forEach(function(row){
           row.addEventListener('click', function(){
             soundRows.forEach(function(item){ item.classList.toggle('is-selected', item === row); });
-            setSelectedSound(row.dataset.soundTitle || 'Original sound', (row.dataset.soundArtist || 'Tapzy') + ' · ' + (row.dataset.soundDuration || ''), row.dataset.soundUrl || '');
+            setSelectedSound(row.dataset.soundTitle || 'Original sound', (row.dataset.soundArtist || 'Tapzy') + ' ï¿½ ' + (row.dataset.soundDuration || ''), row.dataset.soundUrl || '');
             closeSoundSheet();
           });
         });
@@ -1736,7 +1736,7 @@ router.get("/stories", async (req, res) => {
             const music = musicInput.files && musicInput.files[0];
             if (music) {
               soundRows.forEach(function(row){ row.classList.remove('is-selected'); });
-              setSelectedSound(music.name.replace(/\.[^.]+$/, ''), 'Imported sound · ' + music.name, '');
+              setSelectedSound(music.name.replace(/\.[^.]+$/, ''), 'Imported sound ï¿½ ' + music.name, '');
               closeSoundSheet();
             }
           });
@@ -4068,6 +4068,7 @@ router.get("/stories/feed", async (req, res) => {
           var actionRails = Array.prototype.slice.call(document.querySelectorAll('.sf-actions'));
           var actionIdleTimer = null;
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
+          var tapzySoundMutedByUser = localStorage.getItem('tapzy_story_sound') === '0';
           function setActionRailsIdle(idle){
             actionRails.forEach(function(rail){ rail.classList.toggle('is-idle', !!idle); });
           }
@@ -4084,6 +4085,7 @@ router.get("/stories/feed", async (req, res) => {
             video.volume = 1;
             video.removeAttribute('muted');
             tapzySoundUnlocked = true;
+            tapzySoundMutedByUser = false;
             localStorage.setItem('tapzy_story_sound', '1');
           }
           function playStoryAudio(slide){
@@ -4098,6 +4100,7 @@ router.get("/stories/feed", async (req, res) => {
             audio.pause();
           }
           function activateVideoSound(slide){
+            if (tapzySoundMutedByUser) return;
             var video = slide && slide.querySelector ? slide.querySelector('video') : null;
             if (video) {
               forceSound(video);
@@ -4171,6 +4174,7 @@ router.get("/stories/feed", async (req, res) => {
                   if (audio) audio.pause();
                   localStorage.setItem('tapzy_story_sound', '0');
                   tapzySoundUnlocked = false;
+                  tapzySoundMutedByUser = true;
                 }
                 if (video) video.play().catch(function(){});
                 var active = tapzySoundUnlocked;
@@ -5456,6 +5460,7 @@ router.get("/stories/:username", async (req, res) => {
         let timer = null;
         let raf = null;
         let tapzyViewerSoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
+        let tapzyViewerSoundMutedByUser = localStorage.getItem('tapzy_story_sound') === '0';
         function forceViewerSound(video){
           if (!video) return;
           try { video.defaultMuted = false; } catch(e) {}
@@ -5463,6 +5468,7 @@ router.get("/stories/:username", async (req, res) => {
           video.volume = 1;
           video.removeAttribute('muted');
           tapzyViewerSoundUnlocked = true;
+          tapzyViewerSoundMutedByUser = false;
           localStorage.setItem("tapzy_story_sound", "1");
         }
         let startX = 0;
@@ -5590,7 +5596,7 @@ router.get("/stories/:username", async (req, res) => {
 
           try { video.currentTime = 0; } catch(e) {}
           const soundButton = currentPanel() ? currentPanel().querySelector("[data-story-sound]") : null;
-          if (tapzyViewerSoundUnlocked) {
+          if (tapzyViewerSoundUnlocked && !tapzyViewerSoundMutedByUser) {
             forceViewerSound(video);
             if (soundButton) soundButton.textContent = "Mute";
             video.play().catch(function(){
@@ -5645,11 +5651,13 @@ router.get("/stories/:username", async (req, res) => {
                 if (video) video.muted = true;
                 if (audio) audio.pause();
                 tapzyViewerSoundUnlocked = false;
+                tapzyViewerSoundMutedByUser = true;
                 localStorage.setItem("tapzy_story_sound", "0");
               }
               if (video) video.play().catch(function(){
                 video.muted = true;
                 tapzyViewerSoundUnlocked = false;
+                tapzyViewerSoundMutedByUser = true;
                 localStorage.setItem("tapzy_story_sound", "0");
               });
               soundButton.textContent = tapzyViewerSoundUnlocked ? "Mute" : "Sound on";
