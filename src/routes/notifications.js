@@ -1,7 +1,28 @@
 const router = require("express").Router();
 const prisma = require("../prisma");
+const pushNotifications = require("../services/pushNotificationService");
 const { markAllNotificationsRead, markNotificationRead, getUnreadNotificationCount } = require("../services/notificationService");
 const { renderShell, renderTapzyAssistant, escapeHtml, formatPrettyLocal } = require("../utils");
+
+
+router.get("/notifications/push-key", async (req, res) => {
+  const currentProfile = req.currentProfile;
+  if (!currentProfile) return res.status(401).json({ ok: false, error: "Please sign in" });
+  return res.json({ ok: true, configured: pushNotifications.isConfigured(), publicKey: pushNotifications.publicKey() });
+});
+
+router.post("/notifications/push-subscribe", async (req, res) => {
+  const currentProfile = req.currentProfile;
+  if (!currentProfile) return res.status(401).json({ ok: false, error: "Please sign in" });
+  try {
+    const subscription = req.body && req.body.subscription ? req.body.subscription : req.body;
+    await pushNotifications.saveSubscription(currentProfile.id, subscription, req.get("user-agent") || "");
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Push subscribe error", error);
+    return res.status(500).json({ ok: false, error: "Could not turn on phone notifications" });
+  }
+});
 
 router.post("/notifications/read-all", async (req, res) => {
   try {

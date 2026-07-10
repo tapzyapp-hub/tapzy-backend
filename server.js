@@ -46,6 +46,12 @@ function emitLiveCount(storyId) {
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
+  socket.on("join_inbox", (profileId) => {
+    const id = String(profileId || "").trim();
+    if (!id) return;
+    socket.join(`inbox:${id}`);
+  });
+
   socket.on("join_conversation", (conversationId) => {
     const id = String(conversationId || "").trim();
     if (!id) return;

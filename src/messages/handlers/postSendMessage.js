@@ -2,6 +2,7 @@ const path = require("path");
 const prisma = require("../../prisma");
 const { publicAbsoluteUrl } = require("../../utils");
 const { notifyNewMessage } = require("../../services/messageNotificationHelper");
+const { sendPushToProfile } = require("../../services/pushNotificationService");
 
 function getFileExt(file) {
   return path.extname(String(file?.originalname || "")).toLowerCase();
@@ -197,14 +198,23 @@ module.exports = async function postSendMessage(req, res) {
       try {
         await Promise.all(
           otherMemberIds.map((receiverId) =>
-            notifyNewMessage({
-              receiverId,
-              senderId: currentProfile.id,
-              senderName: payload.senderName,
-              senderPhoto: payload.senderPhoto,
-              conversationId: id,
-              preview,
-            })
+            Promise.all([
+              notifyNewMessage({
+                receiverId,
+                senderId: currentProfile.id,
+                senderName: payload.senderName,
+                senderPhoto: payload.senderPhoto,
+                conversationId: id,
+                preview,
+              }),
+              sendPushToProfile(receiverId, {
+                title: payload.senderName + " sent you a message",
+                body: preview,
+                url: "/messages/" + id,
+                icon: payload.senderPhoto || "/favicon.ico",
+                tag: "tapzy-message-" + id,
+              }),
+            ])
           )
         );
       } catch (notifyError) {
@@ -217,6 +227,16 @@ module.exports = async function postSendMessage(req, res) {
       io.to(`conversation:${id}`).emit("receive_message", payload);
       io.to(`conversation:${id}`).emit("stop_typing", {
         conversationId: id,
+      });
+      otherMemberIds.forEach((receiverId) => {
+        io.to(`inbox:${receiverId}`).emit("inbox_message", {
+          conversationId: id,
+          senderProfileId: currentProfile.id,
+          senderName: payload.senderName,
+          senderPhoto: payload.senderPhoto,
+          preview: payload.body || (payload.audioUrl ? "Sent a voice message" : payload.imageUrl ? "Sent media" : "New message"),
+          createdAt: payload.createdAt,
+        });
       });
     }
 

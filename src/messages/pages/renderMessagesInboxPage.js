@@ -36,6 +36,7 @@ module.exports = function renderMessagesInboxPage({
 
               <div class="tz-msg-head-actions">
                 <a class="tz-btn tz-btn-dark" href="${escapeHtml(discoveryHref)}">Find People</a>
+                <button class="tz-btn tz-btn-dark" id="tzEnablePush" type="button">Phone Alerts</button>
                 <a class="tz-btn tz-btn-dark" href="/notifications">Activity${unreadNotificationCount ? ` (${unreadNotificationCount})` : ""}</a>
               </div>
             </div>
@@ -1140,7 +1141,93 @@ module.exports = function renderMessagesInboxPage({
           font-size:21px;
         }
       }
+    
+
+      /* Unread contact red pulse + phone notification setup */
+      .tz-msg-thread.has-unread{
+        border-color:rgba(255,64,100,.38) !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 18px 44px rgba(0,0,0,.34), 0 0 30px rgba(255,35,75,.16) !important;
+      }
+      .tz-msg-thread.has-unread .tz-msg-thread-avatar-wrap::before,
+      .tz-msg-thread.has-unread .tz-msg-thread-avatar-wrap::after{
+        border-color:rgba(255,45,85,.78) !important;
+        animation:tzUnreadRedPulse 1.35s ease-out infinite !important;
+      }
+      .tz-msg-thread.has-unread .tz-msg-thread-avatar{
+        box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 0 26px rgba(255,45,85,.28) !important;
+      }
+      @keyframes tzUnreadRedPulse{
+        0%{transform:scale(.92);opacity:.95;box-shadow:0 0 0 0 rgba(255,45,85,.42)}
+        70%{transform:scale(1.18);opacity:.22;box-shadow:0 0 0 12px rgba(255,45,85,0)}
+        100%{transform:scale(1.22);opacity:0;box-shadow:0 0 0 16px rgba(255,45,85,0)}
+      }
+
     </style>
+
+    
+    <script>
+      (function(){
+        var btn = document.getElementById('tzEnablePush');
+        if (!btn) return;
+        function setText(text){ btn.textContent = text; }
+        function urlBase64ToUint8Array(base64String){
+          var padding = '='.repeat((4 - base64String.length % 4) % 4);
+          var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+          var rawData = atob(base64);
+          var outputArray = new Uint8Array(rawData.length);
+          for (var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+          return outputArray;
+        }
+        btn.addEventListener('click', async function(){
+          try {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+              setText('Not supported');
+              return;
+            }
+            setText('Turning on...');
+            var keyRes = await fetch('/notifications/push-key', { headers:{ 'Accept':'application/json' } });
+            var keyData = await keyRes.json();
+            if (!keyData.ok || !keyData.configured || !keyData.publicKey) {
+              setText('Needs setup');
+              return;
+            }
+            var permission = await Notification.requestPermission();
+            if (permission !== 'granted') { setText('Blocked'); return; }
+            var registration = await navigator.serviceWorker.ready;
+            var sub = await registration.pushManager.getSubscription();
+            if (!sub) {
+              sub = await registration.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:urlBase64ToUint8Array(keyData.publicKey) });
+            }
+            var save = await fetch('/notifications/push-subscribe', {
+              method:'POST',
+              headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+              body:JSON.stringify({ subscription:sub })
+            });
+            var saved = await save.json();
+            setText(saved.ok ? 'Phone Alerts On' : 'Try again');
+          } catch (error) {
+            console.error(error);
+            setText('Try again');
+          }
+        });
+      })();
+    </script>
+
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      (function(){
+        var profileId = ${JSON.stringify(currentProfile.id || "")};
+        if (!profileId || !window.io) return;
+        var socket = io();
+        socket.emit('join_inbox', profileId);
+        var timer = null;
+        socket.on('inbox_message', function(){
+          if (timer) return;
+          timer = setTimeout(function(){ window.location.reload(); }, 450);
+        });
+      })();
+    </script>
 
     ${renderTapzyAssistant({
       username: currentProfile.username || "User",

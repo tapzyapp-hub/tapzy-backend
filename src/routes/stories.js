@@ -317,6 +317,16 @@ function storyComposer(currentProfile, upcomingEvents) {
 
         </div>
 
+        <div class="stories-field stories-field-full stories-music-field">
+
+          <label>Music or sound</label>
+
+          <input name="musicTitle" maxlength="80" placeholder="Add music, sound, or artist name" data-music-title />
+
+          <div class="stories-event-hint">Shows on your story as a music label, like TikTok, WhatsApp, and Instagram.</div>
+
+        </div>
+
 
 
         <div class="stories-field stories-media-field">
@@ -1523,7 +1533,29 @@ router.get("/stories", async (req, res) => {
         }
       }
 
-    </style>
+    
+      /* Story music/caption premium controls */
+      .stories-music-field input{
+        width:100%;
+        min-height:52px;
+        border-radius:18px;
+        border:1px solid rgba(160,190,230,.16);
+        background:rgba(5,8,14,.78);
+        color:#fff;
+        padding:0 15px;
+        font:inherit;
+        font-weight:800;
+        outline:none;
+      }
+      .stories-music-field input:focus{
+        border-color:rgba(150,220,255,.45);
+        box-shadow:0 0 0 3px rgba(70,160,255,.12);
+      }
+      .sf-copy p{white-space:pre-line;}
+      .story-caption{white-space:pre-line;}
+      /* End story music/caption premium controls */
+
+</style>
 
 
 
@@ -1720,7 +1752,10 @@ router.post("/stories", upload.single("storyMedia"), async (req, res) => {
 
 
 
-    const text = String(req.body.text || "").trim() || null;
+    const baseText = String(req.body.text || "").trim();
+    const musicTitle = String(req.body.musicTitle || "").trim();
+    const musicLine = musicTitle ? "Music: " + musicTitle.slice(0, 80) : "";
+    const text = [baseText, musicLine].filter(Boolean).join("\n") || null;
 
     const requestedType = String(req.body.type || "").trim().toLowerCase();
     const requestedLiveUrl = String(req.body.liveUrl || "").trim();

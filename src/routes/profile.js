@@ -4926,6 +4926,117 @@ router.get("/u/:username", async (req, res) => {
       }
       /* End profile event pill small-screen stability */
 
+
+      /* Premium edit profile rebuild polish */
+      .tz-edit-wrap{
+        max-width:1040px !important;
+        padding-bottom:130px;
+      }
+      .tz-edit-shell{
+        gap:18px !important;
+      }
+      .tz-edit-hero{
+        min-height:260px;
+        padding:28px !important;
+        border-radius:36px !important;
+        border-color:rgba(145,210,255,.26) !important;
+        background:#06111d !important;
+        box-shadow:0 24px 70px rgba(0,0,0,.50), 0 0 0 1px rgba(91,190,255,.14), inset 0 1px 0 rgba(255,255,255,.16) !important;
+      }
+      .tz-edit-hero-bg{
+        background:
+          radial-gradient(circle at 22% 2%, rgba(255,255,255,.86), rgba(255,255,255,.32) 14%, rgba(255,229,155,.10) 28%, transparent 44%),
+          radial-gradient(ellipse at 64% 30%, rgba(113,201,255,.32), transparent 48%),
+          linear-gradient(180deg, #74bce8 0%, #378bc9 62%, #07111d 100%) !important;
+        opacity:1;
+      }
+      .tz-edit-hero::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        pointer-events:none;
+        background:linear-gradient(180deg, rgba(255,255,255,.22), transparent 22%, rgba(0,0,0,.22));
+        opacity:.72;
+      }
+      .tz-edit-hero-top,
+      .tz-edit-form{
+        position:relative;
+        z-index:2;
+      }
+      .tz-edit-kicker{
+        color:rgba(255,255,255,.82) !important;
+        letter-spacing:.18em !important;
+        font-weight:950 !important;
+      }
+      .tz-edit-title{
+        color:#fff !important;
+        font-size:clamp(42px, 9vw, 76px) !important;
+        line-height:.88 !important;
+        letter-spacing:0 !important;
+        text-shadow:0 3px 18px rgba(22,77,120,.38), 0 1px 2px rgba(0,0,0,.22);
+      }
+      .tz-edit-subtitle{
+        max-width:470px;
+        color:rgba(245,250,255,.82) !important;
+        font-weight:760;
+      }
+      .tz-edit-btn,
+      .tz-edit-submit{
+        border-radius:18px !important;
+        min-height:48px;
+        border-color:rgba(255,255,255,.20) !important;
+        background:rgba(10,38,66,.38) !important;
+        color:#fff !important;
+        backdrop-filter:blur(18px) saturate(1.15);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 12px 26px rgba(0,0,0,.20) !important;
+      }
+      .tz-edit-submit{
+        background:linear-gradient(135deg,#31d6ff,#2d6bff 58%,#123fbd) !important;
+      }
+      .tz-edit-section{
+        border-radius:28px !important;
+        border-color:rgba(145,210,255,.15) !important;
+        background:linear-gradient(180deg, rgba(14,22,34,.82), rgba(5,7,12,.94)) !important;
+        box-shadow:0 18px 54px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08) !important;
+      }
+      .tz-edit-section-head h3{
+        color:#fff !important;
+        letter-spacing:0 !important;
+        font-size:clamp(24px, 5vw, 34px) !important;
+      }
+      .tz-edit-section-head p{
+        color:rgba(226,238,255,.68) !important;
+        font-weight:740;
+      }
+      .tz-field label{
+        color:rgba(225,240,255,.74) !important;
+        font-weight:900 !important;
+      }
+      .tz-field input,
+      .tz-field textarea,
+      .tz-field select{
+        border-radius:18px !important;
+        border-color:rgba(190,225,255,.17) !important;
+        background:rgba(0,0,0,.28) !important;
+        color:#fff !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important;
+      }
+      .tz-field input:focus,
+      .tz-field textarea:focus,
+      .tz-field select:focus{
+        border-color:rgba(100,205,255,.62) !important;
+        box-shadow:0 0 0 3px rgba(53,171,255,.14), inset 0 1px 0 rgba(255,255,255,.08) !important;
+        outline:none;
+      }
+      @media(max-width:700px){
+        .tz-edit-wrap{padding-inline:12px !important;}
+        .tz-edit-hero{min-height:230px;padding:22px !important;border-radius:30px !important;}
+        .tz-edit-actions{width:100%;display:grid !important;grid-template-columns:1fr 1fr;}
+        .tz-edit-section{border-radius:24px !important;}
+      }
+      /* End premium edit profile rebuild polish */
+
 </style>
 
 
