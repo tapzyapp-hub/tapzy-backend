@@ -5313,6 +5313,7 @@ router.get("/u/:username", async (req, res) => {
           let timer = null;
           let controlsTimer = null;
           let soundOn = false;
+          let soundMutedByUser = false;
           try {
             soundOn = window.localStorage && window.localStorage.getItem('tapzy_story_sound') === '1';
           } catch (_) {}
@@ -5415,7 +5416,7 @@ router.get("/u/:username", async (req, res) => {
 
           function unlockStorySound(event){
             if (event && event.target && event.target.closest('a, button')) return false;
-            if (!hasVideo) return false;
+            if (!hasVideo || soundMutedByUser) return false;
             const video = currentVideo();
             if (!video) return false;
             if (!soundOn) {
@@ -5496,7 +5497,9 @@ router.get("/u/:username", async (req, res) => {
             soundBtn.addEventListener('click', function(e){
               e.stopPropagation();
               soundOn = !soundOn;
+              soundMutedByUser = !soundOn;
               rememberSoundChoice();
+              if (soundMutedByUser) document.removeEventListener('pointerdown', unlockStorySound, true);
               const video = currentVideo();
               updateSoundLabel(video);
               playVideo(video);
