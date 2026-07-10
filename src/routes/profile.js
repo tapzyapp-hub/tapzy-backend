@@ -4319,6 +4319,108 @@ router.get("/u/:username", async (req, res) => {
           font-size:13px;
         }
       }
+
+
+      .profile-showcase.is-weather-live{
+        border:1px solid rgba(218,242,255,.48) !important;
+        box-shadow:
+          0 22px 60px rgba(0,0,0,.42),
+          0 0 0 1px rgba(255,255,255,.10),
+          0 0 48px rgba(92,190,255,.20),
+          inset 0 1px 0 rgba(255,255,255,.32),
+          inset 0 -1px 0 rgba(0,0,0,.22) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 38% 17%, rgba(255,255,255,1) 0%, rgba(255,255,255,.88) 6%, rgba(255,240,184,.44) 13%, rgba(255,225,122,.12) 24%, transparent 34%),
+          radial-gradient(ellipse at 52% 33%, rgba(255,255,255,.30), transparent 19%),
+          radial-gradient(circle at 58% 78%, rgba(255,255,255,.24), transparent 8%),
+          radial-gradient(circle at 68% 68%, rgba(92,210,255,.25), transparent 20%),
+          linear-gradient(180deg, #85d1ff 0%, #54b3f3 34%, #2789db 66%, #071421 100%) !important;
+        filter:saturate(1.16) contrast(1.04) brightness(1.08) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+          linear-gradient(115deg, transparent 0 18%, rgba(255,255,255,.22) 26%, transparent 38% 100%),
+          radial-gradient(circle at 46% 44%, rgba(255,255,255,.20), transparent 13%);
+        mix-blend-mode:screen;
+        opacity:.52;
+        animation:profileWeatherRay 10s ease-in-out infinite alternate;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+          radial-gradient(circle at 30% 18%, rgba(255,255,255,.22), transparent 2px),
+          radial-gradient(circle at 70% 34%, rgba(255,255,255,.14), transparent 2px),
+          radial-gradient(circle at 52% 72%, rgba(255,255,255,.16), transparent 2px);
+        background-size:46px 46px;
+        opacity:.18;
+        mix-blend-mode:screen;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-top::before{
+        content:"";
+        position:absolute;
+        left:-18px;
+        right:-18px;
+        bottom:-18px;
+        height:62%;
+        z-index:-1;
+        pointer-events:none;
+        background:linear-gradient(180deg, transparent, rgba(0,0,0,.34));
+        filter:blur(18px);
+        opacity:.82;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-name,
+      .profile-showcase.is-weather-live .profile-showcase-handle{
+        text-shadow:0 2px 18px rgba(0,0,0,.34), 0 1px 2px rgba(0,0,0,.32);
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-label{
+        background:rgba(12,26,48,.38);
+        border:1px solid rgba(255,255,255,.26);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.22),
+          inset 0 -1px 0 rgba(0,0,0,.18),
+          0 16px 34px rgba(0,0,0,.22),
+          0 0 24px rgba(145,220,255,.18);
+        backdrop-filter:blur(18px) saturate(1.25);
+        -webkit-backdrop-filter:blur(18px) saturate(1.25);
+      }
+
+      .profile-showcase.is-weather-live .profile-pill-btn,
+      .profile-showcase.is-weather-live .profile-showcase-actions .btn{
+        background:rgba(5,12,24,.50) !important;
+        border-color:rgba(255,255,255,.18) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.14),
+          inset 0 -1px 0 rgba(0,0,0,.20),
+          0 12px 30px rgba(0,0,0,.22) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-avatar{
+        background:rgba(5,12,24,.36) !important;
+        border-color:rgba(180,230,255,.74) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.16),
+          0 0 0 1px rgba(255,255,255,.08),
+          0 0 28px rgba(115,210,255,.44),
+          0 18px 42px rgba(0,0,0,.28) !important;
+      }
+
+      @keyframes profileWeatherRay{
+        from{ transform:translate3d(-18px, 8px, 0) rotate(-3deg); opacity:.34; }
+        to{ transform:translate3d(18px, -8px, 0) rotate(-3deg); opacity:.62; }
+      }
 </style>
 
 
