@@ -1410,6 +1410,35 @@ router.get("/u/:username", async (req, res) => {
 
       }
 
+      .profile-showcase.is-event-selected{
+        border-color:rgba(127,220,255,.56);
+        box-shadow:
+          0 30px 80px rgba(0,0,0,.55),
+          0 0 0 1px rgba(127,220,255,.42),
+          0 0 42px rgba(78,178,255,.28),
+          inset 0 1px 0 rgba(255,255,255,.05);
+        transition:box-shadow .35s ease, border-color .35s ease;
+      }
+
+      .profile-showcase.is-event-selected .profile-showcase-bg{
+        background-image:
+          linear-gradient(180deg, rgba(6,8,14,.16), rgba(6,8,14,.28) 22%, rgba(3,5,10,.72) 60%, rgba(0,0,0,.96)),
+          var(--profile-event-bg);
+        background-size:cover;
+        background-position:center;
+        opacity:1;
+        filter:saturate(1.18) contrast(1.05);
+        transform:scale(1.015);
+        transition:background-image .2s ease, transform 1.2s ease, filter .35s ease;
+      }
+
+      .profile-showcase.is-event-selected::after{
+        background:
+          radial-gradient(circle at var(--profile-event-mx,72%) var(--profile-event-my,22%), rgba(127,220,255,.24), rgba(64,155,255,.10) 18%, transparent 38%),
+          linear-gradient(180deg, rgba(255,255,255,.018), transparent 34%);
+        opacity:1;
+      }
+
 
 
       .profile-showcase-top{
@@ -2211,6 +2240,12 @@ router.get("/u/:username", async (req, res) => {
         font-weight:950;
         text-wrap:balance;
         max-width:96%;
+        font-family:inherit;
+        font-feature-settings:"kern" 1, "liga" 1;
+      }
+
+      .profile-event-card-panel .event-title .event-title-word{
+        display:inline;
       }
 
       .profile-event-card-panel .event-copy{
@@ -3988,6 +4023,34 @@ router.get("/u/:username", async (req, res) => {
         }
 
         function initProfileEventCards(){
+          const profileShowcase = document.getElementById('tapzyProfileShell');
+          let eventActiveTimer = null;
+          function selectedEventImage(card){
+            const media = card ? card.querySelector('.event-media') : null;
+            const bg = media ? media.style.backgroundImage || '' : '';
+            const parts = bg.match(/url\([^)]*\)/g);
+            return parts && parts.length ? parts[parts.length - 1] : '';
+          }
+          function setProfileEventState(card, active, clientX, clientY){
+            if (!profileShowcase) return;
+            if (eventActiveTimer) window.clearTimeout(eventActiveTimer);
+            if (active && card) {
+              const image = selectedEventImage(card);
+              if (image) profileShowcase.style.setProperty('--profile-event-bg', image);
+              if (Number.isFinite(clientX) && Number.isFinite(clientY)) {
+                const rect = profileShowcase.getBoundingClientRect();
+                const x = Math.max(0, Math.min(100, ((clientX - rect.left) / Math.max(rect.width, 1)) * 100));
+                const y = Math.max(0, Math.min(100, ((clientY - rect.top) / Math.max(rect.height, 1)) * 100));
+                profileShowcase.style.setProperty('--profile-event-mx', x.toFixed(2) + '%');
+                profileShowcase.style.setProperty('--profile-event-my', y.toFixed(2) + '%');
+              }
+              profileShowcase.classList.add('is-event-selected');
+              return;
+            }
+            eventActiveTimer = window.setTimeout(function(){
+              profileShowcase.classList.remove('is-event-selected');
+            }, 220);
+          }
           document.querySelectorAll('.profile-event-card-panel .js-event-card').forEach(function(card){
             card.classList.add('is-revealed');
             function updatePointer(clientX, clientY){
@@ -3996,19 +4059,34 @@ router.get("/u/:username", async (req, res) => {
               const y = Math.max(0, Math.min(100, ((clientY - rect.top) / Math.max(rect.height, 1)) * 100));
               card.style.setProperty('--mx', x.toFixed(2) + '%');
               card.style.setProperty('--my', y.toFixed(2) + '%');
+              setProfileEventState(card, true, clientX, clientY);
             }
-            card.addEventListener('pointermove', function(event){ updatePointer(event.clientX, event.clientY); });
-            card.addEventListener('pointerenter', function(event){ updatePointer(event.clientX, event.clientY); });
-            card.addEventListener('touchstart', function(event){
+            function activateCard(clientX, clientY){
+              updatePointer(clientX, clientY);
               card.classList.add('is-touch-active');
+            }
+            function releaseCard(){
+              window.setTimeout(function(){ card.classList.remove('is-touch-active'); }, 170);
+              setProfileEventState(card, false);
+            }
+            card.addEventListener('pointerenter', function(event){ updatePointer(event.clientX, event.clientY); });
+            card.addEventListener('pointermove', function(event){ updatePointer(event.clientX, event.clientY); });
+            card.addEventListener('pointerdown', function(event){ activateCard(event.clientX, event.clientY); }, { passive:true });
+            card.addEventListener('pointerup', releaseCard, { passive:true });
+            card.addEventListener('pointercancel', releaseCard, { passive:true });
+            card.addEventListener('pointerleave', releaseCard, { passive:true });
+            card.addEventListener('focusin', function(){ setProfileEventState(card, true); });
+            card.addEventListener('focusout', releaseCard);
+            card.addEventListener('touchstart', function(event){
               const touch = event.touches && event.touches[0];
-              if (touch) updatePointer(touch.clientX, touch.clientY);
+              if (touch) activateCard(touch.clientX, touch.clientY);
             }, { passive:true });
             card.addEventListener('touchmove', function(event){
               const touch = event.touches && event.touches[0];
-              if (touch) updatePointer(touch.clientX, touch.clientY);
+              if (touch) activateCard(touch.clientX, touch.clientY);
             }, { passive:true });
-            card.addEventListener('touchend', function(){ window.setTimeout(function(){ card.classList.remove('is-touch-active'); }, 180); }, { passive:true });
+            card.addEventListener('touchend', releaseCard, { passive:true });
+            card.addEventListener('touchcancel', releaseCard, { passive:true });
           });
           document.querySelectorAll('.profile-event-card-panel .js-save-form').forEach(function(form){
             if (form.dataset.profileGoingBound === '1') return;
