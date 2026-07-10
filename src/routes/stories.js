@@ -334,49 +334,6 @@ function storyComposer(currentProfile, upcomingEvents) {
           <div class="stories-caption-meter"><span data-caption-count>0</span>/280</div>
 
         </div>
-
-        <div class="stories-field stories-field-full stories-music-field">
-
-          <label>Music or sound</label>
-
-          <button class="stories-music-picker" type="button" data-open-sound-sheet aria-haspopup="dialog">
-            <span class="stories-music-picker-main" data-music-display>Add music, sound, or artist name</span>
-            <span class="stories-music-picker-sub" data-music-file-name>Choose from Tapzy sounds or import your own</span>
-          </button>
-          <input type="hidden" name="musicTitle" value="" data-music-title />
-          <input type="hidden" name="storyMusicUrl" value="" data-music-url />
-          <input type="file" name="storyMusic" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.webm" data-story-music hidden />
-
-          <div class="stories-sound-sheet" data-sound-sheet aria-hidden="true">
-            <div class="stories-sound-backdrop" data-close-sound-sheet></div>
-            <section class="stories-sound-panel" role="dialog" aria-modal="true" aria-label="Choose sound">
-              <div class="stories-sound-grabber"></div>
-              <div class="stories-sound-tabs" role="tablist">
-                <button type="button" class="is-active" data-sound-tab="hot">Hot</button>
-                <button type="button" data-sound-tab="for-you">For You</button>
-                <button type="button" data-sound-tab="favorites">Favorites</button>
-                <button type="button" data-sound-tab="recent">Recent</button>
-                <button type="button" class="stories-sound-search" data-focus-sound-search aria-label="Search sounds"></button>
-              </div>
-              <div class="stories-sound-searchbox">
-                <input type="search" placeholder="Search sounds" data-sound-search />
-              </div>
-              <div class="stories-sound-list" data-sound-list>
-                ${soundRows}
-              </div>
-              <div class="stories-sound-actions">
-                <button type="button" data-import-sound>Import sound</button>
-                <button type="button" data-clear-sound>Remove sound</button>
-              </div>
-            </section>
-          </div>
-
-          <div class="stories-event-hint">Pick a Tapzy sound, search the library, or import your own audio.</div>
-
-        </div>
-
-
-
         <div class="stories-field stories-media-field">
 
           <label>Media</label>
