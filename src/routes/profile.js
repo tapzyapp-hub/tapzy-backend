@@ -4,6 +4,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const prisma = require("../prisma");
+const { renderEventCard } = require("../events/render/renderEventParts");
 
 const {
   upload,
@@ -307,6 +308,25 @@ router.get("/u/:username", async (req, res) => {
 
 
 
+    const attendingProfileEvent = attendingEvent?.event || null;
+    const profileEventGoingSet = new Set();
+    const profileEventGoingCounts = new Map();
+    if (attendingProfileEvent?.id) {
+      const [profileEventGoingCount, viewerEventAttendance] = await Promise.all([
+        prisma.eventAttendance.count({
+          where: { eventId: attendingProfileEvent.id, status: "going" },
+        }),
+        currentProfile
+          ? prisma.eventAttendance.findFirst({
+              where: { eventId: attendingProfileEvent.id, profileId: currentProfile.id, status: "going" },
+              select: { id: true },
+            })
+          : Promise.resolve(null),
+      ]);
+      profileEventGoingCounts.set(attendingProfileEvent.id, profileEventGoingCount);
+      if (viewerEventAttendance) profileEventGoingSet.add(attendingProfileEvent.id);
+    }
+
     const isTapOpen = String(req.query.tap || "") === "1";
 
     const photoPositionX = Number.isFinite(Number(profile.profilePhotoPositionX)) ? Number(profile.profilePhotoPositionX) : 50;
@@ -522,43 +542,13 @@ router.get("/u/:username", async (req, res) => {
 
 
       ${
-
-        attendingEvent?.event
-
+        attendingProfileEvent
           ? `
-
-            <section class="profile-panel profile-attending-banner" style="margin-top:18px;">
-
-              <div class="profile-attending-kicker">Attending</div>
-
-              <div class="profile-attending-title">${escapeHtml(attendingEvent.event.title || "Upcoming event")}</div>
-
-              <div class="profile-attending-sub">
-
-                ${attendingEvent.event.city ? `${escapeHtml(attendingEvent.event.city)} • ` : ""}${
-
-                  attendingEvent.event.startAt
-
-                    ? escapeHtml(new Date(attendingEvent.event.startAt).toLocaleString())
-
-                    : "Upcoming"
-
-                }
-
-              </div>
-
-              <div class="profile-attending-actions">
-
-                <a class="profile-pill-btn" href="/events">View Events</a>
-
-              </div>
-
+            <section class="profile-panel profile-event-card-panel" style="margin-top:18px;">
+              ${renderEventCard(attendingProfileEvent, currentProfile, profileEventGoingSet, profileEventGoingCounts)}
             </section>
-
           `
-
           : ""
-
       }
 
 
@@ -1997,13 +1987,237 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-attending-actions{
-
-        margin-top:16px;
-
+      .profile-event-card-panel{
+        padding:0 !important;
+        overflow:hidden;
+        background:transparent !important;
+        border:0 !important;
+        box-shadow:none !important;
       }
 
+      .profile-event-card-panel::before,
+      .profile-event-card-panel::after{
+        display:none !important;
+      }
 
+      .profile-event-card-panel .event-card{
+        position:relative;
+        min-height:420px;
+        overflow:hidden;
+        border-radius:34px;
+        border:1px solid rgba(255,255,255,.08);
+        background:linear-gradient(180deg, rgba(5,9,18,.98), rgba(0,0,0,1));
+        box-shadow:0 18px 40px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04), 0 0 0 1px rgba(115,194,255,.03);
+        isolation:isolate;
+      }
+
+      .profile-event-card-panel .event-card::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:2;
+        pointer-events:none;
+        background:linear-gradient(180deg, rgba(0,0,0,.16), transparent 38%, rgba(0,0,0,.82));
+      }
+
+      .profile-event-card-panel .event-media{
+        position:absolute;
+        inset:0;
+        z-index:0;
+        background-size:cover;
+        background-position:center;
+        transform:scale(1.02);
+        opacity:.72;
+        transition:transform .26s ease, opacity .26s ease;
+      }
+
+      .profile-event-card-panel .event-card:hover .event-media,
+      .profile-event-card-panel .event-card.is-touch-active .event-media{
+        transform:scale(1.06);
+        opacity:.82;
+      }
+
+      .profile-event-card-panel .event-card-noise,
+      .profile-event-card-panel .event-card-edge{
+        position:absolute;
+        inset:0;
+        z-index:1;
+        pointer-events:none;
+      }
+
+      .profile-event-card-panel .event-card-noise{
+        opacity:.08;
+        background-image:radial-gradient(rgba(255,255,255,.45) .6px, transparent .6px);
+        background-size:9px 9px;
+      }
+
+      .profile-event-card-panel .event-card-glow{
+        position:absolute;
+        width:280px;
+        height:280px;
+        right:-80px;
+        top:-90px;
+        z-index:1;
+        pointer-events:none;
+        border-radius:999px;
+        background:radial-gradient(circle, rgba(115,194,255,.16), transparent 68%);
+        filter:blur(8px);
+      }
+
+      .profile-event-card-panel .event-card-edge{
+        border-radius:34px;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+      }
+
+      .profile-event-card-panel .event-content{
+        position:relative;
+        z-index:3;
+        min-height:420px;
+        padding:24px;
+        display:flex;
+        flex-direction:column;
+        justify-content:flex-end;
+      }
+
+      .profile-event-card-panel .event-topline,
+      .profile-event-card-panel .event-pill-stack,
+      .profile-event-card-panel .event-actions-primary,
+      .profile-event-card-panel .event-actions-secondary{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+
+      .profile-event-card-panel .event-topline{
+        justify-content:space-between;
+        margin-bottom:auto;
+      }
+
+      .profile-event-card-panel .event-pill{
+        display:inline-flex;
+        align-items:center;
+        min-height:30px;
+        padding:0 12px;
+        border-radius:999px;
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        letter-spacing:.04em;
+        text-transform:uppercase;
+        background:rgba(5,9,16,.68);
+        border:1px solid rgba(255,255,255,.12);
+        backdrop-filter:blur(14px);
+      }
+
+      .profile-event-card-panel .event-pill-soft{
+        color:#d9e8f6;
+        text-transform:none;
+        letter-spacing:0;
+      }
+
+      .profile-event-card-panel .event-title{
+        margin:22px 0 0;
+        color:#fff;
+        font-size:clamp(30px, 6vw, 48px);
+        line-height:1.04;
+        letter-spacing:-1.2px;
+        font-weight:950;
+      }
+
+      .profile-event-card-panel .event-copy{
+        margin-top:10px;
+        color:rgba(235,244,255,.80);
+        font-size:15px;
+        line-height:1.5;
+      }
+
+      .profile-event-card-panel .event-divider{
+        height:1px;
+        margin:16px 0;
+        background:rgba(255,255,255,.12);
+      }
+
+      .profile-event-card-panel .event-meta{
+        display:grid;
+        gap:7px;
+      }
+
+      .profile-event-card-panel .event-meta-row{
+        display:flex;
+        justify-content:space-between;
+        gap:14px;
+        color:#fff;
+        font-size:13px;
+        line-height:1.35;
+      }
+
+      .profile-event-card-panel .event-meta-label{
+        color:rgba(220,232,245,.66);
+        font-weight:850;
+        text-transform:uppercase;
+        letter-spacing:.08em;
+      }
+
+      .profile-event-card-panel .event-meta-value{
+        text-align:right;
+        color:rgba(245,250,255,.92);
+        font-weight:750;
+      }
+
+      .profile-event-card-panel .event-actions-primary,
+      .profile-event-card-panel .event-actions-secondary{
+        margin-top:16px;
+      }
+
+      .profile-event-card-panel .btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:46px;
+        padding:0 16px;
+        border-radius:18px;
+        border:1px solid rgba(255,255,255,.10);
+        color:#fff;
+        text-decoration:none;
+        font-size:14px;
+        font-weight:900;
+        cursor:pointer;
+        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 8px 18px rgba(0,0,0,.20);
+      }
+
+      .profile-event-card-panel .btnLuxury,
+      .profile-event-card-panel .btnGhost.is-going{
+        background:linear-gradient(180deg, rgba(48,98,220,.95), rgba(20,44,110,.98));
+        border-color:rgba(145,214,255,.24);
+      }
+
+      .profile-event-card-panel .event-going-count{
+        color:rgba(230,240,255,.72);
+        font-size:13px;
+        font-weight:800;
+      }
+
+      @media(max-width:700px){
+        .profile-event-card-panel .event-card,
+        .profile-event-card-panel .event-content{
+          min-height:390px;
+        }
+
+        .profile-event-card-panel .event-content{
+          padding:20px 16px;
+        }
+
+        .profile-event-card-panel .event-meta-row{
+          flex-direction:column;
+          gap:3px;
+        }
+
+        .profile-event-card-panel .event-meta-value{
+          text-align:left;
+        }
+      }
 
       .profile-stories-tray{
 
@@ -3591,6 +3805,36 @@ router.get("/u/:username", async (req, res) => {
           wake();
         }
 
+        function initProfileEventCards(){
+          document.querySelectorAll('.profile-event-card-panel .js-event-card').forEach(function(card){
+            card.addEventListener('touchstart', function(){ card.classList.add('is-touch-active'); }, { passive:true });
+            card.addEventListener('touchend', function(){ window.setTimeout(function(){ card.classList.remove('is-touch-active'); }, 180); }, { passive:true });
+          });
+          document.querySelectorAll('.profile-event-card-panel .js-save-form').forEach(function(form){
+            if (form.dataset.profileGoingBound === '1') return;
+            form.dataset.profileGoingBound = '1';
+            form.addEventListener('submit', function(event){
+              event.preventDefault();
+              const eventId = form.getAttribute('data-event-id');
+              if (!eventId) return;
+              fetch(form.action, { method:'POST', headers:{ 'X-Requested-With':'XMLHttpRequest' } })
+                .then(function(res){ return res.json(); })
+                .then(function(data){
+                  const isGoing = !!data.going;
+                  document.querySelectorAll('.js-save-btn[data-event-id="' + CSS.escape(eventId) + '"]').forEach(function(btn){
+                    btn.classList.toggle('is-going', isGoing);
+                    btn.textContent = isGoing ? 'Going' : 'Going';
+                  });
+                  document.querySelectorAll('.js-going-count[data-event-id="' + CSS.escape(eventId) + '"]').forEach(function(node){
+                    const count = Number(data.goingCount || 0);
+                    node.textContent = count ? String(count) + ' going' : '';
+                  });
+                })
+                .catch(function(){ form.submit(); });
+            });
+          });
+        }
+
         function initProfileStoryFeed(){
           const stage = document.querySelector('[data-profile-story-stage]');
           if (!stage) return;
@@ -3837,9 +4081,10 @@ router.get("/u/:username", async (req, res) => {
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initProfileShowcaseFade(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ initProfileShowcaseFade(); initProfileEventCards(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
         } else {
           initProfileShowcaseFade();
+          initProfileEventCards();
           initProfileStoryFeed();
           initProfilePhotoViewer();
           initVideoPreviewFrames(document);
