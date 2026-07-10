@@ -3000,58 +3000,16 @@ module.exports = async function getEventsPage(req, res) {
       /* End event pill small-screen stability */
 
 
-      /* Android event feed scroll smoothing */
+
+      /* Android stable loader space */
       @media(max-width:700px){
-        html.is-android-smooth-scroll,
-        body.is-android-smooth-scroll{
-          scroll-behavior:auto !important;
-          overscroll-behavior-y:contain !important;
-        }
-
-        body.is-android-smooth-scroll .mobile-events-grid{
-          contain:layout style;
-        }
-
-        body.is-android-smooth-scroll .mobile-events-grid .event-card{
-          content-visibility:auto;
-          contain-intrinsic-size:760px;
-          contain:layout paint style;
-          will-change:auto !important;
-          transform:translate3d(0,0,0);
-          -webkit-transform:translate3d(0,0,0);
-          backface-visibility:hidden;
-          -webkit-backface-visibility:hidden;
-        }
-
-        body.is-android-feed-scrolling .mobile-events-grid .event-card,
-        body.is-android-feed-scrolling .mobile-events-grid .event-media,
-        body.is-android-feed-scrolling .mobile-events-grid .event-content{
-          transition:none !important;
-          animation:none !important;
-        }
-
-        body.is-android-feed-scrolling .mobile-events-grid .event-card-glow,
-        body.is-android-feed-scrolling .mobile-events-grid .event-card-noise,
-        body.is-android-feed-scrolling .mobile-events-grid .event-card-edge,
-        body.is-android-feed-scrolling .mobile-events-grid .event-card::before,
-        body.is-android-feed-scrolling .mobile-events-grid .event-card::after{
-          opacity:0 !important;
-          animation:none !important;
-          transition:none !important;
-        }
-
-        body.is-android-smooth-scroll #mobileFeedLoader{
+        #mobileFeedLoader{
           min-height:44px;
           margin:12px 0 4px;
-          opacity:.78;
-          transform:translateZ(0);
-        }
-
-        body.is-android-smooth-scroll #mobileLoadMoreBtn{
-          display:none !important;
         }
       }
-      /* End Android event feed scroll smoothing */
+      /* End Android stable loader space */
+
 
 </style>
 
