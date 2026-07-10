@@ -204,7 +204,7 @@ function storyStageMedia(profile, story) {
     });
   }
 
-  return `<img class="profile-story-stage-media" src="${escapeHtml(story.mediaUrl)}" alt="${label}" loading="lazy" decoding="async" />`;
+  return `<img class="profile-story-stage-media" src="${escapeHtml(story.mediaUrl)}" alt="${label}" loading="eager" fetchpriority="high" decoding="async" />`;
 }
 
 
@@ -5386,24 +5386,35 @@ router.get("/u/:username", async (req, res) => {
             return video;
           }
 
-          function render(){
-            clearTimer();
-            const item = items[index] || items[0];
-            frame.replaceChildren();
-            let node = null;
-            if (item.mediaUrl && item.isVideo) {
-              node = makeVideoStory(item);
-            } else if (item.mediaUrl) {
-              node = makeImageStory(item);
-              timer = window.setTimeout(next, 5200);
-            } else {
-              node = makeTextStory(item);
-              timer = window.setTimeout(next, 5200);
-            }
-            frame.appendChild(node);
+          function swapStoryNode(node, item){
+            if (!node) return;
+            frame.replaceChildren(node);
             if (meta) meta.textContent = (item.time || 'Just now') + ' · Tapzy Story';
             updateSoundLabel(item.isVideo ? node : null);
             showControls();
+          }
+
+          function render(){
+            clearTimer();
+            const item = items[index] || items[0];
+            let node = null;
+            if (item.mediaUrl && item.isVideo) {
+              node = makeVideoStory(item);
+              swapStoryNode(node, item);
+            } else if (item.mediaUrl) {
+              node = makeImageStory(item);
+              const swapReady = function(){ swapStoryNode(node, item); };
+              if (node.complete && node.naturalWidth > 0) swapReady();
+              else {
+                node.addEventListener('load', swapReady, { once:true });
+                node.addEventListener('error', function(){ timer = window.setTimeout(next, 900); }, { once:true });
+              }
+              timer = window.setTimeout(next, 5200);
+            } else {
+              node = makeTextStory(item);
+              swapStoryNode(node, item);
+              timer = window.setTimeout(next, 5200);
+            }
           }
 
           function next(){
@@ -5468,7 +5479,9 @@ router.get("/u/:username", async (req, res) => {
             showControls();
           });
 
-          render();
+          if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
+          if (items.length > 1) timer = window.setTimeout(next, 5200);
+          showControls();
         }
 
         function initProfilePhotoViewer(){
