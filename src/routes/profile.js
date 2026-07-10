@@ -472,7 +472,7 @@ router.get("/u/:username", async (req, res) => {
       <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
 
         <div class="profile-showcase-bg"></div>
-        <div class="profile-weather-scene" aria-hidden="true"><span class="profile-weather-sun"></span><span class="profile-weather-cloud profile-weather-cloud-a"></span><span class="profile-weather-cloud profile-weather-cloud-b"></span><span class="profile-weather-rain"></span><span class="profile-weather-snow"></span></div>
+        <div class="profile-weather-scene" aria-hidden="true"><span class="profile-weather-sun"></span><span class="profile-weather-cloud profile-weather-cloud-a"></span><span class="profile-weather-cloud profile-weather-cloud-b"></span><span class="profile-weather-wisp profile-weather-wisp-a"></span><span class="profile-weather-wisp profile-weather-wisp-b"></span><span class="profile-weather-lens profile-weather-lens-a"></span><span class="profile-weather-lens profile-weather-lens-b"></span><span class="profile-weather-rain"></span><span class="profile-weather-snow"></span></div>
 
 
 
@@ -4141,13 +4141,13 @@ router.get("/u/:username", async (req, res) => {
 
 
       .profile-showcase.is-weather-live{
-        background:#050b14 !important;
-        border-color:rgba(160,215,255,.30) !important;
+        background:#2f8fd8 !important;
+        border-color:rgba(218,242,255,.42) !important;
         box-shadow:
-          0 24px 70px rgba(0,0,0,.55),
-          0 0 0 1px rgba(125,210,255,.18),
-          0 0 44px rgba(85,170,255,.18),
-          inset 0 1px 0 rgba(255,255,255,.08) !important;
+          0 24px 70px rgba(0,0,0,.36),
+          0 0 0 1px rgba(210,242,255,.24),
+          0 0 46px rgba(120,205,255,.22),
+          inset 0 1px 0 rgba(255,255,255,.18) !important;
       }
 
       .profile-showcase.is-weather-live::before{
@@ -4156,20 +4156,21 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase.is-weather-live::after{
         background:
-          radial-gradient(circle at 42% 22%, rgba(255,255,255,.24), transparent 18%),
-          linear-gradient(180deg, rgba(255,255,255,.035), transparent 38%) !important;
+          linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.02) 34%, rgba(0,0,0,.36) 100%),
+          radial-gradient(circle at 48% 28%, rgba(255,255,255,.18), transparent 17%) !important;
         opacity:1 !important;
       }
 
       .profile-showcase.is-weather-live .profile-showcase-bg{
         background:
-          radial-gradient(circle at 38% 19%, rgba(255,255,255,.90), rgba(255,245,188,.48) 8%, rgba(255,222,110,.16) 18%, transparent 31%),
-          radial-gradient(circle at 58% 72%, rgba(165,228,255,.24), transparent 18%),
-          linear-gradient(180deg, #63bbff 0%, #2589dd 48%, #06111f 100%) !important;
+          radial-gradient(circle at 40% 19%, rgba(255,255,255,1) 0%, rgba(255,255,255,.78) 7%, rgba(255,239,176,.35) 15%, transparent 31%),
+          radial-gradient(circle at 56% 84%, rgba(255,255,255,.24), transparent 9%),
+          radial-gradient(circle at 64% 72%, rgba(110,210,255,.28), transparent 18%),
+          linear-gradient(180deg, #74c4ff 0%, #4aa7eb 38%, #1d7fd0 70%, #06111f 100%) !important;
         opacity:1 !important;
         background-size:cover !important;
         background-position:center !important;
-        filter:saturate(1.14) contrast(1.03) !important;
+        filter:saturate(1.10) contrast(1.02) brightness(1.06) !important;
         transform:scale(1.01) !important;
       }
 
@@ -4182,17 +4183,69 @@ router.get("/u/:username", async (req, res) => {
         z-index:3;
       }
 
+      .profile-showcase.is-weather-live .profile-showcase-main{
+        text-shadow:0 2px 24px rgba(0,0,0,.34);
+      }
+
       .profile-showcase.is-weather-live .profile-showcase-avatar-wrap::before{
         background:
-          radial-gradient(circle at 50% 16%, rgba(170,225,255,.55), transparent 58%),
-          linear-gradient(180deg, rgba(115,194,255,.52), rgba(55,108,210,.22)) !important;
-        opacity:.95 !important;
+          radial-gradient(circle at 50% 16%, rgba(210,240,255,.62), transparent 58%),
+          linear-gradient(180deg, rgba(165,224,255,.58), rgba(80,150,220,.25)) !important;
+        opacity:.96 !important;
       }
 
       .profile-showcase.is-weather-live .profile-showcase-avatar-wrap::after{
-        background:radial-gradient(circle at 50% 50%, rgba(85,179,255,.48), transparent 62%) !important;
+        background:radial-gradient(circle at 50% 50%, rgba(135,215,255,.54), transparent 62%) !important;
         opacity:.86 !important;
       }
+
+      .profile-showcase.is-weather-live .profile-pill-btn,
+      .profile-showcase.is-weather-live .profile-showcase-actions .btn{
+        background:rgba(0,0,0,.52) !important;
+        border-color:rgba(255,255,255,.14) !important;
+        backdrop-filter:blur(12px);
+        -webkit-backdrop-filter:blur(12px);
+      }
+
+      .profile-weather-wisp,
+      .profile-weather-lens{
+        position:absolute;
+        pointer-events:none;
+        opacity:0;
+      }
+
+      .profile-weather-wisp{
+        width:520px;
+        height:120px;
+        border-radius:999px;
+        background:
+          radial-gradient(ellipse at 20% 48%, rgba(255,255,255,.36), transparent 32%),
+          radial-gradient(ellipse at 55% 38%, rgba(255,255,255,.28), transparent 34%),
+          linear-gradient(90deg, transparent, rgba(255,255,255,.24), transparent);
+        filter:blur(10px);
+        mix-blend-mode:screen;
+        animation:profileWeatherWisp 24s linear infinite;
+      }
+
+      .profile-weather-wisp-a{ left:-20%; top:8%; opacity:.72; }
+      .profile-weather-wisp-b{ left:20%; top:30%; opacity:.42; animation-duration:32s; animation-delay:-11s; }
+
+      .profile-showcase.is-weather-live .profile-weather-wisp{ opacity:.62; }
+      .profile-showcase.weather-rain .profile-weather-wisp,
+      .profile-showcase.weather-storm .profile-weather-wisp,
+      .profile-showcase.weather-cloudy .profile-weather-wisp,
+      .profile-showcase.weather-fog .profile-weather-wisp{ opacity:.38; }
+
+      .profile-weather-lens{
+        border-radius:999px;
+        background:rgba(255,255,255,.15);
+        filter:blur(2px);
+        mix-blend-mode:screen;
+        animation:profileWeatherLens 7s ease-in-out infinite alternate;
+      }
+
+      .profile-weather-lens-a{ width:82px; height:82px; left:58%; top:76%; opacity:.24; }
+      .profile-weather-lens-b{ width:36px; height:36px; left:48%; top:42%; opacity:.18; animation-delay:-2s; }
 
       .profile-showcase.is-weather-live .profile-weather-label{
         right:24px;
@@ -4204,39 +4257,40 @@ router.get("/u/:username", async (req, res) => {
         font-weight:950;
         letter-spacing:.01em;
         color:#f7fbff;
-        border:1px solid rgba(255,255,255,.18);
-        background:rgba(5,11,22,.42);
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 10px 28px rgba(0,0,0,.22);
+        border:1px solid rgba(255,255,255,.20);
+        background:rgba(5,11,22,.44);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 10px 28px rgba(0,0,0,.20);
         text-shadow:0 1px 10px rgba(0,0,0,.32);
       }
 
       .profile-showcase.weather-sunny .profile-showcase-bg,
       .profile-showcase.weather-clear .profile-showcase-bg{
         background:
-          radial-gradient(circle at 38% 19%, rgba(255,255,255,.98), rgba(255,247,203,.56) 8%, rgba(255,223,108,.18) 19%, transparent 33%),
-          radial-gradient(circle at 58% 72%, rgba(165,228,255,.24), transparent 18%),
-          linear-gradient(180deg, #63bbff 0%, #2b8fe0 48%, #071220 100%) !important;
+          radial-gradient(circle at 40% 19%, rgba(255,255,255,1) 0%, rgba(255,255,255,.82) 7%, rgba(255,241,181,.36) 15%, transparent 32%),
+          radial-gradient(circle at 56% 84%, rgba(255,255,255,.24), transparent 9%),
+          radial-gradient(circle at 64% 72%, rgba(110,210,255,.28), transparent 18%),
+          linear-gradient(180deg, #74c4ff 0%, #4aa7eb 38%, #1d7fd0 70%, #06111f 100%) !important;
       }
 
       .profile-showcase.weather-cloudy .profile-showcase-bg,
       .profile-showcase.weather-fog .profile-showcase-bg{
         background:
-          radial-gradient(circle at 34% 18%, rgba(255,255,255,.50), transparent 25%),
-          radial-gradient(circle at 72% 18%, rgba(190,220,255,.28), transparent 24%),
-          linear-gradient(180deg, #86aac5 0%, #42647c 48%, #07111b 100%) !important;
+          radial-gradient(circle at 35% 18%, rgba(255,255,255,.58), transparent 25%),
+          radial-gradient(circle at 72% 18%, rgba(210,235,255,.32), transparent 24%),
+          linear-gradient(180deg, #9bc4e0 0%, #5a8faf 48%, #10243a 100%) !important;
       }
 
       .profile-showcase.weather-rain .profile-showcase-bg,
       .profile-showcase.weather-storm .profile-showcase-bg{
         background:
-          radial-gradient(circle at 68% 10%, rgba(170,215,255,.28), transparent 21%),
-          linear-gradient(180deg, #425b72 0%, #1b303f 54%, #02070d 100%) !important;
+          radial-gradient(circle at 68% 10%, rgba(185,225,255,.30), transparent 21%),
+          linear-gradient(180deg, #5d7f99 0%, #28465a 54%, #04101c 100%) !important;
       }
 
       .profile-showcase.weather-snow .profile-showcase-bg{
         background:
-          radial-gradient(circle at 34% 16%, rgba(255,255,255,.76), transparent 24%),
-          linear-gradient(180deg, #b7d9f5 0%, #6d94b7 50%, #07111c 100%) !important;
+          radial-gradient(circle at 34% 16%, rgba(255,255,255,.82), transparent 24%),
+          linear-gradient(180deg, #c3e1f8 0%, #82acd0 50%, #10263e 100%) !important;
       }
 
       .profile-showcase.weather-night .profile-showcase-bg{
@@ -4244,6 +4298,16 @@ router.get("/u/:username", async (req, res) => {
           radial-gradient(circle at 72% 16%, rgba(225,238,255,.58), transparent 10%),
           radial-gradient(circle at 22% 72%, rgba(65,125,255,.20), transparent 30%),
           linear-gradient(180deg, #101a35 0%, #081122 52%, #000 100%) !important;
+      }
+
+      @keyframes profileWeatherWisp{
+        from{ transform:translateX(-42%) translateY(0) rotate(-4deg); }
+        to{ transform:translateX(82%) translateY(-10px) rotate(-4deg); }
+      }
+
+      @keyframes profileWeatherLens{
+        from{ transform:translate3d(-6px, 8px, 0) scale(.92); }
+        to{ transform:translate3d(8px, -10px, 0) scale(1.08); }
       }
 
       @media(max-width:700px){
