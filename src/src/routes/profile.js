@@ -3779,16 +3779,16 @@ router.get("/u/:username", async (req, res) => {
           function refreshDiscoveryItems(){
             if (discoveryRefreshInFlight) return Promise.resolve(false);
             discoveryRefreshInFlight = true;
-            const apiUrl = window.location.pathname.replace(/\/$/, '') + '/discovery-items';
-            return fetch(apiUrl, { credentials:'same-origin', cache:'no-store', headers:{ 'Accept':'application/json' } })
+            return fetch('/stories/feed/items?excludeOwn=1&_tapzyProfileTop=' + Date.now(), {
+              credentials:'same-origin',
+              cache:'no-store',
+              headers:{ 'Accept':'application/json' }
+            })
               .then(function(response){ return response.ok ? response.json() : { items: [] }; })
               .then(function(data){
-                const apiItems = Array.isArray(data && data.items) ? data.items : [];
-                if (setDiscoveryItems(apiItems)) return true;
-                return fetch('/stories/feed?_tapzyProfileTop=' + Date.now(), { credentials:'same-origin', cache:'no-store' })
-                  .then(function(response){ return response.ok ? response.text() : ''; })
-                  .then(function(html){ return setDiscoveryItems(readItemsFromFeedHtml(html)); })
-                  .catch(function(){ return false; });
+                const freshItems = Array.isArray(data && data.items) ? data.items : [];
+                if (!setDiscoveryItems(freshItems)) return false;
+                return true;
               })
               .catch(function(){ return false; })
               .finally(function(){ discoveryRefreshInFlight = false; });
