@@ -2391,7 +2391,7 @@ router.get("/u/:username", async (req, res) => {
 
         .profile-event-card-panel .event-content{
           min-height:min(78svh, 720px);
-          padding:26px 22px 22px;
+          padding:26px 20px 22px;
           justify-content:flex-end;
           background:linear-gradient(180deg, rgba(8,12,20,.10), rgba(5,8,14,.28) 48%, rgba(1,3,8,.70));
           backdrop-filter:blur(8px);
@@ -2413,8 +2413,8 @@ router.get("/u/:username", async (req, res) => {
         }
 
         .profile-event-card-panel .event-title{
-          font-size:clamp(32px, 9.4vw, 46px);
-          line-height:1.01;
+          font-size:clamp(30px, 8.35vw, 40px);
+          line-height:1.03;
           letter-spacing:0;
           font-weight:950;
           text-wrap:balance;
@@ -3926,6 +3926,39 @@ router.get("/u/:username", async (req, res) => {
           min-height:min(760px, calc(100dvh - 86px));
         }
       }
+
+
+      .profile-showcase.is-event-selected{
+        border-color:rgba(127,220,255,.56) !important;
+        background:#0c0f16 !important;
+        box-shadow:
+          0 30px 80px rgba(0,0,0,.55),
+          0 0 0 1px rgba(127,220,255,.42),
+          0 0 42px rgba(78,178,255,.28),
+          inset 0 1px 0 rgba(255,255,255,.05) !important;
+      }
+
+      .profile-showcase.is-event-selected .profile-showcase-bg{
+        background-image:
+          linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
+          var(--profile-event-bg) !important;
+        background-size:cover !important;
+        background-position:center !important;
+        opacity:1 !important;
+        filter:saturate(1.18) contrast(1.05) !important;
+        transform:scale(1.015) !important;
+      }
+
+      .profile-showcase.is-event-selected::before{
+        opacity:.045 !important;
+      }
+
+      .profile-showcase.is-event-selected::after{
+        background:
+          radial-gradient(circle at var(--profile-event-mx,72%) var(--profile-event-my,22%), rgba(127,220,255,.36), rgba(64,155,255,.16) 18%, transparent 38%),
+          linear-gradient(180deg, rgba(255,255,255,.018), transparent 34%) !important;
+        opacity:1 !important;
+      }
 </style>
 
 
@@ -4049,7 +4082,7 @@ router.get("/u/:username", async (req, res) => {
             }
             eventActiveTimer = window.setTimeout(function(){
               profileShowcase.classList.remove('is-event-selected');
-            }, 220);
+            }, 6000);
           }
           document.querySelectorAll('.profile-event-card-panel .js-event-card').forEach(function(card){
             card.classList.add('is-revealed');
