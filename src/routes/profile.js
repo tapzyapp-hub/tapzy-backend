@@ -4138,6 +4138,123 @@ router.get("/u/:username", async (req, res) => {
         .profile-weather-scene{ border-radius:28px; }
         .profile-weather-label{ right:12px; top:12px; font-size:11px; min-height:30px; }
       }
+
+
+      .profile-showcase.is-weather-live{
+        background:#050b14 !important;
+        border-color:rgba(160,215,255,.30) !important;
+        box-shadow:
+          0 24px 70px rgba(0,0,0,.55),
+          0 0 0 1px rgba(125,210,255,.18),
+          0 0 44px rgba(85,170,255,.18),
+          inset 0 1px 0 rgba(255,255,255,.08) !important;
+      }
+
+      .profile-showcase.is-weather-live::before{
+        opacity:.035 !important;
+      }
+
+      .profile-showcase.is-weather-live::after{
+        background:
+          radial-gradient(circle at 42% 22%, rgba(255,255,255,.24), transparent 18%),
+          linear-gradient(180deg, rgba(255,255,255,.035), transparent 38%) !important;
+        opacity:1 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 38% 19%, rgba(255,255,255,.90), rgba(255,245,188,.48) 8%, rgba(255,222,110,.16) 18%, transparent 31%),
+          radial-gradient(circle at 58% 72%, rgba(165,228,255,.24), transparent 18%),
+          linear-gradient(180deg, #63bbff 0%, #2589dd 48%, #06111f 100%) !important;
+        opacity:1 !important;
+        background-size:cover !important;
+        background-position:center !important;
+        filter:saturate(1.14) contrast(1.03) !important;
+        transform:scale(1.01) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene{
+        opacity:1 !important;
+        z-index:1;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-top{
+        z-index:3;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-avatar-wrap::before{
+        background:
+          radial-gradient(circle at 50% 16%, rgba(170,225,255,.55), transparent 58%),
+          linear-gradient(180deg, rgba(115,194,255,.52), rgba(55,108,210,.22)) !important;
+        opacity:.95 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-avatar-wrap::after{
+        background:radial-gradient(circle at 50% 50%, rgba(85,179,255,.48), transparent 62%) !important;
+        opacity:.86 !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-label{
+        right:24px;
+        top:26px;
+        min-height:46px;
+        padding:0 20px;
+        border-radius:999px;
+        font-size:18px;
+        font-weight:950;
+        letter-spacing:.01em;
+        color:#f7fbff;
+        border:1px solid rgba(255,255,255,.18);
+        background:rgba(5,11,22,.42);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 10px 28px rgba(0,0,0,.22);
+        text-shadow:0 1px 10px rgba(0,0,0,.32);
+      }
+
+      .profile-showcase.weather-sunny .profile-showcase-bg,
+      .profile-showcase.weather-clear .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 38% 19%, rgba(255,255,255,.98), rgba(255,247,203,.56) 8%, rgba(255,223,108,.18) 19%, transparent 33%),
+          radial-gradient(circle at 58% 72%, rgba(165,228,255,.24), transparent 18%),
+          linear-gradient(180deg, #63bbff 0%, #2b8fe0 48%, #071220 100%) !important;
+      }
+
+      .profile-showcase.weather-cloudy .profile-showcase-bg,
+      .profile-showcase.weather-fog .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 34% 18%, rgba(255,255,255,.50), transparent 25%),
+          radial-gradient(circle at 72% 18%, rgba(190,220,255,.28), transparent 24%),
+          linear-gradient(180deg, #86aac5 0%, #42647c 48%, #07111b 100%) !important;
+      }
+
+      .profile-showcase.weather-rain .profile-showcase-bg,
+      .profile-showcase.weather-storm .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 68% 10%, rgba(170,215,255,.28), transparent 21%),
+          linear-gradient(180deg, #425b72 0%, #1b303f 54%, #02070d 100%) !important;
+      }
+
+      .profile-showcase.weather-snow .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 34% 16%, rgba(255,255,255,.76), transparent 24%),
+          linear-gradient(180deg, #b7d9f5 0%, #6d94b7 50%, #07111c 100%) !important;
+      }
+
+      .profile-showcase.weather-night .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 72% 16%, rgba(225,238,255,.58), transparent 10%),
+          radial-gradient(circle at 22% 72%, rgba(65,125,255,.20), transparent 30%),
+          linear-gradient(180deg, #101a35 0%, #081122 52%, #000 100%) !important;
+      }
+
+      @media(max-width:700px){
+        .profile-showcase.is-weather-live .profile-weather-label{
+          right:14px;
+          top:14px;
+          min-height:34px;
+          padding:0 13px;
+          font-size:13px;
+        }
+      }
 </style>
 
 
@@ -4232,7 +4349,7 @@ router.get("/u/:username", async (req, res) => {
             shell.classList.add('is-weather-live', 'weather-' + condition.key);
             if (!isDay) shell.classList.add('weather-night');
             const temp = Number(current.temperature_2m);
-            label.textContent = (Number.isFinite(temp) ? Math.round(temp) + '°' : '') + (condition.text ? ' ' + condition.text : '');
+            label.textContent = (Number.isFinite(temp) ? Math.round(temp) + String.fromCharCode(176) : '') + (condition.text ? ' ' + condition.text : '');
           }
           function loadWeather(lat, lng){
             const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day&timezone=auto';
