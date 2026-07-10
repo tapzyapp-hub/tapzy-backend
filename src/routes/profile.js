@@ -3403,19 +3403,6 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-showcase.is-secondary-dim{
         padding:14px;
-        background:#000;
-        border-color:rgba(255,255,255,.08);
-        box-shadow:0 0 0 1px rgba(255,255,255,.03), 0 14px 34px rgba(0,0,0,.42);
-      }
-
-      .profile-showcase.is-secondary-dim .profile-showcase-bg{
-        background:#000;
-        opacity:1;
-      }
-
-      .profile-showcase.is-secondary-dim::before,
-      .profile-showcase.is-secondary-dim::after{
-        opacity:0;
       }
 
       .profile-showcase.is-secondary-dim .profile-showcase-top{
@@ -3434,13 +3421,11 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase.is-secondary-dim .profile-showcase-avatar-wrap::before{
         inset:-6px;
         border-radius:22px;
-        opacity:0;
       }
 
       .profile-showcase.is-secondary-dim .profile-showcase-avatar-wrap::after{
         inset:-10px;
         border-radius:26px;
-        opacity:0;
       }
 
       .profile-showcase.is-secondary-dim .profile-showcase-main{
