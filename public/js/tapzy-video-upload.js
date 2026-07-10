@@ -3,9 +3,9 @@
 
   const CHUNK_SIZE = 16 * 1024 * 1024;
   const CLOUDINARY_CHUNK_SIZE = 20 * 1024 * 1024;
-  const CLOUDINARY_CHUNK_UPLOAD_BYTES = 40 * 1024 * 1024;
-  const DIRECT_UPLOAD_BYTES = 18 * 1024 * 1024;
-  const START_OPTIMIZE_BYTES = 80 * 1024 * 1024;
+  const CLOUDINARY_CHUNK_UPLOAD_BYTES = 24 * 1024 * 1024;
+  const DIRECT_UPLOAD_BYTES = 8 * 1024 * 1024;
+  const START_OPTIMIZE_BYTES = 120 * 1024 * 1024;
   const MAX_PARALLEL_CHUNKS = 6;
   const MAX_EDGE = 960;
   const FPS = 24;
@@ -140,6 +140,29 @@
       form.appendChild(input);
     }
     input.value = value || "";
+  }
+
+  function mediaInputScore(input) {
+    const name = String((input && input.name) || "").toLowerCase();
+    const id = String((input && input.id) || "").toLowerCase();
+    if (/^(storymedia|media|replaymedia)$/.test(name)) return 100;
+    if (id === "tzmediainput") return 100;
+    if (/music|audio|sound|photo/.test(name + " " + id)) return 0;
+    return 20;
+  }
+
+  function findBestMediaInput(form) {
+    const inputs = Array.from(form.querySelectorAll('input[type="file"]'));
+    const candidates = inputs
+      .map((input) => ({ input, file: input.files && input.files[0], score: mediaInputScore(input) }))
+      .filter((item) => item.file && isSupportedMediaFile(item.file));
+    if (!candidates.length) return null;
+    candidates.sort((a, b) => {
+      const av = isVideoFile(a.file) ? 1000 : 0;
+      const bv = isVideoFile(b.file) ? 1000 : 0;
+      return (bv + b.score) - (av + a.score);
+    });
+    return candidates[0].input;
   }
 
   function formatMegabytes(bytes) {
@@ -536,8 +559,7 @@
 
   async function prepareForm(form, submitter) {
     if (form.dataset.tapzyVideoPrepared === "1") return true;
-    const inputs = Array.from(form.querySelectorAll('input[type="file"]'));
-    const mediaInput = inputs.find((input) => isSupportedMediaFile(input.files && input.files[0]));
+    const mediaInput = findBestMediaInput(form);
     if (!mediaInput) {
       form.dataset.tapzyVideoPrepared = "1";
       return true;
@@ -583,7 +605,7 @@
           complete = null;
         }
 
-        if (!complete && uploadFile.size <= DIRECT_UPLOAD_BYTES) {
+        if (!complete && !isVideoFile(uploadFile) && uploadFile.size <= DIRECT_UPLOAD_BYTES) {
           try {
             setStatus(form, `${isVideoFile(uploadFile) ? "Uploading video" : "Uploading media"} — keep this page open.`);
             complete = await uploadDirectMedia(uploadFile);
