@@ -6849,18 +6849,21 @@ router.get("/qr/:username", async (req, res) => {
         padding:18px !important;
         border-radius:28px !important;
         background:#000 !important;
-        border:1px solid rgba(120,196,255,.13) !important;
-        box-shadow:0 0 0 1px rgba(95,177,255,.06), 0 0 34px rgba(73,155,255,.10), 0 18px 44px rgba(0,0,0,.55) !important;
+        border:1px solid rgba(255,255,255,.075) !important;
+        box-shadow:0 18px 42px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.025) !important;
       }
 
       .profile-showcase-bg{
         border-radius:28px !important;
-        background:radial-gradient(260px 180px at 18% 18%, rgba(52,126,212,.18), transparent 62%), linear-gradient(180deg,#000,#000) !important;
-        opacity:1 !important;
+        background:
+          radial-gradient(circle at 50% 50%, rgba(255,255,255,.025) 0 1px, transparent 1px),
+          linear-gradient(180deg,#010101,#000) !important;
+        background-size:14px 14px, auto !important;
+        opacity:.82 !important;
       }
 
       .profile-showcase-top-static{
-        min-height:118px !important;
+        min-height:128px !important;
         display:flex !important;
         flex-direction:row !important;
         align-items:center !important;
@@ -6868,29 +6871,29 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       .profile-showcase-top-static .profile-showcase-avatar-wrap{
-        width:96px !important;
-        height:96px !important;
-        flex:0 0 96px !important;
+        width:86px !important;
+        height:86px !important;
+        flex:0 0 86px !important;
       }
 
       .profile-showcase-top-static .profile-showcase-avatar-wrap::before{
-        inset:-7px !important;
-        border-radius:28px !important;
-        border-color:rgba(115,194,255,.88) !important;
-        box-shadow:0 0 18px rgba(87,170,255,.36), 0 0 42px rgba(48,110,255,.20) !important;
+        inset:-6px !important;
+        border-radius:26px !important;
+        border-color:rgba(115,194,255,.78) !important;
+        box-shadow:0 0 16px rgba(87,170,255,.34), 0 0 36px rgba(48,110,255,.18) !important;
       }
 
       .profile-showcase-top-static .profile-showcase-avatar-wrap::after{
-        inset:-11px !important;
-        border-radius:32px !important;
-        opacity:.66 !important;
+        inset:-10px !important;
+        border-radius:30px !important;
+        opacity:.48 !important;
       }
 
       .profile-showcase-top-static .profile-showcase-avatar{
-        width:96px !important;
-        height:96px !important;
-        border-radius:24px !important;
-        font-size:34px !important;
+        width:86px !important;
+        height:86px !important;
+        border-radius:22px !important;
+        font-size:30px !important;
       }
 
       .profile-showcase-main-compact{
@@ -6903,40 +6906,53 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       .profile-showcase-actions-premium{
-        width:100% !important;
+        width:auto !important;
         margin-top:0 !important;
         display:flex !important;
         flex-direction:row !important;
         flex-wrap:wrap !important;
-        gap:10px !important;
+        gap:8px !important;
         align-items:center !important;
       }
 
       .profile-action-chip{
-        min-height:48px !important;
-        flex:0 1 auto !important;
-        padding:0 14px 0 9px !important;
-        gap:9px !important;
-        border-radius:17px !important;
-        font-size:14px !important;
+        min-height:36px !important;
+        flex:0 0 auto !important;
+        padding:0 11px 0 7px !important;
+        gap:7px !important;
+        border-radius:14px !important;
+        color:#fff !important;
+        font-size:12px !important;
+        font-weight:850 !important;
         line-height:1 !important;
-        background:linear-gradient(180deg, rgba(9,14,23,.96), rgba(0,0,0,.98)) !important;
-        border:1px solid rgba(118,199,255,.34) !important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 18px rgba(87,170,255,.18), 0 0 34px rgba(48,110,255,.10) !important;
+        background:linear-gradient(180deg, rgba(12,13,17,.96), rgba(0,0,0,.98)) !important;
+        border:1px solid rgba(118,199,255,.30) !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 14px rgba(87,170,255,.16), 0 0 28px rgba(48,110,255,.08) !important;
+      }
+
+      .profile-action-chip:hover,
+      .profile-action-chip:focus-visible{
+        transform:translateY(-1px) !important;
+        border-color:rgba(130,207,255,.52) !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 0 18px rgba(87,170,255,.22), 0 0 34px rgba(48,110,255,.12) !important;
       }
 
       .profile-action-chip-icon{
-        width:32px !important;
-        height:32px !important;
-        border-radius:12px !important;
-        font-size:11px !important;
-        background:linear-gradient(180deg, rgba(47,132,255,.95), rgba(18,58,153,.98)) !important;
-        border:1px solid rgba(178,226,255,.44) !important;
-        box-shadow:0 0 16px rgba(87,170,255,.30) !important;
+        width:24px !important;
+        height:24px !important;
+        border-radius:9px !important;
+        font-size:9px !important;
+        background:linear-gradient(180deg, rgba(39,118,255,.92), rgba(16,52,145,.98)) !important;
+        border:1px solid rgba(178,226,255,.38) !important;
+        box-shadow:0 0 12px rgba(87,170,255,.24) !important;
       }
 
       .profile-action-chip-save .profile-action-chip-icon{
-        font-size:20px !important;
+        font-size:16px !important;
+      }
+
+      .profile-action-chip-text{
+        white-space:nowrap !important;
       }
 
       @media (max-width: 430px){
@@ -6945,50 +6961,48 @@ router.get("/qr/:username", async (req, res) => {
         }
 
         .profile-showcase-top-static{
-          min-height:104px !important;
+          min-height:112px !important;
           gap:12px !important;
         }
 
         .profile-showcase-top-static .profile-showcase-avatar-wrap,
         .profile-showcase-top-static .profile-showcase-avatar{
-          width:82px !important;
-          height:82px !important;
-          flex-basis:82px !important;
-          border-radius:21px !important;
+          width:76px !important;
+          height:76px !important;
+          flex-basis:76px !important;
+          border-radius:20px !important;
         }
 
         .profile-showcase-actions-premium{
-          gap:8px !important;
+          gap:7px !important;
         }
 
         .profile-action-chip{
-          min-height:44px !important;
-          padding:0 11px 0 8px !important;
-          font-size:13px !important;
+          min-height:34px !important;
+          padding:0 9px 0 6px !important;
+          font-size:11px !important;
         }
 
         .profile-action-chip-icon{
-          width:29px !important;
-          height:29px !important;
-          border-radius:11px !important;
+          width:22px !important;
+          height:22px !important;
+          border-radius:8px !important;
         }
       }
 
       @media (max-width: 360px){
         .profile-showcase-top-static{
-          align-items:flex-start !important;
+          min-height:108px !important;
+          gap:10px !important;
         }
 
-        .profile-showcase-actions-premium{
-          flex-direction:column !important;
-          align-items:flex-start !important;
+        .profile-action-chip-text{
+          max-width:74px !important;
+          overflow:hidden !important;
+          text-overflow:ellipsis !important;
         }
-
-        .profile-action-chip{
-          width:auto !important;
-          max-width:100% !important;
-        }
-      }    </style>
+      }
+    </style>
 
     `;
 
