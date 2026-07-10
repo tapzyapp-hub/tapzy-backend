@@ -4682,6 +4682,66 @@ router.get("/u/:username", async (req, res) => {
       }
       /* End premium iOS-style live weather final tuning */
 
+
+      /* Weather profile name area polish */
+      .profile-showcase.is-weather-live .profile-showcase-main{
+        position:relative;
+        z-index:4;
+        width:max-content;
+        max-width:100%;
+        padding:10px 14px 12px 0;
+        isolation:isolate;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-main::before{
+        content:"";
+        position:absolute;
+        left:-18px;
+        right:-22px;
+        top:-12px;
+        bottom:-12px;
+        z-index:-1;
+        border-radius:28px;
+        background:
+          radial-gradient(ellipse at 22% 40%, rgba(255,255,255,.26), transparent 54%),
+          linear-gradient(90deg, rgba(25,91,143,.28), rgba(49,135,190,.12) 58%, transparent 100%);
+        filter:blur(.2px);
+        opacity:.92;
+        pointer-events:none;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-main::after{
+        content:"";
+        position:absolute;
+        left:-18px;
+        right:6%;
+        bottom:-8px;
+        height:1px;
+        z-index:-1;
+        background:linear-gradient(90deg, rgba(255,255,255,.34), rgba(255,255,255,.08), transparent);
+        opacity:.82;
+        pointer-events:none;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-name{
+        color:rgba(255,255,255,.98) !important;
+        text-shadow:
+          0 1px 0 rgba(255,255,255,.16),
+          0 3px 12px rgba(15,76,124,.38),
+          0 1px 2px rgba(0,0,0,.24) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-handle{
+        color:rgba(241,249,255,.86) !important;
+        text-shadow:0 2px 10px rgba(16,76,125,.34), 0 1px 2px rgba(0,0,0,.18) !important;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-actions{
+        position:relative;
+        z-index:4;
+      }
+      /* End weather profile name area polish */
+
 </style>
 
 
