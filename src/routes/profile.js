@@ -472,6 +472,7 @@ router.get("/u/:username", async (req, res) => {
       <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
 
         <div class="profile-showcase-bg"></div>
+        <div class="profile-weather-scene" aria-hidden="true"><span class="profile-weather-sun"></span><span class="profile-weather-cloud profile-weather-cloud-a"></span><span class="profile-weather-cloud profile-weather-cloud-b"></span><span class="profile-weather-rain"></span><span class="profile-weather-snow"></span></div>
 
 
 
@@ -3959,6 +3960,184 @@ router.get("/u/:username", async (req, res) => {
           linear-gradient(180deg, rgba(255,255,255,.018), transparent 34%) !important;
         opacity:1 !important;
       }
+
+
+      .profile-weather-scene{
+        position:absolute;
+        inset:0;
+        z-index:0;
+        pointer-events:none;
+        overflow:hidden;
+        border-radius:34px;
+        opacity:0;
+        transition:opacity .7s ease;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene{
+        opacity:1;
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-bg{
+        opacity:1;
+        background:
+          radial-gradient(circle at 22% 10%, rgba(255,255,255,.30), transparent 18%),
+          linear-gradient(180deg, #4ba8ef 0%, #1f78c8 48%, #06111e 100%);
+      }
+
+      .profile-showcase.weather-sunny .profile-showcase-bg,
+      .profile-showcase.weather-clear .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 22% 10%, rgba(255,255,255,.78), rgba(255,255,255,.36) 9%, transparent 21%),
+          radial-gradient(circle at 44% 78%, rgba(150,224,255,.22), transparent 18%),
+          linear-gradient(180deg, #5db7ff 0%, #2588d9 50%, #07111d 100%);
+      }
+
+      .profile-showcase.weather-cloudy .profile-showcase-bg,
+      .profile-showcase.weather-fog .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 28% 18%, rgba(255,255,255,.34), transparent 24%),
+          radial-gradient(circle at 78% 8%, rgba(165,210,255,.24), transparent 22%),
+          linear-gradient(180deg, #6f93b3 0%, #345873 48%, #07111b 100%);
+      }
+
+      .profile-showcase.weather-rain .profile-showcase-bg,
+      .profile-showcase.weather-storm .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 70% 8%, rgba(151,206,255,.25), transparent 20%),
+          linear-gradient(180deg, #314a62 0%, #162837 54%, #02070d 100%);
+      }
+
+      .profile-showcase.weather-snow .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 26% 12%, rgba(255,255,255,.58), transparent 22%),
+          linear-gradient(180deg, #9fc6e8 0%, #5c83a7 50%, #07111c 100%);
+      }
+
+      .profile-showcase.weather-night .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 76% 16%, rgba(220,235,255,.50), transparent 10%),
+          radial-gradient(circle at 22% 72%, rgba(65,125,255,.18), transparent 30%),
+          linear-gradient(180deg, #101a35 0%, #081122 52%, #000 100%);
+      }
+
+      .profile-weather-sun{
+        position:absolute;
+        left:12%;
+        top:-18%;
+        width:210px;
+        height:210px;
+        border-radius:999px;
+        background:radial-gradient(circle, rgba(255,255,255,.96) 0%, rgba(255,244,190,.68) 20%, rgba(255,224,96,.18) 44%, transparent 70%);
+        filter:blur(1px);
+        opacity:0;
+        animation:profileWeatherSun 9s ease-in-out infinite alternate;
+      }
+
+      .profile-showcase.weather-sunny .profile-weather-sun,
+      .profile-showcase.weather-clear .profile-weather-sun{
+        opacity:1;
+      }
+
+      .profile-weather-cloud{
+        position:absolute;
+        width:260px;
+        height:96px;
+        border-radius:999px;
+        background:radial-gradient(circle at 28% 42%, rgba(255,255,255,.54), transparent 34%), radial-gradient(circle at 58% 34%, rgba(255,255,255,.42), transparent 34%), linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04));
+        filter:blur(10px);
+        opacity:.52;
+        transform:translateX(-20%);
+        animation:profileWeatherCloud 22s linear infinite;
+      }
+
+      .profile-weather-cloud-a{ left:-18%; top:12%; }
+      .profile-weather-cloud-b{ left:34%; top:34%; width:310px; opacity:.34; animation-duration:30s; animation-delay:-10s; }
+
+      .profile-showcase.weather-sunny .profile-weather-cloud,
+      .profile-showcase.weather-clear .profile-weather-cloud{ opacity:.22; }
+      .profile-showcase.weather-rain .profile-weather-cloud,
+      .profile-showcase.weather-storm .profile-weather-cloud,
+      .profile-showcase.weather-cloudy .profile-weather-cloud,
+      .profile-showcase.weather-fog .profile-weather-cloud{ opacity:.68; }
+      .profile-showcase.weather-night .profile-weather-cloud{ opacity:.26; }
+
+      .profile-weather-rain,
+      .profile-weather-snow{
+        position:absolute;
+        inset:-20% 0 0;
+        opacity:0;
+        transition:opacity .5s ease;
+        mix-blend-mode:screen;
+      }
+
+      .profile-weather-rain{
+        background-image:linear-gradient(115deg, rgba(190,230,255,.0) 0 42%, rgba(190,230,255,.48) 44%, rgba(190,230,255,.0) 48% 100%);
+        background-size:18px 42px;
+        animation:profileWeatherRain .62s linear infinite;
+      }
+
+      .profile-weather-snow{
+        background-image:radial-gradient(circle, rgba(255,255,255,.76) 0 1.4px, transparent 1.7px);
+        background-size:26px 26px;
+        animation:profileWeatherSnow 8s linear infinite;
+      }
+
+      .profile-showcase.weather-rain .profile-weather-rain,
+      .profile-showcase.weather-storm .profile-weather-rain{ opacity:.42; }
+      .profile-showcase.weather-snow .profile-weather-snow{ opacity:.70; }
+
+      .profile-weather-label{
+        position:absolute;
+        right:18px;
+        top:18px;
+        z-index:3;
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        min-height:34px;
+        padding:0 12px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(0,0,0,.22);
+        color:rgba(255,255,255,.84);
+        font-size:12px;
+        font-weight:900;
+        letter-spacing:.03em;
+        backdrop-filter:blur(12px);
+        opacity:0;
+        transform:translateY(-4px);
+        transition:opacity .35s ease, transform .35s ease;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-label{
+        opacity:1;
+        transform:translateY(0);
+      }
+
+      @keyframes profileWeatherSun{
+        from{ transform:translate3d(-8px, 8px, 0) scale(.96); }
+        to{ transform:translate3d(10px, -4px, 0) scale(1.04); }
+      }
+
+      @keyframes profileWeatherCloud{
+        from{ transform:translateX(-36%); }
+        to{ transform:translateX(92%); }
+      }
+
+      @keyframes profileWeatherRain{
+        from{ transform:translate3d(0, -42px, 0); }
+        to{ transform:translate3d(-18px, 42px, 0); }
+      }
+
+      @keyframes profileWeatherSnow{
+        from{ transform:translate3d(0, -26px, 0); }
+        to{ transform:translate3d(18px, 26px, 0); }
+      }
+
+      @media(max-width:700px){
+        .profile-weather-scene{ border-radius:28px; }
+        .profile-weather-label{ right:12px; top:12px; font-size:11px; min-height:30px; }
+      }
 </style>
 
 
@@ -4023,6 +4202,60 @@ router.get("/u/:username", async (req, res) => {
 
     <script>
       (function(){
+        function initProfileWeatherBackground(){
+          const shell = document.getElementById('tapzyProfileShell');
+          if (!shell || !navigator.geolocation || !window.fetch) return;
+          const weatherClasses = ['is-weather-live','weather-clear','weather-sunny','weather-cloudy','weather-fog','weather-rain','weather-storm','weather-snow','weather-night'];
+          let label = shell.querySelector('.profile-weather-label');
+          if (!label) {
+            label = document.createElement('div');
+            label.className = 'profile-weather-label';
+            label.setAttribute('aria-hidden', 'true');
+            shell.appendChild(label);
+          }
+          function conditionFromCode(code){
+            const n = Number(code);
+            if ([95,96,99].includes(n)) return { key:'storm', text:'Storm' };
+            if ([71,73,75,77,85,86].includes(n)) return { key:'snow', text:'Snow' };
+            if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(n)) return { key:'rain', text:'Rain' };
+            if ([45,48].includes(n)) return { key:'fog', text:'Fog' };
+            if ([2,3].includes(n)) return { key:'cloudy', text:n === 2 ? 'Partly Cloudy' : 'Cloudy' };
+            if (n === 1) return { key:'sunny', text:'Mostly Sunny' };
+            return { key:'clear', text:'Sunny' };
+          }
+          function applyWeather(data){
+            const current = data && data.current;
+            if (!current) return;
+            const condition = conditionFromCode(current.weather_code);
+            const isDay = Number(current.is_day) !== 0;
+            shell.classList.remove.apply(shell.classList, weatherClasses);
+            shell.classList.add('is-weather-live', 'weather-' + condition.key);
+            if (!isDay) shell.classList.add('weather-night');
+            const temp = Number(current.temperature_2m);
+            label.textContent = (Number.isFinite(temp) ? Math.round(temp) + '°' : '') + (condition.text ? ' ' + condition.text : '');
+          }
+          function loadWeather(lat, lng){
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day&timezone=auto';
+            fetch(url, { cache:'no-store' })
+              .then(function(res){ return res.ok ? res.json() : null; })
+              .then(applyWeather)
+              .catch(function(){});
+          }
+          function requestWeather(){
+            navigator.geolocation.getCurrentPosition(function(pos){
+              if (!pos || !pos.coords) return;
+              loadWeather(pos.coords.latitude, pos.coords.longitude);
+            }, function(){}, { enableHighAccuracy:false, timeout:7000, maximumAge:900000 });
+          }
+          if (navigator.permissions && navigator.permissions.query) {
+            navigator.permissions.query({ name:'geolocation' }).then(function(result){
+              if (result && (result.state === 'granted' || result.state === 'prompt')) requestWeather();
+            }).catch(requestWeather);
+          } else {
+            requestWeather();
+          }
+        }
+
         function initProfileShowcaseFade(){
           const shell = document.getElementById('tapzyProfileShell');
           if (!shell) return;
@@ -4392,8 +4625,9 @@ router.get("/u/:username", async (req, res) => {
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initProfileShowcaseFade(); initProfileEventCards(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ initProfileWeatherBackground(); initProfileShowcaseFade(); initProfileEventCards(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
         } else {
+          initProfileWeatherBackground();
           initProfileShowcaseFade();
           initProfileEventCards();
           initProfileStoryFeed();
