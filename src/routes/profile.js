@@ -1989,7 +1989,7 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-event-card-panel{
         padding:0 !important;
-        overflow:hidden;
+        overflow:visible;
         background:transparent !important;
         border:0 !important;
         box-shadow:none !important;
@@ -2002,220 +2002,397 @@ router.get("/u/:username", async (req, res) => {
 
       .profile-event-card-panel .event-card{
         position:relative;
-        min-height:420px;
-        overflow:hidden;
-        border-radius:34px;
-        border:1px solid rgba(255,255,255,.08);
-        background:linear-gradient(180deg, rgba(5,9,18,.98), rgba(0,0,0,1));
-        box-shadow:0 18px 40px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04), 0 0 0 1px rgba(115,194,255,.03);
+        --mx:72%;
+        --my:22%;
         isolation:isolate;
+        min-height:450px;
+        overflow:hidden;
+        border-radius:32px;
+        clip-path:inset(0 round 32px);
+        border:1px solid rgba(255,255,255,.08);
+        background:#0c0f16;
+        box-shadow:
+          0 20px 48px rgba(0,0,0,.34),
+          inset 0 1px 0 rgba(255,255,255,.04);
+        transform:translateY(0) scale(1);
+        transition:
+          transform .35s cubic-bezier(.2,.8,.2,1),
+          box-shadow .35s ease,
+          border-color .35s ease,
+          opacity .45s ease;
+        will-change:transform;
       }
 
       .profile-event-card-panel .event-card::after{
         content:"";
         position:absolute;
         inset:0;
+        border-radius:inherit;
+        background:
+          radial-gradient(circle at var(--mx,50%) var(--my,50%),
+          rgba(127,220,255,.36), rgba(64,155,255,.16) 18%, transparent 38%);
+        opacity:0;
+        transition:opacity .22s ease;
         z-index:2;
         pointer-events:none;
-        background:linear-gradient(180deg, rgba(0,0,0,.16), transparent 38%, rgba(0,0,0,.82));
+      }
+
+      .profile-event-card-panel .event-card::before{
+        content:"";
+        position:absolute;
+        inset:-1px;
+        border-radius:inherit;
+        background:linear-gradient(135deg, rgba(137,226,255,.82), rgba(255,255,255,.16), rgba(75,154,255,.58));
+        opacity:0;
+        filter:blur(1px);
+        transition:opacity .22s ease;
+        z-index:2;
+        pointer-events:none;
+        -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite:xor;
+        mask-composite:exclude;
+        padding:1px;
+      }
+
+      .profile-event-card-panel .event-card:hover,
+      .profile-event-card-panel .event-card.is-touch-active{
+        transform:translateY(-6px) scale(1.006);
+        box-shadow:
+          0 30px 80px rgba(0,0,0,.55),
+          0 0 0 1px rgba(127,220,255,.42),
+          0 0 42px rgba(78,178,255,.28);
+        border-color:rgba(127,220,255,.56);
+      }
+
+      .profile-event-card-panel .event-card:hover::after,
+      .profile-event-card-panel .event-card.is-touch-active::after,
+      .profile-event-card-panel .event-card:hover::before,
+      .profile-event-card-panel .event-card.is-touch-active::before{
+        opacity:1;
+      }
+
+      .profile-event-card-panel .event-card.is-revealed{
+        animation:eventReveal .5s ease both;
+      }
+
+      @keyframes eventReveal{
+        from{ opacity:.01; transform:translateY(18px) scale(.985); }
+        to{ opacity:1; transform:translateY(0) scale(1); }
+      }
+
+      .profile-event-card-panel .event-card-noise{
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        opacity:.045;
+        background-image:radial-gradient(rgba(255,255,255,.9) .6px, transparent .6px);
+        background-size:8px 8px;
+        z-index:1;
+        pointer-events:none;
+      }
+
+      .profile-event-card-panel .event-card-glow{
+        position:absolute;
+        left:var(--mx,72%);
+        top:var(--my,22%);
+        width:min(78vw, 430px);
+        height:min(78vw, 430px);
+        border-radius:999px;
+        background:radial-gradient(circle,
+          rgba(150,225,255,.72) 0%,
+          rgba(76,169,255,.42) 24%,
+          rgba(46,112,255,.22) 48%,
+          transparent 74%);
+        transform:translate(-50%, -50%);
+        filter:blur(18px);
+        opacity:.96;
+        mix-blend-mode:screen;
+        z-index:2;
+        pointer-events:none;
+        transition:opacity .22s ease, filter .22s ease, left .08s linear, top .08s linear;
+      }
+
+      .profile-event-card-panel .event-card:hover .event-card-glow,
+      .profile-event-card-panel .event-card.is-touch-active .event-card-glow{
+        opacity:1;
+        filter:blur(21px);
+      }
+
+      .profile-event-card-panel .event-card-edge{
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.10),
+          inset 0 0 0 1px rgba(127,210,255,.10);
+        z-index:2;
+        pointer-events:none;
       }
 
       .profile-event-card-panel .event-media{
         position:absolute;
         inset:0;
-        z-index:0;
+        border-radius:inherit;
         background-size:cover;
         background-position:center;
-        transform:scale(1.02);
-        opacity:.72;
-        transition:transform .26s ease, opacity .26s ease;
+        transform:scale(1.015);
+        transition:transform 1.2s ease;
       }
 
       .profile-event-card-panel .event-card:hover .event-media,
       .profile-event-card-panel .event-card.is-touch-active .event-media{
-        transform:scale(1.06);
-        opacity:.82;
-      }
-
-      .profile-event-card-panel .event-card-noise,
-      .profile-event-card-panel .event-card-edge{
-        position:absolute;
-        inset:0;
-        z-index:1;
-        pointer-events:none;
-      }
-
-      .profile-event-card-panel .event-card-noise{
-        opacity:.08;
-        background-image:radial-gradient(rgba(255,255,255,.45) .6px, transparent .6px);
-        background-size:9px 9px;
-      }
-
-      .profile-event-card-panel .event-card-glow{
-        position:absolute;
-        width:280px;
-        height:280px;
-        right:-80px;
-        top:-90px;
-        z-index:1;
-        pointer-events:none;
-        border-radius:999px;
-        background:radial-gradient(circle, rgba(115,194,255,.16), transparent 68%);
-        filter:blur(8px);
-      }
-
-      .profile-event-card-panel .event-card-edge{
-        border-radius:34px;
-        box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+        transform:scale(1.045);
       }
 
       .profile-event-card-panel .event-content{
         position:relative;
         z-index:3;
-        min-height:420px;
-        padding:24px;
+        min-height:450px;
         display:flex;
         flex-direction:column;
         justify-content:flex-end;
-      }
-
-      .profile-event-card-panel .event-topline,
-      .profile-event-card-panel .event-pill-stack,
-      .profile-event-card-panel .event-actions-primary,
-      .profile-event-card-panel .event-actions-secondary{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        flex-wrap:wrap;
+        padding:26px;
+        backdrop-filter:blur(5px);
+        -webkit-backdrop-filter:blur(5px);
       }
 
       .profile-event-card-panel .event-topline{
+        display:flex;
         justify-content:space-between;
-        margin-bottom:auto;
+        gap:10px;
+        align-items:center;
+        margin-bottom:14px;
+      }
+
+      .profile-event-card-panel .event-pill-stack{
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
       }
 
       .profile-event-card-panel .event-pill{
         display:inline-flex;
         align-items:center;
+        justify-content:center;
         min-height:30px;
         padding:0 12px;
         border-radius:999px;
-        color:#fff;
-        font-size:12px;
+        font-size:10px;
         font-weight:900;
-        letter-spacing:.04em;
+        letter-spacing:.9px;
         text-transform:uppercase;
-        background:rgba(5,9,16,.68);
-        border:1px solid rgba(255,255,255,.12);
-        backdrop-filter:blur(14px);
+        color:#eef7ff;
+        background:rgba(10,18,34,.58);
+        border:1px solid rgba(156,214,255,.22);
+        backdrop-filter:blur(10px);
       }
 
       .profile-event-card-panel .event-pill-soft{
-        color:#d9e8f6;
-        text-transform:none;
-        letter-spacing:0;
+        color:#d8e6f5;
+        background:rgba(255,255,255,.08);
+        border-color:rgba(255,255,255,.12);
+        white-space:nowrap;
+        flex-shrink:0;
+        line-height:1;
+        word-break:keep-all;
+      }
+
+      .profile-event-card-panel .event-pill-urgency{
+        background:rgba(111,210,255,.12);
+        border-color:rgba(111,210,255,.32);
       }
 
       .profile-event-card-panel .event-title{
-        margin:22px 0 0;
+        margin:0;
+        font-size:31px;
+        line-height:1.06;
+        letter-spacing:-.9px;
         color:#fff;
-        font-size:clamp(30px, 6vw, 48px);
-        line-height:1.04;
-        letter-spacing:-1.2px;
         font-weight:950;
       }
 
       .profile-event-card-panel .event-copy{
-        margin-top:10px;
-        color:rgba(235,244,255,.80);
-        font-size:15px;
-        line-height:1.5;
+        margin-top:12px;
+        line-height:1.7;
+        font-size:14px;
+        max-width:92%;
+        color:rgba(235,244,255,.82);
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
       }
 
       .profile-event-card-panel .event-divider{
+        width:100%;
         height:1px;
-        margin:16px 0;
-        background:rgba(255,255,255,.12);
+        margin-top:16px;
+        background:linear-gradient(90deg, rgba(255,255,255,.16), rgba(255,255,255,.04), transparent);
       }
 
       .profile-event-card-panel .event-meta{
         display:grid;
-        gap:7px;
+        gap:10px;
+        margin-top:16px;
       }
 
       .profile-event-card-panel .event-meta-row{
         display:flex;
-        justify-content:space-between;
-        gap:14px;
-        color:#fff;
-        font-size:13px;
-        line-height:1.35;
+        flex-direction:column;
+        gap:3px;
       }
 
       .profile-event-card-panel .event-meta-label{
-        color:rgba(220,232,245,.66);
-        font-weight:850;
+        font-size:10px;
         text-transform:uppercase;
-        letter-spacing:.08em;
+        letter-spacing:1px;
+        color:#9eb1c9;
+        font-weight:900;
       }
 
       .profile-event-card-panel .event-meta-value{
-        text-align:right;
-        color:rgba(245,250,255,.92);
-        font-weight:750;
+        font-size:14px;
+        color:#f3f8ff;
+        font-weight:800;
       }
 
-      .profile-event-card-panel .event-actions-primary,
+      .profile-event-card-panel .event-actions-primary{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        margin-top:20px;
+      }
+
       .profile-event-card-panel .event-actions-secondary{
-        margin-top:16px;
+        display:flex;
+        align-items:center;
+        justify-content:flex-start;
+        gap:12px;
+        margin-top:10px;
       }
 
       .profile-event-card-panel .btn{
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        min-height:46px;
-        padding:0 16px;
-        border-radius:18px;
-        border:1px solid rgba(255,255,255,.10);
-        color:#fff;
+        min-height:52px;
+        padding:0 18px;
+        border-radius:20px;
         text-decoration:none;
-        font-size:14px;
+        border:1px solid rgba(255,255,255,.12);
+        font-size:15px;
         font-weight:900;
         cursor:pointer;
-        background:linear-gradient(180deg, rgba(10,12,18,.98), rgba(0,0,0,1));
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 8px 18px rgba(0,0,0,.20);
+        transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
       }
 
-      .profile-event-card-panel .btnLuxury,
+      .profile-event-card-panel .btnLuxury{
+        background:linear-gradient(180deg, #fbfdff, #dceeff);
+        color:#0a0f17;
+        border:1px solid rgba(255,255,255,.7);
+        box-shadow:
+          0 14px 28px rgba(0,0,0,.22),
+          inset 0 1px 0 rgba(255,255,255,.7);
+      }
+
+      .profile-event-card-panel .btnDark,
+      .profile-event-card-panel .btnGhost{
+        background:rgba(255,255,255,.07);
+        color:#fff;
+        border:1px solid rgba(255,255,255,.12);
+        box-shadow:none;
+        backdrop-filter:blur(8px);
+      }
+
+      .profile-event-card-panel .btnGhost:hover,
+      .profile-event-card-panel .btnGhost:focus-visible,
       .profile-event-card-panel .btnGhost.is-going{
-        background:linear-gradient(180deg, rgba(48,98,220,.95), rgba(20,44,110,.98));
-        border-color:rgba(145,214,255,.24);
+        border-color:rgba(127,220,255,.64);
+        background:rgba(64,148,255,.16);
+        box-shadow:
+          0 0 0 1px rgba(127,220,255,.22),
+          0 0 30px rgba(75,170,255,.34),
+          inset 0 1px 0 rgba(255,255,255,.14);
+        transform:translateY(-2px);
+      }
+
+      .profile-event-card-panel .js-save-btn.is-animating{
+        animation:savePulse .28s ease;
+        box-shadow:0 0 36px rgba(75,170,255,.48);
+      }
+
+      @keyframes savePulse{
+        0%{ transform:scale(1); }
+        50%{ transform:scale(1.08); }
+        100%{ transform:scale(1); }
       }
 
       .profile-event-card-panel .event-going-count{
         color:rgba(230,240,255,.72);
-        font-size:13px;
+        font-size:15px;
         font-weight:800;
       }
 
       @media(max-width:700px){
-        .profile-event-card-panel .event-card,
-        .profile-event-card-panel .event-content{
-          min-height:390px;
+        .profile-event-card-panel .event-card{
+          width:100%;
+          min-height:min(78svh, 720px);
+          border-radius:34px;
+          clip-path:inset(0 round 34px);
+          border-color:rgba(190,230,255,.18);
+          box-shadow:
+            0 24px 70px rgba(0,0,0,.52),
+            0 0 0 1px rgba(127,210,255,.10),
+            inset 0 1px 0 rgba(255,255,255,.08);
+          backface-visibility:hidden;
+          -webkit-backface-visibility:hidden;
+        }
+
+        .profile-event-card-panel .event-media{
+          filter:saturate(1.18) contrast(1.05);
         }
 
         .profile-event-card-panel .event-content{
-          padding:20px 16px;
+          min-height:min(78svh, 720px);
+          padding:26px 22px 22px;
+          justify-content:flex-end;
+          background:linear-gradient(180deg, rgba(8,12,20,.10), rgba(5,8,14,.28) 48%, rgba(1,3,8,.70));
+          backdrop-filter:blur(8px);
+          -webkit-backdrop-filter:blur(8px);
         }
 
-        .profile-event-card-panel .event-meta-row{
-          flex-direction:column;
-          gap:3px;
+        .profile-event-card-panel .event-card.is-touch-active{
+          transform:translateY(-6px) scale(1.015);
+          box-shadow:
+            0 30px 82px rgba(0,0,0,.64),
+            0 0 0 1px rgba(135,220,255,.42),
+            0 0 52px rgba(78,178,255,.46),
+            0 0 96px rgba(64,128,255,.20);
         }
 
-        .profile-event-card-panel .event-meta-value{
-          text-align:left;
+        .profile-event-card-panel .event-card.is-touch-active .event-media{
+          transform:scale(1.085);
+          filter:saturate(1.28) contrast(1.08) blur(.6px);
+        }
+
+        .profile-event-card-panel .event-title{
+          font-size:clamp(34px, 10vw, 48px);
+          line-height:.98;
+          letter-spacing:-1.4px;
+        }
+
+        .profile-event-card-panel .event-copy{
+          font-size:clamp(16px, 4.2vw, 20px);
+          line-height:1.45;
+          -webkit-line-clamp:2;
+          max-width:100%;
+        }
+
+        .profile-event-card-panel .event-meta-label{ font-size:12px; }
+        .profile-event-card-panel .event-meta-value{ font-size:16px; }
+        .profile-event-card-panel .event-actions-primary{
+          grid-template-columns:1fr;
+          gap:12px;
         }
       }
 
@@ -3807,7 +3984,25 @@ router.get("/u/:username", async (req, res) => {
 
         function initProfileEventCards(){
           document.querySelectorAll('.profile-event-card-panel .js-event-card').forEach(function(card){
-            card.addEventListener('touchstart', function(){ card.classList.add('is-touch-active'); }, { passive:true });
+            card.classList.add('is-revealed');
+            function updatePointer(clientX, clientY){
+              const rect = card.getBoundingClientRect();
+              const x = Math.max(0, Math.min(100, ((clientX - rect.left) / Math.max(rect.width, 1)) * 100));
+              const y = Math.max(0, Math.min(100, ((clientY - rect.top) / Math.max(rect.height, 1)) * 100));
+              card.style.setProperty('--mx', x.toFixed(2) + '%');
+              card.style.setProperty('--my', y.toFixed(2) + '%');
+            }
+            card.addEventListener('pointermove', function(event){ updatePointer(event.clientX, event.clientY); });
+            card.addEventListener('pointerenter', function(event){ updatePointer(event.clientX, event.clientY); });
+            card.addEventListener('touchstart', function(event){
+              card.classList.add('is-touch-active');
+              const touch = event.touches && event.touches[0];
+              if (touch) updatePointer(touch.clientX, touch.clientY);
+            }, { passive:true });
+            card.addEventListener('touchmove', function(event){
+              const touch = event.touches && event.touches[0];
+              if (touch) updatePointer(touch.clientX, touch.clientY);
+            }, { passive:true });
             card.addEventListener('touchend', function(){ window.setTimeout(function(){ card.classList.remove('is-touch-active'); }, 180); }, { passive:true });
           });
           document.querySelectorAll('.profile-event-card-panel .js-save-form').forEach(function(form){
@@ -3823,7 +4018,7 @@ router.get("/u/:username", async (req, res) => {
                   const isGoing = !!data.going;
                   document.querySelectorAll('.js-save-btn[data-event-id="' + CSS.escape(eventId) + '"]').forEach(function(btn){
                     btn.classList.toggle('is-going', isGoing);
-                    btn.textContent = isGoing ? 'Going' : 'Going';
+                    btn.textContent = isGoing ? 'Going ' + String.fromCharCode(10003) : 'Going';
                   });
                   document.querySelectorAll('.js-going-count[data-event-id="' + CSS.escape(eventId) + '"]').forEach(function(node){
                     const count = Number(data.goingCount || 0);
