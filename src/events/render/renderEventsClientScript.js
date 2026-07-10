@@ -1166,6 +1166,19 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             grid.style.overflowAnchor = "none";
             document.documentElement.style.scrollBehavior = "auto";
             document.body.style.scrollBehavior = "auto";
+            document.documentElement.classList.add("is-android-smooth-scroll");
+            document.body.classList.add("is-android-smooth-scroll");
+
+            let scrollRestTimer = null;
+            function markAndroidScrolling() {
+              document.documentElement.classList.add("is-android-feed-scrolling");
+              document.body.classList.add("is-android-feed-scrolling");
+              if (scrollRestTimer) window.clearTimeout(scrollRestTimer);
+              scrollRestTimer = window.setTimeout(() => {
+                document.documentElement.classList.remove("is-android-feed-scrolling");
+                document.body.classList.remove("is-android-feed-scrolling");
+              }, 140);
+            }
 
             grid.querySelectorAll(".js-event-card").forEach((card) => {
               card.classList.add("is-revealed");
@@ -1241,6 +1254,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             }
 
             function onScroll() {
+              markAndroidScrolling();
               if (ticking) return;
               ticking = true;
               window.requestAnimationFrame(() => {

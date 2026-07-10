@@ -4858,6 +4858,74 @@ router.get("/u/:username", async (req, res) => {
       }
       /* End remove weather card edge glare */
 
+
+      /* Profile event pill small-screen stability */
+      .profile-event-card-panel .event-topline,
+      .profile-event-card-panel .event-pill-stack{
+        min-width:0;
+        max-width:100%;
+      }
+
+      .profile-event-card-panel .event-pill{
+        max-width:100%;
+        min-width:0;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .profile-event-card-panel .event-pill-soft{
+        max-width:min(46%, 176px);
+        min-width:0;
+      }
+
+      @media(max-width:430px){
+        .profile-event-card-panel .event-topline{
+          display:grid;
+          grid-template-columns:minmax(0, 1fr) auto;
+          gap:8px;
+          align-items:start;
+        }
+
+        .profile-event-card-panel .event-pill-stack{
+          display:flex;
+          flex-wrap:wrap;
+          gap:7px;
+          min-width:0;
+        }
+
+        .profile-event-card-panel .event-pill{
+          min-height:28px;
+          padding-inline:10px;
+          font-size:9px;
+          letter-spacing:.62px;
+        }
+
+        .profile-event-card-panel .event-pill-soft{
+          justify-self:end;
+          max-width:116px;
+          padding-inline:9px;
+          font-size:8.8px;
+          letter-spacing:.42px;
+        }
+      }
+
+      @media(max-width:370px){
+        .profile-event-card-panel .event-topline{
+          grid-template-columns:1fr;
+        }
+
+        .profile-event-card-panel .event-pill-soft{
+          justify-self:start;
+          max-width:100%;
+        }
+
+        .profile-event-card-panel .event-title{
+          font-size:clamp(29px, 9vw, 38px) !important;
+        }
+      }
+      /* End profile event pill small-screen stability */
+
 </style>
 
 

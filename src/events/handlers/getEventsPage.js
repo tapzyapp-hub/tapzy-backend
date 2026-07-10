@@ -2926,7 +2926,123 @@ module.exports = async function getEventsPage(req, res) {
         .events-story-search{width:28px !important;height:28px !important;padding:4px !important;}
       }
 
-    </style>
+    
+      /* Event pill small-screen stability */
+      .event-topline{
+        min-width:0;
+      }
+
+      .event-pill-stack{
+        min-width:0;
+        max-width:100%;
+      }
+
+      .event-pill{
+        max-width:100%;
+        min-width:0;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .event-pill-soft{
+        max-width:min(46%, 176px);
+        min-width:0;
+      }
+
+      @media(max-width:430px){
+        .mobile-events-grid .event-topline{
+          display:grid;
+          grid-template-columns:minmax(0, 1fr) auto;
+          gap:8px;
+          align-items:start;
+        }
+
+        .mobile-events-grid .event-pill-stack{
+          display:flex;
+          flex-wrap:wrap;
+          gap:7px;
+          min-width:0;
+          max-width:100%;
+        }
+
+        .mobile-events-grid .event-pill{
+          min-height:28px;
+          padding-inline:10px;
+          font-size:9px;
+          letter-spacing:.62px;
+          max-width:100%;
+        }
+
+        .mobile-events-grid .event-pill-soft{
+          justify-self:end;
+          max-width:116px;
+          padding-inline:9px;
+          font-size:8.8px;
+          letter-spacing:.42px;
+        }
+      }
+
+      @media(max-width:370px){
+        .mobile-events-grid .event-topline{
+          grid-template-columns:1fr;
+        }
+
+        .mobile-events-grid .event-pill-soft{
+          justify-self:start;
+          max-width:100%;
+        }
+
+        .mobile-events-grid .event-title{
+          font-size:clamp(29px, 9vw, 38px) !important;
+        }
+      }
+      /* End event pill small-screen stability */
+
+
+      /* Android event feed scroll smoothing */
+      @media(max-width:700px){
+        html.is-android-smooth-scroll,
+        body.is-android-smooth-scroll{
+          scroll-behavior:auto !important;
+          overscroll-behavior-y:contain !important;
+        }
+
+        body.is-android-smooth-scroll .mobile-events-grid{
+          contain:layout style;
+        }
+
+        body.is-android-smooth-scroll .mobile-events-grid .event-card{
+          content-visibility:auto;
+          contain-intrinsic-size:760px;
+          contain:layout paint style;
+          will-change:auto !important;
+          transform:translate3d(0,0,0);
+          -webkit-transform:translate3d(0,0,0);
+          backface-visibility:hidden;
+          -webkit-backface-visibility:hidden;
+        }
+
+        body.is-android-feed-scrolling .mobile-events-grid .event-card,
+        body.is-android-feed-scrolling .mobile-events-grid .event-media,
+        body.is-android-feed-scrolling .mobile-events-grid .event-content{
+          transition:none !important;
+          animation:none !important;
+        }
+
+        body.is-android-feed-scrolling .mobile-events-grid .event-card-glow,
+        body.is-android-feed-scrolling .mobile-events-grid .event-card-noise,
+        body.is-android-feed-scrolling .mobile-events-grid .event-card-edge,
+        body.is-android-feed-scrolling .mobile-events-grid .event-card::before,
+        body.is-android-feed-scrolling .mobile-events-grid .event-card::after{
+          opacity:0 !important;
+          animation:none !important;
+          transition:none !important;
+        }
+      }
+      /* End Android event feed scroll smoothing */
+
+</style>
 
 
 
