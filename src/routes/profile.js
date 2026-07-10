@@ -5313,6 +5313,9 @@ router.get("/u/:username", async (req, res) => {
           let timer = null;
           let controlsTimer = null;
           let soundOn = false;
+          try {
+            soundOn = window.localStorage && window.localStorage.getItem('tapzyProfileStorySound') === '1';
+          } catch (_) {}
           const hasVideo = items.some(function(item){ return !!item.isVideo; });
           if (soundBtn) {
             soundBtn.hidden = !hasVideo;
@@ -5342,7 +5345,84 @@ router.get("/u/:username", async (req, res) => {
             if (!soundBtn) return;
             soundBtn.classList.toggle('is-muted', !soundOn);
             soundBtn.setAttribute('aria-label', soundOn ? 'Mute story sound' : 'Turn story sound on');
-            if (video) video.muted = !soundOn;
+            if (video) {
+              video.muted = !soundOn;
+              video.defaultMuted = !soundOn;
+              if (soundOn) {
+                video.volume = 1;
+                video.removeAttribute('muted');
+              } else {
+                video.setAttribute('muted', '');
+              }
+            }
+          }
+
+          function rememberSoundChoice(){
+            try {
+              if (window.localStorage) window.localStorage.setItem('tapzyProfileStorySound', soundOn ? '1' : '0');
+            } catch (_) {}
+          }
+
+          function currentVideo(){
+            return frame.querySelector('video');
+          }
+
+          function playVideo(video){
+            if (!video) return;
+            video.play().catch(function(){
+              if (soundOn) return;
+              video.muted = true;
+              video.defaultMuted = true;
+              video.play().catch(function(){});
+            });
+          }
+
+          function restartVideo(video){
+            if (!video) return;
+            try { video.currentTime = 0; } catch (_) {}
+            playVideo(video);
+          }
+
+          function bindVideoStory(video){
+            if (!video || video.dataset.profileStoryBound === '1') return video;
+            video.dataset.profileStoryBound = '1';
+            video.autoplay = true;
+            video.loop = items.length <= 1;
+            video.playsInline = true;
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
+            video.preload = 'auto';
+            updateSoundLabel(video);
+            video.addEventListener('ended', function(){
+              if (items.length <= 1) {
+                restartVideo(video);
+                return;
+              }
+              next();
+            });
+            video.addEventListener('pause', function(){
+              if (document.visibilityState !== 'visible' || video.ended || !frame.contains(video)) return;
+              window.setTimeout(function(){
+                if (document.visibilityState === 'visible' && frame.contains(video) && video.paused && !video.ended) {
+                  playVideo(video);
+                }
+              }, 250);
+            });
+            video.addEventListener('error', function(){ timer = window.setTimeout(next, 1200); }, { once:true });
+            window.setTimeout(function(){ playVideo(video); }, 30);
+            return video;
+          }
+
+          function unlockStorySound(event){
+            if (event && event.target && event.target.closest('a, button')) return false;
+            if (!hasVideo || soundOn) return false;
+            soundOn = true;
+            rememberSoundChoice();
+            document.removeEventListener('pointerdown', unlockStorySound, true);
+            const video = currentVideo();
+            updateSoundLabel(video);
+            playVideo(video);
+            return true;
           }
 
           function makeTextStory(item){
@@ -5366,24 +5446,7 @@ router.get("/u/:username", async (req, res) => {
             const video = document.createElement('video');
             video.className = 'profile-story-stage-media';
             video.src = item.mediaUrl;
-            video.autoplay = true;
-            video.muted = !soundOn;
-            video.loop = items.length <= 1;
-            video.playsInline = true;
-            video.setAttribute('playsinline', '');
-            video.setAttribute('webkit-playsinline', '');
-            video.preload = 'auto';
-            video.addEventListener('ended', next);
-            video.addEventListener('error', function(){ timer = window.setTimeout(next, 1200); }, { once:true });
-            window.setTimeout(function(){
-              video.play().catch(function(){
-                video.muted = true;
-                soundOn = false;
-                updateSoundLabel(video);
-                video.play().catch(function(){});
-              });
-            }, 30);
-            return video;
+            return bindVideoStory(video);
           }
 
           function swapStoryNode(node, item){
@@ -5430,9 +5493,10 @@ router.get("/u/:username", async (req, res) => {
             soundBtn.addEventListener('click', function(e){
               e.stopPropagation();
               soundOn = !soundOn;
-              const video = frame.querySelector('video');
+              rememberSoundChoice();
+              const video = currentVideo();
               updateSoundLabel(video);
-              if (video) video.play().catch(function(){});
+              playVideo(video);
               showControls();
             });
           }
@@ -5476,10 +5540,13 @@ router.get("/u/:username", async (req, res) => {
 
           stage.addEventListener('pointerdown', function(e){
             if (e.target && e.target.closest('a, button')) return;
+            unlockStorySound();
             showControls();
           });
+          if (!soundOn) document.addEventListener('pointerdown', unlockStorySound, { capture:true });
 
           if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
+          bindVideoStory(currentVideo());
           if (items.length > 1) timer = window.setTimeout(next, 5200);
           showControls();
         }
