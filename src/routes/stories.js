@@ -5601,8 +5601,6 @@ router.get("/stories/:username", async (req, res) => {
             if (soundButton) soundButton.textContent = "Mute";
             video.play().catch(function(){
               video.muted = true;
-              tapzyViewerSoundUnlocked = false;
-              localStorage.setItem("tapzy_story_sound", "0");
               if (soundButton) soundButton.textContent = "Sound on";
             });
           } else {
@@ -5656,9 +5654,6 @@ router.get("/stories/:username", async (req, res) => {
               }
               if (video) video.play().catch(function(){
                 video.muted = true;
-                tapzyViewerSoundUnlocked = false;
-                tapzyViewerSoundMutedByUser = true;
-                localStorage.setItem("tapzy_story_sound", "0");
               });
               soundButton.textContent = tapzyViewerSoundUnlocked ? "Mute" : "Sound on";
             }

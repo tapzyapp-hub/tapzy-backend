@@ -5315,7 +5315,9 @@ router.get("/u/:username", async (req, res) => {
           let soundOn = false;
           let soundMutedByUser = false;
           try {
-            soundOn = window.localStorage && window.localStorage.getItem('tapzy_story_sound') === '1';
+            const savedStorySound = window.localStorage && window.localStorage.getItem('tapzy_story_sound');
+            soundOn = savedStorySound === '1';
+            soundMutedByUser = savedStorySound === '0';
           } catch (_) {}
           const hasVideo = items.some(function(item){ return !!item.isVideo; });
           if (soundBtn) {
@@ -5553,7 +5555,7 @@ router.get("/u/:username", async (req, res) => {
 
           if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
           bindVideoStory(currentVideo());
-          if (items.length > 1) timer = window.setTimeout(next, 5200);
+          if (items.length > 1 && !(items[0] && items[0].isVideo)) timer = window.setTimeout(next, 5200);
           showControls();
         }
 
