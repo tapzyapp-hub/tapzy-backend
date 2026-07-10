@@ -5314,7 +5314,7 @@ router.get("/u/:username", async (req, res) => {
           let controlsTimer = null;
           let soundOn = false;
           try {
-            soundOn = window.localStorage && window.localStorage.getItem('tapzyProfileStorySound') === '1';
+            soundOn = window.localStorage && window.localStorage.getItem('tapzy_story_sound') === '1';
           } catch (_) {}
           const hasVideo = items.some(function(item){ return !!item.isVideo; });
           if (soundBtn) {
@@ -5359,7 +5359,7 @@ router.get("/u/:username", async (req, res) => {
 
           function rememberSoundChoice(){
             try {
-              if (window.localStorage) window.localStorage.setItem('tapzyProfileStorySound', soundOn ? '1' : '0');
+              if (window.localStorage) window.localStorage.setItem('tapzy_story_sound', soundOn ? '1' : '0');
             } catch (_) {}
           }
 
@@ -5415,11 +5415,14 @@ router.get("/u/:username", async (req, res) => {
 
           function unlockStorySound(event){
             if (event && event.target && event.target.closest('a, button')) return false;
-            if (!hasVideo || soundOn) return false;
-            soundOn = true;
-            rememberSoundChoice();
-            document.removeEventListener('pointerdown', unlockStorySound, true);
+            if (!hasVideo) return false;
             const video = currentVideo();
+            if (!video) return false;
+            if (!soundOn) {
+              soundOn = true;
+              rememberSoundChoice();
+            }
+            document.removeEventListener('pointerdown', unlockStorySound, true);
             updateSoundLabel(video);
             playVideo(video);
             return true;
@@ -5543,7 +5546,7 @@ router.get("/u/:username", async (req, res) => {
             unlockStorySound();
             showControls();
           });
-          if (!soundOn) document.addEventListener('pointerdown', unlockStorySound, { capture:true });
+          document.addEventListener('pointerdown', unlockStorySound, { capture:true });
 
           if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
           bindVideoStory(currentVideo());
