@@ -6843,7 +6843,152 @@ router.get("/qr/:username", async (req, res) => {
 
       }
 
-    </style>
+
+      /* Static black profile header: compact final overrides */
+      .profile-showcase{
+        padding:18px !important;
+        border-radius:28px !important;
+        background:#000 !important;
+        border:1px solid rgba(120,196,255,.13) !important;
+        box-shadow:0 0 0 1px rgba(95,177,255,.06), 0 0 34px rgba(73,155,255,.10), 0 18px 44px rgba(0,0,0,.55) !important;
+      }
+
+      .profile-showcase-bg{
+        border-radius:28px !important;
+        background:radial-gradient(260px 180px at 18% 18%, rgba(52,126,212,.18), transparent 62%), linear-gradient(180deg,#000,#000) !important;
+        opacity:1 !important;
+      }
+
+      .profile-showcase-top-static{
+        min-height:118px !important;
+        display:flex !important;
+        flex-direction:row !important;
+        align-items:center !important;
+        gap:16px !important;
+      }
+
+      .profile-showcase-top-static .profile-showcase-avatar-wrap{
+        width:96px !important;
+        height:96px !important;
+        flex:0 0 96px !important;
+      }
+
+      .profile-showcase-top-static .profile-showcase-avatar-wrap::before{
+        inset:-7px !important;
+        border-radius:28px !important;
+        border-color:rgba(115,194,255,.88) !important;
+        box-shadow:0 0 18px rgba(87,170,255,.36), 0 0 42px rgba(48,110,255,.20) !important;
+      }
+
+      .profile-showcase-top-static .profile-showcase-avatar-wrap::after{
+        inset:-11px !important;
+        border-radius:32px !important;
+        opacity:.66 !important;
+      }
+
+      .profile-showcase-top-static .profile-showcase-avatar{
+        width:96px !important;
+        height:96px !important;
+        border-radius:24px !important;
+        font-size:34px !important;
+      }
+
+      .profile-showcase-main-compact{
+        width:auto !important;
+        min-width:0 !important;
+        flex:1 1 auto !important;
+        display:flex !important;
+        align-items:center !important;
+        padding-top:0 !important;
+      }
+
+      .profile-showcase-actions-premium{
+        width:100% !important;
+        margin-top:0 !important;
+        display:flex !important;
+        flex-direction:row !important;
+        flex-wrap:wrap !important;
+        gap:10px !important;
+        align-items:center !important;
+      }
+
+      .profile-action-chip{
+        min-height:48px !important;
+        flex:0 1 auto !important;
+        padding:0 14px 0 9px !important;
+        gap:9px !important;
+        border-radius:17px !important;
+        font-size:14px !important;
+        line-height:1 !important;
+        background:linear-gradient(180deg, rgba(9,14,23,.96), rgba(0,0,0,.98)) !important;
+        border:1px solid rgba(118,199,255,.34) !important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 18px rgba(87,170,255,.18), 0 0 34px rgba(48,110,255,.10) !important;
+      }
+
+      .profile-action-chip-icon{
+        width:32px !important;
+        height:32px !important;
+        border-radius:12px !important;
+        font-size:11px !important;
+        background:linear-gradient(180deg, rgba(47,132,255,.95), rgba(18,58,153,.98)) !important;
+        border:1px solid rgba(178,226,255,.44) !important;
+        box-shadow:0 0 16px rgba(87,170,255,.30) !important;
+      }
+
+      .profile-action-chip-save .profile-action-chip-icon{
+        font-size:20px !important;
+      }
+
+      @media (max-width: 430px){
+        .profile-showcase{
+          padding:16px !important;
+        }
+
+        .profile-showcase-top-static{
+          min-height:104px !important;
+          gap:12px !important;
+        }
+
+        .profile-showcase-top-static .profile-showcase-avatar-wrap,
+        .profile-showcase-top-static .profile-showcase-avatar{
+          width:82px !important;
+          height:82px !important;
+          flex-basis:82px !important;
+          border-radius:21px !important;
+        }
+
+        .profile-showcase-actions-premium{
+          gap:8px !important;
+        }
+
+        .profile-action-chip{
+          min-height:44px !important;
+          padding:0 11px 0 8px !important;
+          font-size:13px !important;
+        }
+
+        .profile-action-chip-icon{
+          width:29px !important;
+          height:29px !important;
+          border-radius:11px !important;
+        }
+      }
+
+      @media (max-width: 360px){
+        .profile-showcase-top-static{
+          align-items:flex-start !important;
+        }
+
+        .profile-showcase-actions-premium{
+          flex-direction:column !important;
+          align-items:flex-start !important;
+        }
+
+        .profile-action-chip{
+          width:auto !important;
+          max-width:100% !important;
+        }
+      }    </style>
 
     `;
 
