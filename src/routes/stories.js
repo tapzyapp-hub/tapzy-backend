@@ -2042,27 +2042,29 @@ router.get("/stories/live/new", async (req, res) => {
         :root{color-scheme:dark;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         *{box-sizing:border-box}
         html,body{margin:0;width:100%;height:100%;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
-        .tl-recorder{position:relative;height:100%;display:grid;grid-template-rows:1fr auto;background:#000;overflow:hidden}
-        video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05070c}
-        .tl-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),transparent 24%,rgba(0,0,0,.80))}
-        .tl-top{position:absolute;top:calc(var(--safe-top) + 20px);left:22px;right:22px;display:flex;align-items:center;justify-content:space-between;z-index:2}
-        .tl-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;background:rgba(15,18,26,.68);border:1px solid rgba(255,255,255,.12);font-size:12px;font-weight:950;letter-spacing:.18em}
+        .tl-recorder{position:relative;height:100%;min-height:100svh;background:#000;overflow:hidden;isolation:isolate}
+        video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:linear-gradient(180deg,#1d2022,#07090c)}
+        .tl-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.50),rgba(0,0,0,.05) 26%,rgba(0,0,0,.10) 48%,rgba(0,0,0,.82) 100%);pointer-events:none}
+        .tl-top{position:absolute;top:calc(var(--safe-top) + 18px);left:22px;right:22px;display:flex;align-items:center;justify-content:space-between;z-index:4}
+        .tl-badge{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border-radius:999px;background:rgba(16,18,26,.58);border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 34px rgba(0,0,0,.25);backdrop-filter:blur(18px) saturate(1.2);font-size:12px;font-weight:950;letter-spacing:.18em}
         .tl-dot{width:9px;height:9px;border-radius:999px;background:#ff285f;box-shadow:0 0 18px rgba(255,40,95,.75)}
-        .tl-close{width:54px;height:54px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.38);color:#fff;text-decoration:none;display:grid;place-items:center;font-size:30px;font-weight:300}
-        .tl-copy{position:absolute;left:22px;right:22px;bottom:calc(var(--safe-bottom) + 176px);z-index:2}
-        h1{margin:0 0 8px;font-size:42px;line-height:.98;letter-spacing:-.05em}
-        p{margin:0;color:rgba(255,255,255,.75);font-size:16px;line-height:1.35}
-        .tl-controls{position:absolute;left:18px;right:18px;bottom:calc(var(--safe-bottom) + 18px);z-index:2;display:grid;gap:12px}
-        input{width:100%;min-height:52px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.56);color:#fff;font:inherit;font-weight:800;outline:none}
-        .tl-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        button{min-height:56px;border:0;border-radius:999px;font:inherit;font-weight:950;font-size:17px;cursor:pointer}
-        button:disabled{opacity:.45;cursor:not-allowed}
-        .tl-primary{background:linear-gradient(135deg,#31d6ff,#2d6bff 52%,#123fbd);color:#fff;box-shadow:0 0 34px rgba(47,118,255,.38)}
-        .tl-danger{background:linear-gradient(135deg,#ff5f7e,#e90044);color:#fff;box-shadow:0 0 28px rgba(255,30,82,.25)}
-        .tl-ghost{background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.12)}
-        .tl-status{min-height:22px;text-align:center;color:#c9d7f2;font-size:13px;font-weight:800}
-        .is-recording .tl-dot{animation:pulse 1s infinite}
-        @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.72}}
+        .tl-close{width:54px;height:54px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(18,18,20,.42);color:#fff;text-decoration:none;display:grid;place-items:center;font-size:30px;font-weight:300;box-shadow:0 14px 34px rgba(0,0,0,.26);backdrop-filter:blur(16px)}
+        .tl-copy{display:none}
+        .tl-controls{position:absolute;left:14px;right:14px;bottom:calc(var(--safe-bottom) + 14px);z-index:3;display:grid;gap:12px;padding:14px;border-radius:30px;background:linear-gradient(180deg,rgba(13,16,22,.46),rgba(8,9,12,.76));border:1px solid rgba(255,255,255,.12);box-shadow:0 22px 70px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.10);backdrop-filter:blur(22px) saturate(1.25)}
+        .tl-dock-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:2px 2px 0}.tl-dock-title{min-width:0}
+        .tl-kicker{display:flex;align-items:center;gap:7px;margin:0 0 5px;color:rgba(228,238,255,.74);font-size:11px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}.tl-kicker::before{content:"";width:7px;height:7px;border-radius:999px;background:#ff285f;box-shadow:0 0 14px rgba(255,40,95,.75)}
+        h1{margin:0;font-size:clamp(32px,9vw,46px);line-height:.92;letter-spacing:0;font-weight:950;text-shadow:0 12px 34px rgba(0,0,0,.56)}
+        .tl-status{min-height:22px;text-align:right;color:#dce8ff;font-size:13px;font-weight:850;line-height:1.2;max-width:42%}
+        .tl-title-wrap{display:grid;gap:7px}.tl-title-label{color:rgba(255,255,255,.68);font-size:12px;font-weight:900;padding-left:3px}
+        input{width:100%;min-height:48px;padding:0 16px;border-radius:18px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.38);color:#fff;font:inherit;font-size:15px;font-weight:850;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+        input:focus{border-color:rgba(107,202,255,.55);box-shadow:0 0 0 3px rgba(49,170,255,.12), inset 0 1px 0 rgba(255,255,255,.08)}
+        .tl-studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tl-studio-card{min-height:86px;border-radius:22px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.07);padding:12px;display:flex;flex-direction:column;justify-content:space-between;gap:9px;overflow:hidden}.tl-studio-card strong{font-size:15px;line-height:1;font-weight:950}.tl-studio-card span{color:rgba(232,241,255,.64);font-size:12px;line-height:1.25;font-weight:750}.tl-studio-card.is-on{border-color:rgba(76,210,255,.28);background:linear-gradient(180deg,rgba(49,164,255,.18),rgba(255,255,255,.055))}
+        .tl-mini-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.tl-switch{position:relative;width:44px;height:26px;flex:0 0 auto;border:0;border-radius:999px;background:rgba(255,255,255,.16);padding:0;cursor:pointer}.tl-switch::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:999px;background:#fff;transition:transform .2s ease}.tl-studio-card.is-on .tl-switch{background:linear-gradient(135deg,#31d6ff,#2d6bff)}.tl-studio-card.is-on .tl-switch::after{transform:translateX(18px)}
+        .tl-chat-preview{display:grid;gap:7px;padding:10px 11px;border-radius:20px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.08)}.tl-chat-line{display:flex;gap:7px;align-items:center;color:rgba(255,255,255,.82);font-size:12px;font-weight:760;min-width:0}.tl-chat-line b{color:#fff;font-weight:950;white-space:nowrap}.tl-gift-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.tl-gift-pill{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);font-size:12px;font-weight:900;color:#fff}
+        .tl-buttons{display:grid;grid-template-columns:1.15fr .85fr .85fr;gap:10px;align-items:center}button{min-height:54px;border:0;border-radius:18px;font:inherit;font-weight:950;font-size:16px;cursor:pointer;color:#fff;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none!important}.tl-primary{background:linear-gradient(135deg,#31d6ff,#2d6bff 52%,#123fbd);box-shadow:0 0 34px rgba(47,118,255,.36)}.tl-danger{display:none;background:linear-gradient(135deg,#ff5f7e,#e90044);box-shadow:0 0 28px rgba(255,30,82,.25)}.is-recording .tl-primary{display:none}.is-recording .tl-danger{display:block}.tl-ghost{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}.tl-cancel{color:#ffd6de;background:rgba(255,45,85,.12);border-color:rgba(255,90,120,.18)}
+        .is-recording .tl-dot{animation:pulse 1s infinite}.is-recording .tl-badge{background:rgba(48,11,22,.58);border-color:rgba(255,64,112,.22)}@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.72}}
+        @media(max-width:420px){.tl-top{left:18px;right:18px}.tl-controls{left:10px;right:10px;bottom:calc(var(--safe-bottom) + 10px);padding:12px;border-radius:26px;gap:10px}.tl-studio-grid{grid-template-columns:1fr}.tl-studio-card{min-height:74px}.tl-chat-preview{display:none}.tl-buttons{grid-template-columns:1fr 1fr}.tl-primary,.tl-danger{grid-column:1 / -1}.tl-status{max-width:45%;font-size:12px}button{min-height:52px}}
+        @media(max-height:720px){.tl-studio-card{min-height:68px}.tl-studio-card span,.tl-chat-preview{display:none}.tl-controls{gap:9px}.tl-title-label{display:none}input{min-height:44px}.tl-buttons button{min-height:50px}}
       </style>
     </head>
     <body>
@@ -2073,21 +2075,39 @@ router.get("/stories/live/new", async (req, res) => {
           <div class="tl-badge"><span class="tl-dot"></span>LIVE REC</div>
           <a class="tl-close" href="/stories/feed" aria-label="Close">×</a>
         </div>
-        <section class="tl-copy">
-          <h1>Go Live</h1>
-          <p>Record in the app. When you end it, Tapzy posts the video story for 24 hours.</p>
-        </section>
         <section class="tl-controls">
-          <input id="title" maxlength="120" value="${escapeHtml(defaultTitle)}" placeholder="${escapeHtml(displayName)}" autocomplete="off" />
+          <div class="tl-dock-head">
+            <div class="tl-dock-title">
+              <div class="tl-kicker">Creator studio</div>
+              <h1>Go Live</h1>
+            </div>
+            <div class="tl-status" id="status">Starting camera...</div>
+          </div>
+          <div class="tl-title-wrap">
+            <label class="tl-title-label" for="title">Live title</label>
+            <input id="title" maxlength="120" value="${escapeHtml(defaultTitle)}" placeholder="${escapeHtml(displayName)} is live" autocomplete="off" />
+          </div>
+          <div class="tl-studio-grid">
+            <div class="tl-studio-card is-on" id="chatSetup">
+              <div class="tl-mini-row"><strong>Live chat</strong><button class="tl-switch" id="chatToggle" type="button" aria-label="Toggle live chat"></button></div>
+              <span>Viewers can talk while you stream.</span>
+              <div class="tl-chat-preview" aria-hidden="true">
+                <div class="tl-chat-line"><b>Tapzy</b><span>Welcome everyone in.</span></div>
+                <div class="tl-chat-line"><b>Viewer</b><span>Looks good.</span></div>
+              </div>
+            </div>
+            <div class="tl-studio-card is-on" id="donationSetup">
+              <div class="tl-mini-row"><strong>Donations</strong><button class="tl-switch" id="donationToggle" type="button" aria-label="Toggle donations"></button></div>
+              <span>Gift buttons show on your live room.</span>
+              <div class="tl-gift-row" aria-hidden="true"><span class="tl-gift-pill">$2</span><span class="tl-gift-pill">$5</span><span class="tl-gift-pill">$10</span></div>
+            </div>
+          </div>
           <div class="tl-buttons">
-            <button class="tl-primary" id="startBtn" type="button">Start</button>
+            <button class="tl-primary" id="startBtn" type="button">Start Live</button>
             <button class="tl-danger" id="stopBtn" type="button" disabled>End & Post</button>
-          </div>
-          <div class="tl-buttons">
             <button class="tl-ghost" id="flipBtn" type="button">Flip</button>
-            <button class="tl-ghost" id="cancelBtn" type="button">Cancel</button>
+            <button class="tl-ghost tl-cancel" id="cancelBtn" type="button">Cancel</button>
           </div>
-          <div class="tl-status" id="status">Starting camera...</div>
         </section>
       </main>
       <script src="/socket.io/socket.io.js"></script>
@@ -2101,6 +2121,10 @@ router.get("/stories/live/new", async (req, res) => {
           const cancelBtn = document.getElementById('cancelBtn');
           const titleInput = document.getElementById('title');
           const status = document.getElementById('status');
+          const chatSetup = document.getElementById('chatSetup');
+          const donationSetup = document.getElementById('donationSetup');
+          const chatToggle = document.getElementById('chatToggle');
+          const donationToggle = document.getElementById('donationToggle');
           const CHUNK_SIZE = 8 * 1024 * 1024;
           const DIRECT_LIMIT = 110 * 1024 * 1024;
           let stream = null;
@@ -2117,6 +2141,18 @@ router.get("/stories/live/new", async (req, res) => {
           const peerConfig = { iceServers: [{ urls:'stun:stun.l.google.com:19302' }, { urls:'stun:stun1.l.google.com:19302' }] };
 
           function setStatus(text){ status.textContent = text || ''; }
+          function bindSetupToggle(button, card, onText, offText){
+            if (!button || !card) return;
+            button.addEventListener('click', function(){
+              const next = !card.classList.contains('is-on');
+              card.classList.toggle('is-on', next);
+              button.setAttribute('aria-pressed', next ? 'true' : 'false');
+              setStatus(next ? onText : offText);
+            });
+            button.setAttribute('aria-pressed', card.classList.contains('is-on') ? 'true' : 'false');
+          }
+          bindSetupToggle(chatToggle, chatSetup, 'Chat is on', 'Chat is off');
+          bindSetupToggle(donationToggle, donationSetup, 'Donations are on', 'Donations are off');
           function mimeType(){
             if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
             return ['video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(function(type){
