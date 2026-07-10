@@ -3383,6 +3383,91 @@ router.get("/u/:username", async (req, res) => {
           box-sizing:border-box !important;
         }
       }
+
+
+      .profile-showcase,
+      .profile-showcase-top,
+      .profile-showcase-avatar-wrap,
+      .profile-showcase-avatar,
+      .profile-showcase-main,
+      .profile-story-stage{
+        transition:
+          min-height .42s ease,
+          padding .42s ease,
+          width .42s ease,
+          height .42s ease,
+          gap .42s ease,
+          opacity .32s ease,
+          transform .32s ease;
+      }
+
+      .profile-showcase.is-secondary-dim{
+        padding:14px;
+      }
+
+      .profile-showcase.is-secondary-dim .profile-showcase-top{
+        grid-template-columns:66px minmax(0, 1fr);
+        gap:12px;
+        align-items:center;
+      }
+
+      .profile-showcase.is-secondary-dim .profile-showcase-avatar-wrap,
+      .profile-showcase.is-secondary-dim .profile-showcase-avatar{
+        width:66px;
+        height:66px;
+        border-radius:18px;
+      }
+
+      .profile-showcase.is-secondary-dim .profile-showcase-avatar-wrap::before{
+        inset:-6px;
+        border-radius:22px;
+      }
+
+      .profile-showcase.is-secondary-dim .profile-showcase-avatar-wrap::after{
+        inset:-10px;
+        border-radius:26px;
+      }
+
+      .profile-showcase.is-secondary-dim .profile-showcase-main{
+        max-height:0;
+        min-height:0;
+        overflow:hidden;
+        opacity:0;
+        pointer-events:none;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-story-stage{
+        min-height:min(900px, calc(100svh - 72px));
+      }
+
+      @media(max-width:700px){
+        .profile-showcase.is-secondary-dim{
+          padding:10px;
+          border-radius:24px;
+        }
+
+        .profile-showcase.is-secondary-dim .profile-showcase-bg{
+          border-radius:24px;
+        }
+
+        .profile-showcase.is-secondary-dim .profile-showcase-top{
+          display:grid;
+          grid-template-columns:44px minmax(0, 1fr);
+          gap:8px;
+          align-items:center;
+        }
+
+        .profile-showcase.is-secondary-dim .profile-showcase-avatar-wrap,
+        .profile-showcase.is-secondary-dim .profile-showcase-avatar{
+          width:44px;
+          height:44px;
+          border-radius:14px;
+        }
+
+        .profile-wrap.is-profile-condensed .profile-story-stage{
+          min-height:min(760px, calc(100dvh - 86px));
+        }
+      }
 </style>
 
 
@@ -3450,23 +3535,32 @@ router.get("/u/:username", async (req, res) => {
         function initProfileShowcaseFade(){
           const shell = document.getElementById('tapzyProfileShell');
           if (!shell) return;
+          const profileWrap = shell.closest('.profile-wrap');
           let timer = null;
+          let restoreTapCount = 0;
           function dim(){
+            restoreTapCount = 0;
             shell.classList.add('is-secondary-dim');
+            if (profileWrap) profileWrap.classList.add('is-profile-condensed');
           }
           function wake(){
+            restoreTapCount = 0;
             shell.classList.remove('is-secondary-dim');
+            if (profileWrap) profileWrap.classList.remove('is-profile-condensed');
             if (timer) window.clearTimeout(timer);
-            timer = window.setTimeout(dim, 4000);
+            timer = window.setTimeout(dim, 30000);
           }
-          shell.addEventListener('click', function(event){
+          document.addEventListener('click', function(event){
             if (shell.classList.contains('is-secondary-dim')) {
-              event.preventDefault();
-              event.stopPropagation();
+              restoreTapCount += 1;
+              if (restoreTapCount >= 3) wake();
+              return;
             }
             wake();
           }, true);
-          shell.addEventListener('touchstart', wake, { passive:true });
+          document.addEventListener('touchstart', function(){
+            if (!shell.classList.contains('is-secondary-dim')) wake();
+          }, { passive:true, capture:true });
           wake();
         }
 
