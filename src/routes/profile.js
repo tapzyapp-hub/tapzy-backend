@@ -119,24 +119,6 @@ function formatStoryTimeShort(date) {
 
 }
 
-function profileDiscoveryItemFromStory(story) {
-  const storyProfile = story.profile || {};
-  const storyName = storyProfile.name || storyProfile.username || "Tapzy Network\u2122";
-  const engagementScore =
-    Number(story._count?.likes || 0) * 3 +
-    Number(story._count?.replies || 0) * 2 +
-    Number(story._count?.views || 0);
-  return {
-    id: story.id,
-    mediaUrl: story.mediaUrl || "",
-    isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
-    title: storyName,
-    meta: "Tapzy Story",
-    score: engagementScore,
-  };
-}
-
-
 function tapzyMarkImg(className = "tapzy-mark") {
   return `<img class="${escapeHtml(className)}" src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />`;
 }
@@ -226,36 +208,6 @@ function storyStageMedia(profile, story) {
 
 
 
-router.get("/u/:username/discovery-items", async (req, res) => {
-  try {
-    const currentProfile = req.currentProfile || null;
-    const now = new Date();
-    const excludedDiscoveryProfileIds = currentProfile ? [currentProfile.id] : [];
-    const stories = await prisma.story.findMany({
-      where: {
-        profileId: excludedDiscoveryProfileIds.length ? { notIn: excludedDiscoveryProfileIds } : undefined,
-        expiresAt: { gt: now },
-        mediaUrl: { not: null },
-      },
-      include: {
-        profile: true,
-        _count: { select: { likes: true, views: true, replies: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
-    const items = stories
-      .filter((story) => story.mediaUrl && !excludedDiscoveryProfileIds.includes(story.profileId))
-      .map(profileDiscoveryItemFromStory)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 12);
-    res.setHeader("Cache-Control", "no-store");
-    return res.json({ ok: true, items });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ ok: false, items: [] });
-  }
-});
 router.get("/u/:username", async (req, res) => {
 
   try {
@@ -296,7 +248,10 @@ router.get("/u/:username", async (req, res) => {
 
     const quickShareOn = !!profile.quickShareEnabled;
     const quickPreview = quickShareOn ? buildQuickSharePreview(profile) : [];
-    const excludedDiscoveryProfileIds = currentProfile ? [currentProfile.id] : [];
+    const excludedDiscoveryProfileIds =
+      currentProfile && currentProfile.id !== profile.id
+        ? [profile.id, currentProfile.id]
+        : [profile.id];
 
 
 
@@ -398,7 +353,22 @@ router.get("/u/:username", async (req, res) => {
 
     const profileDiscoveryItems = discoveryStories
       .filter((story) => story.mediaUrl && !excludedDiscoveryProfileIds.includes(story.profileId))
-      .map(profileDiscoveryItemFromStory)
+      .map((story) => {
+        const storyProfile = story.profile || {};
+        const storyName = storyProfile.name || storyProfile.username || "Tapzy Network™";
+        const engagementScore =
+          Number(story._count?.likes || 0) * 3 +
+          Number(story._count?.replies || 0) * 2 +
+          Number(story._count?.views || 0);
+        return {
+          id: story.id,
+          mediaUrl: story.mediaUrl || "",
+          isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
+          title: storyName,
+          meta: "Tapzy Story",
+          score: engagementScore,
+        };
+      })
       .sort((a, b) => b.score - a.score)
       .slice(0, 12);
     const profileDiscoveryJson = JSON.stringify(profileDiscoveryItems).replace(/</g, "\\u003c");
@@ -522,38 +492,73 @@ router.get("/u/:username", async (req, res) => {
       <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
 
         <div class="profile-showcase-bg"></div>
+        <script type="application/json" data-profile-discovery-items>${profileDiscoveryJson}</script>
+        <div class="profile-showcase-discovery" data-profile-discovery-screen aria-hidden="true">
+          <div class="profile-showcase-discovery-media" data-profile-discovery-media></div>
+          <div class="profile-showcase-discovery-shade"></div>
+          <div class="profile-showcase-discovery-copy">
+            <strong data-profile-discovery-title>Tapzy Network™</strong>
+            <span data-profile-discovery-meta>Discovery</span>
+          </div>
+        </div>
 
 
 
-        <div class="profile-showcase-top profile-showcase-top-static">
+        <div class="profile-showcase-top">
 
           <div class="profile-showcase-avatar-wrap">
 
-            <button type="button" class="profile-showcase-avatar" data-profile-photo-open aria-label="Open profile picture">${photoHtml}</button>
+            <button type="button" class="profile-showcase-avatar" data-profile-photo-open aria-label="Open profile picture for ${escapeHtml(displayName)}">${photoHtml}</button>
 
           </div>
 
 
 
-          <div class="profile-showcase-main profile-showcase-main-compact">
+          <div class="profile-showcase-main">
 
-            <div class="profile-showcase-actions profile-showcase-actions-premium" aria-label="Profile actions">
+            <div class="profile-showcase-name">${escapeHtml(displayName)}</div>
 
-              <a class="profile-action-chip profile-action-chip-qr" href="/qr/${escapeHtml(profile.username || "")}" aria-label="Open QR code">
+            <div class="profile-showcase-handle">@${escapeHtml(profile.username || "user")}</div>
 
-                <span class="profile-action-chip-icon">QR</span>
 
-                <span class="profile-action-chip-text">QR Code</span>
 
-              </a>
+            <div class="profile-showcase-actions">
 
-              <a class="profile-action-chip profile-action-chip-save" href="/vcard/${escapeHtml(profile.username || "")}" aria-label="Save contact">
+              ${
 
-                <span class="profile-action-chip-icon">+</span>
+                showFollowButton
 
-                <span class="profile-action-chip-text">Save Contact</span>
+                  ? renderFollowButton(currentProfile, profile, followState.isFollowing)
 
-              </a>
+                  : ""
+
+              }
+
+
+
+              ${
+
+                showMessageButton
+
+                  ? `
+
+                    <form method="POST" action="/messages/start/${escapeHtml(profile.username || "")}" style="margin:0;">
+
+                      <button class="profile-pill-btn profile-pill-btn-dark" type="submit">Message</button>
+
+                    </form>
+
+                  `
+
+                  : ""
+
+              }
+
+
+
+              <a class="profile-pill-btn profile-pill-btn-dark profile-showcase-secondary" href="/qr/${escapeHtml(profile.username || "")}">QR</a>
+
+              <a class="profile-pill-btn profile-pill-btn-dark profile-showcase-secondary" href="/vcard/${escapeHtml(profile.username || "")}">Save Contact</a>
 
             </div>
 
@@ -2026,81 +2031,6 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      .profile-showcase{
-        background:#000;
-      }
-
-      .profile-showcase-bg{
-        background:
-          radial-gradient(420px 260px at 18% 14%, rgba(28,67,112,.22), transparent 56%),
-          linear-gradient(180deg, rgba(0,0,0,1), rgba(0,0,0,1));
-      }
-      .profile-showcase-top-static{
-        min-height:250px;
-        align-items:center;
-      }
-
-      .profile-showcase-main-compact{
-        display:flex;
-        align-items:center;
-        justify-content:flex-start;
-      }
-
-      .profile-showcase-actions-premium{
-        margin-top:0;
-        gap:14px;
-      }
-
-      .profile-action-chip{
-        min-height:62px;
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        gap:12px;
-        padding:0 20px 0 14px;
-        border-radius:22px;
-        color:#fff;
-        text-decoration:none;
-        font-size:16px;
-        font-weight:900;
-        letter-spacing:0;
-        background:linear-gradient(180deg, rgba(14,22,36,.92), rgba(2,4,9,.96));
-        border:1px solid rgba(130,197,255,.24);
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 14px 30px rgba(0,0,0,.28), 0 0 28px rgba(63,145,255,.10);
-        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-      }
-
-      .profile-action-chip:hover,
-      .profile-action-chip:focus-visible{
-        transform:translateY(-1px);
-        border-color:rgba(130,197,255,.48);
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 16px 34px rgba(0,0,0,.32), 0 0 34px rgba(63,145,255,.18);
-      }
-
-      .profile-action-chip-icon{
-        width:40px;
-        height:40px;
-        border-radius:15px;
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        flex:0 0 auto;
-        color:#fff;
-        font-size:14px;
-        font-weight:950;
-        background:linear-gradient(180deg, rgba(52,119,255,.82), rgba(14,43,112,.92));
-        border:1px solid rgba(166,217,255,.35);
-        box-shadow:0 0 18px rgba(72,152,255,.28);
-      }
-
-      .profile-action-chip-save .profile-action-chip-icon{
-        font-size:24px;
-        line-height:1;
-      }
-
-      .profile-action-chip-text{
-        white-space:nowrap;
-      }
       .profile-panel{
 
         position:relative;
@@ -3732,7 +3662,145 @@ router.get("/u/:username", async (req, res) => {
     <script>
       (function(){
         function initProfileShowcaseFade(){
-          return;
+          const shell = document.getElementById('tapzyProfileShell');
+          if (!shell) return;
+          const source = shell.querySelector('[data-profile-discovery-items]');
+          const discoveryScreen = shell.querySelector('[data-profile-discovery-screen]');
+          const discoveryMedia = shell.querySelector('[data-profile-discovery-media]');
+          const discoveryTitle = shell.querySelector('[data-profile-discovery-title]');
+          const discoveryMeta = shell.querySelector('[data-profile-discovery-meta]');
+          let timer = null;
+          let discoveryTimer = null;
+          let discoveryStartTimer = null;
+          let discoveryIndex = 0;
+          let discoveryStarted = false;
+          let activeDiscoveryId = null;
+          let activeDiscoveryStartedAt = 0;
+          let discoveryItems = [];
+          let dwellScores = {};
+          try {
+            discoveryItems = source ? JSON.parse(source.textContent || '[]') || [] : [];
+          } catch (_) {
+            discoveryItems = [];
+          }
+          try {
+            dwellScores = JSON.parse(localStorage.getItem('tapzy_profile_discovery_dwell') || '{}') || {};
+          } catch (_) {
+            dwellScores = {};
+          }
+          if (discoveryItems.length) {
+            discoveryItems.sort(function(a, b){
+              const aScore = Number(a.score || 0) + Number(dwellScores[a.id] || 0);
+              const bScore = Number(b.score || 0) + Number(dwellScores[b.id] || 0);
+              return bScore - aScore;
+            });
+          }
+          function dim(){
+            shell.classList.add('is-secondary-dim');
+          }
+          function saveDiscoveryDwell(){
+            if (!activeDiscoveryId || !activeDiscoveryStartedAt) return;
+            const seconds = Math.max(0, Math.round((Date.now() - activeDiscoveryStartedAt) / 1000));
+            if (!seconds) return;
+            dwellScores[activeDiscoveryId] = Math.min(600, Number(dwellScores[activeDiscoveryId] || 0) + seconds);
+            try { localStorage.setItem('tapzy_profile_discovery_dwell', JSON.stringify(dwellScores)); } catch (_) {}
+            activeDiscoveryStartedAt = Date.now();
+          }
+          function clearDiscoveryTimer(){
+            if (discoveryTimer) window.clearTimeout(discoveryTimer);
+            discoveryTimer = null;
+          }
+          function scheduleDiscoveryStart(){
+            if (discoveryStartTimer) window.clearTimeout(discoveryStartTimer);
+            discoveryStartTimer = window.setTimeout(startDiscovery, 20000);
+          }
+          function nextDiscovery(){
+            if (!discoveryItems.length) return;
+            discoveryIndex = (discoveryIndex + 1) % discoveryItems.length;
+            renderDiscovery();
+          }
+          function renderDiscovery(){
+            if (!discoveryMedia) return;
+            clearDiscoveryTimer();
+            saveDiscoveryDwell();
+            discoveryMedia.replaceChildren();
+            discoveryScreen.classList.remove('is-empty');
+            shell.classList.remove('is-discovery-empty');
+            if (!discoveryItems.length) {
+              activeDiscoveryId = null;
+              activeDiscoveryStartedAt = 0;
+              discoveryScreen.classList.add('is-empty');
+              shell.classList.add('is-discovery-empty');
+              if (discoveryTitle) discoveryTitle.textContent = '';
+              if (discoveryMeta) discoveryMeta.textContent = '';
+              const empty = document.createElement('div');
+              empty.className = 'profile-showcase-discovery-empty';
+              discoveryMedia.appendChild(empty);
+              return;
+            }
+            const item = discoveryItems[discoveryIndex] || discoveryItems[0];
+            activeDiscoveryId = item.id || null;
+            activeDiscoveryStartedAt = Date.now();
+            if (discoveryTitle) discoveryTitle.textContent = item.title || 'Tapzy Network�';
+            if (discoveryMeta) discoveryMeta.textContent = item.meta || 'Discovery';
+            if (item.isVideo) {
+              const video = document.createElement('video');
+              video.src = item.mediaUrl;
+              video.autoplay = true;
+              video.muted = true;
+              video.loop = discoveryItems.length <= 1;
+              video.playsInline = true;
+              video.setAttribute('playsinline', '');
+              video.setAttribute('webkit-playsinline', '');
+              video.preload = 'auto';
+              video.addEventListener('ended', nextDiscovery, { once:true });
+              video.addEventListener('error', function(){ discoveryTimer = window.setTimeout(nextDiscovery, 1200); }, { once:true });
+              discoveryMedia.appendChild(video);
+              window.setTimeout(function(){ video.play().catch(function(){}); }, 40);
+              discoveryTimer = window.setTimeout(nextDiscovery, 14000);
+            } else {
+              const img = document.createElement('img');
+              img.src = item.mediaUrl;
+              img.alt = item.title || 'Tapzy discovery story';
+              img.loading = 'eager';
+              img.decoding = 'async';
+              discoveryMedia.appendChild(img);
+              discoveryTimer = window.setTimeout(nextDiscovery, 5600);
+            }
+          }
+          function startDiscovery(){
+            if (discoveryStarted || !discoveryScreen || !discoveryMedia) return;
+            discoveryStartTimer = null;
+            discoveryStarted = true;
+            shell.classList.add('is-discovery-screen');
+            discoveryScreen.setAttribute('aria-hidden', 'false');
+            renderDiscovery();
+          }
+          function wake(){
+            if (shell.classList.contains('is-discovery-screen')) {
+              saveDiscoveryDwell();
+              shell.classList.remove('is-discovery-screen');
+              shell.classList.remove('is-discovery-empty');
+              if (discoveryScreen) discoveryScreen.setAttribute('aria-hidden', 'true');
+              clearDiscoveryTimer();
+              discoveryStarted = false;
+              activeDiscoveryId = null;
+            }
+            shell.classList.remove('is-secondary-dim');
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(dim, 4000);
+            scheduleDiscoveryStart();
+          }
+          shell.addEventListener('click', function(event){
+            if (shell.classList.contains('is-secondary-dim')) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            wake();
+          }, true);
+          shell.addEventListener('touchstart', wake, { passive:true });
+          window.addEventListener('pagehide', saveDiscoveryDwell);
+          wake();
         }
 
         function initProfileStoryFeed(){
@@ -5606,39 +5674,6 @@ router.get("/edit/:username", async (req, res) => {
 
       }
 
-      @media (max-width: 560px){
-        .profile-showcase-top-static{
-          min-height:230px;
-        }
-
-        .profile-showcase-main-compact{
-          width:100%;
-        }
-
-        .profile-showcase-actions-premium{
-          width:100%;
-          gap:10px;
-        }
-
-        .profile-action-chip{
-          min-height:54px;
-          padding:0 14px 0 10px;
-          border-radius:18px;
-          font-size:14px;
-          flex:1 1 calc(50% - 6px);
-        }
-
-        .profile-action-chip-icon{
-          width:34px;
-          height:34px;
-          border-radius:13px;
-          font-size:12px;
-        }
-
-        .profile-action-chip-save .profile-action-chip-icon{
-          font-size:20px;
-        }
-      }
     </style>
 
     <script>
@@ -6843,165 +6878,6 @@ router.get("/qr/:username", async (req, res) => {
 
       }
 
-
-      /* Static black profile header: compact final overrides */
-      .profile-showcase{
-        padding:18px !important;
-        border-radius:28px !important;
-        background:#000 !important;
-        border:1px solid rgba(255,255,255,.075) !important;
-        box-shadow:0 18px 42px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.025) !important;
-      }
-
-      .profile-showcase-bg{
-        border-radius:28px !important;
-        background:
-          radial-gradient(circle at 50% 50%, rgba(255,255,255,.025) 0 1px, transparent 1px),
-          linear-gradient(180deg,#010101,#000) !important;
-        background-size:14px 14px, auto !important;
-        opacity:.82 !important;
-      }
-
-      .profile-showcase-top-static{
-        min-height:128px !important;
-        display:flex !important;
-        flex-direction:row !important;
-        align-items:center !important;
-        gap:16px !important;
-      }
-
-      .profile-showcase-top-static .profile-showcase-avatar-wrap{
-        width:86px !important;
-        height:86px !important;
-        flex:0 0 86px !important;
-      }
-
-      .profile-showcase-top-static .profile-showcase-avatar-wrap::before{
-        inset:-6px !important;
-        border-radius:26px !important;
-        border-color:rgba(115,194,255,.78) !important;
-        box-shadow:0 0 16px rgba(87,170,255,.34), 0 0 36px rgba(48,110,255,.18) !important;
-      }
-
-      .profile-showcase-top-static .profile-showcase-avatar-wrap::after{
-        inset:-10px !important;
-        border-radius:30px !important;
-        opacity:.48 !important;
-      }
-
-      .profile-showcase-top-static .profile-showcase-avatar{
-        width:86px !important;
-        height:86px !important;
-        border-radius:22px !important;
-        font-size:30px !important;
-      }
-
-      .profile-showcase-main-compact{
-        width:auto !important;
-        min-width:0 !important;
-        flex:1 1 auto !important;
-        display:flex !important;
-        align-items:center !important;
-        padding-top:0 !important;
-      }
-
-      .profile-showcase-actions-premium{
-        width:auto !important;
-        margin-top:0 !important;
-        display:flex !important;
-        flex-direction:row !important;
-        flex-wrap:wrap !important;
-        gap:8px !important;
-        align-items:center !important;
-      }
-
-      .profile-action-chip{
-        min-height:36px !important;
-        flex:0 0 auto !important;
-        padding:0 11px 0 7px !important;
-        gap:7px !important;
-        border-radius:14px !important;
-        color:#fff !important;
-        font-size:12px !important;
-        font-weight:850 !important;
-        line-height:1 !important;
-        background:linear-gradient(180deg, rgba(12,13,17,.96), rgba(0,0,0,.98)) !important;
-        border:1px solid rgba(118,199,255,.30) !important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 14px rgba(87,170,255,.16), 0 0 28px rgba(48,110,255,.08) !important;
-      }
-
-      .profile-action-chip:hover,
-      .profile-action-chip:focus-visible{
-        transform:translateY(-1px) !important;
-        border-color:rgba(130,207,255,.52) !important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 0 18px rgba(87,170,255,.22), 0 0 34px rgba(48,110,255,.12) !important;
-      }
-
-      .profile-action-chip-icon{
-        width:24px !important;
-        height:24px !important;
-        border-radius:9px !important;
-        font-size:9px !important;
-        background:linear-gradient(180deg, rgba(39,118,255,.92), rgba(16,52,145,.98)) !important;
-        border:1px solid rgba(178,226,255,.38) !important;
-        box-shadow:0 0 12px rgba(87,170,255,.24) !important;
-      }
-
-      .profile-action-chip-save .profile-action-chip-icon{
-        font-size:16px !important;
-      }
-
-      .profile-action-chip-text{
-        white-space:nowrap !important;
-      }
-
-      @media (max-width: 430px){
-        .profile-showcase{
-          padding:16px !important;
-        }
-
-        .profile-showcase-top-static{
-          min-height:112px !important;
-          gap:12px !important;
-        }
-
-        .profile-showcase-top-static .profile-showcase-avatar-wrap,
-        .profile-showcase-top-static .profile-showcase-avatar{
-          width:76px !important;
-          height:76px !important;
-          flex-basis:76px !important;
-          border-radius:20px !important;
-        }
-
-        .profile-showcase-actions-premium{
-          gap:7px !important;
-        }
-
-        .profile-action-chip{
-          min-height:34px !important;
-          padding:0 9px 0 6px !important;
-          font-size:11px !important;
-        }
-
-        .profile-action-chip-icon{
-          width:22px !important;
-          height:22px !important;
-          border-radius:8px !important;
-        }
-      }
-
-      @media (max-width: 360px){
-        .profile-showcase-top-static{
-          min-height:108px !important;
-          gap:10px !important;
-        }
-
-        .profile-action-chip-text{
-          max-width:74px !important;
-          overflow:hidden !important;
-          text-overflow:ellipsis !important;
-        }
-      }
     </style>
 
     `;
