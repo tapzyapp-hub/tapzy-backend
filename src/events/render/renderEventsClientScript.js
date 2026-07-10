@@ -1187,9 +1187,12 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             enhance(grid);
 
             function syncFooter() {
-              loader.style.display = loading && hasMore ? "block" : "none";
+              // Keep Android's scroll height stable while loading so fast flings do not jump.
+              loader.style.display = hasMore ? "block" : "none";
+              loader.style.visibility = loading && hasMore ? "visible" : "hidden";
+              loader.setAttribute("aria-hidden", loading && hasMore ? "false" : "true");
               end.style.display = hasMore ? "none" : "block";
-              if (button) button.style.display = hasMore && !loading ? "block" : "none";
+              if (button) button.style.display = "none";
             }
 
             function nearBottom() {
@@ -1203,6 +1206,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             async function loadMore() {
               if (loading || !hasMore) return;
               loading = true;
+              const loadStartY = window.pageYOffset || document.documentElement.scrollTop || 0;
+              const loadStartHeight = Math.max(document.documentElement.scrollHeight || 0, document.body ? document.body.scrollHeight || 0 : 0);
               syncFooter();
 
               try {
@@ -1235,12 +1240,21 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
                 const template = document.createElement("template");
                 template.innerHTML = items.map((event) => renderClientCard(event)).join("");
+                const liveYBeforeAppend = window.pageYOffset || document.documentElement.scrollTop || 0;
                 grid.appendChild(template.content);
                 grid.querySelectorAll(".js-event-card").forEach((card) => {
                   card.classList.add("is-revealed");
                   card.dataset.revealBound = "1";
                 });
                 enhance(grid);
+
+                const liveYAfterAppend = window.pageYOffset || document.documentElement.scrollTop || 0;
+                const loadEndHeight = Math.max(document.documentElement.scrollHeight || 0, document.body ? document.body.scrollHeight || 0 : 0);
+                const browserShiftedDuringAppend = Math.abs(liveYAfterAppend - liveYBeforeAppend) > 2;
+                const userMovedDuringLoad = Math.abs(liveYBeforeAppend - loadStartY) > 18;
+                if (browserShiftedDuringAppend && !userMovedDuringLoad && loadEndHeight >= loadStartHeight) {
+                  window.scrollTo(0, loadStartY);
+                }
 
                 page += 1;
                 hasMore = !!data.hasMore;

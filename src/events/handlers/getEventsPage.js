@@ -3039,6 +3039,17 @@ module.exports = async function getEventsPage(req, res) {
           animation:none !important;
           transition:none !important;
         }
+
+        body.is-android-smooth-scroll #mobileFeedLoader{
+          min-height:44px;
+          margin:12px 0 4px;
+          opacity:.78;
+          transform:translateZ(0);
+        }
+
+        body.is-android-smooth-scroll #mobileLoadMoreBtn{
+          display:none !important;
+        }
       }
       /* End Android event feed scroll smoothing */
 
