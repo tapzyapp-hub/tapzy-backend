@@ -510,124 +510,75 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
         function bindCardMotion(scope) {
-
           const root = scope || document;
-
           const cards = root.querySelectorAll(".js-event-card");
-
-
-
           cards.forEach((card) => {
-
             if (card.dataset.motionBound === "1") return;
-
             card.dataset.motionBound = "1";
             if (!card.style.getPropertyValue("--mx")) card.style.setProperty("--mx", "72%");
             if (!card.style.getPropertyValue("--my")) card.style.setProperty("--my", "22%");
-
-
-
-            card.addEventListener("mousemove", (e) => {
-
-              const rect = card.getBoundingClientRect();
-
-              const x = ((e.clientX - rect.left) / rect.width) * 100;
-
-              const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-              card.style.setProperty("--mx", x + "%");
-
-              card.style.setProperty("--my", y + "%");
-
-            });
-
-
-
-            const lightCard = (clientX, clientY) => {
-
-              const rect = card.getBoundingClientRect();
-
-              const x = ((clientX - rect.left) / rect.width) * 100;
-
-              const y = ((clientY - rect.top) / rect.height) * 100;
-
-              card.style.setProperty("--mx", Math.max(0, Math.min(100, x)) + "%");
-
-              card.style.setProperty("--my", Math.max(0, Math.min(100, y)) + "%");
-
-              card.classList.add("is-touch-active");
-
-            };
-
-
-
-            card.addEventListener("pointerdown", (e) => {
-
-              lightCard(e.clientX, e.clientY);
-
-            }, { passive: true });
-
-
-
-            card.addEventListener("pointermove", (e) => {
-
-              if (card.classList.contains("is-touch-active")) lightCard(e.clientX, e.clientY);
-
-            }, { passive: true });
-
-
-
-            card.addEventListener("pointerup", () => {
-
-              setTimeout(() => card.classList.remove("is-touch-active"), 170);
-
-            }, { passive: true });
-
-
-
-            card.addEventListener("pointercancel", () => {
-
-              card.classList.remove("is-touch-active");
-
-            }, { passive: true });
-
-
-
-            card.addEventListener("touchstart", (e) => {
-
-              const touch = e.touches && e.touches[0];
-
-              if (touch) lightCard(touch.clientX, touch.clientY);
-
-            }, { passive: true });
-
-
-
-            card.addEventListener("touchmove", (e) => {
-
-              const touch = e.touches && e.touches[0];
-              if (touch) lightCard(touch.clientX, touch.clientY);
-
-            }, { passive: true });
-
-
-
-            card.addEventListener("touchend", () => {
-
-              setTimeout(() => card.classList.remove("is-touch-active"), 170);
-
-            }, { passive: true });
-
-
-
-            card.addEventListener("touchcancel", () => {
-
-              card.classList.remove("is-touch-active");
-
-            }, { passive: true });
-
           });
+        }
 
+        function updateEventCardGlow(card, clientX, clientY, activate) {
+          if (!card) return;
+          const rect = card.getBoundingClientRect();
+          const x = Math.max(0, Math.min(100, ((clientX - rect.left) / Math.max(rect.width, 1)) * 100));
+          const y = Math.max(0, Math.min(100, ((clientY - rect.top) / Math.max(rect.height, 1)) * 100));
+          card.style.setProperty("--mx", x.toFixed(2) + "%");
+          card.style.setProperty("--my", y.toFixed(2) + "%");
+          if (activate) card.classList.add("is-touch-active");
+        }
+
+        function bindDelegatedCardMotion() {
+          if (document.documentElement.dataset.eventCardMotionDelegated === "1") return;
+          document.documentElement.dataset.eventCardMotionDelegated = "1";
+
+          document.addEventListener("pointermove", (event) => {
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (!card) return;
+            updateEventCardGlow(card, event.clientX, event.clientY, false);
+          }, { passive: true });
+
+          document.addEventListener("pointerenter", (event) => {
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (!card) return;
+            updateEventCardGlow(card, event.clientX, event.clientY, false);
+          }, { passive: true, capture: true });
+
+          document.addEventListener("pointerdown", (event) => {
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (!card) return;
+            updateEventCardGlow(card, event.clientX, event.clientY, true);
+          }, { passive: true });
+
+          document.addEventListener("pointerup", (event) => {
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (!card) return;
+            setTimeout(() => card.classList.remove("is-touch-active"), 170);
+          }, { passive: true });
+
+          document.addEventListener("pointercancel", (event) => {
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (card) card.classList.remove("is-touch-active");
+          }, { passive: true });
+
+          document.addEventListener("touchstart", (event) => {
+            const touch = event.touches && event.touches[0];
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (card && touch) updateEventCardGlow(card, touch.clientX, touch.clientY, true);
+          }, { passive: true });
+
+          document.addEventListener("touchmove", (event) => {
+            const touch = event.touches && event.touches[0];
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (card && touch) updateEventCardGlow(card, touch.clientX, touch.clientY, true);
+          }, { passive: true });
+
+          document.addEventListener("touchend", (event) => {
+            const card = event.target && event.target.closest ? event.target.closest(".js-event-card") : null;
+            if (card) setTimeout(() => card.classList.remove("is-touch-active"), 170);
+          }, { passive: true });
         }
 
         function refreshAmbientCardGlow(scope) {
@@ -892,6 +843,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         function enhance(scope) {
 
           bindCardMotion(scope);
+
+          bindDelegatedCardMotion();
 
           bindCardReveal(scope);
 
