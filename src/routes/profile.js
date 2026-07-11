@@ -7339,7 +7339,382 @@ router.get("/edit/:username", async (req, res) => {
 
       }
 
-    </style>
+    
+
+      /* Final premium edit profile polish */
+      body{
+        background:#000;
+      }
+
+      .wrap.tz-edit-wrap{
+        max-width:1120px;
+        padding-top:22px;
+      }
+
+      .tz-edit-shell{
+        gap:18px;
+      }
+
+      .tz-edit-hero,
+      .tz-edit-section{
+        position:relative;
+        isolation:isolate;
+      }
+
+      .tz-edit-hero{
+        min-height:274px;
+        padding:32px;
+        border-color:rgba(133,205,255,.18);
+        background:
+          radial-gradient(620px 330px at 76% 15%, rgba(93,180,255,.16), transparent 56%),
+          radial-gradient(420px 240px at 18% 6%, rgba(255,255,255,.055), transparent 54%),
+          linear-gradient(180deg, rgba(13,17,26,.96), rgba(2,3,7,1));
+        box-shadow:
+          0 24px 70px rgba(0,0,0,.54),
+          0 0 0 1px rgba(255,255,255,.035) inset,
+          0 0 42px rgba(72,162,255,.08);
+      }
+
+      .tz-edit-hero-bg{
+        opacity:.96;
+        background:
+          radial-gradient(340px 210px at 72% 20%, rgba(210,240,255,.13), transparent 62%),
+          radial-gradient(470px 250px at 28% 0%, rgba(83,178,255,.16), transparent 58%),
+          linear-gradient(125deg, rgba(255,255,255,.035), transparent 34%),
+          repeating-radial-gradient(circle at 18% 16%, rgba(255,255,255,.05) 0 1px, transparent 1px 13px);
+        mix-blend-mode:screen;
+      }
+
+      .tz-edit-hero::before{
+        content:"";
+        position:absolute;
+        inset:auto 26px 22px 26px;
+        height:1px;
+        border-radius:999px;
+        background:linear-gradient(90deg, transparent, rgba(126,205,255,.36), transparent);
+        z-index:1;
+        pointer-events:none;
+      }
+
+      .tz-edit-hero-top{
+        min-height:210px;
+        align-items:flex-end;
+      }
+
+      .tz-edit-kicker{
+        display:inline-flex;
+        align-items:center;
+        min-height:34px;
+        padding:0 13px;
+        border-radius:999px;
+        border:1px solid rgba(126,205,255,.16);
+        background:rgba(7,12,20,.52);
+        color:rgba(226,239,255,.82);
+        font-size:11px;
+        letter-spacing:.16em;
+        margin-bottom:16px;
+        backdrop-filter:blur(12px);
+      }
+
+      .tz-edit-title{
+        font-size:clamp(42px, 6vw, 70px);
+        line-height:.95;
+        letter-spacing:0;
+        text-shadow:0 12px 30px rgba(0,0,0,.42);
+      }
+
+      .tz-edit-subtitle{
+        max-width:560px;
+        color:rgba(236,245,255,.72);
+        font-size:17px;
+        line-height:1.55;
+      }
+
+      .tz-edit-actions{
+        align-self:flex-start;
+      }
+
+      .tz-edit-btn{
+        min-height:44px;
+        border-radius:999px;
+        padding:0 18px;
+        background:rgba(255,255,255,.075);
+        border-color:rgba(255,255,255,.13);
+        backdrop-filter:blur(14px);
+      }
+
+      .tz-edit-section{
+        padding:24px;
+        border-radius:30px;
+        border-color:rgba(255,255,255,.095);
+        background:
+          radial-gradient(480px 230px at 82% 0%, rgba(78,168,255,.105), transparent 58%),
+          linear-gradient(180deg, rgba(17,22,32,.94), rgba(4,6,10,.98));
+        box-shadow:
+          0 18px 48px rgba(0,0,0,.34),
+          0 0 0 1px rgba(255,255,255,.035) inset;
+      }
+
+      .tz-edit-section-head{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:18px;
+        margin-bottom:20px;
+        padding-bottom:16px;
+        border-bottom:1px solid rgba(255,255,255,.075);
+      }
+
+      .tz-edit-section-head h3{
+        font-size:clamp(23px, 3vw, 31px);
+        line-height:1.05;
+        letter-spacing:0;
+      }
+
+      .tz-edit-section-head p{
+        max-width:420px;
+        margin-top:3px;
+        color:rgba(224,235,255,.62);
+        font-size:14px;
+        line-height:1.45;
+        text-align:right;
+      }
+
+      .tz-edit-grid{
+        gap:14px;
+      }
+
+      .tz-field{
+        gap:7px;
+      }
+
+      .tz-field label,
+      .tz-edit-upload-box > .tz-field{
+        color:rgba(220,232,255,.74);
+        font-size:12px;
+        font-weight:900;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+      }
+
+      .tz-field input,
+      .tz-field textarea,
+      .tz-upload-input{
+        min-height:54px;
+        border-radius:18px;
+        border-color:rgba(174,218,255,.15);
+        background:rgba(5,8,14,.72);
+        color:#fff;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.035),
+          0 10px 24px rgba(0,0,0,.13);
+        transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      }
+
+      .tz-field textarea{
+        min-height:124px;
+        line-height:1.55;
+      }
+
+      .tz-field input:focus,
+      .tz-field textarea:focus,
+      .tz-upload-input:focus{
+        border-color:rgba(116,200,255,.76);
+        background:rgba(8,12,20,.86);
+        box-shadow:
+          0 0 0 3px rgba(91,185,255,.13),
+          0 0 30px rgba(91,185,255,.12),
+          inset 0 1px 0 rgba(255,255,255,.055);
+      }
+
+      .tz-edit-upload-wrap{
+        grid-template-columns:minmax(260px, .82fr) 1fr;
+        gap:16px;
+      }
+
+      .tz-edit-photo-card,
+      .tz-edit-upload-box{
+        border-radius:26px;
+        border-color:rgba(255,255,255,.095);
+        background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+      }
+
+      .tz-edit-photo-card{
+        padding:18px;
+      }
+
+      .tz-edit-photo-preview{
+        width:118px;
+        height:118px;
+        border-radius:27px;
+        border-color:rgba(126,205,255,.34);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,.05) inset,
+          0 0 24px rgba(85,177,255,.20),
+          0 16px 32px rgba(0,0,0,.30);
+      }
+
+      .tz-edit-photo-title{
+        font-size:19px;
+        letter-spacing:0;
+      }
+
+      .tz-edit-photo-sub,
+      .tz-switch-copy span{
+        color:rgba(223,234,255,.64);
+      }
+
+      .tz-photo-pick-btn{
+        border-radius:18px;
+        border-color:rgba(126,205,255,.20);
+        background:linear-gradient(135deg, rgba(31,198,255,.20), rgba(42,91,255,.18));
+        box-shadow:0 16px 38px rgba(42,123,255,.16);
+      }
+
+      .tz-photo-crop-note{
+        border-color:rgba(126,205,255,.16);
+        background:rgba(126,205,255,.055);
+        color:rgba(225,238,255,.68);
+      }
+
+      .tz-toggle-list{
+        gap:14px;
+      }
+
+      .tz-toggle-row{
+        min-height:60px;
+        border-radius:20px;
+        border-color:rgba(255,255,255,.095);
+        background:rgba(255,255,255,.045);
+      }
+
+      .tz-toggle-row input[type="checkbox"],
+      .tz-check-wrap input[type="checkbox"]{
+        appearance:none;
+        -webkit-appearance:none;
+        position:relative;
+        width:48px;
+        height:30px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(255,255,255,.12);
+        box-shadow:inset 0 1px 4px rgba(0,0,0,.34);
+        cursor:pointer;
+      }
+
+      .tz-toggle-row input[type="checkbox"]::after,
+      .tz-check-wrap input[type="checkbox"]::after{
+        content:"";
+        position:absolute;
+        width:22px;
+        height:22px;
+        left:3px;
+        top:3px;
+        border-radius:999px;
+        background:#fff;
+        box-shadow:0 4px 10px rgba(0,0,0,.28);
+        transition:transform .18s ease;
+      }
+
+      .tz-toggle-row input[type="checkbox"]:checked,
+      .tz-check-wrap input[type="checkbox"]:checked{
+        border-color:rgba(76,210,255,.55);
+        background:linear-gradient(135deg, #2ed0ff, #2456ff);
+      }
+
+      .tz-toggle-row input[type="checkbox"]:checked::after,
+      .tz-check-wrap input[type="checkbox"]:checked::after{
+        transform:translateX(18px);
+      }
+
+      .tz-edit-savebar{
+        position:sticky;
+        bottom:14px;
+        z-index:30;
+        margin-top:2px;
+        padding:10px;
+        border-radius:26px;
+        border:1px solid rgba(255,255,255,.10);
+        background:rgba(0,0,0,.70);
+        backdrop-filter:blur(18px);
+        box-shadow:0 -18px 54px rgba(0,0,0,.34);
+      }
+
+      .tz-edit-savebtn{
+        min-height:58px;
+        border-radius:20px;
+        border:1px solid rgba(255,255,255,.70);
+        background:linear-gradient(180deg, #ffffff, #dff1ff);
+        color:#020611;
+        box-shadow:
+          0 16px 36px rgba(77,174,255,.18),
+          inset 0 1px 0 rgba(255,255,255,.88);
+      }
+
+      .tz-edit-savebtn:hover,
+      .tz-edit-savebtn:focus-visible{
+        color:#020611;
+        background:linear-gradient(180deg, #ffffff, #d8edff);
+        border-color:rgba(150,220,255,.95);
+      }
+
+      @media(max-width:820px){
+        .tz-edit-upload-wrap{
+          grid-template-columns:1fr;
+        }
+
+        .tz-edit-section-head{
+          display:block;
+        }
+
+        .tz-edit-section-head p{
+          max-width:none;
+          text-align:left;
+          margin-top:8px;
+        }
+      }
+
+      @media(max-width:700px){
+        .tz-edit-hero{
+          min-height:230px;
+          padding:22px;
+        }
+
+        .tz-edit-hero-top{
+          min-height:186px;
+          align-items:flex-end;
+        }
+
+        .tz-edit-title{
+          font-size:40px;
+          letter-spacing:0;
+        }
+
+        .tz-edit-subtitle{
+          font-size:15px;
+          line-height:1.45;
+        }
+
+        .tz-edit-section{
+          padding:18px;
+        }
+
+        .tz-edit-section-head h3{
+          font-size:25px;
+        }
+
+        .tz-field input,
+        .tz-field textarea,
+        .tz-upload-input{
+          font-size:16px;
+        }
+
+        .tz-edit-savebar{
+          bottom:10px;
+          border-radius:24px;
+        }
+      }
+</style>
 
     <script>
       (function(){
