@@ -5606,18 +5606,18 @@ router.get("/u/:username", async (req, res) => {
 /* End public profile hero buttons match edit hero */
 
 
-      /* Normal profile username breathing room */
-      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-main{
-        transform:translateY(12px);
+      /* Normal profile username-only breathing room */
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-handle{
+        margin-top:18px;
       }
 
       @media(max-width:700px){
-        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-main{
-          transform:translateY(10px);
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-handle{
+          margin-top:14px;
         }
       }
 
-      /* End normal profile username breathing room */
+      /* End normal profile username-only breathing room */
 /* End public profile top card premium match */
 /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
       .profile-showcase.is-weather-live{isolation:isolate!important;overflow:hidden!important;contain:paint;}
