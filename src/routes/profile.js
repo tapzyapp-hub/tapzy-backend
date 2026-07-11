@@ -10078,7 +10078,207 @@ router.get("/qr/:username", async (req, res) => {
 
       }
 
-    </style>
+    
+
+      /* Actual QR page premium animated rebuild */
+      .tz-qr-wrap{
+        max-width:980px!important;
+      }
+
+      .tz-qr-hero,
+      .tz-qr-card{
+        border-color:rgba(126,205,255,.18)!important;
+        background:
+          radial-gradient(620px 330px at 76% 15%, rgba(93,180,255,.14), transparent 56%),
+          radial-gradient(420px 240px at 18% 6%, rgba(255,255,255,.045), transparent 54%),
+          linear-gradient(180deg, rgba(13,17,26,.96), rgba(2,3,7,1))!important;
+        box-shadow:
+          0 24px 70px rgba(0,0,0,.54),
+          0 0 0 1px rgba(255,255,255,.035) inset,
+          0 0 42px rgba(72,162,255,.08)!important;
+        isolation:isolate;
+      }
+
+      .tz-qr-hero::before,
+      .tz-qr-card::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        pointer-events:none;
+        opacity:.052;
+        background-image:radial-gradient(rgba(255,255,255,.95) .65px, transparent .65px);
+        background-size:12px 12px;
+        z-index:0;
+      }
+
+      .tz-qr-hero::after,
+      .tz-qr-card::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        border-radius:inherit;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.032), transparent 32%, rgba(0,0,0,.20)),
+          radial-gradient(520px 210px at 74% 10%, rgba(126,205,255,.075), transparent 62%);
+        z-index:0;
+      }
+
+      .tz-qr-hero > *,
+      .tz-qr-card > *{
+        position:relative;
+        z-index:2;
+      }
+
+      .tz-qr-kicker{
+        display:inline-flex!important;
+        align-items:center;
+        min-height:34px;
+        padding:0 13px;
+        border-radius:999px;
+        border:1px solid rgba(126,205,255,.16)!important;
+        background:rgba(7,12,20,.52)!important;
+        color:rgba(226,239,255,.82)!important;
+        font-size:11px!important;
+        letter-spacing:.16em!important;
+        backdrop-filter:blur(12px);
+      }
+
+      .tz-qr-title{
+        font-size:clamp(44px, 7vw, 72px)!important;
+        letter-spacing:0!important;
+        text-shadow:0 12px 30px rgba(0,0,0,.42);
+      }
+
+      .tz-qr-subtitle{
+        color:rgba(236,245,255,.72)!important;
+      }
+
+      .tz-qr-btn,
+      .tz-qr-action{
+        min-height:48px!important;
+        border-radius:18px!important;
+        border:1px solid rgba(115,194,255,.92)!important;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          rgba(10,38,66,.38)!important;
+        color:#fff!important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.14),
+          0 0 18px rgba(87,170,255,.30),
+          0 0 46px rgba(48,110,255,.22),
+          0 12px 26px rgba(0,0,0,.20)!important;
+        backdrop-filter:blur(18px) saturate(1.15);
+      }
+
+      .tz-qr-btn-dark,
+      .tz-qr-action-dark{
+        background:rgba(10,38,66,.24)!important;
+      }
+
+      .tz-qr-frame{
+        position:relative!important;
+        width:min(100%, 540px);
+        margin:6px auto 0;
+        padding:18px!important;
+        border-radius:42px!important;
+        background:linear-gradient(135deg, rgba(116,204,255,.98), rgba(45,105,255,.96))!important;
+        box-shadow:
+          0 0 26px rgba(87,170,255,.34),
+          0 0 70px rgba(48,110,255,.24),
+          0 22px 60px rgba(0,0,0,.46)!important;
+        overflow:visible!important;
+        animation:tzQrFrameBreath 3.6s ease-in-out infinite alternate;
+      }
+
+      .tz-qr-frame::before{
+        content:"";
+        position:absolute;
+        inset:-16px;
+        border-radius:50px;
+        pointer-events:none;
+        background:radial-gradient(circle at 50% 50%, rgba(90,178,255,.42), transparent 66%);
+        filter:blur(18px);
+        opacity:.68;
+        animation:tzQrOuterAura 4.8s ease-in-out infinite alternate;
+      }
+
+      .tz-qr-frame::after{
+        content:"";
+        position:absolute;
+        inset:8px;
+        border-radius:34px;
+        pointer-events:none;
+        border:1px solid rgba(255,255,255,.20);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+      }
+
+      .tz-qr-frame-inner{
+        position:relative!important;
+        width:100%!important;
+        padding:16px!important;
+        border-radius:30px!important;
+        background:#fff!important;
+        overflow:hidden!important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.85),
+          0 18px 38px rgba(0,0,0,.26)!important;
+      }
+
+      .tz-qr-frame-inner::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:linear-gradient(110deg, transparent 0 38%, rgba(255,255,255,.34) 48%, transparent 58%);
+        transform:translateX(-130%);
+        animation:tzQrScanSheen 4.2s ease-in-out infinite;
+        z-index:2;
+        mix-blend-mode:screen;
+      }
+
+      .tz-qr-image{
+        position:relative;
+        z-index:1;
+        border-radius:22px!important;
+      }
+
+      .tz-qr-meta-name{
+        font-size:28px!important;
+        letter-spacing:0!important;
+        text-shadow:0 10px 24px rgba(0,0,0,.35);
+      }
+
+      @keyframes tzQrFrameBreath{0%{filter:saturate(1);transform:translateZ(0) scale(.996)}100%{filter:saturate(1.15);transform:translateZ(0) scale(1.004)}}
+      @keyframes tzQrOuterAura{0%{opacity:.44;transform:scale(.98)}100%{opacity:.78;transform:scale(1.03)}}
+      @keyframes tzQrScanSheen{0%,38%{transform:translateX(-135%)}62%,100%{transform:translateX(135%)}}
+
+      @media(max-width:700px){
+        .tz-qr-frame{
+          width:100%;
+          padding:12px!important;
+          border-radius:30px!important;
+        }
+        .tz-qr-frame::before{
+          inset:-10px;
+          border-radius:38px;
+        }
+        .tz-qr-frame::after{
+          inset:6px;
+          border-radius:24px;
+        }
+        .tz-qr-frame-inner{
+          padding:12px!important;
+          border-radius:22px!important;
+        }
+        .tz-qr-image{
+          border-radius:16px!important;
+        }
+      }
+
+      /* End actual QR page premium animated rebuild */
+</style>
 
     `;
 
