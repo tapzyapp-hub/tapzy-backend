@@ -5363,7 +5363,58 @@ router.get("/u/:username", async (req, res) => {
         }
       }
 
-      /* End compact profile top card premium finish */
+      
+
+      /* Clean compact profile edge glow */
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected),
+      .profile-showcase.is-secondary-dim:not(.is-event-selected){
+        overflow:hidden !important;
+        contain:paint;
+        box-shadow:
+          0 12px 30px rgba(0,0,0,.36),
+          0 0 0 1px rgba(255,255,255,.035) inset !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap{
+        overflow:visible;
+        z-index:3 !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+        opacity:.26 !important;
+        filter:blur(8px) !important;
+        inset:-5px !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar{
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 0 1px rgba(255,255,255,.025),
+          0 0 14px rgba(87,170,255,.18),
+          0 8px 18px rgba(0,0,0,.24) !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected)::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected)::after{
+        opacity:.74 !important;
+      }
+
+      @media(max-width:700px){
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected),
+        .profile-showcase.is-secondary-dim:not(.is-event-selected){
+          box-shadow:
+            0 8px 22px rgba(0,0,0,.32),
+            0 0 0 1px rgba(255,255,255,.035) inset !important;
+        }
+      }
+
+      /* End clean compact profile edge glow */
+/* End compact profile top card premium finish */
 /* End public profile top card premium match */
 /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
       .profile-showcase.is-weather-live{isolation:isolate!important;overflow:hidden!important;contain:paint;}
