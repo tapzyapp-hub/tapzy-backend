@@ -57,13 +57,21 @@
     return "application/octet-stream";
   }
 
-  function supportsChunkedSubmit(form) {
+  function submitPath(form) {
     try {
-      const action = new URL(form.getAttribute("action") || location.href, location.href);
-      return /^\/stories(?:$|\/)/.test(action.pathname) || /^\/messages\/[^/]+$/.test(action.pathname);
+      return new URL(form.getAttribute("action") || location.href, location.href).pathname;
     } catch (_) {
-      return false;
+      return "";
     }
+  }
+
+  function isMessageSubmit(form) {
+    return /^\/messages\/[^/]+$/.test(submitPath(form));
+  }
+
+  function supportsChunkedSubmit(form) {
+    const pathname = submitPath(form);
+    return /^\/stories(?:$|\/)/.test(pathname) || /^\/messages\/[^/]+$/.test(pathname);
   }
 
   function connectionInfo() {
@@ -602,7 +610,9 @@
       if (supportsChunkedSubmit(form)) {
         const isVideo = isVideoFile(file);
         const needsSecondaryVideoPath = isVideo && file.size >= START_OPTIMIZE_BYTES;
-        const preferFastChunkBackup = isVideo && file.size >= MOBILE_FAST_CHUNK_BYTES && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+        const userAgent = navigator.userAgent || "";
+        const isMobileVideo = isVideo && /Android|iPhone|iPad|iPod/i.test(userAgent);
+        const preferFastChunkBackup = isVideo && file.size >= MOBILE_FAST_CHUNK_BYTES && isMobileVideo && !isMessageSubmit(form);
 
         if (isImageFile(file)) {
           setStatus(form, "Optimizing image for faster upload.");
@@ -622,9 +632,10 @@
             complete = null;
             uploadFile = file;
             try {
-              setStatus(form, `${preferFastChunkBackup ? "Sending large video" : "Cloud needed backup — sending original video"} in fast chunks 0% — keep this page open.`);
+              const fastLabel = preferFastChunkBackup ? "Sending large video" : "Cloud needed backup - sending original video";
+              setStatus(form, `${fastLabel} in fast chunks 0% - keep this page open.`);
               complete = await uploadChunkedMedia(file, form, (pct) => {
-                setStatus(form, `${preferFastChunkBackup ? "Sending large video" : "Cloud needed backup — sending original video"} in fast chunks ${pct}% — keep this page open.`);
+                setStatus(form, `${fastLabel} in fast chunks ${pct}% - keep this page open.`);
               });
             } catch (chunkError) {
               complete = null;
@@ -684,7 +695,7 @@
         upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || inferMimeType(uploadFile));
         clearInputFile(mediaInput);
         setStatus(form, "Media uploaded — posting now.");
-      } else if (supportsChunkedSubmit(form) && isVideoFile(file) && file.size >= MOBILE_FAST_CHUNK_BYTES) {
+      } else if (supportsChunkedSubmit(form) && isVideoFile(file) && file.size >= MOBILE_FAST_CHUNK_BYTES && !isMessageSubmit(form)) {
         throw new Error("Large video upload did not finish. Please try again on Wi-Fi — Tapzy will not send the raw oversized file.");
       }
     } catch (error) {

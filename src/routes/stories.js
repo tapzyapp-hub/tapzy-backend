@@ -4189,6 +4189,9 @@ router.get("/stories/feed", async (req, res) => {
         .sf-empty p{max-width:340px;margin:0;color:rgba(224,231,246,.75);font-size:clamp(17px,4.25vw,22px);line-height:1.32;font-weight:460;letter-spacing:-.012em;text-wrap:balance;text-shadow:0 10px 28px rgba(0,0,0,.35)}
         .sf-no-results{position:fixed;z-index:12;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:#090909;color:#c8ccda}
         .sf-no-results.is-visible{display:grid}
+        .sf-pull-refresh{position:fixed;z-index:30;top:calc(var(--safe-top) + 68px);left:50%;transform:translate(-50%,-20px);opacity:0;pointer-events:none;padding:8px 14px;border-radius:999px;background:rgba(8,12,18,.72);border:1px solid rgba(125,210,255,.28);box-shadow:0 10px 28px rgba(0,0,0,.35),0 0 22px rgba(80,170,255,.18);backdrop-filter:blur(14px);color:#eaf6ff;font-size:12px;font-weight:850;transition:opacity .18s ease,transform .18s ease}
+        .sf-pull-refresh.is-visible{opacity:1;transform:translate(-50%,0)}
+        .sf-pull-refresh.is-ready{border-color:rgba(146,220,255,.56);box-shadow:0 10px 28px rgba(0,0,0,.35),0 0 30px rgba(80,170,255,.34)}
         @media(min-width:760px){
           .sf-app{max-width:520px;margin:0 auto;box-shadow:0 0 80px rgba(0,0,0,.8)}
           body{background:#111}
@@ -4213,6 +4216,7 @@ router.get("/stories/feed", async (req, res) => {
 
         <section class="sf-feed" aria-label="Tapzy story feed">${slides || emptyMessage}</section>
         <div class="sf-no-results">No stories in this section yet.</div>
+        <div class="sf-pull-refresh" data-pull-refresh>Pull to refresh</div>
 
         <nav class="sf-bottom" aria-label="Primary navigation">
           <button class="sf-nav is-active" type="button" aria-current="page">
@@ -4353,8 +4357,15 @@ router.get("/stories/feed", async (req, res) => {
             var active = visibleFeedSlide();
             var activeIndex = slides.indexOf(active);
             slides.forEach(function(slide, slideIndex){
+              var distance = activeIndex >= 0 ? Math.abs(slideIndex - activeIndex) : 99;
               if (slide === active) playFeedSlide(slide);
-              else pauseFeedSlide(slide, isAndroidStoryFeed && activeIndex >= 0 && Math.abs(slideIndex - activeIndex) > 1);
+              else {
+                pauseFeedSlide(slide, isAndroidStoryFeed && distance > 2);
+                if (distance <= 1) {
+                  var nextVideo = slide.querySelector('video');
+                  if (nextVideo) prepareFeedVideo(nextVideo);
+                }
+              }
             });
           }
           var observer = new IntersectionObserver(function(entries){
@@ -4404,6 +4415,46 @@ router.get("/stories/feed", async (req, res) => {
             scheduleFeedPlaybackSync(120);
           }, { passive:true });
           if (feed && 'onscrollend' in window) feed.addEventListener('scrollend', function(){ scheduleFeedPlaybackSync(0); }, { passive:true });
+
+          var pullRefresh = document.querySelector('[data-pull-refresh]');
+          var pullStartY = 0;
+          var pullDistance = 0;
+          var pullTracking = false;
+          function resetPullRefresh(){
+            pullTracking = false;
+            pullDistance = 0;
+            if (pullRefresh) {
+              pullRefresh.classList.remove('is-visible', 'is-ready');
+              pullRefresh.textContent = 'Pull to refresh';
+            }
+          }
+          if (feed && pullRefresh) {
+            feed.addEventListener('touchstart', function(event){
+              if (feed.scrollTop <= 0 && event.touches && event.touches.length === 1) {
+                pullStartY = event.touches[0].clientY;
+                pullTracking = true;
+              }
+            }, { passive:true });
+            feed.addEventListener('touchmove', function(event){
+              if (!pullTracking || !event.touches || event.touches.length !== 1) return;
+              pullDistance = Math.max(0, event.touches[0].clientY - pullStartY);
+              if (pullDistance > 18 && feed.scrollTop <= 0) {
+                pullRefresh.classList.add('is-visible');
+                pullRefresh.classList.toggle('is-ready', pullDistance > 82);
+                pullRefresh.textContent = pullDistance > 82 ? 'Release to refresh' : 'Pull to refresh';
+              }
+            }, { passive:true });
+            feed.addEventListener('touchend', function(){
+              if (pullTracking && pullDistance > 82 && feed.scrollTop <= 0) {
+                pullRefresh.textContent = 'Refreshing...';
+                pullRefresh.classList.add('is-visible', 'is-ready');
+                window.location.reload();
+                return;
+              }
+              resetPullRefresh();
+            }, { passive:true });
+            feed.addEventListener('touchcancel', resetPullRefresh, { passive:true });
+          }
           document.addEventListener('visibilitychange', function(){
             if (document.hidden) slides.forEach(pauseFeedSlide);
             else scheduleFeedPlaybackSync(0);

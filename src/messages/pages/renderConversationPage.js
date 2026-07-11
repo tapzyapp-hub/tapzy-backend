@@ -1027,6 +1027,19 @@ module.exports = function renderConversationPage({
 
 
 
+
+  .tz-chat-window,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .tz-chat-window::-webkit-scrollbar,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::-webkit-scrollbar{
+    width:0;
+    height:0;
+    display:none;
+  }
+
   .tz-chat-window:hover,
 
   .tz-chat-window:focus-within{
@@ -3861,7 +3874,19 @@ module.exports = function renderConversationPage({
           });
         }
 
+
+        function hydrateChatAudio(root) {
+          (root || document).querySelectorAll('audio.tz-chat-audio').forEach(function(audio){
+            if (audio.dataset.tapzyAudioReady === '1') return;
+            audio.dataset.tapzyAudioReady = '1';
+            audio.preload = 'metadata';
+            audio.setAttribute('preload', 'metadata');
+            try { audio.load(); } catch (_) {}
+          });
+        }
+
         initVideoPreviewFrames(document);
+        hydrateChatAudio(document);
         hydrateLocalTimes(document);
 
         function appendMessage(message) {
@@ -3963,6 +3988,8 @@ module.exports = function renderConversationPage({
 
 
           chat.appendChild(row);
+          hydrateChatAudio(row);
+          initVideoPreviewFrames(row);
 
           updateLastKnownMessageAt(message.createdAt);
 
