@@ -5240,7 +5240,131 @@ router.get("/u/:username", async (req, res) => {
         }
       }
 
-      /* End public profile top card premium match */
+      
+
+      /* Compact profile top card premium finish */
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected),
+      .profile-showcase.is-secondary-dim:not(.is-event-selected){
+        padding:14px !important;
+        border-radius:28px !important;
+        border-color:rgba(133,205,255,.22) !important;
+        background:
+          radial-gradient(460px 150px at 74% 18%, rgba(210,240,255,.13), transparent 62%),
+          radial-gradient(380px 150px at 18% 8%, rgba(83,178,255,.16), transparent 58%),
+          linear-gradient(180deg, rgba(13,17,26,.96), rgba(2,3,7,1)) !important;
+        box-shadow:
+          0 18px 48px rgba(0,0,0,.44),
+          0 0 0 1px rgba(255,255,255,.035) inset,
+          0 0 34px rgba(72,162,255,.10) !important;
+        backdrop-filter:blur(10px) saturate(1.08);
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected)::before,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected)::before{
+        opacity:.055 !important;
+        background-image:radial-gradient(rgba(255,255,255,.95) .6px, transparent .6px) !important;
+        background-size:12px 12px !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected)::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected)::after{
+        inset:1px !important;
+        border-radius:27px !important;
+        opacity:.95 !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.038), transparent 40%, rgba(0,0,0,.18)),
+          radial-gradient(440px 150px at 74% 10%, rgba(126,205,255,.075), transparent 62%) !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-bg,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-bg{
+        border-radius:28px !important;
+        opacity:.98 !important;
+        background:
+          radial-gradient(340px 150px at 72% 20%, rgba(210,240,255,.13), transparent 62%),
+          radial-gradient(360px 140px at 28% 0%, rgba(83,178,255,.16), transparent 58%),
+          linear-gradient(125deg, rgba(255,255,255,.035), transparent 34%),
+          repeating-radial-gradient(circle at 18% 16%, rgba(255,255,255,.05) 0 1px, transparent 1px 13px) !important;
+        mix-blend-mode:screen;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-top,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-top{
+        min-height:70px !important;
+        align-items:center !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar{
+        width:70px !important;
+        height:70px !important;
+        border-radius:20px !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar{
+        border-color:rgba(126,205,255,.72) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 0 1px rgba(255,255,255,.025),
+          0 0 22px rgba(87,170,255,.26),
+          0 0 42px rgba(48,110,255,.16),
+          0 12px 26px rgba(0,0,0,.26) !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap::before{
+        inset:-8px !important;
+        border-radius:26px !important;
+        opacity:.78 !important;
+        filter:blur(10px) !important;
+        background:
+          radial-gradient(circle at 45% 24%, rgba(118,202,255,.52), transparent 60%),
+          linear-gradient(180deg, rgba(115,194,255,.38), rgba(55,108,210,.14)) !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+        inset:-15px !important;
+        border-radius:32px !important;
+        opacity:.46 !important;
+        filter:blur(18px) !important;
+        background:radial-gradient(circle at 50% 45%, rgba(85,179,255,.42), transparent 64%) !important;
+      }
+
+      @media(max-width:700px){
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected),
+        .profile-showcase.is-secondary-dim:not(.is-event-selected){
+          padding:10px !important;
+          border-radius:24px !important;
+        }
+
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected)::after,
+        .profile-showcase.is-secondary-dim:not(.is-event-selected)::after,
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-bg,
+        .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-bg{
+          border-radius:24px !important;
+        }
+
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-top,
+        .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-top{
+          min-height:48px !important;
+        }
+
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap,
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar,
+        .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap,
+        .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar{
+          width:48px !important;
+          height:48px !important;
+          border-radius:15px !important;
+        }
+      }
+
+      /* End compact profile top card premium finish */
+/* End public profile top card premium match */
 /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
       .profile-showcase.is-weather-live{isolation:isolate!important;overflow:hidden!important;contain:paint;}
       .profile-showcase.is-weather-live .profile-showcase-bg{z-index:0!important;}
