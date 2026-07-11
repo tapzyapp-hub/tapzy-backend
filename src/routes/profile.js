@@ -10411,6 +10411,233 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End QR image-three animated frame final */
+
+
+      /* Fresh QR page redesign */
+      html,
+      body{
+        background:#000!important;
+      }
+
+      .tz-qr-wrap{
+        width:100%;
+        max-width:680px!important;
+        padding-top:16px!important;
+        padding-bottom:120px!important;
+      }
+
+      .tz-qr-shell{
+        gap:14px!important;
+      }
+
+      .tz-qr-hero{
+        min-height:0!important;
+        padding:20px!important;
+        border-radius:28px!important;
+        display:block!important;
+        background:
+          radial-gradient(420px 180px at 78% 0%, rgba(92,188,255,.16), transparent 58%),
+          linear-gradient(180deg, rgba(12,17,27,.96), rgba(3,5,10,.98))!important;
+      }
+
+      .tz-qr-hero-glow{
+        opacity:.45!important;
+      }
+
+      .tz-qr-hero-top{
+        width:100%!important;
+        display:flex!important;
+        align-items:flex-end!important;
+        justify-content:space-between!important;
+        gap:14px!important;
+      }
+
+      .tz-qr-kicker{
+        min-height:30px!important;
+        padding:0 12px!important;
+        margin-bottom:12px!important;
+        letter-spacing:.18em!important;
+      }
+
+      .tz-qr-title{
+        font-size:clamp(38px, 8vw, 54px)!important;
+        line-height:.98!important;
+        margin:0!important;
+      }
+
+      .tz-qr-subtitle{
+        margin-top:10px!important;
+        font-size:16px!important;
+        line-height:1.45!important;
+        max-width:420px!important;
+      }
+
+      .tz-qr-hero-actions{
+        flex:0 0 auto!important;
+        gap:10px!important;
+      }
+
+      .tz-qr-btn,
+      .tz-qr-action{
+        min-height:44px!important;
+        border-radius:17px!important;
+        padding:0 16px!important;
+        font-size:13px!important;
+      }
+
+      .tz-qr-card{
+        padding:18px!important;
+        border-radius:30px!important;
+        background:
+          radial-gradient(520px 230px at 50% 0%, rgba(87,174,255,.16), transparent 48%),
+          linear-gradient(180deg, rgba(10,15,24,.98), rgba(1,3,7,1))!important;
+      }
+
+      .tz-qr-frame{
+        width:min(100%, 500px)!important;
+        padding:9px!important;
+        border-radius:32px!important;
+        background:linear-gradient(135deg, #73c9ff 0%, #2d72ff 72%, #1f4fd6 100%)!important;
+        box-shadow:
+          0 0 18px rgba(105,196,255,.36),
+          0 0 52px rgba(46,115,255,.24),
+          0 18px 44px rgba(0,0,0,.46)!important;
+        animation:tzQrFrameBreath 3.2s ease-in-out infinite alternate!important;
+      }
+
+      .tz-qr-frame::before{
+        inset:-10px!important;
+        border-radius:40px!important;
+        opacity:.56!important;
+        filter:blur(14px)!important;
+      }
+
+      .tz-qr-frame::after{
+        inset:5px!important;
+        border-radius:25px!important;
+        border-color:rgba(255,255,255,.18)!important;
+      }
+
+      .tz-qr-frame-inner{
+        padding:9px!important;
+        border-radius:24px!important;
+        background:#fff!important;
+        box-shadow:0 14px 30px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.86)!important;
+      }
+
+      .tz-qr-frame-inner::before{
+        opacity:.20!important;
+        animation:tzQrScanSheen 5.2s ease-in-out infinite!important;
+      }
+
+      .tz-qr-image{
+        border-radius:17px!important;
+      }
+
+      .tz-qr-logo-overlay{
+        width:13%!important;
+        min-width:42px!important;
+        max-width:64px!important;
+        border-width:3px!important;
+        border-radius:24%!important;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(255,255,255,.13), transparent 56%),
+          linear-gradient(180deg, #151a22, #05070b)!important;
+        box-shadow:
+          0 0 0 1px rgba(0,0,0,.28),
+          0 8px 18px rgba(0,0,0,.32),
+          0 0 18px rgba(75,166,255,.22)!important;
+      }
+
+      .tz-qr-meta{
+        margin-top:16px!important;
+      }
+
+      .tz-qr-meta-name{
+        font-size:25px!important;
+        line-height:1.05!important;
+      }
+
+      .tz-qr-meta-handle{
+        margin-top:5px!important;
+      }
+
+      .tz-qr-meta-caption{
+        margin-top:8px!important;
+        font-size:13px!important;
+        color:rgba(216,228,255,.62)!important;
+      }
+
+      .tz-qr-actions{
+        margin-top:16px!important;
+      }
+
+      @media(max-width:700px){
+        .tz-qr-wrap{
+          padding:14px 18px 120px!important;
+        }
+
+        .tz-qr-hero{
+          padding:18px!important;
+          border-radius:26px!important;
+        }
+
+        .tz-qr-hero-top{
+          display:block!important;
+        }
+
+        .tz-qr-hero-actions{
+          margin-top:16px!important;
+          display:grid!important;
+          grid-template-columns:1fr 1fr!important;
+          width:100%!important;
+        }
+
+        .tz-qr-btn,
+        .tz-qr-action{
+          width:100%!important;
+          min-width:0!important;
+          white-space:nowrap!important;
+        }
+
+        .tz-qr-card{
+          padding:16px!important;
+          border-radius:28px!important;
+        }
+
+        .tz-qr-frame{
+          width:100%!important;
+          padding:8px!important;
+          border-radius:28px!important;
+        }
+
+        .tz-qr-frame::before{
+          inset:-8px!important;
+          border-radius:34px!important;
+        }
+
+        .tz-qr-frame::after{
+          inset:5px!important;
+          border-radius:22px!important;
+        }
+
+        .tz-qr-frame-inner{
+          padding:8px!important;
+          border-radius:21px!important;
+        }
+
+        .tz-qr-image{
+          border-radius:15px!important;
+        }
+
+        .tz-qr-logo-overlay{
+          width:12.5%!important;
+          min-width:40px!important;
+          border-width:3px!important;
+        }
+      }
+
+      /* End fresh QR page redesign */
 </style>
 
     `;
