@@ -126,6 +126,166 @@ router.get("/auth", async (req, res) => {
         .authSpeedNote{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:14px;color:rgba(225,238,255,.54);font-size:12px;font-weight:800;}
         .authSpeedNote span{width:6px;height:6px;border-radius:99px;background:#62d8ff;box-shadow:0 0 12px rgba(98,216,255,.85);}
         @media(max-width:430px){.authWrap{padding:10px 12px 96px}.authCard{padding:18px;border-radius:24px}.authPanel{padding:15px;border-radius:20px}.authHero h1{font-size:40px}.authLogo{width:50px;height:50px;border-radius:16px;font-size:28px}.authModeSwitch button{font-size:14px;min-height:42px}.authPanel h2{font-size:23px}.authPanel input,.authPrimary{min-height:52px}}
+
+
+        /* Contact-matched premium glass auth */
+        html,
+        body.auth-page-shell,
+        body.auth-page-shell .siteShell,
+        body.auth-page-shell main,
+        body.auth-page-shell .pageShell,
+        body.auth-page-shell .wrap{
+          background:#000 !important;
+          background-color:#000 !important;
+        }
+
+        .authWrap{
+          max-width:560px !important;
+          padding:18px 18px 112px !important;
+        }
+
+        .authBrand{
+          margin:0 2px 16px !important;
+          padding:0 2px !important;
+        }
+
+        .authLogoMini{
+          border-radius:14px !important;
+          border:1px solid rgba(150,220,255,.30) !important;
+          background:
+            radial-gradient(circle at 50% 0%, rgba(112,205,255,.18), transparent 62%),
+            rgba(7,12,20,.72) !important;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.12),
+            0 0 18px rgba(87,178,255,.18),
+            0 12px 26px rgba(0,0,0,.34) !important;
+        }
+
+        .authCard{
+          border-radius:34px !important;
+          padding:18px !important;
+          border:1px solid rgba(110,195,255,.18) !important;
+          background:
+            radial-gradient(560px 240px at 50% 0%, rgba(78,170,255,.13), transparent 54%),
+            radial-gradient(420px 210px at 16% 20%, rgba(255,255,255,.035), transparent 58%),
+            linear-gradient(180deg, rgba(8,13,22,.94), rgba(0,0,0,.995)) !important;
+          box-shadow:
+            0 24px 54px rgba(0,0,0,.58),
+            0 0 0 1px rgba(255,255,255,.035) inset,
+            0 0 34px rgba(69,158,255,.10) !important;
+          backdrop-filter:blur(18px) saturate(1.12) !important;
+          -webkit-backdrop-filter:blur(18px) saturate(1.12) !important;
+          clip-path:inset(0 round 34px) !important;
+        }
+
+        .authCard::before{
+          inset:0 !important;
+          height:auto !important;
+          background-image:radial-gradient(rgba(130,210,255,.84) .7px, transparent .7px) !important;
+          background-size:12px 12px !important;
+          opacity:.045 !important;
+          filter:none !important;
+        }
+
+        .authCard::after{
+          background:
+            linear-gradient(180deg, rgba(255,255,255,.06), transparent 24%),
+            radial-gradient(360px 160px at 50% 0%, rgba(94,188,255,.12), transparent 62%) !important;
+          opacity:.72 !important;
+        }
+
+        .authHero{
+          margin:-2px -2px 18px !important;
+          padding:22px 20px 20px !important;
+          border-radius:30px !important;
+          background:
+            radial-gradient(420px 160px at 50% 0%, rgba(132,215,255,.16), transparent 62%),
+            linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.018)),
+            rgba(8,16,27,.52) !important;
+          border:1px solid rgba(151,220,255,.16) !important;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.11),
+            inset 0 -1px 0 rgba(89,180,255,.08),
+            0 16px 30px rgba(0,0,0,.20) !important;
+          backdrop-filter:blur(22px) saturate(1.16) !important;
+          -webkit-backdrop-filter:blur(22px) saturate(1.16) !important;
+        }
+
+        .authBadge{
+          background:rgba(0,0,0,.46) !important;
+          border:1px solid rgba(134,208,255,.20) !important;
+          box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important;
+        }
+
+        .authHero h1{
+          text-shadow:
+            0 1px 0 rgba(255,255,255,.10),
+            0 0 28px rgba(114,203,255,.16) !important;
+        }
+
+        .authModeSwitch{
+          border-radius:24px !important;
+          padding:7px !important;
+          background:rgba(0,0,0,.46) !important;
+          border:1px solid rgba(105,190,255,.15) !important;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.05),
+            0 14px 30px rgba(0,0,0,.30) !important;
+        }
+
+        .authModeSwitch button{
+          border-radius:18px !important;
+          min-height:50px !important;
+        }
+
+        .authPanel{
+          border-radius:28px !important;
+          padding:22px !important;
+          border:1px solid rgba(105,190,255,.15) !important;
+          background:
+            radial-gradient(360px 150px at 50% 0%, rgba(84,174,255,.10), transparent 54%),
+            linear-gradient(180deg, rgba(8,14,23,.92), rgba(0,0,0,.98)) !important;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.05),
+            0 16px 32px rgba(0,0,0,.30) !important;
+          clip-path:inset(0 round 28px) !important;
+        }
+
+        .authPanel input{
+          min-height:58px !important;
+          border-radius:20px !important;
+          border:1px solid rgba(140,210,255,.22) !important;
+          background:
+            radial-gradient(circle at 50% 0%, rgba(93,185,255,.08), transparent 58%),
+            rgba(2,6,12,.72) !important;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.08),
+            0 10px 22px rgba(0,0,0,.22) !important;
+        }
+
+        .authPasswordToggle{
+          border-radius:15px !important;
+          background:rgba(255,255,255,.08) !important;
+          border:1px solid rgba(255,255,255,.08) !important;
+        }
+
+        .authPrimary{
+          border-radius:20px !important;
+          min-height:58px !important;
+          background:linear-gradient(180deg,#fff,#dceeff) !important;
+          box-shadow:
+            0 14px 32px rgba(112,190,255,.20),
+            0 0 18px rgba(140,215,255,.14) !important;
+        }
+
+        @media(max-width:430px){
+          .authWrap{padding:14px 18px 104px !important;}
+          .authCard{border-radius:30px !important;clip-path:inset(0 round 30px) !important;}
+          .authHero{border-radius:28px !important;padding:20px 18px 18px !important;}
+          .authPanel{border-radius:24px !important;padding:18px !important;clip-path:inset(0 round 24px) !important;}
+        }
+
+        /* End contact-matched premium glass auth */
       </style>
     `;
 
