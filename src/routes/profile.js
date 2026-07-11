@@ -5084,6 +5084,17 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase.weather-fog .profile-weather-wisp{opacity:.86!important;animation-duration:13s!important;}
 
 
+
+      /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
+      @media(min-width:701px){
+        .profile-event-card-panel .event-card .event-title{
+          font-size:clamp(22px, 2.35vw, 31px) !important;
+          line-height:1.1 !important;
+          font-weight:900 !important;
+          letter-spacing:0 !important;
+          max-width:92% !important;
+        }
+      }
 </style>
 
 

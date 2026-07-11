@@ -3011,6 +3011,18 @@ module.exports = async function getEventsPage(req, res) {
       /* End Android stable loader space */
 
 
+
+      /* Desktop-only event title rollback. Mobile rules below 700px stay untouched. */
+      @media(min-width:701px){
+        body.events-story-shell .event-card .event-title,
+        body.events-story-shell .events-grid .event-card .event-title{
+          font-size:clamp(22px, 2.35vw, 31px) !important;
+          line-height:1.1 !important;
+          font-weight:900 !important;
+          letter-spacing:0 !important;
+          max-width:92% !important;
+        }
+      }
 </style>
 
 
