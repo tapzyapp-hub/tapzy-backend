@@ -3434,6 +3434,227 @@ module.exports = function renderConversationPage({
     }
   }
 
+
+
+  /* Contacts-matched glass chat polish */
+  html,
+  body,
+  .site-shell,
+  .app-shell,
+  .page,
+  .page-bg,
+  .page-content,
+  .tapzy-page,
+  main,
+  .wrap{
+    background:#000 !important;
+    background-color:#000 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .wrap{
+    background:#000 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+    width:min(100%, 1040px) !important;
+    margin:14px auto 0 !important;
+    padding:0 !important;
+    border-radius:34px !important;
+    background:#000 !important;
+    box-shadow:none !important;
+    overflow:visible !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
+    border-radius:34px !important;
+    border:1px solid rgba(110, 195, 255, .18) !important;
+    background:
+      radial-gradient(520px 180px at 38% 0%, rgba(92, 184, 255, .16), transparent 58%),
+      radial-gradient(240px 140px at 88% 50%, rgba(255, 62, 120, .10), transparent 70%),
+      linear-gradient(180deg, rgba(10, 17, 28, .94), rgba(0,0,0,.98)) !important;
+    box-shadow:
+      0 20px 44px rgba(0,0,0,.50),
+      0 0 0 1px rgba(255,255,255,.04) inset,
+      0 0 30px rgba(69, 158, 255, .10) !important;
+    backdrop-filter:blur(20px) saturate(1.16) !important;
+    -webkit-backdrop-filter:blur(20px) saturate(1.16) !important;
+    overflow:hidden !important;
+    clip-path:inset(0 round 34px) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar::before{
+    content:"" !important;
+    position:absolute !important;
+    inset:0 !important;
+    pointer-events:none !important;
+    background:
+      linear-gradient(120deg, transparent, rgba(255,255,255,.08) 38%, transparent 64%),
+      radial-gradient(circle at 30% 0%, rgba(185,239,255,.18), transparent 40%) !important;
+    opacity:.54 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar > *{
+    position:relative !important;
+    z-index:1 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-back,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill-danger{
+    border-color:rgba(105, 190, 255, .20) !important;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(94, 185, 255, .13), transparent 58%),
+      linear-gradient(180deg, rgba(13, 18, 28, .90), rgba(2, 4, 8, .98)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 12px 24px rgba(0,0,0,.30),
+      0 0 15px rgba(83,178,255,.10) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-pill-danger{
+    border-color:rgba(255, 72, 128, .28) !important;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 90, 140, .16), transparent 58%),
+      linear-gradient(180deg, rgba(36, 10, 20, .90), rgba(8, 1, 4, .98)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 12px 24px rgba(0,0,0,.30),
+      0 0 16px rgba(255,70,130,.12) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-partner-avatar{
+    box-shadow:
+      0 0 0 1px rgba(125, 203, 255, .35),
+      0 0 28px rgba(86, 176, 255, .28),
+      inset 0 1px 0 rgba(255,255,255,.12) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+    margin-top:14px !important;
+    border-radius:34px !important;
+    border:1px solid rgba(110, 195, 255, .16) !important;
+    background:
+      radial-gradient(560px 220px at 50% 0%, rgba(74, 170, 255, .08), transparent 58%),
+      linear-gradient(180deg, rgba(3, 7, 13, .88), rgba(0,0,0,1) 58%) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.05),
+      inset 0 -1px 0 rgba(89,180,255,.06),
+      0 20px 46px rgba(0,0,0,.46) !important;
+    overflow:hidden !important;
+    clip-path:inset(0 round 34px) !important;
+    backdrop-filter:blur(14px) saturate(1.08) !important;
+    -webkit-backdrop-filter:blur(14px) saturate(1.08) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::before{
+    content:"" !important;
+    position:absolute !important;
+    inset:0 !important;
+    pointer-events:none !important;
+    opacity:.045 !important;
+    background-image:radial-gradient(rgba(130,210,255,.82) .7px, transparent .7px) !important;
+    background-size:12px 12px !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble{
+    border-radius:22px !important;
+    border:1px solid rgba(105, 190, 255, .15) !important;
+    background:
+      radial-gradient(220px 100px at 50% 0%, rgba(255,255,255,.075), transparent 60%),
+      linear-gradient(180deg, rgba(12, 18, 28, .90), rgba(2, 4, 8, .98)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.07),
+      0 16px 30px rgba(0,0,0,.34) !important;
+    backdrop-filter:blur(14px) saturate(1.12) !important;
+    -webkit-backdrop-filter:blur(14px) saturate(1.12) !important;
+    overflow:hidden !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine{
+    border-color:rgba(104, 188, 255, .24) !important;
+    background:
+      radial-gradient(220px 100px at 72% 0%, rgba(96, 185, 255, .14), transparent 62%),
+      linear-gradient(180deg, rgba(17, 24, 36, .92), rgba(3, 5, 10, .99)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 16px 32px rgba(0,0,0,.36),
+      0 0 16px rgba(82, 174, 255, .09) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.other{
+    border-color:rgba(255,255,255,.10) !important;
+    background:
+      radial-gradient(180px 90px at 38% 0%, rgba(255,255,255,.08), transparent 62%),
+      linear-gradient(180deg, rgba(14, 16, 22, .92), rgba(3, 4, 8, .99)) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-date-divider span{
+    border:1px solid rgba(105,190,255,.13) !important;
+    background:rgba(0,0,0,.54) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 20px rgba(0,0,0,.26) !important;
+    backdrop-filter:blur(14px) !important;
+    -webkit-backdrop-filter:blur(14px) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer{
+    margin-top:12px !important;
+    border-radius:32px !important;
+    background:#000 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+    border-radius:32px !important;
+    border:1px solid rgba(110, 195, 255, .16) !important;
+    background:
+      radial-gradient(420px 150px at 48% 0%, rgba(87, 177, 255, .10), transparent 58%),
+      linear-gradient(180deg, rgba(8, 13, 22, .94), rgba(0,0,0,.98)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.07),
+      0 18px 38px rgba(0,0,0,.48),
+      0 0 24px rgba(69,158,255,.08) !important;
+    backdrop-filter:blur(18px) saturate(1.12) !important;
+    -webkit-backdrop-filter:blur(18px) saturate(1.12) !important;
+    overflow:hidden !important;
+    clip-path:inset(0 round 32px) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap{
+    border-radius:999px !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    background:linear-gradient(180deg, rgba(22, 24, 31, .92), rgba(5, 6, 10, .96)) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.26) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-mic{
+    border-color:rgba(125,203,255,.38) !important;
+    background:linear-gradient(180deg, #6fb9ff, #1558df) !important;
+    box-shadow:0 0 18px rgba(79,160,255,.28), inset 0 1px 0 rgba(255,255,255,.30) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-send{
+    border-radius:999px !important;
+    background:linear-gradient(180deg, #fff, #e4f3ff) !important;
+    box-shadow:0 12px 24px rgba(0,0,0,.30), 0 0 18px rgba(140,215,255,.14) !important;
+  }
+
+  @media(max-width:700px){
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+      width:calc(100vw - 28px) !important;
+      margin-top:12px !important;
+    }
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+      border-radius:30px !important;
+      clip-path:inset(0 round 30px) !important;
+    }
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+      border-radius:30px !important;
+      clip-path:inset(0 round 30px) !important;
+    }
+  }
+
+  /* End contacts-matched glass chat polish */
 </style>
 
 
