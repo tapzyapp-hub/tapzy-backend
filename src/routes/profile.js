@@ -11606,7 +11606,152 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End 3D glass room QR stage */
+
+
+      /* QR idle scan mode */
+      .tz-qr-hero,
+      .tz-qr-meta,
+      .tz-qr-actions{
+        transition: opacity .42s ease, transform .42s ease, filter .42s ease !important;
+      }
+
+      .qr-focus-mode .tz-qr-wrap{
+        min-height: calc(100vh - 122px) !important;
+        display: grid !important;
+        place-items: center !important;
+        padding-top: 0 !important;
+      }
+
+      .qr-focus-mode .tz-qr-shell{
+        width: 100% !important;
+        display: grid !important;
+        place-items: center !important;
+      }
+
+      .qr-focus-mode .tz-qr-hero,
+      .qr-focus-mode .tz-qr-meta,
+      .qr-focus-mode .tz-qr-actions{
+        opacity: 0 !important;
+        transform: translateY(-12px) scale(.96) !important;
+        filter: blur(10px) !important;
+        pointer-events: none !important;
+      }
+
+      .qr-focus-mode .tz-qr-hero{
+        position: absolute !important;
+      }
+
+      .qr-focus-mode .tz-qr-card{
+        width: min(94vw, 620px) !important;
+        min-height: min(82vh, 760px) !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        display: grid !important;
+        place-items: center !important;
+        background:
+          radial-gradient(ellipse at 50% 42%, rgba(105, 213, 255, .20), transparent 47%),
+          linear-gradient(112deg, rgba(102, 201, 255, .11) 0 1px, transparent 1px 43%),
+          linear-gradient(248deg, rgba(102, 201, 255, .09) 0 1px, transparent 1px 42%),
+          linear-gradient(180deg, rgba(7, 17, 30, .86), rgba(0,0,0,.98)) !important;
+      }
+
+      .qr-focus-mode .tz-qr-card::after{
+        content: "Triple tap to return" !important;
+        top: auto !important;
+        bottom: 22px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        opacity: .56 !important;
+        z-index: 5 !important;
+      }
+
+      .qr-focus-mode .tz-qr-frame{
+        width: min(86vw, 520px) !important;
+        transform: translateZ(96px) translateY(0) rotateX(1deg) !important;
+        animation: tzQrScanFloat 3.7s ease-in-out infinite !important;
+      }
+
+      .qr-focus-mode .tz-qr-frame::before{
+        opacity: .90 !important;
+      }
+
+      .qr-focus-mode.qr-hidden .tz-qr-frame{
+        opacity: 1 !important;
+        transform: translateZ(96px) translateY(0) rotateX(1deg) !important;
+        filter: none !important;
+        pointer-events: auto !important;
+      }
+
+      .qr-focus-mode.qr-hidden .tz-qr-shell::after{
+        display: none !important;
+      }
+
+      @keyframes tzQrScanFloat{
+        0%, 100%{ transform: translateZ(96px) translateY(-7px) rotateX(1deg) rotateY(-.5deg); }
+        50%{ transform: translateZ(112px) translateY(10px) rotateX(1deg) rotateY(.5deg); }
+      }
+
+      @media(max-width:700px){
+        .qr-focus-mode .tz-qr-wrap{
+          min-height: calc(100vh - 116px) !important;
+          padding-bottom: 112px !important;
+        }
+        .qr-focus-mode .tz-qr-card{
+          width: calc(100vw - 28px) !important;
+          min-height: min(78vh, 660px) !important;
+          border-radius: 34px !important;
+        }
+        .qr-focus-mode .tz-qr-frame{
+          width: min(88vw, 500px) !important;
+        }
+      }
+
+      /* End QR idle scan mode */
 </style>
+
+    <script>
+      (() => {
+        const root = document.documentElement;
+        let idleTimer = null;
+        let tapCount = 0;
+        let tapTimer = null;
+        const interactiveSelector = 'a, button, input, textarea, select';
+        const enterFocus = () => {
+          root.classList.remove('qr-hidden');
+          root.classList.add('qr-focus-mode');
+        };
+        const showAll = () => {
+          root.classList.remove('qr-focus-mode', 'qr-hidden');
+          window.clearTimeout(idleTimer);
+          idleTimer = window.setTimeout(enterFocus, 5000);
+        };
+        const noteActivity = () => {
+          if (!root.classList.contains('qr-focus-mode')) {
+            window.clearTimeout(idleTimer);
+            idleTimer = window.setTimeout(enterFocus, 5000);
+          }
+        };
+        document.addEventListener('click', (event) => {
+          if (event.target.closest(interactiveSelector)) {
+            noteActivity();
+            return;
+          }
+          tapCount += 1;
+          window.clearTimeout(tapTimer);
+          tapTimer = window.setTimeout(() => { tapCount = 0; }, 520);
+          if (tapCount >= 3) {
+            tapCount = 0;
+            showAll();
+            return;
+          }
+          if (!root.classList.contains('qr-focus-mode')) noteActivity();
+        }, { passive: true });
+        ['pointermove', 'touchmove', 'keydown', 'scroll'].forEach((type) => {
+          document.addEventListener(type, noteActivity, { passive: true });
+        });
+        idleTimer = window.setTimeout(enterFocus, 5000);
+      })();
+    </script>
 
     `;
 
