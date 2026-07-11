@@ -5047,7 +5047,201 @@ router.get("/u/:username", async (req, res) => {
 
       /* End premium edit profile rebuild polish */
 
-      /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
+      
+
+      /* Public profile top card premium match */
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected){
+        position:relative;
+        isolation:isolate;
+        min-height:346px;
+        padding:32px;
+        border-radius:36px;
+        border-color:rgba(133,205,255,.19) !important;
+        background:
+          radial-gradient(620px 330px at 76% 15%, rgba(93,180,255,.16), transparent 56%),
+          radial-gradient(420px 240px at 18% 6%, rgba(255,255,255,.055), transparent 54%),
+          linear-gradient(180deg, rgba(13,17,26,.96), rgba(2,3,7,1)) !important;
+        box-shadow:
+          0 24px 70px rgba(0,0,0,.54),
+          0 0 0 1px rgba(255,255,255,.035) inset,
+          0 0 42px rgba(72,162,255,.08) !important;
+        backdrop-filter:blur(10px) saturate(1.08);
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg{
+        border-radius:36px;
+        opacity:.98;
+        background:
+          radial-gradient(340px 210px at 72% 20%, rgba(210,240,255,.13), transparent 62%),
+          radial-gradient(470px 250px at 28% 0%, rgba(83,178,255,.16), transparent 58%),
+          linear-gradient(125deg, rgba(255,255,255,.035), transparent 34%),
+          repeating-radial-gradient(circle at 18% 16%, rgba(255,255,255,.05) 0 1px, transparent 1px 13px) !important;
+        mix-blend-mode:screen;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected)::before{
+        opacity:.055;
+        background-image:radial-gradient(rgba(255,255,255,.95) .65px, transparent .65px);
+        background-size:12px 12px;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected)::after{
+        inset:1px;
+        border-radius:35px;
+        opacity:1;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.032), transparent 32%, rgba(0,0,0,.20)),
+          radial-gradient(520px 210px at 74% 10%, rgba(126,205,255,.075), transparent 62%) !important;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-top{
+        min-height:282px;
+        align-items:flex-end;
+        gap:24px;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap{
+        width:138px;
+        height:138px;
+        align-self:flex-start;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar{
+        width:138px;
+        height:138px;
+        border-radius:28px;
+        border-color:rgba(126,205,255,.72) !important;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(130,200,255,.14), transparent 55%),
+          linear-gradient(180deg,#182235,#0b0f17) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 0 1px rgba(255,255,255,.025),
+          0 0 28px rgba(87,170,255,.28),
+          0 0 52px rgba(48,110,255,.18),
+          0 16px 34px rgba(0,0,0,.30) !important;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before{
+        inset:-13px;
+        border-radius:38px;
+        opacity:.88 !important;
+        filter:blur(12px) !important;
+        background:
+          radial-gradient(circle at 45% 24%, rgba(118,202,255,.55), transparent 60%),
+          linear-gradient(180deg, rgba(115,194,255,.42), rgba(55,108,210,.16)) !important;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+        inset:-24px;
+        border-radius:46px;
+        opacity:.52 !important;
+        filter:blur(22px) !important;
+        background:radial-gradient(circle at 50% 45%, rgba(85,179,255,.46), transparent 64%) !important;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-main{
+        padding-bottom:8px;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-name{
+        font-size:clamp(44px, 7.8vw, 72px);
+        line-height:.95;
+        letter-spacing:0;
+        color:#fff;
+        text-shadow:0 12px 30px rgba(0,0,0,.44);
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-handle{
+        margin-top:14px;
+        color:rgba(225,238,255,.82);
+        font-size:clamp(24px, 4vw, 34px);
+        line-height:1.08;
+        text-shadow:0 8px 22px rgba(0,0,0,.32);
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-actions{
+        margin-top:22px;
+        gap:12px;
+      }
+
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-pill-btn,
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-actions .btn,
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-actions form .btn{
+        min-height:56px;
+        padding:0 24px;
+        border-radius:22px;
+        border-color:rgba(255,255,255,.13) !important;
+        background:rgba(255,255,255,.065) !important;
+        backdrop-filter:blur(16px) saturate(1.1);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 12px 26px rgba(0,0,0,.20) !important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected),
+      .profile-showcase.is-secondary-dim:not(.is-event-selected){
+        min-height:0;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-top,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-top{
+        min-height:0;
+      }
+
+      @media(max-width:700px){
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected){
+          min-height:390px;
+          padding:22px;
+          border-radius:30px;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg{
+          border-radius:30px;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected)::after{
+          border-radius:29px;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-top{
+          min-height:344px;
+          gap:16px;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap,
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar{
+          width:96px;
+          height:96px;
+          border-radius:23px;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-name{
+          font-size:42px;
+          line-height:.98;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-handle{
+          font-size:24px;
+          margin-top:10px;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-actions{
+          margin-top:18px;
+          gap:9px;
+        }
+
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-pill-btn,
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-actions .btn,
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-actions form .btn{
+          min-height:48px;
+          padding:0 18px;
+          border-radius:18px;
+        }
+      }
+
+      /* End public profile top card premium match */
+/* Final weather polish: keep effects behind identity and make conditions visibly alive. */
       .profile-showcase.is-weather-live{isolation:isolate!important;overflow:hidden!important;contain:paint;}
       .profile-showcase.is-weather-live .profile-showcase-bg{z-index:0!important;}
       .profile-showcase.is-weather-live .profile-weather-scene{z-index:1!important;pointer-events:none!important;mix-blend-mode:normal!important;opacity:.95!important;}
