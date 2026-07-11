@@ -5607,6 +5607,22 @@ router.get("/u/:username", async (req, res) => {
 
 
 
+
+
+      /* Profile name descender guard */
+      .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-name{
+        line-height:1.08;
+        padding-bottom:2px;
+      }
+
+      @media(max-width:700px){
+        .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-name{
+          line-height:1.08;
+          padding-bottom:2px;
+        }
+      }
+
+      /* End profile name descender guard */
 /* End public profile top card premium match */
 /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
       .profile-showcase.is-weather-live{isolation:isolate!important;overflow:hidden!important;contain:paint;}
