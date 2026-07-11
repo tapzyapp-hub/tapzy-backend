@@ -5415,6 +5415,100 @@ router.get("/u/:username", async (req, res) => {
 
       /* End clean compact profile edge glow */
 /* End compact profile top card premium finish */
+
+
+      /* Public profile hero buttons match edit hero */
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn{
+        position:relative;
+        overflow:hidden;
+        min-height:56px;
+        border-radius:23px;
+        padding:0 24px;
+        border:1px solid rgba(255,255,255,.16) !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.035)),
+          rgba(8,12,18,.72) !important;
+        color:#fff !important;
+        font-size:18px;
+        font-weight:950;
+        letter-spacing:0;
+        text-shadow:0 1px 10px rgba(0,0,0,.32);
+        backdrop-filter:blur(18px) saturate(1.12);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.16),
+          inset 0 -1px 0 rgba(255,255,255,.04),
+          0 15px 30px rgba(0,0,0,.28),
+          0 0 0 1px rgba(126,205,255,.045) !important;
+      }
+
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary::before,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn::before,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        pointer-events:none;
+        background:
+          radial-gradient(120px 42px at 50% 0%, rgba(255,255,255,.18), transparent 70%),
+          linear-gradient(180deg, rgba(255,255,255,.08), transparent 44%);
+        opacity:.72;
+      }
+
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary::after,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn::after,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn::after{
+        content:"";
+        position:absolute;
+        left:14%;
+        right:14%;
+        bottom:-1px;
+        height:1px;
+        border-radius:999px;
+        pointer-events:none;
+        background:linear-gradient(90deg, transparent, rgba(126,205,255,.42), transparent);
+        opacity:.86;
+      }
+
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary:hover,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary:focus-visible,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn:hover,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn:focus-visible,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn:hover,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn:focus-visible{
+        transform:translateY(-1px);
+        border-color:rgba(150,220,255,.42) !important;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(126,205,255,.14), transparent 58%),
+          linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.045)),
+          rgba(8,12,18,.76) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.20),
+          inset 0 -1px 0 rgba(255,255,255,.05),
+          0 0 22px rgba(87,170,255,.18),
+          0 16px 32px rgba(0,0,0,.30) !important;
+      }
+
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary:active,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn:active,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn:active{
+        transform:scale(.985);
+      }
+
+      @media(max-width:700px){
+        .profile-showcase:not(.is-event-selected) .profile-showcase-secondary,
+        .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn,
+        .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn{
+          min-height:48px;
+          border-radius:18px;
+          padding:0 18px;
+          font-size:15px;
+        }
+      }
+
+      /* End public profile hero buttons match edit hero */
 /* End public profile top card premium match */
 /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
       .profile-showcase.is-weather-live{isolation:isolate!important;overflow:hidden!important;contain:paint;}
