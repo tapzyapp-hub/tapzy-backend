@@ -5690,7 +5690,148 @@ router.get("/u/:username", async (req, res) => {
       @keyframes profileWeatherAurora{0%{opacity:.30;transform:translate3d(-2%,0,0) scale(1)}100%{opacity:.58;transform:translate3d(3%,-2%,0) scale(1.04)}}
       @keyframes profileWeatherMoon{0%{transform:translate3d(0,0,0) scale(.98)}100%{transform:translate3d(-4px,3px,0) scale(1.04)}}
       @media(max-width:700px){.profile-showcase.weather-night .profile-weather-sun{right:8%!important;top:8%!important;width:74px!important;height:74px!important}.profile-showcase.weather-night .profile-weather-scene::after{opacity:.38!important}}
-      /* End live wallpaper weather upgrade */
+      
+
+      /* Premium daytime live weather upgrade */
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear{
+        border-color:rgba(203,237,255,.34)!important;
+        background:#4aa9e8!important;
+        box-shadow:
+          0 22px 52px rgba(0,0,0,.30),
+          0 0 0 1px rgba(255,255,255,.13) inset,
+          0 0 34px rgba(96,194,255,.14)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-showcase-bg,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-showcase-bg{
+        opacity:1!important;
+        filter:saturate(1.16) contrast(1.02)!important;
+        background:
+          radial-gradient(circle at 52% 8%, rgba(255,255,255,.98) 0 5%, rgba(255,250,215,.70) 10%, rgba(255,232,145,.18) 24%, transparent 38%),
+          radial-gradient(ellipse at 68% 34%, rgba(255,255,255,.34), transparent 38%),
+          radial-gradient(ellipse at 20% 18%, rgba(190,236,255,.42), transparent 46%),
+          linear-gradient(180deg, #bdeeff 0%, #71c7f5 42%, #2e8dcc 100%)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-scene::before,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-scene::before{
+        content:""!important;
+        position:absolute!important;
+        inset:-18% -12%!important;
+        opacity:.66!important;
+        pointer-events:none!important;
+        z-index:1!important;
+        background:
+          linear-gradient(112deg, transparent 0 18%, rgba(255,255,255,.30) 34%, transparent 56%),
+          linear-gradient(78deg, transparent 0 36%, rgba(255,247,208,.18) 47%, transparent 66%)!important;
+        mix-blend-mode:screen!important;
+        animation:profileWeatherDayRays 8s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-scene::after,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-scene::after{
+        content:""!important;
+        position:absolute!important;
+        inset:-8% -16%!important;
+        opacity:.58!important;
+        pointer-events:none!important;
+        z-index:2!important;
+        background:
+          radial-gradient(ellipse at 16% 74%, rgba(255,255,255,.48), transparent 28%),
+          radial-gradient(ellipse at 52% 68%, rgba(255,255,255,.30), transparent 34%),
+          radial-gradient(ellipse at 88% 78%, rgba(255,255,255,.40), transparent 30%)!important;
+        filter:blur(13px)!important;
+        animation:profileWeatherDayCloudBank 18s linear infinite!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-sun,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-sun{
+        left:38%!important;
+        top:-24%!important;
+        width:260px!important;
+        height:260px!important;
+        opacity:1!important;
+        background:
+          radial-gradient(circle, rgba(255,255,255,1) 0 12%, rgba(255,252,221,.88) 18%, rgba(255,230,144,.30) 36%, rgba(115,208,255,.16) 56%, transparent 74%)!important;
+        filter:blur(4px) saturate(1.18)!important;
+        animation:profileWeatherDaySun 5.5s ease-in-out infinite alternate!important;
+        mix-blend-mode:screen!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-wisp,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-wisp{
+        opacity:.74!important;
+        height:82px!important;
+        background:linear-gradient(90deg, transparent, rgba(255,255,255,.38), rgba(205,241,255,.22), transparent)!important;
+        filter:blur(14px)!important;
+        animation-duration:18s!important;
+        mix-blend-mode:screen!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-cloud,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-cloud{
+        opacity:.52!important;
+        filter:blur(15px) saturate(1.08)!important;
+        background:radial-gradient(ellipse at center, rgba(255,255,255,.46), rgba(210,240,255,.20) 44%, transparent 68%)!important;
+        animation-duration:20s!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-lens,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-lens{
+        opacity:.28!important;
+        background:radial-gradient(circle, rgba(255,255,255,.42), rgba(150,220,255,.14) 48%, transparent 72%)!important;
+        animation:profileWeatherLens 6.5s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-cloudy .profile-showcase-bg,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-fog .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 55% 6%, rgba(255,255,255,.56), rgba(255,250,215,.18) 18%, transparent 34%),
+          radial-gradient(ellipse at 24% 20%, rgba(225,242,255,.36), transparent 44%),
+          linear-gradient(180deg, #9ecdeb 0%, #6aa8d0 48%, #385d82 100%)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-rain .profile-showcase-bg,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-storm .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 58% 8%, rgba(255,255,255,.36), rgba(210,230,255,.12) 20%, transparent 34%),
+          radial-gradient(ellipse at 20% 18%, rgba(195,225,245,.24), transparent 44%),
+          linear-gradient(180deg, #7f9fba 0%, #536b82 48%, #1a2434 100%)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night) .profile-weather-label{
+        color:rgba(255,255,255,.94)!important;
+        border-color:rgba(255,255,255,.20)!important;
+        background:rgba(54,105,145,.30)!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 10px 24px rgba(0,0,0,.10)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night) .profile-showcase-name,
+      .profile-showcase.is-weather-live:not(.weather-night) .profile-showcase-handle{
+        text-shadow:0 2px 18px rgba(31,83,126,.32), 0 1px 2px rgba(0,0,0,.20)!important;
+      }
+
+      @keyframes profileWeatherDaySun{0%{transform:translate3d(-6px,0,0) scale(.98)}100%{transform:translate3d(5px,4px,0) scale(1.05)}}
+      @keyframes profileWeatherDayRays{0%{opacity:.42;transform:translate3d(-2%,0,0) rotate(-1deg)}100%{opacity:.78;transform:translate3d(2%,-2%,0) rotate(1deg)}}
+      @keyframes profileWeatherDayCloudBank{0%{transform:translate3d(-8%,0,0) scale(1)}100%{transform:translate3d(8%,-1%,0) scale(1.03)}}
+
+      @media(max-width:700px){
+        .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-sun,
+        .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-sun{
+          left:34%!important;
+          top:-18%!important;
+          width:210px!important;
+          height:210px!important;
+        }
+        .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-scene::after,
+        .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-scene::after{
+          opacity:.48!important;
+        }
+      }
+
+      /* End premium daytime live weather upgrade */
+/* End live wallpaper weather upgrade */
 /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
       @media(min-width:701px){
         .profile-event-card-panel .event-card .event-title{
