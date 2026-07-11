@@ -385,9 +385,16 @@ router.get("/u/:username", async (req, res) => {
     const body = `
 
     <style id="tapzy-profile-first-paint-guard">
-      html:not(.tz-profile-ready) .profile-wrap{
+      html:not(.tz-profile-ready) .profile-wrap,
+      html:not(.tz-profile-ready) .profile-photo-viewer{
         visibility:hidden!important;
         opacity:0!important;
+      }
+      .profile-photo-viewer:not(.is-open),
+      .profile-photo-viewer[aria-hidden="true"]{
+        visibility:hidden!important;
+        opacity:0!important;
+        pointer-events:none!important;
       }
       html.tz-profile-ready .profile-wrap{
         visibility:visible;
@@ -7195,14 +7202,14 @@ router.get("/u/:username", async (req, res) => {
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ releaseProfileHeroBoot(); initProfileWeatherBackground(); initProfileShowcaseFade(); initProfileEventCards(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ initProfilePhotoViewer(); releaseProfileHeroBoot(); initProfileWeatherBackground(); initProfileShowcaseFade(); initProfileEventCards(); initProfileStoryFeed(); initVideoPreviewFrames(document); }, { once: true });
         } else {
+          initProfilePhotoViewer();
           releaseProfileHeroBoot();
           initProfileWeatherBackground();
           initProfileShowcaseFade();
           initProfileEventCards();
           initProfileStoryFeed();
-          initProfilePhotoViewer();
           initVideoPreviewFrames(document);
         }
       })();

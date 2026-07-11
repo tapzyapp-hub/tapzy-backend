@@ -4234,6 +4234,7 @@ router.get("/stories/feed", async (req, res) => {
           var actionIdleTimer = null;
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
           var tapzySoundMutedByUser = localStorage.getItem('tapzy_story_sound') === '0';
+          var isAndroidStoryFeed = /Android/i.test(navigator.userAgent || '');
           function setActionRailsIdle(idle){
             actionRails.forEach(function(rail){ rail.classList.toggle('is-idle', !!idle); });
           }
@@ -4272,11 +4273,29 @@ router.get("/stories/feed", async (req, res) => {
             if (!audio) return;
             audio.pause();
           }
+          function ensureFeedVideoSource(video){
+            if (!video) return;
+            if (!video.getAttribute('src') && video.dataset && video.dataset.feedSrc) {
+              video.setAttribute('src', video.dataset.feedSrc);
+              try { video.load(); } catch(e) {}
+            }
+          }
+          function releaseFeedVideoSurface(video){
+            if (!isAndroidStoryFeed || !video) return;
+            if (!video.dataset.feedSrc) video.dataset.feedSrc = video.currentSrc || video.getAttribute('src') || '';
+            try { video.pause(); } catch(e) {}
+            if (video.dataset.feedSrc) {
+              video.removeAttribute('src');
+              video.preload = 'none';
+              try { video.load(); } catch(e) {}
+            }
+          }
           function prepareFeedVideo(video){
             if (!video) return;
+            ensureFeedVideoSource(video);
             video.setAttribute('playsinline', '');
             video.setAttribute('webkit-playsinline', '');
-            video.preload = 'auto';
+            video.preload = isAndroidStoryFeed ? 'metadata' : 'auto';
             if (!tapzySoundUnlocked || tapzySoundMutedByUser) {
               video.muted = true;
               try { video.defaultMuted = true; } catch(e) {}
@@ -4315,10 +4334,13 @@ router.get("/stories/feed", async (req, res) => {
               else audio.play().catch(function(){});
             }
           }
-          function pauseFeedSlide(slide){
+          function pauseFeedSlide(slide, releaseSurface){
             if (!slide) return;
             var video = slide.querySelector('video');
-            if (video) video.pause();
+            if (video) {
+              try { video.pause(); } catch(e) {}
+              if (releaseSurface) releaseFeedVideoSurface(video);
+            }
             pauseStoryAudio(slide);
           }
           function visibleFeedSlide(){
@@ -4329,9 +4351,10 @@ router.get("/stories/feed", async (req, res) => {
           }
           function syncFeedPlayback(){
             var active = visibleFeedSlide();
-            slides.forEach(function(slide){
+            var activeIndex = slides.indexOf(active);
+            slides.forEach(function(slide, slideIndex){
               if (slide === active) playFeedSlide(slide);
-              else pauseFeedSlide(slide);
+              else pauseFeedSlide(slide, isAndroidStoryFeed && activeIndex >= 0 && Math.abs(slideIndex - activeIndex) > 1);
             });
           }
           var observer = new IntersectionObserver(function(entries){
@@ -4339,12 +4362,15 @@ router.get("/stories/feed", async (req, res) => {
               var video = entry.target.querySelector('video');
               var audio = entry.target.querySelector('audio[data-story-audio]');
               if (!video && !audio) return;
+              if (isAndroidStoryFeed) { scheduleFeedPlaybackSync(0); return; }
               if (entry.isIntersecting && entry.intersectionRatio > .45) playFeedSlide(entry.target);
               else pauseFeedSlide(entry.target);
             });
           }, { root: feed, threshold: [.05,.45,.75] });
-          slides.forEach(function(slide){
-            prepareFeedVideo(slide.querySelector('video'));
+          slides.forEach(function(slide, slideIndex){
+            var video = slide.querySelector('video');
+            if (isAndroidStoryFeed && slideIndex > 1) releaseFeedVideoSurface(video);
+            else prepareFeedVideo(video);
             observer.observe(slide);
           });
           requestAnimationFrame(syncFeedPlayback);
