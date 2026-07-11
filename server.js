@@ -150,7 +150,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("live:chat", ({ storyId, message, name }) => {
+  socket.on("live:chat", ({ storyId, message, name, clientMessageId }) => {
     const id = String(storyId || "").trim();
     const text = String(message || "").trim().slice(0, 220);
     if (!id || !text) return;
@@ -158,6 +158,7 @@ io.on("connection", (socket) => {
       storyId: id,
       name: String(name || socket.data.liveName || "Viewer").trim().slice(0, 48) || "Viewer",
       message: text,
+      clientMessageId: String(clientMessageId || "").trim().slice(0, 80),
       at: Date.now(),
     });
   });

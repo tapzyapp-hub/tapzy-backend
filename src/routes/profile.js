@@ -5035,6 +5035,31 @@ router.get("/u/:username", async (req, res) => {
         .tz-edit-actions{width:100%;display:grid !important;grid-template-columns:1fr 1fr;}
         .tz-edit-section{border-radius:24px !important;}
       }
+
+      /* Weather layer guardrails: animated sky stays behind the profile identity. */
+      .profile-showcase.is-weather-live{isolation:isolate;overflow:hidden;}
+      .profile-showcase.is-weather-live .profile-showcase-bg{z-index:0!important;}
+      .profile-showcase.is-weather-live .profile-weather-scene{z-index:1!important;pointer-events:none!important;mix-blend-mode:normal!important;}
+      .profile-showcase.is-weather-live .profile-showcase-top{position:relative;z-index:3!important;isolation:isolate;}
+      .profile-showcase.is-weather-live .profile-showcase-main{position:relative;z-index:5!important;}
+      .profile-showcase.is-weather-live .profile-showcase-main::before,
+      .profile-showcase.is-weather-live .profile-showcase-main::after{z-index:-1!important;pointer-events:none!important;}
+      .profile-showcase.is-weather-live .profile-showcase-name,
+      .profile-showcase.is-weather-live .profile-showcase-handle,
+      .profile-showcase.is-weather-live .profile-showcase-actions{position:relative;z-index:6!important;}
+      .profile-showcase.weather-rain .profile-weather-rain{opacity:.72!important;background-size:14px 34px!important;animation-duration:.38s!important;}
+      .profile-showcase.weather-storm .profile-weather-rain{opacity:.9!important;background-size:16px 32px!important;animation-duration:.26s!important;}
+      .profile-showcase.weather-snow .profile-weather-snow{opacity:.88!important;animation-duration:4.8s!important;}
+      .profile-showcase.weather-cloudy .profile-weather-cloud,
+      .profile-showcase.weather-fog .profile-weather-cloud{opacity:.78!important;}
+      .profile-showcase.weather-sunny .profile-weather-sun,
+      .profile-showcase.weather-clear .profile-weather-sun{opacity:1!important;filter:blur(10px) saturate(1.18)!important;}
+      .profile-showcase.weather-storm .profile-weather-scene::after{
+        content:"";position:absolute;inset:-10%;opacity:0;pointer-events:none;
+        background:linear-gradient(112deg,transparent 0 42%,rgba(255,255,255,.95) 46%,rgba(178,226,255,.62) 48%,transparent 54%),radial-gradient(circle at 68% 24%,rgba(255,255,255,.88),transparent 24%);
+        mix-blend-mode:screen;animation:profileWeatherLightningStrong 3.2s steps(1,end) infinite;
+      }
+      @keyframes profileWeatherLightningStrong{0%,68%,100%{opacity:0}70%{opacity:.95}72%{opacity:.12}74%{opacity:.82}79%{opacity:0}}
       /* End premium edit profile rebuild polish */
 
 </style>
@@ -5114,13 +5139,37 @@ router.get("/u/:username", async (req, res) => {
           }
           function conditionFromCode(code){
             const n = Number(code);
-            if ([95,96,99].includes(n)) return { key:'storm', text:'Storm' };
-            if ([71,73,75,77,85,86].includes(n)) return { key:'snow', text:'Snow' };
-            if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(n)) return { key:'rain', text:'Rain' };
-            if ([45,48].includes(n)) return { key:'fog', text:'Fog' };
-            if ([2,3].includes(n)) return { key:'cloudy', text:n === 2 ? 'Partly Cloudy' : 'Cloudy' };
-            if (n === 1) return { key:'sunny', text:'Mostly Sunny' };
-            return { key:'clear', text:'Sunny' };
+            const map = {
+              0:{ key:'clear', text:'Sunny' },
+              1:{ key:'sunny', text:'Mostly Sunny' },
+              2:{ key:'cloudy', text:'Partly Cloudy' },
+              3:{ key:'cloudy', text:'Cloudy' },
+              45:{ key:'fog', text:'Fog' },
+              48:{ key:'fog', text:'Freezing Fog' },
+              51:{ key:'rain', text:'Light Drizzle' },
+              53:{ key:'rain', text:'Drizzle' },
+              55:{ key:'rain', text:'Heavy Drizzle' },
+              56:{ key:'rain', text:'Freezing Drizzle' },
+              57:{ key:'rain', text:'Freezing Drizzle' },
+              61:{ key:'rain', text:'Light Rain' },
+              63:{ key:'rain', text:'Rain' },
+              65:{ key:'rain', text:'Heavy Rain' },
+              66:{ key:'rain', text:'Freezing Rain' },
+              67:{ key:'rain', text:'Freezing Rain' },
+              71:{ key:'snow', text:'Light Snow' },
+              73:{ key:'snow', text:'Snow' },
+              75:{ key:'snow', text:'Heavy Snow' },
+              77:{ key:'snow', text:'Snow Grains' },
+              80:{ key:'rain', text:'Light Showers' },
+              81:{ key:'rain', text:'Showers' },
+              82:{ key:'rain', text:'Heavy Showers' },
+              85:{ key:'snow', text:'Snow Showers' },
+              86:{ key:'snow', text:'Heavy Snow Showers' },
+              95:{ key:'storm', text:'Thunderstorm' },
+              96:{ key:'storm', text:'Thunderstorm' },
+              99:{ key:'storm', text:'Thunderstorm' },
+            };
+            return map[n] || { key:'clear', text:'Sunny' };
           }
           function applyWeather(data){
             const current = data && data.current;
@@ -5134,7 +5183,7 @@ router.get("/u/:username", async (req, res) => {
             label.textContent = (Number.isFinite(temp) ? Math.round(temp) + String.fromCharCode(176) : '') + (condition.text ? ' ' + condition.text : '');
           }
           function loadWeather(lat, lng){
-            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day&timezone=auto';
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day,precipitation,wind_speed_10m&timezone=auto';
             fetch(url, { cache:'no-store' })
               .then(function(res){ return res.ok ? res.json() : null; })
               .then(applyWeather)

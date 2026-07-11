@@ -2220,7 +2220,19 @@ router.get("/stories/live/new", async (req, res) => {
         .is-recording .tl-dot{animation:pulse 1s infinite}.is-recording .tl-badge{background:rgba(48,11,22,.58);border-color:rgba(255,64,112,.22)}@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.72}}
         @media(max-width:420px){.tl-top{left:16px;right:16px}.tl-badge{padding:8px 12px;font-size:12px}.tl-close{width:48px;height:48px}.tl-controls{left:10px;right:10px;bottom:calc(var(--safe-bottom) + 10px);padding:12px;border-radius:26px;gap:9px;background:linear-gradient(180deg,rgba(5,7,10,.20),rgba(0,0,0,.50));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.tl-title{display:grid;grid-template-columns:1fr auto;align-items:end;gap:8px}.tl-title h1{font-size:clamp(34px,11vw,48px);line-height:.9;margin:0}.tl-title p{grid-column:1 / -1;font-size:13px;line-height:1.25;max-width:100%;margin:0}.tl-handle{min-height:42px}.tl-studio-grid{display:none}.tl-chat-preview{display:none}.tl-buttons{grid-template-columns:1fr 1fr;gap:9px}.tl-primary,.tl-danger{grid-column:1 / -1}.tl-status{max-width:100%;font-size:12px;text-align:center}button{min-height:48px;border-radius:16px;font-size:15px}}
         @media(max-height:720px){.tl-studio-card{min-height:68px}.tl-studio-card span,.tl-chat-preview{display:none}.tl-controls{gap:8px}.tl-title-label{display:none}input{min-height:42px}.tl-buttons button{min-height:46px}}
-      </style>
+      
+        /* Streamer setup mobile polish: keep chat/gifts visible without clutter. */
+        @media(max-width:420px){
+          .tl-controls{max-height:56vh;overflow:auto;-webkit-overflow-scrolling:touch;box-shadow:0 18px 54px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.10)}
+          .tl-studio-grid{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+          .tl-studio-card{min-height:54px;padding:9px 10px;border-radius:18px;align-content:center}
+          .tl-studio-card strong{font-size:12px}.tl-studio-card span{display:block;font-size:10px;line-height:1.15}
+          .tl-chat-preview{display:grid!important;gap:5px;max-height:76px;overflow:hidden;padding:8px 10px}
+          .tl-chat-line{font-size:11px}.tl-gift-row{display:flex!important}.tl-gift-pill{height:24px;padding:0 8px;font-size:10px}
+          .tl-title p{display:none}.tl-handle{min-height:40px}.tl-buttons{gap:8px}
+        }
+        @media(max-height:720px){.tl-chat-preview{display:grid!important}.tl-gift-row{display:flex!important}}
+</style>
     </head>
     <body>
       <main class="tl-recorder" id="recorder">
@@ -3184,7 +3196,17 @@ router.get("/stories/live/:id", async (req, res) => {
           .tl-chat-form button{min-width:68px;font-size:16px}
           .tl-copy strong{font-size:22px}
         }
-      </style>
+      
+        /* Streamer room polish: readable chat and cleaner phone controls. */
+        .tl-room[data-role="host"] .tl-chat{left:14px;right:14px;bottom:calc(var(--safe-bottom) + 96px);height:132px;z-index:14;gap:6px}
+        .tl-room[data-role="host"] .tl-chat-row{background:rgba(4,6,10,.52);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+        .tl-room[data-role="host"] .tl-chat-form{left:14px;right:14px;bottom:calc(var(--safe-bottom) + 16px);z-index:15;grid-template-columns:minmax(0,1fr) 76px;gap:9px}
+        .tl-room[data-role="host"] .tl-chat-form input{min-height:50px;background:rgba(5,7,10,.68);box-shadow:0 12px 34px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08)}
+        .tl-room[data-role="host"] .tl-chat-form button{width:76px;min-width:76px;min-height:50px;font-size:15px}
+        .tl-room[data-role="host"] .tl-actions{right:12px;top:calc(var(--safe-top) + 76px);bottom:auto;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.26);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+        .tl-room[data-role="host"] .tl-copy{left:14px;right:14px;bottom:calc(var(--safe-bottom) + 236px);max-width:none}
+        @media(max-height:700px){.tl-room[data-role="host"] .tl-copy{display:none}.tl-room[data-role="host"] .tl-chat{height:102px;bottom:calc(var(--safe-bottom) + 86px)}.tl-room[data-role="host"] .tl-chat-form input,.tl-room[data-role="host"] .tl-chat-form button{min-height:46px}}
+</style>
     </head>
     <body>
       <main class="tl-room ${isEmbed ? "tl-embed" : ""}" data-story-id="${escapeHtml(story.id)}" data-role="${isHost ? "host" : "viewer"}" data-name="${escapeHtml(viewerName)}">
@@ -3408,8 +3430,13 @@ router.get("/stories/live/:id", async (req, res) => {
               postLiveToStoriesBeacon();
             });
           }
-          function addChat(nameText, message, gift){
+          var seenChatIds = Object.create(null);
+          function addChat(nameText, message, gift, clientMessageId){
             if (!chat) return;
+            if (clientMessageId) {
+              if (seenChatIds[clientMessageId]) return;
+              seenChatIds[clientMessageId] = true;
+            }
             const row = document.createElement('div');
             row.className = 'tl-chat-row' + (gift ? ' is-gift' : '');
             const strong = document.createElement('strong');
@@ -3584,7 +3611,7 @@ router.get("/stories/live/:id", async (req, res) => {
           });
 
           socket.on('live:chat', function(payload){
-            addChat(payload.name, payload.message);
+            addChat(payload.name, payload.message, false, payload.clientMessageId);
           });
 
           socket.on('live:gift', function(payload){
@@ -3602,7 +3629,9 @@ router.get("/stories/live/:id", async (req, res) => {
             event.preventDefault();
             const text = (chatInput.value || '').trim();
             if (!text) return;
-            socket.emit('live:chat', { storyId, name, message:text });
+            const clientMessageId = 'chat-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+            addChat(name || 'You', text, false, clientMessageId);
+            socket.emit('live:chat', { storyId, name, message:text, clientMessageId });
             chatInput.value = '';
           });
 
@@ -3731,7 +3760,7 @@ router.get("/stories/feed", async (req, res) => {
         ? isLive
           ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
           : isVideo
-          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay loop playsinline webkit-playsinline preload="metadata"></video>`
+          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
@@ -3825,7 +3854,7 @@ router.get("/stories/feed", async (req, res) => {
         const media = liveUrl && isLiveStreamUrl(liveUrl)
           ? renderLiveStreamMedia(liveUrl, title, index)
           : videoUrl
-          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" loop playsinline webkit-playsinline preload="metadata"></video>`
+          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>`
           : `<div class="sf-virtual-stream sf-virtual-motion" style="--stream-bg:${escapeHtml(eventStreamGradient(index))}"><span>${escapeHtml(category)}</span></div>`;
         const when = event.startAt ? formatPrettyLocal(event.startAt) : "Live now";
         const text = event.description || `${category} from Tapzy events happening now.`;
@@ -4056,6 +4085,20 @@ router.get("/stories/feed", async (req, res) => {
             if (!audio) return;
             audio.pause();
           }
+          function prepareFeedVideo(video){
+            if (!video) return;
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
+            video.preload = 'auto';
+            if (!tapzySoundUnlocked || tapzySoundMutedByUser) {
+              video.muted = true;
+              try { video.defaultMuted = true; } catch(e) {}
+              video.setAttribute('muted', '');
+            }
+            if (video.readyState === 0) {
+              try { video.load(); } catch(e) {}
+            }
+          }
           function activateVideoSound(slide){
             if (tapzySoundMutedByUser) return;
             var video = slide && slide.querySelector ? slide.querySelector('video') : null;
@@ -4070,24 +4113,69 @@ router.get("/stories/feed", async (req, res) => {
               sound.setAttribute('aria-label', 'Mute story');
             }
           }
+          function playFeedSlide(slide){
+            if (!slide || slide.hidden) return;
+            var video = slide.querySelector('video');
+            var audio = slide.querySelector('audio[data-story-audio]');
+            if (video) {
+              prepareFeedVideo(video);
+              if (tapzySoundUnlocked && !tapzySoundMutedByUser) forceSound(video);
+              video.play().catch(function(){
+                video.muted = true;
+                try { video.defaultMuted = true; } catch(e) {}
+                video.setAttribute('muted', '');
+                video.play().catch(function(){});
+              });
+            }
+            if (audio) {
+              if (tapzySoundUnlocked && !tapzySoundMutedByUser) playStoryAudio(slide);
+              else audio.play().catch(function(){});
+            }
+          }
+          function pauseFeedSlide(slide){
+            if (!slide) return;
+            var video = slide.querySelector('video');
+            if (video) video.pause();
+            pauseStoryAudio(slide);
+          }
+          function visibleFeedSlide(){
+            if (!feed || !slides.length) return slides[0] || null;
+            var feedRect = feed.getBoundingClientRect();
+            var best = null;
+            var bestOverlap = -1;
+            slides.forEach(function(slide){
+              if (slide.hidden) return;
+              var rect = slide.getBoundingClientRect();
+              var overlap = Math.min(rect.bottom, feedRect.bottom) - Math.max(rect.top, feedRect.top);
+              if (overlap > bestOverlap) {
+                bestOverlap = overlap;
+                best = slide;
+              }
+            });
+            return best;
+          }
+          function syncFeedPlayback(){
+            var active = visibleFeedSlide();
+            slides.forEach(function(slide){
+              if (slide === active) playFeedSlide(slide);
+              else pauseFeedSlide(slide);
+            });
+          }
           var observer = new IntersectionObserver(function(entries){
             entries.forEach(function(entry){
               var video = entry.target.querySelector('video');
               var audio = entry.target.querySelector('audio[data-story-audio]');
               if (!video && !audio) return;
-              if (entry.isIntersecting && entry.intersectionRatio > .65) {
-                if (tapzySoundUnlocked) activateVideoSound(entry.target);
-                else {
-                  if (video) video.play().catch(function(){});
-                  if (audio) audio.play().catch(function(){});
-                }
-              } else {
-                if (video) video.pause();
-                pauseStoryAudio(entry.target);
-              }
+              if (entry.isIntersecting && entry.intersectionRatio > .45) playFeedSlide(entry.target);
+              else pauseFeedSlide(entry.target);
             });
-          }, { root: feed, threshold: [.2,.65] });
-          slides.forEach(function(slide){ observer.observe(slide); });
+          }, { root: feed, threshold: [.05,.45,.75] });
+          slides.forEach(function(slide){
+            prepareFeedVideo(slide.querySelector('video'));
+            observer.observe(slide);
+          });
+          requestAnimationFrame(syncFeedPlayback);
+          setTimeout(syncFeedPlayback, 220);
 
           tabs.forEach(function(tab){
             tab.addEventListener('click', function(){
@@ -4104,7 +4192,22 @@ router.get("/stories/feed", async (req, res) => {
               wakeActionRails();
             });
           });
-          if (feed) feed.addEventListener('scroll', wakeActionRails, { passive:true });
+          var playbackRaf = null;
+          function scheduleFeedPlaybackSync(){
+            if (playbackRaf) return;
+            playbackRaf = requestAnimationFrame(function(){
+              playbackRaf = null;
+              syncFeedPlayback();
+            });
+          }
+          if (feed) feed.addEventListener('scroll', function(){
+            wakeActionRails();
+            scheduleFeedPlaybackSync();
+          }, { passive:true });
+          document.addEventListener('visibilitychange', function(){
+            if (document.hidden) slides.forEach(pauseFeedSlide);
+            else scheduleFeedPlaybackSync();
+          });
 
           document.addEventListener('click', function(event){
             var rail = event.target.closest('.sf-actions');
