@@ -11655,6 +11655,36 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End QR final float spacing tune */
+
+
+      /* Force visible QR bob */
+      .tz-qr-frame{
+        will-change: translate, transform !important;
+        animation: tzQrVisibleBob 2.7s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame-inner{
+        will-change: translate !important;
+        animation: tzQrInnerVisibleBob 2.7s ease-in-out infinite !important;
+      }
+
+      @keyframes tzQrVisibleBob{
+        0%, 100%{
+          translate: 0 -12px;
+          transform: translateZ(78px) rotateX(1.5deg) rotateY(-.45deg);
+        }
+        50%{
+          translate: 0 14px;
+          transform: translateZ(96px) rotateX(1deg) rotateY(.45deg);
+        }
+      }
+
+      @keyframes tzQrInnerVisibleBob{
+        0%, 100%{ translate: 0 -2px; }
+        50%{ translate: 0 3px; }
+      }
+
+      /* End force visible QR bob */
 </style>
 
     `;
