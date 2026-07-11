@@ -5949,6 +5949,51 @@ router.get("/u/:username", async (req, res) => {
       }
 
       /* End weather compact edge seal and motion boost */
+
+
+      /* Final compact profile strip goes black when weather is unavailable */
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected),
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected){
+        background:#000!important;
+        border-color:rgba(255,255,255,.10)!important;
+        box-shadow:
+          0 10px 24px rgba(0,0,0,.38),
+          0 0 0 1px rgba(255,255,255,.035) inset!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg{
+        opacity:0!important;
+        background:#000!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected)::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected)::after,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected)::before,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected)::after{
+        opacity:0!important;
+        background:transparent!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar{
+        border-color:rgba(126,205,255,.72)!important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 0 0 1px rgba(255,255,255,.025),
+          0 0 14px rgba(87,170,255,.16),
+          0 8px 18px rgba(0,0,0,.28)!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+        opacity:.18!important;
+        filter:blur(7px)!important;
+      }
+
+      /* End final compact profile strip goes black when weather is unavailable */
 /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
       @media(min-width:701px){
         .profile-event-card-panel .event-card .event-title{
