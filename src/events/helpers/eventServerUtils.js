@@ -1,6 +1,4 @@
 
-let seedEventsChecked = false;
-
 function sampleEvents() {
 
   const now = Date.now();
@@ -230,14 +228,10 @@ function sampleEvents() {
 
 
 async function seedEventsIfEmpty(prisma) {
-  if (seedEventsChecked) return;
 
   const count = await prisma.eventFinderItem.count();
 
-  if (count > 0) {
-    seedEventsChecked = true;
-    return;
-  }
+  if (count > 0) return;
 
 
 
@@ -254,8 +248,6 @@ async function seedEventsIfEmpty(prisma) {
     }
 
   }
-
-  seedEventsChecked = true;
 
 }
 

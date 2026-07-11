@@ -840,17 +840,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
 
-        function afterFirstPaint(fn) {
-          const run = () => {
-            if (typeof window.requestIdleCallback === "function") {
-              window.requestIdleCallback(fn, { timeout: 900 });
-            } else {
-              window.setTimeout(fn, 160);
-            }
-          };
-          window.requestAnimationFrame(() => window.requestAnimationFrame(run));
-        }
-
         function enhance(scope) {
 
           bindCardMotion(scope);
@@ -1750,7 +1739,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         enhance(document);
         window.addEventListener("scroll", scheduleAmbientGlowRefresh, { passive: true });
         window.addEventListener("resize", scheduleAmbientGlowRefresh, { passive: true });
-        afterFirstPaint(scheduleAmbientGlowRefresh);
+        scheduleAmbientGlowRefresh();
 
         setupLiveLocationGate();
         setupEventSharing();

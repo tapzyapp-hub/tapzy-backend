@@ -973,30 +973,12 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       })();
     </script>
 
-    <style id="tapzy-critical-shell">
-      html{background:#000;color-scheme:dark;-webkit-text-size-adjust:100%}
-      body{margin:0;min-height:100vh;background:#000;color:#fff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-      img{max-width:100%;height:auto}
-      body.tz-has-stories-top-nav > .tz-topbar{display:none!important}
-      .tz-story-top-nav{position:sticky;top:0;z-index:60;min-height:72px;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(env(safe-area-inset-top,0px) + 14px) 64px 12px;background:#000;color:#fff;box-sizing:border-box}
-      .tz-story-brand{position:absolute;left:20px;top:calc(env(safe-area-inset-top,0px) + 14px);width:38px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;border:2px solid rgba(255,255,255,.82);box-sizing:border-box;text-decoration:none;background:#05070b;color:#fff}
-      .tz-story-brand img{display:block;width:100%;height:100%;object-fit:contain}
-      .tz-story-tabs{display:flex;align-items:center;justify-content:center;gap:22px;min-width:0}
-      .tz-story-tab{position:relative;color:rgba(255,255,255,.62);font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap;line-height:1;padding:8px 0}
-      .tz-story-tab.is-active{color:#fff}
-      .tz-story-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-7px;width:28px;height:3px;border-radius:999px;background:#fff;transform:translateX(-50%);box-shadow:0 0 12px rgba(127,210,255,.55)}
-      .tz-story-search{position:absolute;right:18px;top:calc(env(safe-area-inset-top,0px) + 14px);width:38px;height:38px;display:grid;place-items:center;color:#fff;text-decoration:none}
-      .tz-story-search svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-      body.events-story-shell{background:#000!important}
-      body.events-story-shell .events-wrap{background:#000;color:#fff}
-      @media(max-width:430px){.tz-story-top-nav{min-height:72px;gap:16px;padding-left:64px;padding-right:54px}.tz-story-tabs{gap:15px}.tz-story-tab{font-size:13px}.tz-story-brand{left:19px}.tz-story-search{right:16px}}
-    </style>
     ${extraHead}
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="//res.cloudinary.com" />
     <script defer src="/js/tapzy-performance.js?v=20260710-faster-first-paint"></script>
-    <script defer src="/js/tapzy-video-upload.js?v=20260711-message-cloud-backup-race"></script>
+    <script defer src="/js/tapzy-video-upload.js?v=20260711-message-cloud-first"></script>
 
     <style>
 

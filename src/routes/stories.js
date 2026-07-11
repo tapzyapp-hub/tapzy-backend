@@ -1949,17 +1949,6 @@ router.post("/stories", upload.fields([{ name: "storyMedia", maxCount: 1 }, { na
 
     const libraryAudioUrl = selectedMusicUrl && selectedMusicUrl.startsWith("/sounds/") ? publicAbsoluteUrl(req, selectedMusicUrl) : null;
     const audioUrl = musicFile ? publicAbsoluteUrl(req, `/uploads/${musicFile.filename}`) : libraryAudioUrl;
-    const hasStoryMedia = !!String(mediaUrl || "").trim();
-    const hasStoryText = !!baseText;
-    const hasStoryMusic = !!audioUrl || !!musicTitle;
-    const hasLiveStory = type === "live" && hasStoryMedia;
-
-    if (!hasStoryMedia && !hasStoryText && !hasStoryMusic && !hasLiveStory) {
-      const wantsJson = String(req.headers.accept || "").includes("application/json") || String(req.headers["x-requested-with"] || "").toLowerCase() === "xmlhttprequest";
-      const errorMessage = "Add a photo, video, live recording, music, or caption before posting.";
-      if (wantsJson) return res.status(400).json({ ok: false, error: errorMessage });
-      return res.status(400).send(errorMessage);
-    }
 
     const createdStory = await prisma.story.create({
 
@@ -3900,13 +3889,6 @@ router.get("/stories/feed", async (req, res) => {
       orderBy: [{ createdAt: "desc" }],
       take: 100,
     });
-
-    stories = stories.filter((story) => {
-      const media = String(story.mediaUrl || "").trim();
-      const textValue = String(story.text || "").trim();
-      const typeValue = String(story.type || "").trim().toLowerCase();
-      return !!media || !!textValue || typeValue === "live";
-    });
     const eventStreams = [];
     const fallbackVideos = [];
 
@@ -4306,9 +4288,12 @@ router.get("/stories/feed", async (req, res) => {
             if (!isAndroidStoryFeed || !video) return;
             if (!video.dataset.feedSrc) video.dataset.feedSrc = video.currentSrc || video.getAttribute('src') || '';
             try { video.pause(); } catch(e) {}
-            video.preload = 'metadata';
+            if (video.dataset.feedSrc) {
+              video.removeAttribute('src');
+              video.preload = 'none';
+              try { video.load(); } catch(e) {}
+            }
           }
-
           function prepareFeedVideo(video){
             if (!video) return;
             ensureFeedVideoSource(video);
@@ -4323,32 +4308,7 @@ router.get("/stories/feed", async (req, res) => {
             if (video.readyState === 0) {
               try { video.load(); } catch(e) {}
             }
-            if (isAndroidStoryFeed && video.dataset.androidRecoveryBound !== '1') {
-              video.dataset.androidRecoveryBound = '1';
-              ['stalled','emptied','error','waiting'].forEach(function(eventName){
-                video.addEventListener(eventName, function(){ recoverFeedVideo(video); }, { passive: true });
-              });
-            }
-            if (isAndroidStoryFeed) {
-              window.setTimeout(function(){ recoverFeedVideo(video); }, 140);
-            }
           }
-          function recoverFeedVideo(video){
-            if (!video || !isAndroidStoryFeed) return;
-            const needsSource = !video.getAttribute('src') && video.dataset && video.dataset.feedSrc;
-            const hasNoFrame = video.readyState < 2 || video.videoWidth === 0;
-            if (!needsSource && !hasNoFrame) return;
-            ensureFeedVideoSource(video);
-            video.preload = 'auto';
-            try { video.load(); } catch(e) {}
-            window.setTimeout(function(){
-              const slide = video.closest('.sf-slide');
-              if (!slide || slide.classList.contains('is-active')) {
-                video.play().catch(function(){});
-              }
-            }, 90);
-          }
-
           function activateVideoSound(slide){
             if (tapzySoundMutedByUser) return;
             var video = slide && slide.querySelector ? slide.querySelector('video') : null;
@@ -4420,7 +4380,7 @@ router.get("/stories/feed", async (req, res) => {
           }, { root: feed, threshold: [.05,.45,.75] });
           slides.forEach(function(slide, slideIndex){
             var video = slide.querySelector('video');
-            if (isAndroidStoryFeed && slideIndex > 5) releaseFeedVideoSurface(video);
+            if (isAndroidStoryFeed && slideIndex > 1) releaseFeedVideoSurface(video);
             else prepareFeedVideo(video);
             observer.observe(slide);
           });
