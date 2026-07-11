@@ -3655,6 +3655,180 @@ module.exports = function renderConversationPage({
   }
 
   /* End contacts-matched glass chat polish */
+
+
+  /* Premium liquid glass chat finish */
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav{
+    background:#000 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-shell{
+    filter: drop-shadow(0 18px 34px rgba(0,0,0,.46)) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
+    min-height:74px !important;
+    padding:12px 14px !important;
+    border-radius:32px !important;
+    background:
+      radial-gradient(340px 130px at 22% 0%, rgba(137, 219, 255, .18), transparent 60%),
+      radial-gradient(220px 120px at 93% 40%, rgba(255, 64, 128, .11), transparent 72%),
+      linear-gradient(180deg, rgba(20, 31, 45, .72), rgba(4, 6, 12, .82)) !important;
+    border:1px solid rgba(166, 226, 255, .22) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.18),
+      inset 0 -1px 0 rgba(74,170,255,.10),
+      0 18px 42px rgba(0,0,0,.45),
+      0 0 28px rgba(80, 180, 255, .12) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar::after{
+    content:"" !important;
+    position:absolute !important;
+    inset:1px !important;
+    border-radius:inherit !important;
+    pointer-events:none !important;
+    background:linear-gradient(180deg, rgba(255,255,255,.08), transparent 34%) !important;
+    opacity:.75 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+    border-radius:34px !important;
+    background:
+      radial-gradient(460px 210px at 50% -4%, rgba(92, 192, 255, .095), transparent 56%),
+      linear-gradient(180deg, rgba(8, 15, 24, .76), rgba(0,0,0,.98) 54%) !important;
+    border:1px solid rgba(144, 216, 255, .18) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.10),
+      inset 0 0 42px rgba(80, 170, 255, .035),
+      0 18px 48px rgba(0,0,0,.50) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window::before{
+    opacity:.055 !important;
+    background-image:
+      radial-gradient(rgba(160,224,255,.72) .65px, transparent .65px),
+      linear-gradient(rgba(120,205,255,.035) 1px, transparent 1px) !important;
+    background-size:13px 13px, 100% 42px !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble{
+    border-radius:24px !important;
+    padding:16px 18px !important;
+    border:1px solid rgba(174, 226, 255, .14) !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.018)),
+      rgba(8, 13, 21, .72) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.12),
+      inset 0 -1px 0 rgba(89,180,255,.055),
+      0 14px 28px rgba(0,0,0,.36) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.mine{
+    background:
+      radial-gradient(190px 84px at 72% 0%, rgba(105, 200, 255, .18), transparent 65%),
+      linear-gradient(180deg, rgba(25, 38, 56, .74), rgba(5, 8, 15, .88)) !important;
+    border-color:rgba(124, 207, 255, .25) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.other{
+    background:
+      radial-gradient(170px 78px at 35% 0%, rgba(255,255,255,.10), transparent 66%),
+      linear-gradient(180deg, rgba(20, 22, 29, .74), rgba(4, 5, 9, .90)) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-video-frame,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-image,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.has-video,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-bubble.is-image-only{
+    border-radius:28px !important;
+    overflow:hidden !important;
+    border-color:rgba(126, 205, 255, .18) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.10),
+      0 18px 36px rgba(0,0,0,.42),
+      0 0 24px rgba(83, 178, 255, .10) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+    padding:10px 12px !important;
+    border-radius:32px !important;
+    background:
+      radial-gradient(360px 130px at 50% 0%, rgba(112, 205, 255, .13), transparent 58%),
+      linear-gradient(180deg, rgba(18, 26, 38, .78), rgba(3, 5, 9, .94)) !important;
+    border:1px solid rgba(152, 220, 255, .20) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.14),
+      inset 0 -1px 0 rgba(75,170,255,.08),
+      0 18px 44px rgba(0,0,0,.52),
+      0 0 26px rgba(83, 178, 255, .10) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap{
+    min-height:54px !important;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.018)),
+      rgba(5, 7, 12, .76) !important;
+    border:1px solid rgba(255,255,255,.13) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.12),
+      0 8px 20px rgba(0,0,0,.28) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input::placeholder{
+    color:rgba(224, 235, 255, .48) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-mic{
+    width:52px !important;
+    height:52px !important;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.18) inset,
+      0 0 22px rgba(72, 158, 255, .34),
+      0 12px 22px rgba(0,0,0,.30) !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-send{
+    min-height:52px !important;
+    padding:0 21px !important;
+    font-weight:900 !important;
+  }
+
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-date-divider span{
+    color:rgba(240,246,255,.74) !important;
+    border-color:rgba(170,225,255,.15) !important;
+    background:rgba(7, 10, 15, .68) !important;
+  }
+
+  @media(max-width:700px){
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-topbar{
+      min-height:70px !important;
+      padding:11px 12px !important;
+      border-radius:30px !important;
+    }
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-window{
+      border-radius:30px !important;
+    }
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-composer-inner{
+      padding:9px 10px !important;
+    }
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap{
+      min-height:50px !important;
+    }
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-upload-pill,
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-mic{
+      width:48px !important;
+      height:48px !important;
+    }
+    body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-send{
+      min-height:48px !important;
+      padding:0 18px !important;
+    }
+  }
+
+  /* End premium liquid glass chat finish */
 </style>
 
 
