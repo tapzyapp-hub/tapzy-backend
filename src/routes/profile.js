@@ -469,7 +469,7 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-      <section id="tapzyProfileShell" class="profile-showcase ${isTapOpen ? "tapzy-profile-hidden" : ""}">
+      <section id="tapzyProfileShell" class="profile-showcase is-profile-booting ${isTapOpen ? "tapzy-profile-hidden" : "tapzy-profile-visible"}">
 
         <div class="profile-showcase-bg"></div>
         <div class="profile-weather-scene" aria-hidden="true"><span class="profile-weather-sun"></span><span class="profile-weather-cloud profile-weather-cloud-a"></span><span class="profile-weather-cloud profile-weather-cloud-b"></span><span class="profile-weather-wisp profile-weather-wisp-a"></span><span class="profile-weather-wisp profile-weather-wisp-b"></span><span class="profile-weather-lens profile-weather-lens-a"></span><span class="profile-weather-lens profile-weather-lens-b"></span><span class="profile-weather-rain"></span><span class="profile-weather-snow"></span></div>
@@ -731,6 +731,18 @@ router.get("/u/:username", async (req, res) => {
 
         transition:opacity .42s ease, transform .42s ease;
 
+      }
+
+      .profile-showcase.is-profile-booting,
+      .profile-showcase.is-profile-booting *,
+      .profile-showcase.is-profile-weather-swapping,
+      .profile-showcase.is-profile-weather-swapping *{
+        transition:none!important;
+      }
+
+      .profile-showcase.is-profile-booting{
+        opacity:1!important;
+        transform:none!important;
       }
 
 
@@ -6599,6 +6611,14 @@ router.get("/u/:username", async (req, res) => {
 
     <script>
       (function(){
+        function releaseProfileHeroBoot(){
+          const shell = document.getElementById('tapzyProfileShell');
+          if (!shell) return;
+          requestAnimationFrame(function(){
+            requestAnimationFrame(function(){ shell.classList.remove('is-profile-booting'); });
+          });
+        }
+        window.addEventListener('pageshow', releaseProfileHeroBoot);
         function initProfileWeatherBackground(){
           const shell = document.getElementById('tapzyProfileShell');
           if (!shell || !navigator.geolocation || !window.fetch) return;
@@ -6652,9 +6672,13 @@ router.get("/u/:username", async (req, res) => {
             const localHour = new Date().getHours();
             const localLooksNight = localHour >= 20 || localHour < 6;
             const isDay = apiSaysDay && !localLooksNight;
+            shell.classList.add('is-profile-weather-swapping');
             shell.classList.remove.apply(shell.classList, weatherClasses);
             shell.classList.add('is-weather-live', 'weather-' + condition.key);
             if (!isDay) shell.classList.add('weather-night');
+            requestAnimationFrame(function(){
+              requestAnimationFrame(function(){ shell.classList.remove('is-profile-weather-swapping', 'is-profile-booting'); });
+            });
             const temp = Number(current.temperature_2m);
             let conditionText = condition.text || '';
             if (!isDay && (condition.key === 'clear' || condition.key === 'sunny')) {
@@ -7159,8 +7183,9 @@ router.get("/u/:username", async (req, res) => {
           });
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ initProfileWeatherBackground(); initProfileShowcaseFade(); initProfileEventCards(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
+          document.addEventListener('DOMContentLoaded', function(){ releaseProfileHeroBoot(); initProfileWeatherBackground(); initProfileShowcaseFade(); initProfileEventCards(); initProfileStoryFeed(); initProfilePhotoViewer(); initVideoPreviewFrames(document); }, { once: true });
         } else {
+          releaseProfileHeroBoot();
           initProfileWeatherBackground();
           initProfileShowcaseFade();
           initProfileEventCards();
