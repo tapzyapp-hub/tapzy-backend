@@ -252,7 +252,15 @@ router.get("/u/:username", async (req, res) => {
 
 
 
-    const [activeStories, attendingEvent] = await Promise.all([
+    const followingStoryProfileIdsPromise = currentProfile
+      ? prisma.follow.findMany({
+          where: { followerProfileId: currentProfile.id },
+          select: { followingProfileId: true },
+          take: 80,
+        })
+      : Promise.resolve([]);
+
+    const [activeStories, followingStoryFollows, attendingEvent] = await Promise.all([
 
       prisma.story.findMany({
 
@@ -269,6 +277,8 @@ router.get("/u/:username", async (req, res) => {
         take: 10,
 
       }),
+
+      followingStoryProfileIdsPromise,
 
       prisma.eventAttendance.findFirst({
 
@@ -305,6 +315,21 @@ router.get("/u/:username", async (req, res) => {
       }),
 
     ]);
+
+    const followingStoryProfileIds = [...new Set((followingStoryFollows || [])
+      .map((follow) => follow.followingProfileId)
+      .filter((id) => id && id !== profile.id))];
+    const followingStories = followingStoryProfileIds.length
+      ? await prisma.story.findMany({
+          where: {
+            profileId: { in: followingStoryProfileIds },
+            expiresAt: { gt: now },
+          },
+          include: { profile: true },
+          orderBy: { createdAt: "desc" },
+          take: 18,
+        })
+      : [];
 
 
 
@@ -353,13 +378,24 @@ router.get("/u/:username", async (req, res) => {
 
     const showFollowButton = !!(currentProfile && currentProfile.id !== profile.id);
 
-    const featuredStory = activeStories[0] || null;
-    const profileStoryFeedItems = activeStories.map((story) => ({
-      mediaUrl: story.mediaUrl || "",
-      isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
-      text: story.text || profile.name || profile.username || "Tapzy Story",
-      time: formatStoryTimeShort(story.createdAt),
-    }));
+    const ownedStoryItems = activeStories.map((story) => ({ story, owner: profile, isOwn: true }));
+    const followedStoryItems = followingStories.map((story) => ({ story, owner: story.profile || null, isOwn: false }));
+    const allProfileStoryItems = [...ownedStoryItems, ...followedStoryItems];
+    const featuredStory = allProfileStoryItems[0]?.story || null;
+    const profileStoryFeedItems = allProfileStoryItems.map(({ story, owner, isOwn }) => {
+      const ownerName = owner?.name || owner?.username || (isOwn ? displayName : "Tapzy User");
+      return {
+        mediaUrl: story.mediaUrl || "",
+        isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
+        text: story.text || ownerName || "Tapzy Story",
+        time: formatStoryTimeShort(story.createdAt),
+        ownerName,
+        ownerUsername: owner?.username || "",
+        ownerPhoto: owner?.photo || "",
+        ownerInitial: (ownerName || "T").slice(0, 1).toUpperCase(),
+        isOwn: !!isOwn,
+      };
+    });
     const hasProfileStoryVideo = profileStoryFeedItems.some((story) => story.isVideo);
     const profileStoryFeedJson = JSON.stringify(profileStoryFeedItems).replace(/</g, "\\u003c");
     const quickShareRailLinks = quickShareOn ? [
@@ -574,7 +610,7 @@ router.get("/u/:username", async (req, res) => {
 
       ${
 
-        activeStories.length || isOwner || quickPreview.length
+        profileStoryFeedItems.length || isOwner || quickPreview.length
 
           ? `
 
@@ -606,7 +642,7 @@ router.get("/u/:username", async (req, res) => {
 
                   <div>
 
-                    <strong>${escapeHtml(displayName)}</strong>
+                    <strong data-profile-story-owner>${escapeHtml(displayName)}</strong>
 
                     ${
                       featuredStory
@@ -6867,6 +6903,7 @@ router.get("/u/:username", async (req, res) => {
           const frame = stage.querySelector('[data-profile-story-frame]');
           const source = stage.querySelector('[data-profile-story-items]');
           const meta = stage.querySelector('[data-profile-story-meta]');
+          const ownerLabel = stage.querySelector('[data-profile-story-owner]');
           const soundBtn = stage.querySelector('[data-profile-story-sound]');
           const copyToast = stage.querySelector('[data-profile-story-copy-toast]');
           if (!frame || !source) return;
@@ -7027,10 +7064,43 @@ router.get("/u/:username", async (req, res) => {
             return bindVideoStory(video);
           }
 
+          const profileWrap = stage.closest('.profile-wrap');
+          const showcaseAvatar = document.querySelector('.profile-showcase-avatar');
+          const defaultAvatarHtml = showcaseAvatar ? showcaseAvatar.innerHTML : '';
+          let activeStoryItem = items[0] || null;
+
+          function setCompactAvatar(item){
+            if (!showcaseAvatar) return;
+            const shouldBorrowAvatar = !!(profileWrap && profileWrap.classList.contains('is-profile-condensed') && item && !item.isOwn);
+            if (!shouldBorrowAvatar) {
+              if (showcaseAvatar.innerHTML !== defaultAvatarHtml) showcaseAvatar.innerHTML = defaultAvatarHtml;
+              return;
+            }
+            showcaseAvatar.replaceChildren();
+            if (item.ownerPhoto) {
+              const img = document.createElement('img');
+              img.src = item.ownerPhoto;
+              img.alt = item.ownerName || 'Story profile';
+              img.loading = 'eager';
+              img.decoding = 'async';
+              showcaseAvatar.appendChild(img);
+              return;
+            }
+            showcaseAvatar.textContent = item.ownerInitial || 'T';
+          }
+
+          if (profileWrap && showcaseAvatar && window.MutationObserver) {
+            const compactAvatarObserver = new MutationObserver(function(){ setCompactAvatar(activeStoryItem); });
+            compactAvatarObserver.observe(profileWrap, { attributes: true, attributeFilter: ['class'] });
+          }
+
           function swapStoryNode(node, item){
             if (!node) return;
+            activeStoryItem = item || activeStoryItem;
             frame.replaceChildren(node);
+            if (ownerLabel) ownerLabel.textContent = item.ownerName || 'Tapzy User';
             if (meta) meta.textContent = (item.time || 'Just now') + ' · Tapzy Story';
+            setCompactAvatar(activeStoryItem);
             updateSoundLabel(item.isVideo ? node : null);
             showControls();
           }

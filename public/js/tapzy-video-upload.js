@@ -580,30 +580,53 @@
     try {
       let complete = null;
       if (supportsChunkedSubmit(form)) {
+        const isVideo = isVideoFile(file);
+        const needsSecondaryVideoPath = isVideo && file.size >= START_OPTIMIZE_BYTES;
+
         if (isImageFile(file)) {
           setStatus(form, "Optimizing image for faster upload.");
           uploadFile = await compressImage(file);
           if (uploadFile !== file && uploadFile.size < file.size) {
             setStatus(form, `Image optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} - uploading now.`);
           }
-        } else if (isVideoFile(file) && file.size >= START_OPTIMIZE_BYTES) {
-          setStatus(form, "Optimizing video for faster upload 0% — keep this page open.");
-          uploadFile = await compressVideo(file, (pct) => {
-            setStatus(form, `Optimizing video for faster upload ${pct}% — keep this page open.`);
-          });
-          if (uploadFile !== file && uploadFile.size < file.size) {
-            setStatus(form, `Video optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} — uploading now.`);
+        } else if (needsSecondaryVideoPath) {
+          try {
+            setStatus(form, `Uploading original video to cloud ${0}% — fastest path.`);
+            complete = await uploadCloudMedia(file, (pct) => {
+              setStatus(form, `Uploading original video to cloud ${pct}% — fastest path.`);
+            });
+            uploadFile = file;
+          } catch (cloudError) {
+            complete = null;
+            setStatus(form, `Cloud needs a smaller copy — optimizing video 0% — keep this page open.`);
+            uploadFile = await compressVideo(file, (pct) => {
+              setStatus(form, `Cloud needs a smaller copy — optimizing video ${pct}% — keep this page open.`);
+            });
+            if (uploadFile !== file && uploadFile.size < file.size) {
+              setStatus(form, `Video optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} — uploading now.`);
+              try {
+                setStatus(form, `Uploading optimized video to cloud ${0}% — keep this page open.`);
+                complete = await uploadCloudMedia(uploadFile, (pct) => {
+                  setStatus(form, `Uploading optimized video to cloud ${pct}% — keep this page open.`);
+                });
+              } catch (optimizedCloudError) {
+                setStatus(form, `Cloud upload failed: ${optimizedCloudError.message || "retrying safely"}`);
+                complete = null;
+              }
+            }
           }
         }
 
-        try {
-          setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${0}% — keep this page open.`);
-          complete = await uploadCloudMedia(uploadFile, (pct) => {
-            setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${pct}% — keep this page open.`);
-          });
-        } catch (cloudError) {
-          setStatus(form, `Cloud upload failed: ${cloudError.message || "retrying safely"}`);
-          complete = null;
+        if (!complete && !needsSecondaryVideoPath) {
+          try {
+            setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${0}% — keep this page open.`);
+            complete = await uploadCloudMedia(uploadFile, (pct) => {
+              setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${pct}% — keep this page open.`);
+            });
+          } catch (cloudError) {
+            setStatus(form, `Cloud upload failed: ${cloudError.message || "retrying safely"}`);
+            complete = null;
+          }
         }
 
         if (!complete && !isVideoFile(uploadFile) && uploadFile.size <= DIRECT_UPLOAD_BYTES) {
