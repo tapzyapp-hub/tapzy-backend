@@ -1669,6 +1669,24 @@ module.exports = function renderConversationPage({
 
 
 
+
+  .tz-chat-input-wrap,
+  .tz-chat-input,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input{
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .tz-chat-input-wrap::-webkit-scrollbar,
+  .tz-chat-input::-webkit-scrollbar,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input-wrap::-webkit-scrollbar,
+  body.tz-has-stories-top-nav.tz-has-stories-bottom-nav .tz-chat-input::-webkit-scrollbar{
+    width:0;
+    height:0;
+    display:none;
+    background:transparent;
+  }
+
   .tz-chat-input:focus{
 
     border-color:rgba(127,210,255,.18);
