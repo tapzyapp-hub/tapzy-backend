@@ -11399,6 +11399,213 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End remove QR center logo */
+
+
+      /* 3D glass room QR stage */
+      .tz-qr-wrap{
+        max-width: 640px !important;
+        padding-top: 14px !important;
+      }
+
+      .tz-qr-shell{
+        gap: 16px !important;
+        perspective: 1500px !important;
+      }
+
+      .tz-qr-card{
+        min-height: min(74vh, 720px) !important;
+        padding: 22px 18px 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        border-radius: 36px !important;
+        overflow: hidden !important;
+        transform-style: preserve-3d !important;
+        background:
+          radial-gradient(ellipse at 50% 38%, rgba(90, 197, 255, .18) 0%, rgba(38, 107, 255, .07) 34%, transparent 58%),
+          linear-gradient(112deg, rgba(102, 201, 255, .11) 0 1px, transparent 1px 43%),
+          linear-gradient(248deg, rgba(102, 201, 255, .10) 0 1px, transparent 1px 42%),
+          linear-gradient(180deg, rgba(13, 24, 38, .93) 0%, rgba(3, 6, 13, .99) 48%, rgba(0, 0, 0, 1) 100%) !important;
+        box-shadow:
+          0 34px 86px rgba(0, 0, 0, .68),
+          inset 0 0 0 1px rgba(137, 214, 255, .20),
+          inset 0 1px 0 rgba(255, 255, 255, .13),
+          inset 0 -90px 110px rgba(0, 0, 0, .62) !important;
+      }
+
+      .tz-qr-card::before{
+        content: "" !important;
+        position: absolute !important;
+        left: -18% !important;
+        right: -18% !important;
+        bottom: -8% !important;
+        height: 52% !important;
+        pointer-events: none !important;
+        border-radius: 50% 50% 0 0 / 24% 24% 0 0 !important;
+        background:
+          linear-gradient(rgba(102, 201, 255, .18) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(102, 201, 255, .10) 1px, transparent 1px),
+          radial-gradient(ellipse at 50% 0%, rgba(89, 190, 255, .20), transparent 56%) !important;
+        background-size: 100% 34px, 44px 100%, 100% 100% !important;
+        transform: perspective(620px) rotateX(64deg) translateY(20px) !important;
+        transform-origin: bottom center !important;
+        filter: blur(.15px) !important;
+        opacity: .72 !important;
+        animation: tzQrRoomFloor 7s linear infinite !important;
+        z-index: 0 !important;
+      }
+
+      .tz-qr-card::after{
+        content: "" !important;
+        position: absolute !important;
+        inset: 18px !important;
+        border-radius: 32px !important;
+        pointer-events: none !important;
+        background:
+          radial-gradient(ellipse at 50% 34%, rgba(255,255,255,.18), transparent 11%, rgba(101,204,255,.09) 30%, transparent 52%),
+          linear-gradient(90deg, rgba(255,255,255,.16), transparent 18%, transparent 82%, rgba(126,217,255,.12)),
+          linear-gradient(180deg, rgba(255,255,255,.10), transparent 23%) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(175, 230, 255, .12),
+          inset 0 0 52px rgba(108, 203, 255, .08) !important;
+        opacity: .82 !important;
+        z-index: 3 !important;
+      }
+
+      .tz-qr-frame{
+        position: relative !important;
+        z-index: 2 !important;
+        width: min(88%, 430px) !important;
+        padding: 7px !important;
+        border-radius: 34px !important;
+        transform: translateZ(74px) rotateX(2deg) !important;
+        background:
+          linear-gradient(135deg, rgba(184, 241, 255, .98), rgba(53, 132, 255, .96) 47%, rgba(190, 247, 255, .98)) !important;
+        box-shadow:
+          0 0 0 1px rgba(241, 253, 255, .60) inset,
+          0 0 26px rgba(101, 208, 255, .48),
+          0 0 72px rgba(38, 120, 255, .32),
+          0 32px 58px rgba(0, 0, 0, .62) !important;
+        animation: tzQrRoomFloat 4.6s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame::before{
+        content: "" !important;
+        position: absolute !important;
+        inset: -38px !important;
+        border-radius: 46% !important;
+        pointer-events: none !important;
+        background:
+          radial-gradient(ellipse at 50% 36%, rgba(255,255,255,.20), transparent 18%, rgba(106,207,255,.20) 38%, transparent 69%) !important;
+        filter: blur(6px) !important;
+        opacity: .76 !important;
+        z-index: -1 !important;
+        animation: tzQrDomePulse 3.2s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame::after{
+        content: "" !important;
+        display: block !important;
+        position: absolute !important;
+        inset: -18px -16px -20px !important;
+        border-radius: 38px !important;
+        pointer-events: none !important;
+        background:
+          radial-gradient(ellipse at 38% 4%, rgba(255,255,255,.30), transparent 16%),
+          radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(156,229,255,.18) 67%, transparent 72%) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(207,244,255,.18),
+          inset 0 0 42px rgba(120,213,255,.12) !important;
+        opacity: .70 !important;
+        z-index: 4 !important;
+      }
+
+      .tz-qr-frame-inner{
+        border-radius: 27px !important;
+        padding: 10px !important;
+        background: #fff !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(0,0,0,.06),
+          inset 0 0 22px rgba(80, 160, 255, .08) !important;
+      }
+
+      .tz-qr-image{
+        border-radius: 17px !important;
+      }
+
+      .tz-qr-logo-overlay{
+        display: none !important;
+      }
+
+      .tz-qr-meta,
+      .tz-qr-actions{
+        position: relative !important;
+        z-index: 4 !important;
+        transform: translateZ(46px) !important;
+      }
+
+      .tz-qr-meta{
+        margin-top: 22px !important;
+      }
+
+      .tz-qr-meta-caption{
+        max-width: 360px !important;
+      }
+
+      .qr-hidden .tz-qr-card{
+        min-height: 260px !important;
+      }
+
+      .qr-hidden .tz-qr-frame,
+      .qr-hidden .tz-qr-meta,
+      .qr-hidden .tz-qr-actions{
+        opacity: 0 !important;
+        transform: translateZ(-120px) scale(.72) rotateX(18deg) !important;
+        filter: blur(12px) !important;
+        pointer-events: none !important;
+      }
+
+      .qr-hidden .tz-qr-shell::after{
+        margin-top: -170px !important;
+        z-index: 5 !important;
+      }
+
+      @keyframes tzQrRoomFloat{
+        0%, 100%{ transform: translateZ(74px) translateY(0) rotateX(2deg) rotateY(-.7deg); }
+        50%{ transform: translateZ(92px) translateY(-12px) rotateX(1deg) rotateY(.7deg); }
+      }
+
+      @keyframes tzQrDomePulse{
+        0%, 100%{ opacity: .54; transform: scale(.98); }
+        50%{ opacity: .86; transform: scale(1.025); }
+      }
+
+      @keyframes tzQrRoomFloor{
+        from{ background-position: 0 0, 0 0, 0 0; }
+        to{ background-position: 0 34px, 44px 0, 0 0; }
+      }
+
+      @media(max-width:700px){
+        .tz-qr-card{
+          min-height: 620px !important;
+          padding: 22px 16px 24px !important;
+          border-radius: 32px !important;
+        }
+        .tz-qr-frame{
+          width: min(92%, 430px) !important;
+          border-radius: 30px !important;
+        }
+        .tz-qr-frame-inner{
+          border-radius: 23px !important;
+          padding: 8px !important;
+        }
+        .tz-qr-frame::after{
+          border-radius: 34px !important;
+        }
+      }
+
+      /* End 3D glass room QR stage */
 </style>
 
     `;
