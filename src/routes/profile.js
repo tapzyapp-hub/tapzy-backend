@@ -11761,6 +11761,131 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End restore clean glass QR look */
+
+
+      /* Restore double glass 3D QR casing */
+      .tz-qr-card{
+        padding-top: 38px !important;
+        background:
+          radial-gradient(ellipse at 50% 33%, rgba(105, 213, 255, .18), transparent 45%),
+          linear-gradient(112deg, rgba(102, 201, 255, .11) 0 1px, transparent 1px 43%),
+          linear-gradient(248deg, rgba(102, 201, 255, .09) 0 1px, transparent 1px 42%),
+          linear-gradient(180deg, rgba(10, 22, 36, .94), rgba(0,0,0,.99)) !important;
+      }
+
+      .tz-qr-frame{
+        width: min(92%, 560px) !important;
+        padding: 8px !important;
+        border-radius: 38px !important;
+        background:
+          linear-gradient(135deg, #a8efff 0%, #62caff 22%, #3679ff 52%, #a6f0ff 100%) !important;
+        box-shadow:
+          0 0 0 1px rgba(247,253,255,.64) inset,
+          0 0 24px rgba(118,218,255,.58),
+          0 0 76px rgba(47,124,255,.36),
+          0 26px 56px rgba(0,0,0,.60) !important;
+      }
+
+      .tz-qr-frame::before{
+        content: "" !important;
+        position: absolute !important;
+        inset: -58px -48px -48px !important;
+        border-radius: 56px !important;
+        pointer-events: none !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.045) 36%, rgba(102,201,255,.05) 100%),
+          radial-gradient(ellipse at 50% 0%, rgba(210,248,255,.28), transparent 31%),
+          radial-gradient(ellipse at 50% 52%, transparent 55%, rgba(142,225,255,.24) 68%, transparent 76%) !important;
+        border: 1px solid rgba(205, 243, 255, .18) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(255,255,255,.08),
+          inset 0 0 58px rgba(123,215,255,.13),
+          0 0 34px rgba(78,179,255,.18) !important;
+        filter: none !important;
+        opacity: .78 !important;
+        z-index: -2 !important;
+        animation: tzQrDomePulse 3.2s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame::after{
+        content: "" !important;
+        display: block !important;
+        position: absolute !important;
+        inset: -28px -24px -28px !important;
+        border-radius: 46px !important;
+        pointer-events: none !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.035) 34%, transparent 72%),
+          radial-gradient(ellipse at 40% 4%, rgba(255,255,255,.28), transparent 18%),
+          radial-gradient(ellipse at 50% 50%, transparent 56%, rgba(150,229,255,.18) 69%, transparent 75%) !important;
+        border: 1px solid rgba(220, 249, 255, .16) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(255,255,255,.07),
+          inset 0 0 40px rgba(120,213,255,.12) !important;
+        opacity: .86 !important;
+        z-index: 4 !important;
+      }
+
+      .tz-qr-frame-inner{
+        position: relative !important;
+        padding: 12px !important;
+        border-radius: 30px !important;
+        background: linear-gradient(180deg, #ffffff, #f5fcff) !important;
+        box-shadow:
+          0 0 0 4px rgba(255,255,255,.72),
+          inset 0 0 0 1px rgba(0,0,0,.045),
+          inset 0 0 28px rgba(108,190,255,.10) !important;
+        z-index: 2 !important;
+      }
+
+      .tz-qr-frame-inner::after{
+        content: "" !important;
+        position: absolute !important;
+        inset: -7px !important;
+        border-radius: 34px !important;
+        pointer-events: none !important;
+        border: 2px solid rgba(199, 244, 255, .55) !important;
+        box-shadow:
+          inset 0 0 18px rgba(113, 213, 255, .14),
+          0 0 20px rgba(76, 176, 255, .18) !important;
+      }
+
+      .tz-qr-image{
+        border-radius: 20px !important;
+        background: #fff !important;
+        filter: contrast(1.02) saturate(.98) !important;
+      }
+
+      @media(max-width:700px){
+        .tz-qr-card{
+          padding-top: 34px !important;
+        }
+        .tz-qr-frame{
+          width: min(92%, 530px) !important;
+          padding: 7px !important;
+          border-radius: 34px !important;
+        }
+        .tz-qr-frame::before{
+          inset: -48px -36px -42px !important;
+          border-radius: 48px !important;
+        }
+        .tz-qr-frame::after{
+          inset: -24px -18px -24px !important;
+          border-radius: 40px !important;
+        }
+        .tz-qr-frame-inner{
+          padding: 10px !important;
+          border-radius: 27px !important;
+        }
+        .tz-qr-frame-inner::after{
+          border-radius: 31px !important;
+        }
+        .tz-qr-image{
+          border-radius: 18px !important;
+        }
+      }
+
+      /* End restore double glass 3D QR casing */
 </style>
 
     `;
