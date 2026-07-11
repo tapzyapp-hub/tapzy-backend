@@ -5608,12 +5608,17 @@ router.get("/u/:username", async (req, res) => {
 
       /* Normal profile username-only breathing room */
       .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-handle{
-        margin-top:18px;
+        margin-top:22px;
+        line-height:1.22;
+        padding-bottom:3px;
+        overflow:visible;
       }
 
       @media(max-width:700px){
         .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-handle{
-          margin-top:14px;
+          margin-top:18px;
+          line-height:1.24;
+          padding-bottom:4px;
         }
       }
 
