@@ -6248,7 +6248,294 @@ router.get("/u/:username", async (req, res) => {
       }
 
       /* End premium animated QR rebuild */
+
+
+      /* Futuristic floating glass QR portal */
+      body{
+        background:
+          radial-gradient(circle at 50% -6%, rgba(88, 182, 255, .16), transparent 28%),
+          radial-gradient(circle at 14% 22%, rgba(42, 105, 255, .10), transparent 32%),
+          linear-gradient(180deg, #020306 0%, #000 58%, #000 100%) !important;
+        overflow-x: hidden !important;
+      }
+
+      body::before{
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(100, 190, 255, .035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(100, 190, 255, .03) 1px, transparent 1px);
+        background-size: 34px 34px;
+        mask-image: radial-gradient(circle at 50% 38%, #000 0%, transparent 72%);
+        -webkit-mask-image: radial-gradient(circle at 50% 38%, #000 0%, transparent 72%);
+        opacity: .55;
+      }
+
+      .tz-qr-wrap{
+        max-width: 620px !important;
+        padding: 18px 18px 124px !important;
+      }
+
+      .tz-qr-shell{
+        gap: 14px !important;
+        perspective: 1200px;
+      }
+
+      .tz-qr-hero{
+        min-height: 0 !important;
+        padding: 18px !important;
+        border-radius: 30px !important;
+        overflow: hidden !important;
+        background:
+          linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.025) 35%, rgba(71,168,255,.08)),
+          rgba(5, 10, 18, .62) !important;
+        border: 1px solid rgba(147, 214, 255, .20) !important;
+        backdrop-filter: blur(24px) saturate(1.18) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(1.18) !important;
+        box-shadow:
+          0 18px 42px rgba(0,0,0,.42),
+          inset 0 1px 0 rgba(255,255,255,.13),
+          inset 0 -1px 0 rgba(82,171,255,.10) !important;
+      }
+
+      .tz-qr-hero::before,
+      .tz-qr-hero::after{ opacity: .08 !important; }
+
+      .tz-qr-kicker{
+        min-height: 28px !important;
+        margin-bottom: 10px !important;
+        padding: 0 12px !important;
+        font-size: 10px !important;
+        letter-spacing: .16em !important;
+        color: rgba(225, 240, 255, .78) !important;
+        background: rgba(4, 10, 18, .54) !important;
+        border: 1px solid rgba(134, 208, 255, .20) !important;
+      }
+
+      .tz-qr-title{
+        font-size: clamp(38px, 9vw, 52px) !important;
+        line-height: .95 !important;
+        margin: 0 !important;
+      }
+
+      .tz-qr-subtitle{
+        margin-top: 10px !important;
+        max-width: 430px !important;
+        font-size: 15px !important;
+        line-height: 1.45 !important;
+        color: rgba(228, 238, 255, .70) !important;
+      }
+
+      .tz-qr-hero-actions,
+      .tz-qr-actions{
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 11px !important;
+        width: 100% !important;
+      }
+
+      .tz-qr-hero-actions{ margin-top: 16px !important; }
+
+      .tz-qr-btn,
+      .tz-qr-action{
+        min-height: 48px !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(125, 203, 255, .82) !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.018)),
+          rgba(4, 13, 24, .74) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.16),
+          0 0 18px rgba(87, 184, 255, .22),
+          0 12px 24px rgba(0,0,0,.30) !important;
+        backdrop-filter: blur(16px) saturate(1.16) !important;
+        -webkit-backdrop-filter: blur(16px) saturate(1.16) !important;
+      }
+
+      .tz-qr-card{
+        position: relative !important;
+        padding: 18px !important;
+        border-radius: 34px !important;
+        overflow: visible !important;
+        transform-style: preserve-3d;
+        background:
+          radial-gradient(circle at 50% -6%, rgba(100, 204, 255, .24), transparent 44%),
+          linear-gradient(140deg, rgba(255,255,255,.11), rgba(255,255,255,.025) 42%, rgba(64,160,255,.08)),
+          rgba(4, 8, 15, .60) !important;
+        border: 1px solid rgba(151, 218, 255, .18) !important;
+        backdrop-filter: blur(28px) saturate(1.2) !important;
+        -webkit-backdrop-filter: blur(28px) saturate(1.2) !important;
+        box-shadow:
+          0 30px 74px rgba(0,0,0,.58),
+          inset 0 1px 0 rgba(255,255,255,.15),
+          inset 0 -1px 0 rgba(75,165,255,.14) !important;
+        animation: tzQrPortalFloat 5.8s ease-in-out infinite !important;
+        transition: opacity .42s ease, transform .42s cubic-bezier(.2,.85,.2,1), filter .42s ease !important;
+      }
+
+      .tz-qr-card::before{
+        content: "" !important;
+        position: absolute !important;
+        inset: -24px !important;
+        border-radius: 46px !important;
+        pointer-events: none !important;
+        opacity: .42 !important;
+        background: conic-gradient(from 0deg, transparent 0 18%, rgba(97,202,255,.34), transparent 34% 58%, rgba(41,113,255,.25), transparent 74% 100%) !important;
+        filter: blur(14px) !important;
+        animation: tzQrAuraSpin 10s linear infinite !important;
+        z-index: -1 !important;
+      }
+
+      .tz-qr-card::after{
+        content: "Tap screen to hide QR" !important;
+        position: absolute !important;
+        left: 50% !important;
+        top: -12px !important;
+        transform: translateX(-50%) !important;
+        padding: 7px 13px !important;
+        border-radius: 999px !important;
+        white-space: nowrap !important;
+        font-size: 11px !important;
+        font-weight: 850 !important;
+        color: rgba(225, 241, 255, .72) !important;
+        background: rgba(2, 8, 15, .72) !important;
+        border: 1px solid rgba(130, 208, 255, .20) !important;
+        box-shadow: 0 0 18px rgba(83, 178, 255, .16) !important;
+      }
+
+      .tz-qr-frame{
+        width: min(100%, 486px) !important;
+        margin: 0 auto !important;
+        padding: 7px !important;
+        border-radius: 32px !important;
+        overflow: visible !important;
+        background: linear-gradient(135deg, rgba(145,226,255,.96), rgba(42,112,255,.95) 48%, rgba(162,235,255,.98)) !important;
+        box-shadow:
+          0 0 0 1px rgba(235,250,255,.55) inset,
+          0 0 24px rgba(89,190,255,.42),
+          0 0 58px rgba(36,113,255,.25),
+          0 22px 42px rgba(0,0,0,.46) !important;
+        animation: tzQrFrameBreathe 3.4s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame::before{
+        content: "" !important;
+        position: absolute !important;
+        inset: -14px !important;
+        border-radius: 44px !important;
+        background: radial-gradient(circle, rgba(90,190,255,.38), transparent 68%) !important;
+        filter: blur(13px) !important;
+        opacity: .72 !important;
+        z-index: -1 !important;
+        animation: tzQrPulse 2.6s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame::after{ display: none !important; }
+
+      .tz-qr-frame-inner{
+        padding: 10px !important;
+        border-radius: 25px !important;
+        background: #fff !important;
+        overflow: hidden !important;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,.05) !important;
+      }
+
+      .tz-qr-image{
+        display: block !important;
+        width: 100% !important;
+        border-radius: 16px !important;
+        background: #fff !important;
+      }
+
+      .tz-qr-logo-overlay{ display: none !important; }
+
+      .tz-qr-meta{
+        margin-top: 18px !important;
+        position: relative !important;
+        z-index: 1 !important;
+      }
+
+      .tz-qr-meta-name{
+        font-size: 26px !important;
+        line-height: 1.06 !important;
+        text-shadow: 0 0 20px rgba(120,200,255,.12) !important;
+      }
+
+      .tz-qr-meta-caption{
+        max-width: 420px !important;
+        margin: 9px auto 0 !important;
+        font-size: 12px !important;
+        color: rgba(220, 232, 255, .52) !important;
+      }
+
+      .qr-hidden .tz-qr-card{
+        opacity: .18 !important;
+        transform: translateY(18px) rotateX(10deg) scale(.92) !important;
+        filter: blur(9px) saturate(.7) !important;
+        pointer-events: none !important;
+      }
+
+      .qr-hidden .tz-qr-card::after{ opacity: 0 !important; }
+
+      .qr-hidden .tz-qr-shell::after{
+        content: "Tap to reveal QR";
+        display: grid;
+        place-items: center;
+        min-height: 96px;
+        border-radius: 28px;
+        color: rgba(226, 241, 255, .76);
+        font-weight: 900;
+        letter-spacing: .02em;
+        border: 1px solid rgba(126, 204, 255, .18);
+        background: rgba(5, 12, 22, .50);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 28px rgba(78,173,255,.12);
+        backdrop-filter: blur(22px) saturate(1.15);
+        -webkit-backdrop-filter: blur(22px) saturate(1.15);
+        animation: tzQrRevealHint 2.3s ease-in-out infinite;
+      }
+
+      @keyframes tzQrPortalFloat{
+        0%, 100%{ transform: translateY(0) rotateX(0deg); }
+        50%{ transform: translateY(-7px) rotateX(.8deg); }
+      }
+
+      @keyframes tzQrRevealHint{
+        0%, 100%{ opacity: .72; transform: translateY(0); }
+        50%{ opacity: 1; transform: translateY(-3px); }
+      }
+
+      @media(max-width:700px){
+        .tz-qr-wrap{ padding: 12px 18px 126px !important; }
+        .tz-qr-hero{ padding: 17px !important; border-radius: 28px !important; }
+        .tz-qr-title{ font-size: 39px !important; }
+        .tz-qr-card{ padding: 16px !important; border-radius: 30px !important; }
+        .tz-qr-card::after{ font-size: 10px !important; top: -10px !important; }
+        .tz-qr-frame{ padding: 6px !important; border-radius: 28px !important; }
+        .tz-qr-frame-inner{ padding: 8px !important; border-radius: 22px !important; }
+        .tz-qr-image{ border-radius: 15px !important; }
+        .tz-qr-actions{ grid-template-columns: 1fr !important; }
+      }
+
+      /* End futuristic floating glass QR portal */
 </style>
+
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const interactiveSelector = 'a, button, input, textarea, select';
+        document.addEventListener('click', (event) => {
+          if (event.target.closest(interactiveSelector)) return;
+          const insideCard = event.target.closest('.tz-qr-card');
+          if (insideCard && !root.classList.contains('qr-hidden')) {
+            root.classList.add('qr-hidden');
+            return;
+          }
+          root.classList.toggle('qr-hidden');
+        }, { passive: true });
+      })();
+    </script>
 
 
 
