@@ -2215,7 +2215,16 @@ router.get("/stories/live/new", async (req, res) => {
         input:focus{border-color:rgba(107,202,255,.55);box-shadow:0 0 0 3px rgba(49,170,255,.12), inset 0 1px 0 rgba(255,255,255,.08)}
         .tl-studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tl-studio-card{min-height:86px;border-radius:22px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.07);padding:12px;display:flex;flex-direction:column;justify-content:space-between;gap:9px;overflow:hidden}.tl-studio-card strong{font-size:15px;line-height:1;font-weight:950}.tl-studio-card span{color:rgba(232,241,255,.64);font-size:12px;line-height:1.25;font-weight:750}.tl-studio-card.is-on{border-color:rgba(76,210,255,.28);background:linear-gradient(180deg,rgba(49,164,255,.18),rgba(255,255,255,.055))}
         .tl-mini-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.tl-switch{position:relative;width:44px;height:26px;flex:0 0 auto;border:0;border-radius:999px;background:rgba(255,255,255,.16);padding:0;cursor:pointer}.tl-switch::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:999px;background:#fff;transition:transform .2s ease}.tl-studio-card.is-on .tl-switch{background:linear-gradient(135deg,#31d6ff,#2d6bff)}.tl-studio-card.is-on .tl-switch::after{transform:translateX(18px)}
-        .tl-chat-preview{display:grid;gap:7px;padding:10px 11px;border-radius:20px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.08)}.tl-chat-line{display:flex;gap:7px;align-items:center;color:rgba(255,255,255,.82);font-size:12px;font-weight:760;min-width:0}.tl-chat-line b{color:#fff;font-weight:950;white-space:nowrap}.tl-gift-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.tl-gift-pill{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);font-size:12px;font-weight:900;color:#fff}
+        .tl-chat-preview{display:grid;gap:7px;padding:10px 11px;border-radius:20px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.08)}.tl-chat-line{display:flex;gap:7px;align-items:center;color:rgba(255,255,255,.82);font-size:12px;font-weight:760;min-width:0}.tl-chat-line b{color:#fff;font-weight:950;white-space:nowrap}.tl-chat-line span{min-width:0;overflow:hidden;text-overflow:ellipsis}.tl-gift-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.tl-gift-pill{display:inline-flex;align-items:center;justify-content:center;height:28px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);font-size:12px;font-weight:900;color:#fff}
+        .tl-live-chat-form{display:none;grid-template-columns:minmax(0,1fr) 64px;gap:7px;align-items:center}
+        .tl-live-chat-form input{min-height:38px;border-radius:999px;font-size:13px;padding:0 12px;background:rgba(0,0,0,.42)}
+        .tl-live-chat-form button{min-height:38px;border-radius:999px;font-size:13px;background:#fff;color:#03060b}
+        .tl-chat-preview.is-real{max-height:112px;overflow:auto;-webkit-overflow-scrolling:touch;align-content:end}
+        .tl-chat-preview.is-real:empty::before{content:"Chat will show here when viewers talk.";color:rgba(232,241,255,.58);font-size:12px;font-weight:760}
+        .tl-chat-line.is-self span{color:#fff}.tl-chat-line.is-gift{color:#fff;background:linear-gradient(135deg,rgba(255,45,85,.46),rgba(47,118,255,.36));border-radius:14px;padding:6px 8px}
+        .is-recording #chatSetup{grid-column:1 / -1}
+        .is-recording .tl-live-chat-form{display:grid}
+
         .tl-buttons{display:grid;grid-template-columns:1.15fr .85fr .85fr;gap:10px;align-items:center}button{min-height:54px;border:0;border-radius:18px;font:inherit;font-weight:950;font-size:16px;cursor:pointer;color:#fff;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none!important}.tl-primary{background:linear-gradient(135deg,#31d6ff,#2d6bff 52%,#123fbd);box-shadow:0 0 34px rgba(47,118,255,.36)}.tl-danger{display:none;background:linear-gradient(135deg,#ff5f7e,#e90044);box-shadow:0 0 28px rgba(255,30,82,.25)}.is-recording .tl-primary{display:none}.is-recording .tl-danger{display:block}.tl-ghost{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}.tl-cancel{color:#ffd6de;background:rgba(255,45,85,.12);border-color:rgba(255,90,120,.18)}
         .is-recording .tl-dot{animation:pulse 1s infinite}.is-recording .tl-badge{background:rgba(48,11,22,.58);border-color:rgba(255,64,112,.22)}@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.72}}
         @media(max-width:420px){.tl-top{left:16px;right:16px}.tl-badge{padding:8px 12px;font-size:12px}.tl-close{width:48px;height:48px}.tl-controls{left:10px;right:10px;bottom:calc(var(--safe-bottom) + 10px);padding:12px;border-radius:26px;gap:9px;background:linear-gradient(180deg,rgba(5,7,10,.20),rgba(0,0,0,.50));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.tl-title{display:grid;grid-template-columns:1fr auto;align-items:end;gap:8px}.tl-title h1{font-size:clamp(34px,11vw,48px);line-height:.9;margin:0}.tl-title p{grid-column:1 / -1;font-size:13px;line-height:1.25;max-width:100%;margin:0}.tl-handle{min-height:42px}.tl-studio-grid{display:none}.tl-chat-preview{display:none}.tl-buttons{grid-template-columns:1fr 1fr;gap:9px}.tl-primary,.tl-danger{grid-column:1 / -1}.tl-status{max-width:100%;font-size:12px;text-align:center}button{min-height:48px;border-radius:16px;font-size:15px}}
@@ -2266,10 +2275,13 @@ router.get("/stories/live/new", async (req, res) => {
             <div class="tl-studio-card is-on" id="chatSetup">
               <div class="tl-mini-row"><strong>Live chat</strong><button class="tl-switch" id="chatToggle" type="button" aria-label="Toggle live chat"></button></div>
               <span>Viewers can talk while you stream.</span>
-              <div class="tl-chat-preview" aria-hidden="true">
+              <div class="tl-chat-preview is-real" id="setupLiveChat" aria-live="polite">
                 <div class="tl-chat-line"><b>Tapzy</b><span>Welcome everyone in.</span></div>
-                <div class="tl-chat-line"><b>Viewer</b><span>Looks good.</span></div>
               </div>
+              <form class="tl-live-chat-form" id="setupChatForm">
+                <input id="setupChatInput" maxlength="220" placeholder="Reply to viewers..." autocomplete="off" />
+                <button type="submit">Send</button>
+              </form>
             </div>
             <div class="tl-studio-card is-on" id="donationSetup">
               <div class="tl-mini-row"><strong>Donations</strong><button class="tl-switch" id="donationToggle" type="button" aria-label="Toggle donations"></button></div>
@@ -2300,6 +2312,9 @@ router.get("/stories/live/new", async (req, res) => {
           const donationSetup = document.getElementById('donationSetup');
           const chatToggle = document.getElementById('chatToggle');
           const donationToggle = document.getElementById('donationToggle');
+          const setupLiveChat = document.getElementById('setupLiveChat');
+          const setupChatForm = document.getElementById('setupChatForm');
+          const setupChatInput = document.getElementById('setupChatInput');
           const CHUNK_SIZE = 8 * 1024 * 1024;
           const DIRECT_LIMIT = 110 * 1024 * 1024;
           let stream = null;
@@ -2328,6 +2343,40 @@ router.get("/stories/live/new", async (req, res) => {
           }
           bindSetupToggle(chatToggle, chatSetup, 'Chat is on', 'Chat is off');
           bindSetupToggle(donationToggle, donationSetup, 'Donations are on', 'Donations are off');
+          const seenSetupChatIds = Object.create(null);
+          function addSetupChat(nameText, message, gift, clientMessageId, self){
+            if (!setupLiveChat) return;
+            if (clientMessageId) {
+              if (seenSetupChatIds[clientMessageId]) return;
+              seenSetupChatIds[clientMessageId] = true;
+            }
+            const row = document.createElement('div');
+            row.className = 'tl-chat-line' + (gift ? ' is-gift' : '') + (self ? ' is-self' : '');
+            const strong = document.createElement('b');
+            strong.textContent = nameText || 'Viewer';
+            const span = document.createElement('span');
+            span.textContent = message || '';
+            row.appendChild(strong);
+            row.appendChild(span);
+            setupLiveChat.appendChild(row);
+            while (setupLiveChat.children.length > 8) setupLiveChat.removeChild(setupLiveChat.firstElementChild);
+            setupLiveChat.scrollTop = setupLiveChat.scrollHeight;
+          }
+          if (setupChatForm) setupChatForm.addEventListener('submit', function(event){
+            event.preventDefault();
+            const text = (setupChatInput.value || '').trim();
+            if (!text) return;
+            if (!socket || !liveStoryId) {
+              setStatus('Start live before chatting.');
+              return;
+            }
+            const clientMessageId = 'setup-chat-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+            addSetupChat(liveName || 'You', text, false, clientMessageId, true);
+            socket.emit('live:chat', { storyId:liveStoryId, name:liveName, message:text, clientMessageId });
+            setupChatInput.value = '';
+            scheduleControlsHide();
+          });
+
           let controlsIdleTimer = null;
           let tapWindowTimer = null;
           let tapCount = 0;
@@ -2462,6 +2511,13 @@ router.get("/stories/live/new", async (req, res) => {
               const offer = await pc.createOffer();
               await pc.setLocalDescription(offer);
               socket.emit('live:offer', { storyId:liveStoryId, to:viewerId, sdp:offer });
+            });
+            socket.on('live:chat', function(payload){
+              addSetupChat(payload.name, payload.message, false, payload.clientMessageId, false);
+            });
+            socket.on('live:gift', function(payload){
+              const giftText = (payload.gift || 'Gift') + (payload.amount ? ' $' + payload.amount : '');
+              addSetupChat(payload.name, 'sent ' + giftText, true, '', false);
             });
             socket.on('live:answer', async function(payload){
               const pc = peers.get(payload.from);
@@ -2621,8 +2677,9 @@ router.get("/stories/live/new", async (req, res) => {
             root.classList.add('is-recording');
             startBtn.disabled = true;
             stopBtn.disabled = false;
-            flipBtn.disabled = true;
+            flipBtn.disabled = false;
             setStatus('Recording live. Home now shows you as live.');
+            if (typeof scheduleControlsHide === 'function') scheduleControlsHide();
           });
           stopBtn.addEventListener('click', async function(){
             if (posting) return;
