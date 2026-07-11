@@ -5993,7 +5993,29 @@ router.get("/u/:username", async (req, res) => {
         filter:blur(7px)!important;
       }
 
-      /* End final compact profile strip goes black when weather is unavailable */
+      
+
+      /* Normal compact profile strip subtle blue rim */
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected),
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected){
+        border-color:rgba(96,188,255,.18)!important;
+        box-shadow:
+          0 10px 24px rgba(0,0,0,.38),
+          0 0 0 1px rgba(118,203,255,.10) inset,
+          0 0 18px rgba(74,169,255,.10)!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected)::after,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected)::after{
+        opacity:.72!important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.018), transparent 46%),
+          radial-gradient(240px 68px at 8% 46%, rgba(92,184,255,.12), transparent 72%),
+          linear-gradient(90deg, rgba(95,190,255,.14), transparent 18%, transparent 82%, rgba(95,190,255,.08))!important;
+      }
+
+      /* End normal compact profile strip subtle blue rim */
+/* End final compact profile strip goes black when weather is unavailable */
 /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
       @media(min-width:701px){
         .profile-event-card-panel .event-card .event-title{
