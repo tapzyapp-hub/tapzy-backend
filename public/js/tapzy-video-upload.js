@@ -582,6 +582,7 @@
       if (supportsChunkedSubmit(form)) {
         const isVideo = isVideoFile(file);
         const needsSecondaryVideoPath = isVideo && file.size >= START_OPTIMIZE_BYTES;
+        const preferFastChunkBackup = needsSecondaryVideoPath && /Android/i.test(navigator.userAgent || "");
 
         if (isImageFile(file)) {
           setStatus(form, "Optimizing image for faster upload.");
@@ -591,6 +592,7 @@
           }
         } else if (needsSecondaryVideoPath) {
           try {
+            if (preferFastChunkBackup) throw new Error('Using faster Android chunk path');
             setStatus(form, `Uploading original video to cloud ${0}% — fastest path.`);
             complete = await uploadCloudMedia(file, (pct) => {
               setStatus(form, `Uploading original video to cloud ${pct}% — fastest path.`);
@@ -598,20 +600,29 @@
             uploadFile = file;
           } catch (cloudError) {
             complete = null;
-            setStatus(form, `Cloud needs a smaller copy — optimizing video 0% — keep this page open.`);
-            uploadFile = await compressVideo(file, (pct) => {
-              setStatus(form, `Cloud needs a smaller copy — optimizing video ${pct}% — keep this page open.`);
-            });
-            if (uploadFile !== file && uploadFile.size < file.size) {
-              setStatus(form, `Video optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} — uploading now.`);
-              try {
-                setStatus(form, `Uploading optimized video to cloud ${0}% — keep this page open.`);
-                complete = await uploadCloudMedia(uploadFile, (pct) => {
-                  setStatus(form, `Uploading optimized video to cloud ${pct}% — keep this page open.`);
-                });
-              } catch (optimizedCloudError) {
-                setStatus(form, `Cloud upload failed: ${optimizedCloudError.message || "retrying safely"}`);
-                complete = null;
+            uploadFile = file;
+            try {
+              setStatus(form, `${preferFastChunkBackup ? "Sending large Android video" : "Cloud needed backup — sending original video"} in fast chunks 0% — keep this page open.`);
+              complete = await uploadChunkedMedia(file, form, (pct) => {
+                setStatus(form, `${preferFastChunkBackup ? "Sending large Android video" : "Cloud needed backup — sending original video"} in fast chunks ${pct}% — keep this page open.`);
+              });
+            } catch (chunkError) {
+              complete = null;
+              setStatus(form, `Backup upload needs a smaller copy — optimizing video 0% — keep this page open.`);
+              uploadFile = await compressVideo(file, (pct) => {
+                setStatus(form, `Backup upload needs a smaller copy — optimizing video ${pct}% — keep this page open.`);
+              });
+              if (uploadFile !== file && uploadFile.size < file.size) {
+                setStatus(form, `Video optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} — uploading now.`);
+                try {
+                  setStatus(form, `Uploading optimized video to cloud ${0}% — keep this page open.`);
+                  complete = await uploadCloudMedia(uploadFile, (pct) => {
+                    setStatus(form, `Uploading optimized video to cloud ${pct}% — keep this page open.`);
+                  });
+                } catch (optimizedCloudError) {
+                  setStatus(form, `Cloud upload failed: ${optimizedCloudError.message || "retrying safely"}`);
+                  complete = null;
+                }
               }
             }
           }
