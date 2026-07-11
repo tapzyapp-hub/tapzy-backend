@@ -3992,6 +3992,12 @@ router.get("/stories/feed", async (req, res) => {
         .sf-views .sf-view-eye{display:block;fill:none;stroke:#fff;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
         .sf-views .sf-view-eye circle{fill:#fff;stroke:#fff}
         .sf-sound{width:43px;height:43px;border-radius:50%;border:2px solid rgba(255,255,255,.65);background:rgba(0,0,0,.4);padding:10px;cursor:pointer}
+
+        /* Story feed sound state polish */
+        .sf-sound{color:rgba(255,255,255,.72);transition:transform .18s ease,opacity .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease}
+        .sf-sound.is-active{color:#fff;border-color:rgba(255,255,255,.96);background:rgba(4,8,14,.62);box-shadow:0 0 0 6px rgba(255,255,255,.06),0 0 22px rgba(114,207,255,.38),inset 0 1px 0 rgba(255,255,255,.22)}
+        .sf-sound:not(.is-active){opacity:.62;box-shadow:none}
+        .sf-sound:active{transform:scale(.94)}
         .sf-bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;height:calc(64px + var(--safe-bottom));padding:7px 10px var(--safe-bottom);display:flex;align-items:center;justify-content:space-around;background:#030303;border-top:1px solid rgba(255,255,255,.08)}
         .sf-nav{min-width:55px;display:flex;flex-direction:column;align-items:center;gap:2px;color:rgba(255,255,255,.72);text-decoration:none;font-size:10px;font-weight:650}
         button.sf-nav{border:0;background:none;padding:0;cursor:default}
@@ -4064,7 +4070,15 @@ router.get("/stories/feed", async (req, res) => {
             actionIdleTimer = setTimeout(function(){ setActionRailsIdle(true); }, 6000);
           }
           wakeActionRails();
-          function forceSound(video){
+          function setSoundButtons(active){
+            slides.forEach(function(slide){
+              var sound = slide && slide.querySelector ? slide.querySelector('[data-sound]') : null;
+              if (!sound) return;
+              sound.classList.toggle('is-active', !!active);
+              sound.setAttribute('aria-label', active ? 'Mute story' : 'Unmute story');
+            });
+          }
+          function forceSound(video, persist){
             if (!video) return;
             try { video.defaultMuted = false; } catch(e) {}
             video.muted = false;
@@ -4072,7 +4086,7 @@ router.get("/stories/feed", async (req, res) => {
             video.removeAttribute('muted');
             tapzySoundUnlocked = true;
             tapzySoundMutedByUser = false;
-            localStorage.setItem('tapzy_story_sound', '1');
+            if (persist !== false) localStorage.setItem('tapzy_story_sound', '1');
           }
           function playStoryAudio(slide){
             var audio = slide && slide.querySelector ? slide.querySelector('audio[data-story-audio]') : null;
@@ -4103,15 +4117,11 @@ router.get("/stories/feed", async (req, res) => {
             if (tapzySoundMutedByUser) return;
             var video = slide && slide.querySelector ? slide.querySelector('video') : null;
             if (video) {
-              forceSound(video);
+              forceSound(video, true);
               video.play().catch(function(){});
             }
             playStoryAudio(slide);
-            var sound = slide && slide.querySelector ? slide.querySelector('[data-sound]') : null;
-            if (sound) {
-              sound.classList.add('is-active');
-              sound.setAttribute('aria-label', 'Mute story');
-            }
+            setSoundButtons(true);
           }
           function playFeedSlide(slide){
             if (!slide || slide.hidden) return;
@@ -4119,7 +4129,7 @@ router.get("/stories/feed", async (req, res) => {
             var audio = slide.querySelector('audio[data-story-audio]');
             if (video) {
               prepareFeedVideo(video);
-              if (tapzySoundUnlocked && !tapzySoundMutedByUser) forceSound(video);
+              if (tapzySoundUnlocked && !tapzySoundMutedByUser) forceSound(video, false);
               video.play().catch(function(){
                 video.muted = true;
                 try { video.defaultMuted = true; } catch(e) {}
@@ -4140,19 +4150,9 @@ router.get("/stories/feed", async (req, res) => {
           }
           function visibleFeedSlide(){
             if (!feed || !slides.length) return slides[0] || null;
-            var feedRect = feed.getBoundingClientRect();
-            var best = null;
-            var bestOverlap = -1;
-            slides.forEach(function(slide){
-              if (slide.hidden) return;
-              var rect = slide.getBoundingClientRect();
-              var overlap = Math.min(rect.bottom, feedRect.bottom) - Math.max(rect.top, feedRect.top);
-              if (overlap > bestOverlap) {
-                bestOverlap = overlap;
-                best = slide;
-              }
-            });
-            return best;
+            var index = Math.max(0, Math.round(feed.scrollTop / Math.max(1, feed.clientHeight)));
+            var visible = slides.filter(function(slide){ return !slide.hidden; });
+            return visible[Math.min(index, visible.length - 1)] || visible[0] || null;
           }
           function syncFeedPlayback(){
             var active = visibleFeedSlide();
@@ -4192,22 +4192,24 @@ router.get("/stories/feed", async (req, res) => {
               wakeActionRails();
             });
           });
-          var playbackRaf = null;
-          function scheduleFeedPlaybackSync(){
-            if (playbackRaf) return;
-            playbackRaf = requestAnimationFrame(function(){
-              playbackRaf = null;
+          var playbackSettleTimer = null;
+          function scheduleFeedPlaybackSync(delay){
+            if (playbackSettleTimer) clearTimeout(playbackSettleTimer);
+            playbackSettleTimer = setTimeout(function(){
+              playbackSettleTimer = null;
               syncFeedPlayback();
-            });
+            }, delay || 110);
           }
           if (feed) feed.addEventListener('scroll', function(){
             wakeActionRails();
-            scheduleFeedPlaybackSync();
+            scheduleFeedPlaybackSync(120);
           }, { passive:true });
+          if (feed && 'onscrollend' in window) feed.addEventListener('scrollend', function(){ scheduleFeedPlaybackSync(0); }, { passive:true });
           document.addEventListener('visibilitychange', function(){
             if (document.hidden) slides.forEach(pauseFeedSlide);
-            else scheduleFeedPlaybackSync();
+            else scheduleFeedPlaybackSync(0);
           });
+          setSoundButtons(tapzySoundUnlocked && !tapzySoundMutedByUser);
 
           document.addEventListener('click', function(event){
             var rail = event.target.closest('.sf-actions');
@@ -4224,22 +4226,26 @@ router.get("/stories/feed", async (req, res) => {
               var video = slide.querySelector('video');
               var audio = slide.querySelector('audio[data-story-audio]');
               if (video || audio) {
-                if (!tapzySoundUnlocked || (video && video.muted)) {
-                  if (video) forceSound(video);
+                if (!tapzySoundUnlocked || tapzySoundMutedByUser || (video && video.muted)) {
+                  if (video) forceSound(video, true);
                   tapzySoundUnlocked = true;
+                  tapzySoundMutedByUser = false;
                   localStorage.setItem('tapzy_story_sound', '1');
                   if (audio) audio.play().catch(function(){});
+                  setSoundButtons(true);
                 } else {
-                  if (video) video.muted = true;
+                  if (video) {
+                    video.muted = true;
+                    try { video.defaultMuted = true; } catch(e) {}
+                    video.setAttribute('muted', '');
+                  }
                   if (audio) audio.pause();
                   localStorage.setItem('tapzy_story_sound', '0');
                   tapzySoundUnlocked = false;
                   tapzySoundMutedByUser = true;
+                  setSoundButtons(false);
                 }
                 if (video) video.play().catch(function(){});
-                var active = tapzySoundUnlocked;
-                sound.classList.toggle('is-active', active);
-                sound.setAttribute('aria-label', active ? 'Mute story' : 'Turn sound on');
               }
               return;
             }

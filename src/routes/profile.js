@@ -5036,31 +5036,44 @@ router.get("/u/:username", async (req, res) => {
         .tz-edit-section{border-radius:24px !important;}
       }
 
-      /* Weather layer guardrails: animated sky stays behind the profile identity. */
-      .profile-showcase.is-weather-live{isolation:isolate;overflow:hidden;}
+      /* End premium edit profile rebuild polish */
+
+      /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
+      .profile-showcase.is-weather-live{isolation:isolate!important;overflow:hidden!important;contain:paint;}
       .profile-showcase.is-weather-live .profile-showcase-bg{z-index:0!important;}
-      .profile-showcase.is-weather-live .profile-weather-scene{z-index:1!important;pointer-events:none!important;mix-blend-mode:normal!important;}
-      .profile-showcase.is-weather-live .profile-showcase-top{position:relative;z-index:3!important;isolation:isolate;}
-      .profile-showcase.is-weather-live .profile-showcase-main{position:relative;z-index:5!important;}
+      .profile-showcase.is-weather-live .profile-weather-scene{z-index:1!important;pointer-events:none!important;mix-blend-mode:normal!important;opacity:.95!important;}
+      .profile-showcase.is-weather-live .profile-showcase-top{position:relative!important;z-index:4!important;isolation:isolate!important;transform:translateZ(0);}
+      .profile-showcase.is-weather-live .profile-showcase-main{position:relative!important;z-index:6!important;isolation:isolate!important;}
       .profile-showcase.is-weather-live .profile-showcase-main::before,
-      .profile-showcase.is-weather-live .profile-showcase-main::after{z-index:-1!important;pointer-events:none!important;}
+      .profile-showcase.is-weather-live .profile-showcase-main::after{z-index:-1!important;pointer-events:none!important;opacity:.38!important;}
       .profile-showcase.is-weather-live .profile-showcase-name,
       .profile-showcase.is-weather-live .profile-showcase-handle,
-      .profile-showcase.is-weather-live .profile-showcase-actions{position:relative;z-index:6!important;}
-      .profile-showcase.weather-rain .profile-weather-rain{opacity:.72!important;background-size:14px 34px!important;animation-duration:.38s!important;}
-      .profile-showcase.weather-storm .profile-weather-rain{opacity:.9!important;background-size:16px 32px!important;animation-duration:.26s!important;}
-      .profile-showcase.weather-snow .profile-weather-snow{opacity:.88!important;animation-duration:4.8s!important;}
+      .profile-showcase.is-weather-live .profile-showcase-actions{position:relative!important;z-index:7!important;transform:translateZ(0);}
+      .profile-showcase.weather-rain .profile-weather-rain{opacity:.82!important;background-size:12px 28px!important;animation:profileWeatherRain .34s linear infinite!important;}
+      .profile-showcase.weather-storm .profile-weather-rain{opacity:.96!important;background-size:13px 26px!important;animation:profileWeatherRain .22s linear infinite!important;}
+      .profile-showcase.weather-snow .profile-weather-snow{opacity:.92!important;animation:profileWeatherSnow 4.4s linear infinite!important;}
       .profile-showcase.weather-cloudy .profile-weather-cloud,
-      .profile-showcase.weather-fog .profile-weather-cloud{opacity:.78!important;}
+      .profile-showcase.weather-fog .profile-weather-cloud{opacity:.88!important;filter:blur(13px)!important;animation-duration:15s!important;}
       .profile-showcase.weather-sunny .profile-weather-sun,
-      .profile-showcase.weather-clear .profile-weather-sun{opacity:1!important;filter:blur(10px) saturate(1.18)!important;}
+      .profile-showcase.weather-clear .profile-weather-sun{opacity:1!important;width:245px!important;height:245px!important;filter:blur(8px) saturate(1.25)!important;animation:profileWeatherSun 4.8s ease-in-out infinite alternate!important;}
+      .profile-showcase.weather-sunny .profile-weather-wisp,
+      .profile-showcase.weather-clear .profile-weather-wisp{opacity:.76!important;animation-duration:16s!important;}
       .profile-showcase.weather-storm .profile-weather-scene::after{
-        content:"";position:absolute;inset:-10%;opacity:0;pointer-events:none;
-        background:linear-gradient(112deg,transparent 0 42%,rgba(255,255,255,.95) 46%,rgba(178,226,255,.62) 48%,transparent 54%),radial-gradient(circle at 68% 24%,rgba(255,255,255,.88),transparent 24%);
-        mix-blend-mode:screen;animation:profileWeatherLightningStrong 3.2s steps(1,end) infinite;
+        content:""!important;position:absolute!important;inset:-12%!important;opacity:0;pointer-events:none!important;
+        background:linear-gradient(112deg,transparent 0 41%,rgba(255,255,255,.98) 46%,rgba(178,226,255,.74) 48%,transparent 55%),radial-gradient(circle at 68% 24%,rgba(255,255,255,.92),transparent 23%)!important;
+        mix-blend-mode:screen!important;animation:profileWeatherLightningStrong 2.6s steps(1,end) infinite!important;
       }
-      @keyframes profileWeatherLightningStrong{0%,68%,100%{opacity:0}70%{opacity:.95}72%{opacity:.12}74%{opacity:.82}79%{opacity:0}}
-      /* End premium edit profile rebuild polish */
+      @keyframes profileWeatherLightningStrong{0%,62%,100%{opacity:0}64%{opacity:.98}66%{opacity:.14}68%{opacity:.88}73%{opacity:0}}
+      .profile-showcase.is-weather-live .profile-showcase-top > *{position:relative!important;z-index:7!important;}
+      .profile-showcase.is-weather-live .profile-avatar,
+      .profile-showcase.is-weather-live .profile-showcase-avatar,
+      .profile-showcase.is-weather-live img{transform:translateZ(0);}
+      .profile-showcase.is-weather-live .profile-weather-scene::before{z-index:0!important;opacity:.72!important;}
+      .profile-showcase.weather-rain .profile-weather-rain,
+      .profile-showcase.weather-storm .profile-weather-rain{filter:drop-shadow(0 0 8px rgba(180,225,255,.36))!important;}
+      .profile-showcase.weather-cloudy .profile-weather-wisp,
+      .profile-showcase.weather-fog .profile-weather-wisp{opacity:.86!important;animation-duration:13s!important;}
+
 
 </style>
 
