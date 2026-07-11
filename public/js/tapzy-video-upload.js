@@ -9,6 +9,8 @@
   const DIRECT_UPLOAD_BYTES = 8 * 1024 * 1024;
   const START_OPTIMIZE_BYTES = 120 * 1024 * 1024;
   const MOBILE_FAST_CHUNK_BYTES = 48 * 1024 * 1024;
+  const MESSAGE_CLOUD_BACKUP_RACE_BYTES = 24 * 1024 * 1024;
+  const MESSAGE_CLOUD_BACKUP_GRACE_MS = 9000;
   const MAX_PARALLEL_CHUNKS = 6;
   const MAX_EDGE = 960;
   const FPS = 24;
@@ -331,6 +333,64 @@
     return uploadCloudinaryFile(file, signature, onProgress);
   }
 
+
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function uploadCloudMediaWithBackupRace(file, form, onProgress) {
+    let settled = false;
+    let cloudError = null;
+    let backupError = null;
+    const cloud = uploadCloudMedia(file, function(pct) {
+      if (!settled && onProgress) onProgress("cloud", pct);
+    }).then(function(result) {
+      if (!settled) settled = true;
+      return result;
+    }).catch(function(error) {
+      cloudError = error;
+      throw error;
+    });
+
+    const backup = delay(MESSAGE_CLOUD_BACKUP_GRACE_MS).then(function() {
+      if (settled) return null;
+      if (onProgress) onProgress("backup", 0);
+      return uploadChunkedMedia(file, form, function(pct) {
+        if (!settled && onProgress) onProgress("backup", pct);
+      }).then(function(result) {
+        if (!settled) settled = true;
+        return result;
+      }).catch(function(error) {
+        backupError = error;
+        throw error;
+      });
+    });
+
+    try {
+      const result = await Promise.race([cloud, backup]);
+      if (result && result.mediaUrl) return result;
+      return await cloud;
+    } catch (firstError) {
+      if (!backupError) {
+        try {
+          const backupResult = await backup;
+          if (backupResult && backupResult.mediaUrl) return backupResult;
+        } catch (error) {
+          backupError = error;
+        }
+      }
+      if (!cloudError) {
+        try {
+          const cloudResult = await cloud;
+          if (cloudResult && cloudResult.mediaUrl) return cloudResult;
+        } catch (error) {
+          cloudError = error;
+        }
+      }
+      throw backupError || cloudError || firstError;
+    }
+  }
+
   async function uploadChunkWithRetry(uploadId, index, blob) {
     let lastError = null;
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -612,7 +672,9 @@
         const needsSecondaryVideoPath = isVideo && file.size >= START_OPTIMIZE_BYTES;
         const userAgent = navigator.userAgent || "";
         const isMobileVideo = isVideo && /Android|iPhone|iPad|iPod/i.test(userAgent);
+        const isMessageVideo = isVideo && isMessageSubmit(form);
         const preferFastChunkBackup = isVideo && file.size >= MOBILE_FAST_CHUNK_BYTES && isMobileVideo && !isMessageSubmit(form);
+        const preferMessageCloudBackupRace = isMessageVideo && file.size >= MESSAGE_CLOUD_BACKUP_RACE_BYTES;
 
         if (isImageFile(file)) {
           setStatus(form, "Optimizing image for faster upload.");
@@ -623,10 +685,17 @@
         } else if (needsSecondaryVideoPath || preferFastChunkBackup) {
           try {
             if (preferFastChunkBackup) throw new Error('Using faster chunk path');
-            setStatus(form, `Uploading original video to cloud ${0}% — fastest path.`);
-            complete = await uploadCloudMedia(file, (pct) => {
-              setStatus(form, `Uploading original video to cloud ${pct}% — fastest path.`);
-            });
+            setStatus(form, `Uploading original video to cloud ${0}% - fastest path.`);
+            if (preferMessageCloudBackupRace) {
+              complete = await uploadCloudMediaWithBackupRace(file, form, (mode, pct) => {
+                if (mode === "backup") setStatus(form, `Cloud is taking longer - secure backup ${pct}% - keep this page open.`);
+                else setStatus(form, `Uploading original video to cloud ${pct}% - fastest path.`);
+              });
+            } else {
+              complete = await uploadCloudMedia(file, (pct) => {
+                setStatus(form, `Uploading original video to cloud ${pct}% - fastest path.`);
+              });
+            }
             uploadFile = file;
           } catch (cloudError) {
             complete = null;
@@ -661,10 +730,17 @@
 
         if (!complete && !needsSecondaryVideoPath) {
           try {
-            setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${0}% — keep this page open.`);
-            complete = await uploadCloudMedia(uploadFile, (pct) => {
-              setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${pct}% — keep this page open.`);
-            });
+            setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${0}% - keep this page open.`);
+            if (preferMessageCloudBackupRace && isVideoFile(uploadFile)) {
+              complete = await uploadCloudMediaWithBackupRace(uploadFile, form, (mode, pct) => {
+                if (mode === "backup") setStatus(form, `Cloud is taking longer - secure backup ${pct}% - keep this page open.`);
+                else setStatus(form, `Uploading video to cloud ${pct}% - keep this page open.`);
+              });
+            } else {
+              complete = await uploadCloudMedia(uploadFile, (pct) => {
+                setStatus(form, `Uploading ${isVideoFile(uploadFile) ? "video" : "media"} to cloud ${pct}% - keep this page open.`);
+              });
+            }
           } catch (cloudError) {
             setStatus(form, `Cloud upload failed: ${cloudError.message || "retrying safely"}`);
             complete = null;
