@@ -2249,12 +2249,17 @@ router.get("/stories/live/new", async (req, res) => {
         .tl-recorder.tl-controls-hidden .tl-shade{opacity:.28;transition:opacity .34s ease}
         .tl-recorder::after{content:"Triple tap to show controls";position:absolute;left:50%;bottom:calc(var(--safe-bottom) + 28px);z-index:5;transform:translate(-50%,10px);padding:9px 12px;border-radius:999px;background:rgba(0,0,0,.46);border:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.72);font-size:12px;font-weight:850;opacity:0;pointer-events:none;transition:opacity .24s ease,transform .24s ease;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
         .tl-recorder.tl-controls-hidden::after{opacity:.72;transform:translate(-50%,0)}
+        .tl-floating-chat{position:absolute;z-index:4;left:16px;right:72px;bottom:calc(var(--safe-bottom) + 82px);display:flex;flex-direction:column;justify-content:flex-end;gap:7px;max-height:168px;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .28s ease,transform .28s ease}
+        .tl-recorder.tl-controls-hidden .tl-floating-chat{opacity:1;transform:none}
+        .tl-floating-chat .tl-chat-line{width:max-content;max-width:100%;padding:8px 11px;border-radius:16px;background:rgba(0,0,0,.46);border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 28px rgba(0,0,0,.24);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);text-shadow:0 2px 10px #000;animation:tlFloatChatIn .18s ease both}
+        @keyframes tlFloatChatIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
     </head>
     <body>
       <main class="tl-recorder" id="recorder">
         <video id="preview" autoplay muted playsinline webkit-playsinline></video>
         <div class="tl-shade"></div>
+        <section class="tl-floating-chat" id="setupFloatingChat" aria-live="polite"></section>
         <div class="tl-top">
           <div class="tl-badge"><span class="tl-dot"></span>LIVE REC</div>
           <a class="tl-close" href="/stories/feed" aria-label="Close">×</a>
@@ -2313,6 +2318,7 @@ router.get("/stories/live/new", async (req, res) => {
           const chatToggle = document.getElementById('chatToggle');
           const donationToggle = document.getElementById('donationToggle');
           const setupLiveChat = document.getElementById('setupLiveChat');
+          const setupFloatingChat = document.getElementById('setupFloatingChat');
           const setupChatForm = document.getElementById('setupChatForm');
           const setupChatInput = document.getElementById('setupChatInput');
           const CHUNK_SIZE = 8 * 1024 * 1024;
@@ -2344,12 +2350,8 @@ router.get("/stories/live/new", async (req, res) => {
           bindSetupToggle(chatToggle, chatSetup, 'Chat is on', 'Chat is off');
           bindSetupToggle(donationToggle, donationSetup, 'Donations are on', 'Donations are off');
           const seenSetupChatIds = Object.create(null);
-          function addSetupChat(nameText, message, gift, clientMessageId, self){
-            if (!setupLiveChat) return;
-            if (clientMessageId) {
-              if (seenSetupChatIds[clientMessageId]) return;
-              seenSetupChatIds[clientMessageId] = true;
-            }
+          function appendSetupChatRow(container, nameText, message, gift, self, limit){
+            if (!container) return;
             const row = document.createElement('div');
             row.className = 'tl-chat-line' + (gift ? ' is-gift' : '') + (self ? ' is-self' : '');
             const strong = document.createElement('b');
@@ -2358,9 +2360,17 @@ router.get("/stories/live/new", async (req, res) => {
             span.textContent = message || '';
             row.appendChild(strong);
             row.appendChild(span);
-            setupLiveChat.appendChild(row);
-            while (setupLiveChat.children.length > 8) setupLiveChat.removeChild(setupLiveChat.firstElementChild);
-            setupLiveChat.scrollTop = setupLiveChat.scrollHeight;
+            container.appendChild(row);
+            while (container.children.length > limit) container.removeChild(container.firstElementChild);
+            container.scrollTop = container.scrollHeight;
+          }
+          function addSetupChat(nameText, message, gift, clientMessageId, self){
+            if (clientMessageId) {
+              if (seenSetupChatIds[clientMessageId]) return;
+              seenSetupChatIds[clientMessageId] = true;
+            }
+            appendSetupChatRow(setupLiveChat, nameText, message, gift, self, 8);
+            appendSetupChatRow(setupFloatingChat, nameText, message, gift, self, 5);
           }
           if (setupChatForm) setupChatForm.addEventListener('submit', function(event){
             event.preventDefault();
@@ -3320,12 +3330,13 @@ router.get("/stories/live/:id", async (req, res) => {
         .tl-room.tl-controls-hidden .tl-story-tabs,
         .tl-room.tl-controls-hidden .tl-copy,
         .tl-room.tl-controls-hidden .tl-actions,
-        .tl-room.tl-controls-hidden .tl-chat,
         .tl-room.tl-controls-hidden .tl-chat-form,
         .tl-room.tl-controls-hidden .tl-status{opacity:0!important;pointer-events:none!important;transform:translateY(10px) scale(.985);transition:opacity .34s ease,transform .34s ease}
         .tl-room.tl-controls-hidden::after{opacity:.18!important}
         .tl-room:not(.tl-embed)::before{content:"Triple tap to show controls";position:fixed;left:50%;bottom:calc(var(--safe-bottom) + 28px);z-index:18;transform:translate(-50%,10px);padding:9px 12px;border-radius:999px;background:rgba(0,0,0,.46);border:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.72);font-size:12px;font-weight:850;opacity:0;pointer-events:none;transition:opacity .24s ease,transform .24s ease;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
         .tl-room.tl-controls-hidden:not(.tl-embed)::before{opacity:.72;transform:translate(-50%,0)}
+        .tl-room.tl-controls-hidden .tl-chat{opacity:1!important;pointer-events:none!important;left:16px!important;right:72px!important;bottom:calc(var(--safe-bottom) + 82px)!important;height:168px!important;z-index:16!important;transform:none!important}
+        .tl-room.tl-controls-hidden .tl-chat-row{background:rgba(0,0,0,.46)!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:0 10px 28px rgba(0,0,0,.24)!important}
 </style>
     </head>
     <body>
@@ -3608,7 +3619,7 @@ router.get("/stories/live/:id", async (req, res) => {
             row.appendChild(strong);
             row.appendChild(span);
             chat.appendChild(row);
-            while (chat.children.length > 6) chat.removeChild(chat.firstElementChild);
+            while (chat.children.length > 5) chat.removeChild(chat.firstElementChild);
           }
           function showGift(text){
             if (!giftToast) return;
