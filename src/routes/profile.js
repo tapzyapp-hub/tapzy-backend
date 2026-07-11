@@ -10638,6 +10638,475 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End fresh QR page redesign */
+
+
+      /* Calm scan-first QR redesign */
+      html,
+      body{
+        background:#000!important;
+      }
+
+      .tz-qr-wrap{
+        width:100%!important;
+        max-width:620px!important;
+        padding-top:14px!important;
+        padding-bottom:120px!important;
+      }
+
+      .tz-qr-shell{
+        gap:14px!important;
+      }
+
+      .tz-qr-hero{
+        min-height:0!important;
+        padding:18px!important;
+        border-radius:28px!important;
+        background:
+          radial-gradient(420px 180px at 78% 0%, rgba(92,188,255,.12), transparent 58%),
+          linear-gradient(180deg, rgba(12,17,27,.96), rgba(3,5,10,.98))!important;
+        box-shadow:
+          0 16px 42px rgba(0,0,0,.38),
+          0 0 0 1px rgba(255,255,255,.035) inset!important;
+      }
+
+      .tz-qr-hero::before,
+      .tz-qr-hero::after{
+        opacity:.035!important;
+      }
+
+      .tz-qr-hero-glow{
+        display:none!important;
+      }
+
+      .tz-qr-hero-top{
+        display:block!important;
+      }
+
+      .tz-qr-kicker{
+        min-height:28px!important;
+        padding:0 11px!important;
+        margin-bottom:10px!important;
+        font-size:10px!important;
+        letter-spacing:.16em!important;
+        color:rgba(220,234,255,.72)!important;
+        background:rgba(7,12,20,.42)!important;
+      }
+
+      .tz-qr-title{
+        font-size:36px!important;
+        line-height:1!important;
+        letter-spacing:0!important;
+        margin:0!important;
+      }
+
+      .tz-qr-subtitle{
+        margin-top:9px!important;
+        max-width:430px!important;
+        font-size:15px!important;
+        line-height:1.42!important;
+        color:rgba(228,238,255,.68)!important;
+      }
+
+      .tz-qr-hero-actions{
+        margin-top:15px!important;
+        display:grid!important;
+        grid-template-columns:1fr 1fr!important;
+        gap:10px!important;
+        width:100%!important;
+      }
+
+      .tz-qr-btn,
+      .tz-qr-action{
+        width:100%!important;
+        min-height:44px!important;
+        border-radius:17px!important;
+        padding:0 12px!important;
+        font-size:13px!important;
+        font-weight:900!important;
+        border:1px solid rgba(115,194,255,.62)!important;
+        background:rgba(5,13,22,.68)!important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.10),
+          0 0 14px rgba(87,170,255,.18),
+          0 8px 18px rgba(0,0,0,.22)!important;
+        backdrop-filter:blur(14px) saturate(1.08)!important;
+      }
+
+      .tz-qr-card{
+        padding:18px!important;
+        border-radius:30px!important;
+        background:
+          radial-gradient(420px 200px at 50% -4%, rgba(87,174,255,.10), transparent 50%),
+          linear-gradient(180deg, rgba(9,14,23,.98), rgba(1,3,7,1))!important;
+        box-shadow:
+          0 18px 48px rgba(0,0,0,.42),
+          0 0 0 1px rgba(255,255,255,.035) inset!important;
+      }
+
+      .tz-qr-card::before,
+      .tz-qr-card::after{
+        opacity:.035!important;
+      }
+
+      .tz-qr-frame{
+        width:min(100%, 500px)!important;
+        margin:0 auto!important;
+        padding:0!important;
+        border-radius:30px!important;
+        background:#fff!important;
+        box-shadow:
+          0 0 0 1px rgba(115,194,255,.38),
+          0 0 26px rgba(82,170,255,.18),
+          0 18px 38px rgba(0,0,0,.36)!important;
+        animation:none!important;
+        overflow:hidden!important;
+      }
+
+      .tz-qr-frame::before,
+      .tz-qr-frame::after{
+        display:none!important;
+        content:none!important;
+      }
+
+      .tz-qr-frame-inner{
+        width:100%!important;
+        padding:12px!important;
+        border-radius:30px!important;
+        background:#fff!important;
+        box-shadow:none!important;
+        overflow:hidden!important;
+      }
+
+      .tz-qr-frame-inner::before{
+        display:none!important;
+        content:none!important;
+      }
+
+      .tz-qr-image{
+        width:100%!important;
+        border-radius:20px!important;
+        background:#fff!important;
+      }
+
+      .tz-qr-logo-overlay{
+        width:11%!important;
+        min-width:38px!important;
+        max-width:54px!important;
+        border-width:3px!important;
+        border-radius:12px!important;
+        background:linear-gradient(180deg, #151a22, #05070b)!important;
+        box-shadow:
+          0 0 0 1px rgba(0,0,0,.24),
+          0 7px 16px rgba(0,0,0,.28),
+          0 0 16px rgba(75,166,255,.16)!important;
+        animation:none!important;
+      }
+
+      .tz-qr-logo-overlay img{
+        width:64%!important;
+        height:64%!important;
+      }
+
+      .tz-qr-meta{
+        margin-top:16px!important;
+      }
+
+      .tz-qr-meta-name{
+        font-size:24px!important;
+        line-height:1.08!important;
+      }
+
+      .tz-qr-meta-handle{
+        margin-top:5px!important;
+        color:rgba(224,234,255,.66)!important;
+      }
+
+      .tz-qr-meta-caption{
+        margin-top:8px!important;
+        font-size:12px!important;
+        color:rgba(216,228,255,.52)!important;
+      }
+
+      .tz-qr-actions{
+        margin-top:15px!important;
+        display:grid!important;
+        grid-template-columns:1fr 1fr!important;
+        gap:10px!important;
+      }
+
+      @media(max-width:700px){
+        .tz-qr-wrap{
+          padding:14px 18px 120px!important;
+        }
+        .tz-qr-hero,
+        .tz-qr-card{
+          border-radius:28px!important;
+          padding:16px!important;
+        }
+        .tz-qr-title{
+          font-size:34px!important;
+        }
+        .tz-qr-frame{
+          border-radius:24px!important;
+        }
+        .tz-qr-frame-inner{
+          padding:9px!important;
+          border-radius:24px!important;
+        }
+        .tz-qr-image{
+          border-radius:16px!important;
+        }
+        .tz-qr-logo-overlay{
+          width:10.5%!important;
+          min-width:34px!important;
+          border-radius:10px!important;
+        }
+      }
+
+      /* End calm scan-first QR redesign */
+
+      /* Tapzy living QR redesign */
+      body{
+        background:
+          radial-gradient(circle at 50% 0%, rgba(68, 167, 255, .10), transparent 34%),
+          #000 !important;
+      }
+
+      .tz-qr-wrap{
+        max-width: 620px !important;
+        padding: 14px 18px 124px !important;
+      }
+
+      .tz-qr-shell{ gap: 16px !important; }
+
+      .tz-qr-hero{
+        min-height: 0 !important;
+        padding: 20px !important;
+        border-radius: 30px !important;
+        overflow: hidden !important;
+        background:
+          radial-gradient(420px 220px at 74% -14%, rgba(93, 188, 255, .20), transparent 60%),
+          radial-gradient(320px 190px at 0% 100%, rgba(39, 126, 255, .12), transparent 64%),
+          linear-gradient(180deg, rgba(13, 20, 32, .98), rgba(2, 4, 10, .98)) !important;
+        box-shadow:
+          0 20px 46px rgba(0, 0, 0, .42),
+          inset 0 0 0 1px rgba(126, 201, 255, .18),
+          inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+      }
+
+      .tz-qr-hero::before{ opacity: .10 !important; }
+      .tz-qr-hero::after{ opacity: .05 !important; }
+
+      .tz-qr-kicker{
+        width: fit-content !important;
+        min-height: 30px !important;
+        padding: 0 13px !important;
+        margin-bottom: 12px !important;
+        border-radius: 999px !important;
+        color: rgba(220, 235, 255, .78) !important;
+        border: 1px solid rgba(117, 195, 255, .18) !important;
+        background: rgba(3, 8, 15, .62) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+      }
+
+      .tz-qr-title{
+        font-size: clamp(38px, 10vw, 54px) !important;
+        line-height: .94 !important;
+        letter-spacing: 0 !important;
+        margin: 0 !important;
+      }
+
+      .tz-qr-subtitle{
+        max-width: 450px !important;
+        margin-top: 12px !important;
+        font-size: 15px !important;
+        line-height: 1.42 !important;
+        color: rgba(226, 237, 255, .68) !important;
+      }
+
+      .tz-qr-hero-actions,
+      .tz-qr-actions{
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+      }
+
+      .tz-qr-hero-actions{ margin-top: 18px !important; }
+
+      .tz-qr-card{
+        position: relative !important;
+        padding: 18px !important;
+        border-radius: 32px !important;
+        overflow: hidden !important;
+        background:
+          radial-gradient(420px 210px at 50% -8%, rgba(90, 184, 255, .16), transparent 58%),
+          linear-gradient(180deg, rgba(11, 18, 30, .98), rgba(1, 3, 8, 1)) !important;
+        box-shadow:
+          0 22px 54px rgba(0, 0, 0, .46),
+          inset 0 0 0 1px rgba(118, 198, 255, .16),
+          inset 0 1px 0 rgba(255, 255, 255, .07) !important;
+      }
+
+      .tz-qr-card::before{
+        content: "" !important;
+        position: absolute !important;
+        inset: -34% !important;
+        pointer-events: none !important;
+        opacity: .28 !important;
+        background: conic-gradient(from 0deg, transparent, rgba(74, 174, 255, .22), transparent 32%, rgba(28, 93, 255, .18), transparent 68%) !important;
+        animation: tzQrAuraSpin 9s linear infinite !important;
+      }
+
+      .tz-qr-card::after{
+        content: "" !important;
+        position: absolute !important;
+        inset: 1px !important;
+        border-radius: inherit !important;
+        pointer-events: none !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.045), transparent 22%),
+          radial-gradient(circle at 50% 0%, rgba(85, 180, 255, .10), transparent 44%) !important;
+      }
+
+      .tz-qr-frame,
+      .tz-qr-meta,
+      .tz-qr-actions{
+        position: relative !important;
+        z-index: 1 !important;
+      }
+
+      .tz-qr-frame{
+        width: min(100%, 492px) !important;
+        margin: 0 auto !important;
+        padding: 8px !important;
+        border-radius: 34px !important;
+        background: linear-gradient(135deg, #78d7ff, #276dff 46%, #8edfff) !important;
+        box-shadow:
+          0 0 0 1px rgba(205, 241, 255, .45) inset,
+          0 0 18px rgba(88, 185, 255, .38),
+          0 0 48px rgba(41, 116, 255, .28),
+          0 18px 36px rgba(0, 0, 0, .44) !important;
+        overflow: visible !important;
+        animation: tzQrFrameBreathe 3.8s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame::before{
+        content: "" !important;
+        position: absolute !important;
+        inset: -11px !important;
+        border-radius: 42px !important;
+        pointer-events: none !important;
+        background: radial-gradient(circle at 50% 50%, rgba(88, 178, 255, .34), transparent 66%) !important;
+        filter: blur(12px) !important;
+        opacity: .62 !important;
+        z-index: -1 !important;
+        animation: tzQrPulse 2.9s ease-in-out infinite !important;
+      }
+
+      .tz-qr-frame::after{ display: none !important; }
+
+      .tz-qr-frame-inner{
+        position: relative !important;
+        padding: 10px !important;
+        border-radius: 27px !important;
+        background: #fff !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(0, 0, 0, .05),
+          inset 0 0 24px rgba(59, 151, 255, .08) !important;
+        overflow: hidden !important;
+      }
+
+      .tz-qr-frame-inner::before{ display: none !important; }
+
+      .tz-qr-image{
+        display: block !important;
+        width: 100% !important;
+        border-radius: 18px !important;
+        background: #fff !important;
+      }
+
+      .tz-qr-logo-overlay{
+        width: 11.5% !important;
+        min-width: 40px !important;
+        max-width: 56px !important;
+        border-radius: 14px !important;
+        border: 3px solid rgba(255, 255, 255, .94) !important;
+        background:
+          radial-gradient(circle at 35% 20%, rgba(255, 255, 255, .14), transparent 36%),
+          linear-gradient(180deg, #171d27, #04070c) !important;
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, .26),
+          0 8px 18px rgba(0, 0, 0, .34),
+          0 0 18px rgba(74, 165, 255, .24) !important;
+        animation: tzQrLogoFloat 3.4s ease-in-out infinite !important;
+      }
+
+      .tz-qr-logo-overlay img{
+        width: 66% !important;
+        height: 66% !important;
+        object-fit: contain !important;
+      }
+
+      .tz-qr-meta{ margin-top: 18px !important; }
+
+      .tz-qr-meta-name{
+        font-size: 26px !important;
+        line-height: 1.05 !important;
+      }
+
+      .tz-qr-meta-handle{
+        margin-top: 6px !important;
+        color: rgba(225, 235, 255, .66) !important;
+      }
+
+      .tz-qr-meta-caption{
+        margin: 9px auto 0 !important;
+        max-width: 420px !important;
+        color: rgba(218, 229, 255, .50) !important;
+      }
+
+      .tz-qr-btn,
+      .tz-qr-action{
+        min-height: 48px !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(116, 198, 255, .78) !important;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(91, 181, 255, .16), transparent 58%),
+          rgba(5, 13, 23, .76) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, .12),
+          0 0 15px rgba(84, 177, 255, .20),
+          0 10px 20px rgba(0, 0, 0, .28) !important;
+      }
+
+      @keyframes tzQrAuraSpin{ to{ transform: rotate(360deg); } }
+      @keyframes tzQrFrameBreathe{
+        0%, 100%{ filter: saturate(1.02) brightness(1); transform: translateZ(0) scale(1); }
+        50%{ filter: saturate(1.12) brightness(1.05); transform: translateZ(0) scale(1.006); }
+      }
+      @keyframes tzQrPulse{
+        0%, 100%{ opacity: .42; transform: scale(.99); }
+        50%{ opacity: .80; transform: scale(1.02); }
+      }
+      @keyframes tzQrLogoFloat{
+        0%, 100%{ transform: translate(-50%, -50%) scale(1); }
+        50%{ transform: translate(-50%, -50%) scale(1.045); }
+      }
+
+      @media(max-width:700px){
+        .tz-qr-wrap{ padding: 12px 18px 126px !important; }
+        .tz-qr-hero{ padding: 18px !important; border-radius: 28px !important; }
+        .tz-qr-title{ font-size: 40px !important; }
+        .tz-qr-card{ padding: 16px !important; border-radius: 30px !important; }
+        .tz-qr-frame{ padding: 7px !important; border-radius: 28px !important; }
+        .tz-qr-frame-inner{ padding: 8px !important; border-radius: 22px !important; }
+        .tz-qr-image{ border-radius: 15px !important; }
+        .tz-qr-logo-overlay{ min-width: 36px !important; border-radius: 11px !important; }
+        .tz-qr-actions{ grid-template-columns: 1fr !important; }
+      }
+
+      /* End Tapzy living QR redesign */
 </style>
 
     `;
