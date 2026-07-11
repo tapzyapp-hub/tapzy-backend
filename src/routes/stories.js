@@ -2232,6 +2232,14 @@ router.get("/stories/live/new", async (req, res) => {
           .tl-title p{display:none}.tl-handle{min-height:40px}.tl-buttons{gap:8px}
         }
         @media(max-height:720px){.tl-chat-preview{display:grid!important}.tl-gift-row{display:flex!important}}
+
+        /* Filming mode: hide controls after idle, triple tap the camera to restore. */
+        .tl-recorder.tl-controls-hidden .tl-top,
+        .tl-recorder.tl-controls-hidden .tl-controls{opacity:0;pointer-events:none;transform:translateY(10px) scale(.985);transition:opacity .34s ease,transform .34s ease}
+        .tl-top,.tl-controls{transition:opacity .24s ease,transform .24s ease}
+        .tl-recorder.tl-controls-hidden .tl-shade{opacity:.28;transition:opacity .34s ease}
+        .tl-recorder::after{content:"Triple tap to show controls";position:absolute;left:50%;bottom:calc(var(--safe-bottom) + 28px);z-index:5;transform:translate(-50%,10px);padding:9px 12px;border-radius:999px;background:rgba(0,0,0,.46);border:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.72);font-size:12px;font-weight:850;opacity:0;pointer-events:none;transition:opacity .24s ease,transform .24s ease;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+        .tl-recorder.tl-controls-hidden::after{opacity:.72;transform:translate(-50%,0)}
 </style>
     </head>
     <body>
@@ -2320,6 +2328,47 @@ router.get("/stories/live/new", async (req, res) => {
           }
           bindSetupToggle(chatToggle, chatSetup, 'Chat is on', 'Chat is off');
           bindSetupToggle(donationToggle, donationSetup, 'Donations are on', 'Donations are off');
+          let controlsIdleTimer = null;
+          let tapWindowTimer = null;
+          let tapCount = 0;
+          function controlsAreHidden(){ return root.classList.contains('tl-controls-hidden'); }
+          function showControls(){
+            root.classList.remove('tl-controls-hidden');
+            scheduleControlsHide();
+          }
+          function hideControls(){
+            if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return scheduleControlsHide();
+            root.classList.add('tl-controls-hidden');
+            if (controlsIdleTimer) clearTimeout(controlsIdleTimer);
+          }
+          function scheduleControlsHide(){
+            if (controlsIdleTimer) clearTimeout(controlsIdleTimer);
+            controlsIdleTimer = setTimeout(hideControls, 20000);
+          }
+          function registerFilmingTap(event){
+            if (event.target.closest('button,a,input,label')) {
+              if (!controlsAreHidden()) scheduleControlsHide();
+              return;
+            }
+            tapCount += 1;
+            if (tapWindowTimer) clearTimeout(tapWindowTimer);
+            tapWindowTimer = setTimeout(function(){ tapCount = 0; }, 650);
+            if (tapCount >= 3) {
+              tapCount = 0;
+              if (tapWindowTimer) clearTimeout(tapWindowTimer);
+              showControls();
+            } else if (!controlsAreHidden()) {
+              scheduleControlsHide();
+            }
+          }
+          ['pointerdown','keydown','focusin'].forEach(function(type){
+            root.addEventListener(type, function(event){
+              if (type === 'pointerdown') registerFilmingTap(event);
+              else if (!controlsAreHidden()) scheduleControlsHide();
+            }, { passive:true });
+          });
+          scheduleControlsHide();
+
           function mimeType(){
             if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
             return ['video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(function(type){
@@ -3206,6 +3255,20 @@ router.get("/stories/live/:id", async (req, res) => {
         .tl-room[data-role="host"] .tl-actions{right:12px;top:calc(var(--safe-top) + 76px);bottom:auto;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.26);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
         .tl-room[data-role="host"] .tl-copy{left:14px;right:14px;bottom:calc(var(--safe-bottom) + 236px);max-width:none}
         @media(max-height:700px){.tl-room[data-role="host"] .tl-copy{display:none}.tl-room[data-role="host"] .tl-chat{height:102px;bottom:calc(var(--safe-bottom) + 86px)}.tl-room[data-role="host"] .tl-chat-form input,.tl-room[data-role="host"] .tl-chat-form button{min-height:46px}}
+
+        /* Filming mode: idle live controls disappear; triple tap restores them. */
+        .tl-room.tl-controls-hidden .tl-live-pill,
+        .tl-room.tl-controls-hidden .tl-top,
+        .tl-room.tl-controls-hidden .tl-viewers,
+        .tl-room.tl-controls-hidden .tl-story-tabs,
+        .tl-room.tl-controls-hidden .tl-copy,
+        .tl-room.tl-controls-hidden .tl-actions,
+        .tl-room.tl-controls-hidden .tl-chat,
+        .tl-room.tl-controls-hidden .tl-chat-form,
+        .tl-room.tl-controls-hidden .tl-status{opacity:0!important;pointer-events:none!important;transform:translateY(10px) scale(.985);transition:opacity .34s ease,transform .34s ease}
+        .tl-room.tl-controls-hidden::after{opacity:.18!important}
+        .tl-room:not(.tl-embed)::before{content:"Triple tap to show controls";position:fixed;left:50%;bottom:calc(var(--safe-bottom) + 28px);z-index:18;transform:translate(-50%,10px);padding:9px 12px;border-radius:999px;background:rgba(0,0,0,.46);border:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.72);font-size:12px;font-weight:850;opacity:0;pointer-events:none;transition:opacity .24s ease,transform .24s ease;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+        .tl-room.tl-controls-hidden:not(.tl-embed)::before{opacity:.72;transform:translate(-50%,0)}
 </style>
     </head>
     <body>
@@ -3282,6 +3345,48 @@ router.get("/stories/live/:id", async (req, res) => {
 
           function setStatus(text){ if (status) status.textContent = (text || '').trim(); }
           function hideWait(){ if (wait) wait.style.display = 'none'; }
+          let liveControlsIdleTimer = null;
+          let liveTapWindowTimer = null;
+          let liveTapCount = 0;
+          function liveControlsHidden(){ return room.classList.contains('tl-controls-hidden'); }
+          function showLiveControls(){
+            if (room.classList.contains('tl-embed')) return;
+            room.classList.remove('tl-controls-hidden');
+            scheduleLiveControlsHide();
+          }
+          function hideLiveControls(){
+            if (room.classList.contains('tl-embed')) return;
+            if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return scheduleLiveControlsHide();
+            if (giftPanel && giftPanel.classList.contains('is-open')) return scheduleLiveControlsHide();
+            room.classList.add('tl-controls-hidden');
+            if (liveControlsIdleTimer) clearTimeout(liveControlsIdleTimer);
+          }
+          function scheduleLiveControlsHide(){
+            if (room.classList.contains('tl-embed')) return;
+            if (liveControlsIdleTimer) clearTimeout(liveControlsIdleTimer);
+            liveControlsIdleTimer = setTimeout(hideLiveControls, 20000);
+          }
+          function registerLiveFilmingTap(event){
+            if (event.target.closest('button,a,input,label,.tl-gift-panel')) {
+              if (!liveControlsHidden()) scheduleLiveControlsHide();
+              return;
+            }
+            liveTapCount += 1;
+            if (liveTapWindowTimer) clearTimeout(liveTapWindowTimer);
+            liveTapWindowTimer = setTimeout(function(){ liveTapCount = 0; }, 650);
+            if (liveTapCount >= 3) {
+              liveTapCount = 0;
+              if (liveTapWindowTimer) clearTimeout(liveTapWindowTimer);
+              showLiveControls();
+            } else if (!liveControlsHidden()) {
+              scheduleLiveControlsHide();
+            }
+          }
+          room.addEventListener('pointerdown', registerLiveFilmingTap, { passive:true });
+          room.addEventListener('keydown', function(){ if (!liveControlsHidden()) scheduleLiveControlsHide(); });
+          room.addEventListener('focusin', function(){ if (!liveControlsHidden()) scheduleLiveControlsHide(); });
+          scheduleLiveControlsHide();
+
           async function postJson(url, body){
             const res = await fetch(url, {
               method:'POST',
