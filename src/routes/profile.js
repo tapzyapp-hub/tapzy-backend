@@ -9520,8 +9520,6 @@ router.get("/qr/:username", async (req, res) => {
 
               />
 
-              <div class="tz-qr-logo-overlay" aria-hidden="true"><img src="/images/tapzy-mark-white.png" alt="" /></div>
-
             </div>
 
           </div>
@@ -11107,6 +11105,13 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End Tapzy living QR redesign */
+
+      /* Remove QR center logo */
+      .tz-qr-logo-overlay{
+        display: none !important;
+      }
+
+      /* End remove QR center logo */
 </style>
 
     `;
