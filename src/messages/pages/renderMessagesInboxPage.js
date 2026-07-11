@@ -1278,6 +1278,93 @@ module.exports = function renderMessagesInboxPage({
       }
 
       /* End floating black contacts polish */
+
+
+      /* Contacts true black and rounded edge seal */
+      html,
+      body,
+      .site-shell,
+      .app-shell,
+      .page,
+      .page-bg,
+      .page-content,
+      .tapzy-page,
+      main,
+      .wrap,
+      .tz-msg-shell,
+      .tz-msg-section{
+        background:#000 !important;
+        background-color:#000 !important;
+      }
+
+      body::before,
+      body::after,
+      .page::before,
+      .page::after,
+      main::before,
+      main::after,
+      .wrap::before,
+      .wrap::after{
+        background:transparent !important;
+        box-shadow:none !important;
+      }
+
+      .tz-msg-hub{
+        overflow:hidden !important;
+        border-radius:34px !important;
+        clip-path: inset(0 round 34px) !important;
+        background:
+          radial-gradient(480px 190px at 50% 0%, rgba(74, 170, 255, .10), transparent 58%),
+          linear-gradient(180deg, rgba(7, 12, 20, .94), rgba(0, 0, 0, 1) 64%) !important;
+      }
+
+      .tz-msg-content,
+      .tz-msg-list{
+        overflow:hidden !important;
+        border-radius:24px !important;
+      }
+
+      .tz-msg-thread{
+        overflow:hidden !important;
+        border-radius:24px !important;
+        clip-path: inset(0 round 24px) !important;
+        background:
+          radial-gradient(360px 150px at 50% 0%, rgba(84, 174, 255, .10), transparent 54%),
+          linear-gradient(180deg, rgba(8, 14, 23, .92), rgba(0,0,0,.98)) !important;
+      }
+
+      .tz-msg-thread::before,
+      .tz-msg-thread::after{
+        border-radius:inherit !important;
+      }
+
+      @media(max-width:700px){
+        html,
+        body,
+        .site-shell,
+        .app-shell,
+        .page,
+        .page-bg,
+        .page-content,
+        .tapzy-page,
+        main,
+        .wrap,
+        .tz-msg-shell,
+        .tz-msg-section{
+          background:#000 !important;
+          background-color:#000 !important;
+        }
+        .tz-msg-hub{
+          border-radius:30px !important;
+          clip-path: inset(0 round 30px) !important;
+        }
+        .tz-msg-thread{
+          border-radius:22px !important;
+          clip-path: inset(0 round 22px) !important;
+        }
+      }
+
+      /* End contacts true black and rounded edge seal */
 </style>
 
     
