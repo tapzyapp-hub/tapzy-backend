@@ -1,7 +1,7 @@
 (function () {
   if (window.TapzyVideoUpload) return;
 
-  const CHUNK_SIZE = 16 * 1024 * 1024;
+  const CHUNK_SIZE = 8 * 1024 * 1024;
   const CLOUDINARY_CHUNK_SIZE = 20 * 1024 * 1024;
   const CLOUDINARY_CHUNK_UPLOAD_BYTES = 24 * 1024 * 1024;
   const DIRECT_UPLOAD_BYTES = 8 * 1024 * 1024;
@@ -69,8 +69,10 @@
     const saveData = !!(connection && connection.saveData);
     let limit = MAX_PARALLEL_CHUNKS;
 
+    const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
     if (saveData || /(?:^|-)2g$/.test(effectiveType)) limit = 2;
-    else if (effectiveType === "3g") limit = 3;
+    else if (effectiveType === "3g") limit = mobile ? 2 : 3;
+    else if (mobile) limit = 4;
     else if (effectiveType === "4g") limit = 6;
     else limit = 4;
 
@@ -582,7 +584,7 @@
       if (supportsChunkedSubmit(form)) {
         const isVideo = isVideoFile(file);
         const needsSecondaryVideoPath = isVideo && file.size >= START_OPTIMIZE_BYTES;
-        const preferFastChunkBackup = needsSecondaryVideoPath && /Android/i.test(navigator.userAgent || "");
+        const preferFastChunkBackup = needsSecondaryVideoPath;
 
         if (isImageFile(file)) {
           setStatus(form, "Optimizing image for faster upload.");
@@ -592,7 +594,7 @@
           }
         } else if (needsSecondaryVideoPath) {
           try {
-            if (preferFastChunkBackup) throw new Error('Using faster Android chunk path');
+            if (preferFastChunkBackup) throw new Error('Using faster chunk path');
             setStatus(form, `Uploading original video to cloud ${0}% — fastest path.`);
             complete = await uploadCloudMedia(file, (pct) => {
               setStatus(form, `Uploading original video to cloud ${pct}% — fastest path.`);
@@ -602,9 +604,9 @@
             complete = null;
             uploadFile = file;
             try {
-              setStatus(form, `${preferFastChunkBackup ? "Sending large Android video" : "Cloud needed backup — sending original video"} in fast chunks 0% — keep this page open.`);
+              setStatus(form, `${preferFastChunkBackup ? "Sending large video" : "Cloud needed backup — sending original video"} in fast chunks 0% — keep this page open.`);
               complete = await uploadChunkedMedia(file, form, (pct) => {
-                setStatus(form, `${preferFastChunkBackup ? "Sending large Android video" : "Cloud needed backup — sending original video"} in fast chunks ${pct}% — keep this page open.`);
+                setStatus(form, `${preferFastChunkBackup ? "Sending large video" : "Cloud needed backup — sending original video"} in fast chunks ${pct}% — keep this page open.`);
               });
             } catch (chunkError) {
               complete = null;
@@ -664,6 +666,8 @@
         upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || inferMimeType(uploadFile));
         clearInputFile(mediaInput);
         setStatus(form, "Media uploaded — posting now.");
+      } else if (supportsChunkedSubmit(form) && isVideoFile(file) && file.size >= START_OPTIMIZE_BYTES) {
+        throw new Error("Large video upload did not finish. Please try again on Wi-Fi — Tapzy will not send the raw oversized file.");
       }
     } catch (error) {
       setStatus(form, `Media upload failed: ${error.message || "Please try again on a stronger connection."}`);
