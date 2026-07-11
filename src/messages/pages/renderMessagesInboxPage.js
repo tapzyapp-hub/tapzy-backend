@@ -1162,7 +1162,123 @@ module.exports = function renderMessagesInboxPage({
         100%{transform:scale(1.22);opacity:0;box-shadow:0 0 0 16px rgba(255,45,85,0)}
       }
 
-    </style>
+    
+
+      /* Floating black contacts polish */
+      body,
+      .app-shell,
+      .page,
+      main{
+        background:#000 !important;
+      }
+
+      .tz-msg-shell{
+        max-width:1040px !important;
+        padding:10px 0 34px !important;
+      }
+
+      .tz-msg-section{
+        margin-top:16px !important;
+        background:#000 !important;
+      }
+
+      .tz-msg-hub{
+        border-radius:34px !important;
+        border:1px solid rgba(110, 195, 255, .18) !important;
+        background:
+          radial-gradient(560px 240px at 50% 0%, rgba(78, 170, 255, .13), transparent 54%),
+          radial-gradient(420px 210px at 16% 20%, rgba(255,255,255,.035), transparent 58%),
+          linear-gradient(180deg, rgba(8, 13, 22, .94), rgba(0, 0, 0, .995)) !important;
+        box-shadow:
+          0 24px 54px rgba(0,0,0,.58),
+          0 0 0 1px rgba(255,255,255,.035) inset,
+          0 0 34px rgba(69, 158, 255, .10) !important;
+        backdrop-filter:blur(18px) saturate(1.12) !important;
+        -webkit-backdrop-filter:blur(18px) saturate(1.12) !important;
+        animation:tzContactsFloat 5.6s ease-in-out infinite !important;
+      }
+
+      .tz-msg-hub::before{
+        opacity:.045 !important;
+        background-image:radial-gradient(rgba(130, 210, 255, .84) .7px, transparent .7px) !important;
+        background-size:12px 12px !important;
+      }
+
+      .tz-msg-hub::after{
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.06), transparent 24%),
+          radial-gradient(360px 160px at 50% 0%, rgba(94, 188, 255, .12), transparent 62%) !important;
+        opacity:.72 !important;
+      }
+
+      .tz-msg-title{
+        text-shadow:0 0 24px rgba(110, 200, 255, .10) !important;
+      }
+
+      .tz-btn-dark,
+      .tz-msg-tab,
+      .tz-msg-thread{
+        border-color:rgba(105, 190, 255, .15) !important;
+      }
+
+      .tz-btn-dark{
+        background:
+          radial-gradient(circle at 50% 0%, rgba(93, 185, 255, .12), transparent 58%),
+          linear-gradient(180deg, rgba(13, 18, 28, .92), rgba(2, 4, 8, .98)) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.08),
+          0 12px 24px rgba(0,0,0,.30),
+          0 0 14px rgba(83, 178, 255, .10) !important;
+      }
+
+      .tz-msg-tabs{
+        background:rgba(0,0,0,.46) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 14px 30px rgba(0,0,0,.30) !important;
+      }
+
+      .tz-msg-content{
+        padding-top:2px !important;
+      }
+
+      .tz-msg-thread{
+        background:
+          radial-gradient(360px 180px at 88% 0%, rgba(88, 175, 255, .11), transparent 48%),
+          linear-gradient(180deg, rgba(10, 15, 24, .88), rgba(1, 2, 5, .96)) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.05),
+          0 16px 32px rgba(0,0,0,.30) !important;
+      }
+
+      @keyframes tzContactsFloat{
+        0%,100%{ transform:translateY(0); }
+        50%{ transform:translateY(-6px); }
+      }
+
+      @media(max-width:700px){
+        body,
+        .app-shell,
+        .page,
+        main{
+          background:#000 !important;
+        }
+        .tz-msg-shell{
+          padding-top:8px !important;
+        }
+        .tz-msg-hub{
+          border-radius:30px !important;
+          animation:tzContactsFloatMobile 5.6s ease-in-out infinite !important;
+        }
+      }
+
+      @keyframes tzContactsFloatMobile{
+        0%,100%{ transform:translateY(0); }
+        50%{ transform:translateY(-4px); }
+      }
+
+      /* End floating black contacts polish */
+</style>
 
     
     <script>
