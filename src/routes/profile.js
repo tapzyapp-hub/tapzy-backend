@@ -5570,7 +5570,39 @@ router.get("/u/:username", async (req, res) => {
         }
       }
 
-      /* End exact edit hero button match for public profile */
+      
+
+      /* Always-on profile hero button glow */
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn{
+        border-color:rgba(115,194,255,.92) !important;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(115,194,255,.18), transparent 56%),
+          rgba(10,38,66,.38) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.14),
+          0 0 18px rgba(87,170,255,.30),
+          0 0 46px rgba(48,110,255,.22),
+          0 12px 26px rgba(0,0,0,.20) !important;
+      }
+
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary:hover,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-secondary:focus-visible,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn:hover,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions .profile-pill-btn:focus-visible,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn:hover,
+      .profile-showcase:not(.is-event-selected) .profile-showcase-actions form .btn:focus-visible{
+        border-color:rgba(150,224,255,.98) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.18),
+          0 0 22px rgba(87,170,255,.36),
+          0 0 52px rgba(48,110,255,.26),
+          0 12px 26px rgba(0,0,0,.20) !important;
+      }
+
+      /* End always-on profile hero button glow */
+/* End exact edit hero button match for public profile */
 /* End public profile hero buttons match edit hero */
 /* End public profile top card premium match */
 /* Final weather polish: keep effects behind identity and make conditions visibly alive. */
