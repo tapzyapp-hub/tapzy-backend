@@ -384,6 +384,17 @@ router.get("/u/:username", async (req, res) => {
 
     const body = `
 
+    <style id="tapzy-profile-first-paint-guard">
+      html:not(.tz-profile-ready) .profile-wrap{
+        visibility:hidden!important;
+        opacity:0!important;
+      }
+      html.tz-profile-ready .profile-wrap{
+        visibility:visible;
+        opacity:1;
+      }
+    </style>
+
     <div class="wrap profile-wrap">
 
 
@@ -6612,6 +6623,7 @@ router.get("/u/:username", async (req, res) => {
     <script>
       (function(){
         function releaseProfileHeroBoot(){
+          document.documentElement.classList.add('tz-profile-ready');
           const shell = document.getElementById('tapzyProfileShell');
           if (!shell) return;
           requestAnimationFrame(function(){

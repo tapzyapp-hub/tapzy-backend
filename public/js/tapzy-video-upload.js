@@ -80,11 +80,11 @@
   function bestMimeType() {
     if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return "";
     const options = [
+      "video/mp4;codecs=h264,aac",
+      "video/mp4",
       "video/webm;codecs=vp9,opus",
       "video/webm;codecs=vp8,opus",
       "video/webm",
-      "video/mp4;codecs=h264,aac",
-      "video/mp4",
     ];
     return options.find((type) => MediaRecorder.isTypeSupported(type)) || "";
   }
@@ -472,6 +472,7 @@
   async function compressVideo(file, onProgress) {
     const mimeType = bestMimeType();
     if (!mimeType || !navigator.mediaDevices || !window.MediaRecorder) return file;
+    if (!/^video\/mp4/i.test(mimeType)) return file;
 
     const loaded = await loadVideo(file);
     const video = loaded.video;
