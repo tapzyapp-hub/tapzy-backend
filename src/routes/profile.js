@@ -2245,6 +2245,15 @@ router.get("/u/:username", async (req, res) => {
         font-feature-settings:"kern" 1, "liga" 1;
       }
 
+
+      @media(min-width:701px){
+        .profile-event-card-panel .event-title{
+          font-size:clamp(24px, 3vw, 34px);
+          line-height:1.08;
+          font-weight:900;
+        }
+      }
+
       .profile-event-card-panel .event-title .event-title-word{
         display:inline;
       }
