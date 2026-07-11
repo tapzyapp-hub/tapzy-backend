@@ -1,11 +1,14 @@
 (function () {
   if (window.TapzyVideoUpload) return;
 
-  const CHUNK_SIZE = 8 * 1024 * 1024;
+  const MIN_CHUNK_SIZE = 8 * 1024 * 1024;
+  const MOBILE_FAST_CHUNK_SIZE = 12 * 1024 * 1024;
+  const MAX_CHUNK_SIZE = 16 * 1024 * 1024;
   const CLOUDINARY_CHUNK_SIZE = 20 * 1024 * 1024;
   const CLOUDINARY_CHUNK_UPLOAD_BYTES = 24 * 1024 * 1024;
   const DIRECT_UPLOAD_BYTES = 8 * 1024 * 1024;
   const START_OPTIMIZE_BYTES = 120 * 1024 * 1024;
+  const MOBILE_FAST_CHUNK_BYTES = 48 * 1024 * 1024;
   const MAX_PARALLEL_CHUNKS = 6;
   const MAX_EDGE = 960;
   const FPS = 24;
@@ -63,18 +66,32 @@
     }
   }
 
-  function chunkConcurrency(totalChunks) {
+  function connectionInfo() {
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    const effectiveType = String((connection && connection.effectiveType) || "").toLowerCase();
-    const saveData = !!(connection && connection.saveData);
+    return {
+      effectiveType: String((connection && connection.effectiveType) || "").toLowerCase(),
+      saveData: !!(connection && connection.saveData),
+      mobile: /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ""),
+    };
+  }
+
+  function chunkSizeFor(file) {
+    const info = connectionInfo();
+    if (info.saveData || /(?:^|-)2g$/.test(info.effectiveType)) return MIN_CHUNK_SIZE;
+    if (info.effectiveType === "3g") return MIN_CHUNK_SIZE;
+    if (info.mobile) return MOBILE_FAST_CHUNK_SIZE;
+    return Math.min(MAX_CHUNK_SIZE, Math.max(MOBILE_FAST_CHUNK_SIZE, Math.ceil((file && file.size ? file.size : MAX_CHUNK_SIZE) / 24)));
+  }
+
+  function chunkConcurrency(totalChunks) {
+    const info = connectionInfo();
     let limit = MAX_PARALLEL_CHUNKS;
 
-    const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
-    if (saveData || /(?:^|-)2g$/.test(effectiveType)) limit = 2;
-    else if (effectiveType === "3g") limit = mobile ? 2 : 3;
-    else if (mobile) limit = 4;
-    else if (effectiveType === "4g") limit = 6;
-    else limit = 4;
+    if (info.saveData || /(?:^|-)2g$/.test(info.effectiveType)) limit = 2;
+    else if (info.effectiveType === "3g") limit = info.mobile ? 3 : 4;
+    else if (info.mobile) limit = 5;
+    else if (info.effectiveType === "4g") limit = 6;
+    else limit = 5;
 
     return Math.max(1, Math.min(limit, totalChunks));
   }
@@ -329,7 +346,8 @@
   }
 
   async function uploadChunkedMedia(file, form, onProgress) {
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const chunkSize = chunkSizeFor(file);
+    const totalChunks = Math.ceil(file.size / chunkSize);
     const session = await postJson("/media/chunk/start", {
       originalName: file.name || "tapzy-media",
       type: inferMimeType(file),
@@ -347,8 +365,8 @@
         nextIndex += 1;
         if (index >= totalChunks) return;
 
-        const start = index * CHUNK_SIZE;
-        const chunk = file.slice(start, Math.min(file.size, start + CHUNK_SIZE));
+        const start = index * chunkSize;
+        const chunk = file.slice(start, Math.min(file.size, start + chunkSize));
         await uploadChunkWithRetry(session.uploadId, index, chunk);
         completed += 1;
         if (onProgress) onProgress(Math.round((completed / totalChunks) * 100));
@@ -584,7 +602,7 @@
       if (supportsChunkedSubmit(form)) {
         const isVideo = isVideoFile(file);
         const needsSecondaryVideoPath = isVideo && file.size >= START_OPTIMIZE_BYTES;
-        const preferFastChunkBackup = needsSecondaryVideoPath;
+        const preferFastChunkBackup = isVideo && file.size >= MOBILE_FAST_CHUNK_BYTES && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
 
         if (isImageFile(file)) {
           setStatus(form, "Optimizing image for faster upload.");
@@ -592,7 +610,7 @@
           if (uploadFile !== file && uploadFile.size < file.size) {
             setStatus(form, `Image optimized from ${formatMegabytes(file.size)} to ${formatMegabytes(uploadFile.size)} - uploading now.`);
           }
-        } else if (needsSecondaryVideoPath) {
+        } else if (needsSecondaryVideoPath || preferFastChunkBackup) {
           try {
             if (preferFastChunkBackup) throw new Error('Using faster chunk path');
             setStatus(form, `Uploading original video to cloud ${0}% — fastest path.`);
@@ -666,7 +684,7 @@
         upsertHidden(form, "tapzyChunkedMimeType", complete.mimetype || inferMimeType(uploadFile));
         clearInputFile(mediaInput);
         setStatus(form, "Media uploaded — posting now.");
-      } else if (supportsChunkedSubmit(form) && isVideoFile(file) && file.size >= START_OPTIMIZE_BYTES) {
+      } else if (supportsChunkedSubmit(form) && isVideoFile(file) && file.size >= MOBILE_FAST_CHUNK_BYTES) {
         throw new Error("Large video upload did not finish. Please try again on Wi-Fi — Tapzy will not send the raw oversized file.");
       }
     } catch (error) {

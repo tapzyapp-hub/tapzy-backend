@@ -978,7 +978,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="//res.cloudinary.com" />
     <script defer src="/js/tapzy-performance.js?v=20260710-faster-first-paint"></script>
-    <script defer src="/js/tapzy-video-upload.js?v=20260711-ios-stable-fast-chunks"></script>
+    <script defer src="/js/tapzy-video-upload.js?v=20260711-long-video-speed-tune"></script>
 
     <style>
 
