@@ -1365,6 +1365,58 @@ module.exports = function renderMessagesInboxPage({
       }
 
       /* End contacts true black and rounded edge seal */
+
+
+      /* Contacts glass title band */
+      .tz-msg-head{
+        margin:-2px -2px 18px !important;
+        padding:22px 20px 20px !important;
+        border-radius:30px !important;
+        background:
+          radial-gradient(420px 160px at 50% 0%, rgba(132, 215, 255, .16), transparent 62%),
+          linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.018)),
+          rgba(8, 16, 27, .52) !important;
+        border:1px solid rgba(151, 220, 255, .16) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.11),
+          inset 0 -1px 0 rgba(89,180,255,.08),
+          0 16px 30px rgba(0,0,0,.20) !important;
+        backdrop-filter:blur(22px) saturate(1.16) !important;
+        -webkit-backdrop-filter:blur(22px) saturate(1.16) !important;
+        overflow:hidden !important;
+      }
+
+      .tz-msg-head::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:
+          linear-gradient(120deg, transparent 0%, rgba(255,255,255,.08) 38%, transparent 64%),
+          radial-gradient(circle at 50% -12%, rgba(185,239,255,.20), transparent 42%);
+        opacity:.54;
+      }
+
+      .tz-msg-head > *{
+        position:relative;
+        z-index:1;
+      }
+
+      .tz-msg-title{
+        text-shadow:
+          0 1px 0 rgba(255,255,255,.10),
+          0 0 28px rgba(114, 203, 255, .16) !important;
+      }
+
+      @media(max-width:700px){
+        .tz-msg-head{
+          margin:-2px -2px 16px !important;
+          padding:20px 18px 18px !important;
+          border-radius:28px !important;
+        }
+      }
+
+      /* End contacts glass title band */
 </style>
 
     

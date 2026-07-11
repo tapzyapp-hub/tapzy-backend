@@ -9488,6 +9488,8 @@ router.get("/edit/:username", async (req, res) => {
 
         storiesBottomNav: true,
 
+        storiesTopNavActive: "profile",
+
         metaDescription: `Edit ${profile.username}'s Tapzy Network™ profile, quick share settings, contact details, and social links.`,
 
       })
