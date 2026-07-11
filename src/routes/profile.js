@@ -5832,6 +5832,123 @@ router.get("/u/:username", async (req, res) => {
 
       /* End premium daytime live weather upgrade */
 /* End live wallpaper weather upgrade */
+
+
+      /* Weather compact edge seal and motion boost */
+      .profile-showcase.is-weather-live{
+        overflow:hidden!important;
+        isolation:isolate!important;
+        contain:paint!important;
+        clip-path:inset(0 round 34px);
+      }
+
+      .profile-showcase.is-weather-live .profile-showcase-bg,
+      .profile-showcase.is-weather-live .profile-weather-scene{
+        inset:0!important;
+        border-radius:inherit!important;
+        overflow:hidden!important;
+        clip-path:inset(0 round inherit);
+      }
+
+      .profile-showcase.is-weather-live::before,
+      .profile-showcase.is-weather-live::after,
+      .profile-showcase.is-weather-live .profile-weather-scene::before,
+      .profile-showcase.is-weather-live .profile-weather-scene::after{
+        border-radius:inherit!important;
+        overflow:hidden!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live,
+      .profile-showcase.is-weather-live.is-secondary-dim{
+        border-radius:24px!important;
+        overflow:hidden!important;
+        contain:paint!important;
+        clip-path:inset(0 round 24px)!important;
+        box-shadow:
+          0 10px 26px rgba(0,0,0,.34),
+          0 0 0 1px rgba(255,255,255,.035) inset!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live .profile-showcase-bg,
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live .profile-weather-scene,
+      .profile-showcase.is-weather-live.is-secondary-dim .profile-showcase-bg,
+      .profile-showcase.is-weather-live.is-secondary-dim .profile-weather-scene{
+        border-radius:24px!important;
+        clip-path:inset(0 round 24px)!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live::after,
+      .profile-showcase.is-weather-live.is-secondary-dim::after{
+        inset:1px!important;
+        border-radius:23px!important;
+        opacity:.45!important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.065), transparent 46%, rgba(255,255,255,.02)),
+          radial-gradient(220px 86px at 78% 28%, rgba(170,215,255,.13), transparent 68%)!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live .profile-weather-sun,
+      .profile-showcase.is-weather-live.is-secondary-dim .profile-weather-sun{
+        filter:blur(2px) drop-shadow(0 0 12px rgba(200,226,255,.32))!important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene .profile-weather-wisp-a{
+        animation:profileWeatherPremiumDriftA 17s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene .profile-weather-wisp-b{
+        animation:profileWeatherPremiumDriftB 21s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-cloud-a{
+        animation:profileWeatherPremiumCloudA 24s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-cloud-b{
+        animation:profileWeatherPremiumCloudB 28s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.weather-night .profile-weather-lens-a{
+        opacity:.20!important;
+        animation:profileWeatherNightOrbA 6.8s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.weather-night .profile-weather-lens-b{
+        opacity:.16!important;
+        animation:profileWeatherNightOrbB 8.4s ease-in-out infinite alternate!important;
+      }
+
+      .profile-showcase.weather-night .profile-weather-scene::before{
+        animation:profileWeatherStars 7s ease-in-out infinite alternate, profileWeatherStarDrift 18s linear infinite!important;
+      }
+
+      .profile-showcase.weather-night .profile-weather-scene::after{
+        filter:blur(1px)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-weather-scene::after,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-weather-scene::after{
+        animation:profileWeatherDayCloudBank 14s ease-in-out infinite alternate!important;
+      }
+
+      @keyframes profileWeatherPremiumDriftA{0%{transform:translate3d(-7%,1%,0) scale(1)}100%{transform:translate3d(8%,-4%,0) scale(1.05)}}
+      @keyframes profileWeatherPremiumDriftB{0%{transform:translate3d(8%,4%,0) scale(1.04)}100%{transform:translate3d(-9%,-2%,0) scale(.98)}}
+      @keyframes profileWeatherPremiumCloudA{0%{transform:translate3d(-5%,0,0) scale(1)}100%{transform:translate3d(6%,-3%,0) scale(1.04)}}
+      @keyframes profileWeatherPremiumCloudB{0%{transform:translate3d(6%,2%,0) scale(1.02)}100%{transform:translate3d(-7%,-2%,0) scale(1.06)}}
+      @keyframes profileWeatherNightOrbA{0%{transform:translate3d(-3px,5px,0) scale(.96);opacity:.14}100%{transform:translate3d(8px,-6px,0) scale(1.08);opacity:.26}}
+      @keyframes profileWeatherNightOrbB{0%{transform:translate3d(5px,-2px,0) scale(1);opacity:.10}100%{transform:translate3d(-7px,7px,0) scale(1.14);opacity:.22}}
+      @keyframes profileWeatherStarDrift{0%{background-position:0 0,0 0,0 0,0 0,0 0,0 0}100%{background-position:24px -18px,-18px 16px,20px 12px,-20px -14px,18px -16px,-16px 20px}}
+
+      @media(max-width:700px){
+        .profile-showcase.is-weather-live{clip-path:inset(0 round 30px);}
+        .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live,
+        .profile-showcase.is-weather-live.is-secondary-dim{
+          border-radius:24px!important;
+          clip-path:inset(0 round 24px)!important;
+        }
+      }
+
+      /* End weather compact edge seal and motion boost */
 /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
       @media(min-width:701px){
         .profile-event-card-panel .event-card .event-title{
