@@ -11685,6 +11685,82 @@ router.get("/qr/:username", async (req, res) => {
       }
 
       /* End force visible QR bob */
+
+
+      /* Restore clean glass QR look */
+      .tz-qr-card{
+        padding-top: 34px !important;
+      }
+
+      .tz-qr-frame{
+        width: min(92%, 560px) !important;
+        padding: 8px !important;
+        border-radius: 36px !important;
+        background:
+          linear-gradient(135deg, #9beaff 0%, #55bcff 22%, #397bff 52%, #98edff 100%) !important;
+        box-shadow:
+          0 0 0 1px rgba(245,253,255,.58) inset,
+          0 0 24px rgba(118,218,255,.56),
+          0 0 72px rgba(47,124,255,.34),
+          0 24px 54px rgba(0,0,0,.58) !important;
+      }
+
+      .tz-qr-frame::before{
+        inset: -54px -42px -44px !important;
+        border-radius: 46px !important;
+        background:
+          radial-gradient(ellipse at 50% 28%, rgba(255,255,255,.26), transparent 18%, rgba(126,219,255,.20) 42%, transparent 72%) !important;
+        filter: blur(7px) !important;
+        opacity: .78 !important;
+      }
+
+      .tz-qr-frame::after{
+        inset: -34px -28px -34px !important;
+        border-radius: 42px !important;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04) 35%, transparent 70%),
+          radial-gradient(ellipse at 50% 0%, rgba(190,244,255,.26), transparent 32%),
+          radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(142,225,255,.20) 70%, transparent 76%) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(214,247,255,.20),
+          inset 0 0 46px rgba(120,213,255,.13) !important;
+        opacity: .82 !important;
+      }
+
+      .tz-qr-frame-inner{
+        padding: 12px !important;
+        border-radius: 28px !important;
+        background: linear-gradient(180deg, #ffffff, #f4fbff) !important;
+        box-shadow:
+          inset 0 0 0 1px rgba(0,0,0,.045),
+          inset 0 0 28px rgba(108,190,255,.10) !important;
+      }
+
+      .tz-qr-image{
+        border-radius: 19px !important;
+        background: #fff !important;
+        filter: contrast(1.02) saturate(.98) !important;
+      }
+
+      @media(max-width:700px){
+        .tz-qr-card{
+          padding-top: 28px !important;
+        }
+        .tz-qr-frame{
+          width: min(92%, 530px) !important;
+          padding: 7px !important;
+          border-radius: 32px !important;
+        }
+        .tz-qr-frame-inner{
+          padding: 10px !important;
+          border-radius: 25px !important;
+        }
+        .tz-qr-image{
+          border-radius: 17px !important;
+        }
+      }
+
+      /* End restore clean glass QR look */
 </style>
 
     `;
