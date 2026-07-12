@@ -7147,7 +7147,10 @@ router.get("/u/:username", async (req, res) => {
                 window.setTimeout(keepProfileStoryPlaying, 1600);
               }, { passive:true });
             });
-            video.addEventListener('error', function(){ timer = window.setTimeout(next, 1200); }, { once:true });
+            video.addEventListener('error', function(){
+              window.setTimeout(function(){ recoverProfileBlankVideo(video); }, 1800);
+              timer = window.setTimeout(function(){ if (profileVideoIsBlank(video)) next(); }, 8500);
+            }, { once:true });
             window.setTimeout(function(){ playVideo(video); }, 30);
             window.setTimeout(keepProfileStoryPlaying, 700);
             window.setTimeout(keepProfileStoryPlaying, 1800);

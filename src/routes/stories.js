@@ -3948,8 +3948,10 @@ router.get("/stories/feed", async (req, res) => {
         : isLive
         ? `<span class="sf-event">LIVE</span>`
         : "";
-      const ageHours = Math.max(0, Math.floor((Date.now() - new Date(story.createdAt).getTime()) / 3600000));
-      const age = ageHours < 1 ? "Just now" : `${ageHours}h`;
+      const ageMs = Math.max(0, Date.now() - new Date(story.createdAt).getTime());
+      const ageMinutes = Math.floor(ageMs / (1000 * 60));
+      const ageHours = Math.floor(ageMs / (1000 * 60 * 60));
+      const age = ageHours >= 1 ? `${ageHours}h` : ageMinutes >= 1 ? `${ageMinutes}m` : "Just now";
       const ownViewOffset =
         currentProfile &&
         currentProfile.id === story.profileId &&
@@ -4317,8 +4319,13 @@ router.get("/stories/feed", async (req, res) => {
             function markHealthy(){
               if (storyVideoHasVisibleFrame(video)) clearTimer();
             }
+            function quickRecover(){
+              clearTimer();
+              setTimeout(function(){ if (isStoryVideoBlank(video)) recoverBlankStoryVideo(video); }, 1800);
+              setTimeout(function(){ if (isStoryVideoBlank(video)) recoverBlankStoryVideo(video); }, 6500);
+            }
             ['loadeddata','canplay','playing','timeupdate'].forEach(function(name){ video.addEventListener(name, function(){ markHealthy(); arm(); }, { passive:true }); });
-            ['error','stalled','waiting','emptied'].forEach(function(name){ video.addEventListener(name, arm, { passive:true }); });
+            ['error','stalled','waiting','emptied'].forEach(function(name){ video.addEventListener(name, function(){ quickRecover(); arm(); }, { passive:true }); });
             arm();
             setTimeout(arm, 1200);
           }
