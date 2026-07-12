@@ -7081,26 +7081,40 @@ router.get("/u/:username", async (req, res) => {
             if (!video || video.dataset.profileBlankWatch === '1') return;
             video.dataset.profileBlankWatch = '1';
             let blankTimer = null;
+            let recoveryTimer = null;
             function clearBlankTimer(){ if (blankTimer) window.clearTimeout(blankTimer); blankTimer = null; }
+            function clearRecoveryTimer(){ if (recoveryTimer) window.clearTimeout(recoveryTimer); recoveryTimer = null; }
+            function clearBlankWatch(){ clearBlankTimer(); clearRecoveryTimer(); }
+            function movePastBlankIfNeeded(){
+              recoveryTimer = null;
+              if (!frame.contains(video) || !profileVideoIsBlank(video)) return;
+              if (items.length <= 1) {
+                recoverProfileBlankVideo(video);
+                armBlankTimer();
+                return;
+              }
+              next();
+            }
             function armBlankTimer(){
-              if (!profileVideoIsBlank(video)) { clearBlankTimer(); return; }
+              if (!profileVideoIsBlank(video)) { clearBlankWatch(); return; }
               if (blankTimer) return;
               blankTimer = window.setTimeout(function(){
                 blankTimer = null;
-                if (profileVideoIsBlank(video)) {
-                  recoverProfileBlankVideo(video);
-                  window.setTimeout(armBlankTimer, 1800);
-                }
-              }, 30000);
+                if (!frame.contains(video) || !profileVideoIsBlank(video)) return;
+                recoverProfileBlankVideo(video);
+                clearRecoveryTimer();
+                recoveryTimer = window.setTimeout(movePastBlankIfNeeded, 4500);
+              }, 7000);
             }
             ['loadeddata','canplay','playing','timeupdate'].forEach(function(name){
-              video.addEventListener(name, function(){ if (!profileVideoLooksBlack(video)) clearBlankTimer(); armBlankTimer(); }, { passive:true });
+              video.addEventListener(name, function(){ if (!profileVideoLooksBlack(video)) clearBlankWatch(); else armBlankTimer(); }, { passive:true });
             });
             ['error','stalled','waiting','emptied'].forEach(function(name){
               video.addEventListener(name, armBlankTimer, { passive:true });
             });
             armBlankTimer();
-            window.setTimeout(armBlankTimer, 1200);
+            window.setTimeout(armBlankTimer, 700);
+            window.setTimeout(armBlankTimer, 1800);
           }
 
           function bindVideoStory(video){
