@@ -4246,8 +4246,8 @@ router.get("/stories/feed", async (req, res) => {
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
           var tapzySoundMutedByUser = localStorage.getItem('tapzy_story_sound') === '0';
           var isAndroidStoryFeed = /Android/i.test(navigator.userAgent || '');
-          var FEED_KEEP_BEHIND = 2;
-          var FEED_KEEP_AHEAD = 5;
+          var FEED_KEEP_BEHIND = 1;
+          var FEED_KEEP_AHEAD = 3;
           var BLANK_STORY_VIDEO_TIMEOUT_MS = 30000;
           function storyVideoFrameLooksBlack(video){
             if (!video || !(video.videoWidth > 0 && video.videoHeight > 0) || video.readyState < 2) return false;
@@ -4308,7 +4308,10 @@ router.get("/stories/feed", async (req, res) => {
               if (timer) return;
               timer = setTimeout(function(){
                 timer = null;
-                if (isStoryVideoBlank(video)) recoverBlankStoryVideo(video);
+                if (isStoryVideoBlank(video)) {
+                  recoverBlankStoryVideo(video);
+                  setTimeout(arm, 1800);
+                }
               }, BLANK_STORY_VIDEO_TIMEOUT_MS);
             }
             function markHealthy(){

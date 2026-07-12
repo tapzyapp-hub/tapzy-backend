@@ -6946,33 +6946,6 @@ router.get("/u/:username", async (req, res) => {
             timer = null;
           }
 
-          function videoAdvanceDelay(video){
-            const duration = video && Number.isFinite(video.duration) ? video.duration : 0;
-            if (duration > 0) return Math.min(Math.max(Math.round(duration * 1000) + 900, 4200), 18000);
-            return 10000;
-          }
-
-          function scheduleVideoAdvance(video){
-            clearTimer();
-            if (!video) return;
-            function arm(){
-              clearTimer();
-              timer = window.setTimeout(function(){
-                if (!frame.contains(video)) return;
-                if (items.length <= 1) {
-                  restartVideo(video);
-                  scheduleVideoAdvance(video);
-                  return;
-                }
-                next();
-              }, videoAdvanceDelay(video));
-            }
-            arm();
-            if (!Number.isFinite(video.duration) || video.duration <= 0) {
-              video.addEventListener('loadedmetadata', arm, { once:true });
-            }
-            video.addEventListener('playing', arm, { once:true });
-          }
 
           function hideControls(){
             stage.classList.add('is-controls-dim');
@@ -7039,6 +7012,76 @@ router.get("/u/:username", async (req, res) => {
             if (video.paused || video.readyState < 2) playVideo(video);
           }
 
+          function profileVideoLooksBlack(video){
+            if (!video || !(video.videoWidth > 0 && video.videoHeight > 0) || video.readyState < 2) return false;
+            try {
+              const canvas = document.createElement('canvas');
+              const size = 24;
+              canvas.width = size;
+              canvas.height = size;
+              const ctx = canvas.getContext('2d', { willReadFrequently:true });
+              if (!ctx) return false;
+              ctx.drawImage(video, 0, 0, size, size);
+              const pixels = ctx.getImageData(0, 0, size, size).data;
+              let total = 0;
+              let bright = 0;
+              for (let i = 0; i < pixels.length; i += 4) {
+                const luma = (pixels[i] * 0.2126) + (pixels[i + 1] * 0.7152) + (pixels[i + 2] * 0.0722);
+                total += luma;
+                if (luma > 36) bright += 1;
+              }
+              const sampleCount = pixels.length / 4;
+              return (total / sampleCount) < 10 && bright <= 2;
+            } catch (_) {
+              return false;
+            }
+          }
+
+          function profileVideoIsBlank(video){
+            if (!video || !video.isConnected || video.ended) return false;
+            if (video.error) return true;
+            if (!(video.videoWidth > 0 && video.videoHeight > 0)) return video.readyState < 2;
+            return profileVideoLooksBlack(video);
+          }
+
+          function recoverProfileBlankVideo(video){
+            if (!video || !frame.contains(video)) return;
+            const source = video.currentSrc || video.getAttribute('src') || '';
+            try { video.pause(); } catch (_) {}
+            if (source) {
+              video.setAttribute('src', source);
+              video.preload = 'auto';
+              try { video.load(); } catch (_) {}
+            }
+            playVideo(video);
+          }
+
+          function monitorProfileBlankVideo(video){
+            if (!video || video.dataset.profileBlankWatch === '1') return;
+            video.dataset.profileBlankWatch = '1';
+            let blankTimer = null;
+            function clearBlankTimer(){ if (blankTimer) window.clearTimeout(blankTimer); blankTimer = null; }
+            function armBlankTimer(){
+              if (!profileVideoIsBlank(video)) { clearBlankTimer(); return; }
+              if (blankTimer) return;
+              blankTimer = window.setTimeout(function(){
+                blankTimer = null;
+                if (profileVideoIsBlank(video)) {
+                  recoverProfileBlankVideo(video);
+                  window.setTimeout(armBlankTimer, 1800);
+                }
+              }, 30000);
+            }
+            ['loadeddata','canplay','playing','timeupdate'].forEach(function(name){
+              video.addEventListener(name, function(){ if (!profileVideoLooksBlack(video)) clearBlankTimer(); armBlankTimer(); }, { passive:true });
+            });
+            ['error','stalled','waiting','emptied'].forEach(function(name){
+              video.addEventListener(name, armBlankTimer, { passive:true });
+            });
+            armBlankTimer();
+            window.setTimeout(armBlankTimer, 1200);
+          }
+
           function bindVideoStory(video){
             if (!video || video.dataset.profileStoryBound === '1') return video;
             video.dataset.profileStoryBound = '1';
@@ -7049,6 +7092,7 @@ router.get("/u/:username", async (req, res) => {
             video.setAttribute('webkit-playsinline', '');
             video.preload = 'auto';
             video.setAttribute('data-keep-video-live', '1');
+            monitorProfileBlankVideo(video);
             updateSoundLabel(video);
             video.addEventListener('ended', function(){
               if (items.length <= 1) {
@@ -7162,7 +7206,6 @@ router.get("/u/:username", async (req, res) => {
             if (item.mediaUrl && item.isVideo) {
               node = makeVideoStory(item);
               swapStoryNode(node, item);
-              scheduleVideoAdvance(node);
             } else if (item.mediaUrl) {
               node = makeImageStory(item);
               const swapReady = function(){ swapStoryNode(node, item); };
@@ -7249,9 +7292,8 @@ router.get("/u/:username", async (req, res) => {
           window.setInterval(keepProfileStoryPlaying, 2200);
 
           if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
-          const initialVideo = bindVideoStory(currentVideo());
-          if (initialVideo) scheduleVideoAdvance(initialVideo);
-          else if (items.length > 1 && !(items[0] && items[0].isVideo)) timer = window.setTimeout(next, 5200);
+          bindVideoStory(currentVideo());
+          if (items.length > 1 && !(items[0] && items[0].isVideo)) timer = window.setTimeout(next, 5200);
           showControls();
         }
 
