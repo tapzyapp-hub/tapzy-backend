@@ -3933,7 +3933,7 @@ router.get("/stories/feed", async (req, res) => {
         ? isLive
           ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
           : isVideo
-          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>`
+          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
@@ -4027,7 +4027,7 @@ router.get("/stories/feed", async (req, res) => {
         const media = liveUrl && isLiveStreamUrl(liveUrl)
           ? renderLiveStreamMedia(liveUrl, title, index)
           : videoUrl
-          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>`
+          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>`
           : `<div class="sf-virtual-stream sf-virtual-motion" style="--stream-bg:${escapeHtml(eventStreamGradient(index))}"><span>${escapeHtml(category)}</span></div>`;
         const when = event.startAt ? formatPrettyLocal(event.startAt) : "Live now";
         const text = event.description || `${category} from Tapzy events happening now.`;
@@ -4420,6 +4420,10 @@ router.get("/stories/feed", async (req, res) => {
           var pullStartY = 0;
           var pullDistance = 0;
           var pullTracking = false;
+          if (isAndroidStoryFeed && pullRefresh) {
+            pullRefresh.remove();
+            pullRefresh = null;
+          }
           function resetPullRefresh(){
             pullTracking = false;
             pullDistance = 0;
@@ -4428,7 +4432,7 @@ router.get("/stories/feed", async (req, res) => {
               pullRefresh.textContent = 'Pull to refresh';
             }
           }
-          if (feed && pullRefresh) {
+          if (feed && pullRefresh && !isAndroidStoryFeed) {
             feed.addEventListener('touchstart', function(event){
               if (feed.scrollTop <= 0 && event.touches && event.touches.length === 1) {
                 pullStartY = event.touches[0].clientY;

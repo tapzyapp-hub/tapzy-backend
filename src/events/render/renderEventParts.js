@@ -1,6 +1,14 @@
 const { escapeHtml } = require('../../utils');
 const { normalizeCategory, getShortDescription, getUrgencyBadge, pickImage } = require('../helpers/eventServerUtils');
 
+function isVideoUrl(url) {
+  return /\.(?:mp4|mov|m4v|webm|3gp|3gpp|avi|hevc)(?:[?#].*)?$/i.test(String(url || '').trim()) || /\/video\//i.test(String(url || ''));
+}
+
+function renderFeedVideo(url, className) {
+  return `<video class="${className}" src="${escapeHtml(url)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>`;
+}
+
 function renderGoingButton(event, currentProfile, goingSet) {
   if (!currentProfile) return '';
   const isGoing = goingSet && goingSet.has(event.id);
@@ -14,6 +22,12 @@ function renderGoingButton(event, currentProfile, goingSet) {
 
 function renderEventCard(event, currentProfile, goingSet, goingCounts) {
   const image = pickImage(event);
+  const hasVideoMedia = isVideoUrl(image);
+  const mediaStyle = hasVideoMedia
+    ? 'background-image:linear-gradient(180deg, rgba(12,20,34,.18), rgba(2,5,12,.84));'
+    : `background-image:
+        linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
+        url('${escapeHtml(image)}');`;
   const when = event.startAt ? new Date(event.startAt).toLocaleString() : 'Date coming soon';
   const categoryText = normalizeCategory(event) || 'Event';
   const shortDescription = getShortDescription(event);
@@ -22,9 +36,7 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
   return `
     <div class="event-card js-event-card">
-      <div class="event-media" style="background-image:
-        linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
-        url('${escapeHtml(image)}');"></div>
+      <div class="event-media" style="${mediaStyle}">${hasVideoMedia ? renderFeedVideo(image, 'event-media-video') : ''}</div>
       <div class="event-card-noise"></div>
       <div class="event-card-glow"></div>
       <div class="event-card-edge"></div>
@@ -64,6 +76,11 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
 function renderReelItem(event, currentProfile, goingSet, goingCounts) {
   const image = pickImage(event);
+  const hasVideoMedia = isVideoUrl(image);
+  const reelClass = hasVideoMedia ? 'reel-item js-reel-item has-video-media' : 'reel-item js-reel-item';
+  const reelBackdropStyle = hasVideoMedia
+    ? 'background-image:radial-gradient(circle at 35% 22%, rgba(74,167,255,.28), transparent 42%), linear-gradient(180deg,#151b26,#03050a);'
+    : `background-image:url('${escapeHtml(image)}');`;
   const when = event.startAt ? new Date(event.startAt).toLocaleString() : 'Date coming soon';
   const date = event.startAt ? new Date(event.startAt) : null;
   const dateMonth = date ? date.toLocaleString('en-US', { month: 'short' }).toUpperCase() : 'SOON';
@@ -75,9 +92,10 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
   const isGoing = !!(goingSet && goingSet.has(event.id));
 
   return `
-    <section class="reel-item js-reel-item" data-event-id="${escapeHtml(event.id)}">
-      <div class="reel-bg" style="background-image:url('${escapeHtml(image)}');"></div>
-      <div class="reel-ambient" style="background-image:url('${escapeHtml(image)}');"></div>
+    <section class="${reelClass}" data-event-id="${escapeHtml(event.id)}">
+      <div class="reel-bg" style="${reelBackdropStyle}"></div>
+      ${hasVideoMedia ? renderFeedVideo(image, 'reel-video') : ''}
+      <div class="reel-ambient" style="${reelBackdropStyle}"></div>
       <div class="reel-vignette"></div>
       <div class="reel-grain"></div>
 

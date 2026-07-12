@@ -1063,7 +1063,18 @@ module.exports = async function getEventsPage(req, res) {
         transform:scale(1.015);
 
         transition:transform 1.2s ease;
+        overflow:hidden;
 
+      }
+
+      .event-media-video{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+        background:linear-gradient(180deg,#151b26,#03050a);
       }
 
 
@@ -2115,6 +2126,24 @@ module.exports = async function getEventsPage(req, res) {
         .event-feed-mobile .reel-item.is-active .reel-bg{
           transform:scale(1.065);
           filter:saturate(1.08) contrast(1.07) brightness(.92);
+        }
+        .event-feed-mobile .reel-video{
+          position:absolute;
+          z-index:-3;
+          inset:0;
+          width:100%;
+          height:100%;
+          object-fit:cover;
+          display:block;
+          background:linear-gradient(180deg,#151b26,#03050a);
+          filter:saturate(1.02) contrast(1.04) brightness(.92);
+          transform:translateZ(0);
+        }
+        .event-feed-mobile .reel-item.has-video-media .reel-bg{
+          z-index:-5;
+        }
+        .event-feed-mobile .reel-item.has-video-media .reel-ambient{
+          opacity:.44;
         }
         .reel-ambient{
           position:absolute;

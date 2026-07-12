@@ -21,6 +21,32 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
 
+        function isClientVideoUrl(url) {
+          const value = String(url || "").trim();
+          return /\.(?:mp4|mov|m4v|webm|3gp|3gpp|avi|hevc)(?:[?#].*)?$/i.test(value) || /\/video\//i.test(value);
+        }
+
+        function renderClientFeedVideo(url, className) {
+          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>';
+        }
+
+        function syncReelVideos(feed, active) {
+          if (!feed) return;
+          Array.from(feed.querySelectorAll("video.reel-video")).forEach((video) => {
+            const item = video.closest(".js-reel-item");
+            if (item && item === active) {
+              video.muted = true;
+              video.setAttribute("muted", "");
+              video.setAttribute("playsinline", "");
+              video.setAttribute("webkit-playsinline", "");
+              if (video.readyState === 0) { try { video.load(); } catch (_) {} }
+              video.play().catch(() => {});
+            } else {
+              try { video.pause(); } catch (_) {}
+            }
+          });
+        }
+
         function escapeUnsafe(value) {
 
           return String(value || "")
@@ -238,6 +264,12 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           const image = event.imageUrl || pickFallbackImage(event);
 
+          const hasVideoMedia = isClientVideoUrl(image);
+
+          const mediaStyle = hasVideoMedia
+            ? "background-image:linear-gradient(180deg, rgba(12,20,34,.18), rgba(2,5,12,.84));"
+            : "background-image:\r\n                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),\r\n                url('" + escapeUnsafe(image) + "');";
+
           const when = formatClientDate(event.startAt);
 
           const categoryText = getClientCategory(event);
@@ -252,11 +284,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             <div class="event-card js-event-card">
 
-              <div class="event-media" style="background-image:
-
-                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
-
-                url('\${escapeUnsafe(image)}');"></div>
+              <div class="event-media" style="\${mediaStyle}">\${hasVideoMedia ? renderClientFeedVideo(image, "event-media-video") : ""}</div>
 
 
 
@@ -454,6 +482,11 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function renderClientReelV2(event) {
           const image = event.imageUrl || pickFallbackImage(event);
+          const hasVideoMedia = isClientVideoUrl(image);
+          const reelClass = hasVideoMedia ? "reel-item js-reel-item has-video-media" : "reel-item js-reel-item";
+          const reelBackdropStyle = hasVideoMedia
+            ? "background-image:radial-gradient(circle at 35% 22%, rgba(74,167,255,.28), transparent 42%), linear-gradient(180deg,#151b26,#03050a);"
+            : "background-image:url('" + escapeUnsafe(image) + "');";
           const when = formatClientDate(event.startAt);
           const date = event.startAt ? new Date(event.startAt) : null;
           const validDate = date && !Number.isNaN(date.getTime());
@@ -465,9 +498,10 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           const goingCount = Number(event.goingCount || 0);
 
           return \`
-            <section class="reel-item js-reel-item" data-event-id="\${escapeUnsafe(event.id)}">
-              <div class="reel-bg" style="background-image:url('\${escapeUnsafe(image)}');"></div>
-              <div class="reel-ambient" style="background-image:url('\${escapeUnsafe(image)}');"></div>
+            <section class="\${reelClass}" data-event-id="\${escapeUnsafe(event.id)}">
+              <div class="reel-bg" style="\${reelBackdropStyle}"></div>
+              \${hasVideoMedia ? renderClientFeedVideo(image, "reel-video") : ""}
+              <div class="reel-ambient" style="\${reelBackdropStyle}"></div>
               <div class="reel-vignette"></div>
               <div class="reel-grain"></div>
               <div class="reel-content">
@@ -819,6 +853,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             all.forEach((item) => item.classList.remove("is-active"));
 
             if (best) best.classList.add("is-active");
+            syncReelVideos(feed, best);
 
           }
 
