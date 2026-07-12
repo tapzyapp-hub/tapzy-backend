@@ -27,7 +27,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         }
 
         function renderClientFeedVideo(url, className) {
-          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1" data-remove-if-blank="1"></video>';
+          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" data-keep-video-live="1" data-remove-if-blank="1"></video>';
         }
 
         const BLANK_VIDEO_TIMEOUT_MS = 30000;
@@ -36,11 +36,40 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           return video && video.closest && video.closest(".js-reel-item,.js-event-card");
         }
 
+        function videoFrameLooksBlack(video) {
+          if (!video || !(video.videoWidth > 0 && video.videoHeight > 0) || video.readyState < 2) return false;
+          try {
+            const canvas = document.createElement("canvas");
+            const size = 24;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            if (!ctx) return false;
+            ctx.drawImage(video, 0, 0, size, size);
+            const pixels = ctx.getImageData(0, 0, size, size).data;
+            let total = 0;
+            let bright = 0;
+            for (let i = 0; i < pixels.length; i += 4) {
+              const luma = (pixels[i] * 0.2126) + (pixels[i + 1] * 0.7152) + (pixels[i + 2] * 0.0722);
+              total += luma;
+              if (luma > 36) bright += 1;
+            }
+            const sampleCount = pixels.length / 4;
+            return (total / sampleCount) < 10 && bright <= 2;
+          } catch (_) {
+            return false;
+          }
+        }
+
+        function videoHasVisibleFrame(video) {
+          return !!(video && video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2 && !videoFrameLooksBlack(video));
+        }
+
         function isVideoBlank(video) {
           if (!video || !video.isConnected) return false;
           if (video.error) return true;
-          if (video.videoWidth > 0 && video.videoHeight > 0) return false;
-          return video.readyState < 2;
+          if (!(video.videoWidth > 0 && video.videoHeight > 0)) return video.readyState < 2;
+          return videoFrameLooksBlack(video);
         }
 
         function removeBlankVideo(video) {
@@ -70,9 +99,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             }, BLANK_VIDEO_TIMEOUT_MS);
           }
           function markHealthy() {
-            if (video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) clearTimer();
+            if (videoHasVisibleFrame(video)) clearTimer();
           }
-          ["loadeddata", "canplay", "playing", "timeupdate"].forEach(function (name) { video.addEventListener(name, markHealthy, { passive: true }); });
+          ["loadeddata", "canplay", "playing", "timeupdate"].forEach(function (name) { video.addEventListener(name, function () { markHealthy(); arm(); }, { passive: true }); });
           ["error", "stalled", "waiting", "emptied"].forEach(function (name) { video.addEventListener(name, arm, { passive: true }); });
           arm();
           window.setTimeout(arm, 1200);
