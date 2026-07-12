@@ -79,7 +79,7 @@ function compatibleVideoUrl(url) {
 }
 
 function renderVideoFrame(url, options = {}) {
-  const src = escapeHtml(url || "");
+  const src = escapeHtml(compatibleVideoUrl(url) || "");
   const className = escapeHtml(options.className || "profile-story-card-media");
   const autoplay = options.autoplay ? ' autoplay' : '';
   const muted = options.muted ? ' muted' : '';
@@ -412,12 +412,9 @@ router.get("/u/:username", async (req, res) => {
     const featuredStoryOwner = featuredStoryItem?.owner || profile;
     const profileStoryFeedItems = allProfileStoryItems.map(({ story, owner, isOwn }) => {
       const ownerName = owner?.name || owner?.username || (isOwn ? displayName : "Tapzy User");
-      const rawMediaUrl = story.mediaUrl || "";
-      const fallbackMediaUrl = rawMediaUrl && isVideoUrl(rawMediaUrl) ? compatibleVideoUrl(rawMediaUrl) : "";
       return {
-        mediaUrl: rawMediaUrl,
-        fallbackMediaUrl: fallbackMediaUrl && fallbackMediaUrl !== rawMediaUrl ? fallbackMediaUrl : "",
-        isVideo: !!(rawMediaUrl && isVideoUrl(rawMediaUrl)),
+        mediaUrl: story.mediaUrl && isVideoUrl(story.mediaUrl) ? compatibleVideoUrl(story.mediaUrl) : (story.mediaUrl || ""),
+        isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
         text: story.text || ownerName || "Tapzy Story",
         time: formatStoryTimeShort(story.createdAt),
         ownerName,
@@ -7071,14 +7068,9 @@ router.get("/u/:username", async (req, res) => {
           function recoverProfileBlankVideo(video){
             if (!video || !frame.contains(video)) return;
             const source = video.currentSrc || video.getAttribute('src') || '';
-            const primary = video.dataset.profilePrimarySrc || '';
-            const fallback = video.dataset.profileFallbackSrc || '';
-            const triedFallback = video.dataset.profileTriedFallback === '1';
-            const nextSource = fallback && !triedFallback && source !== fallback ? fallback : (primary || source);
             try { video.pause(); } catch (_) {}
-            if (nextSource) {
-              video.dataset.profileTriedFallback = nextSource === fallback ? '1' : '0';
-              video.setAttribute('src', nextSource);
+            if (source) {
+              video.setAttribute('src', source);
               video.preload = 'auto';
               try { video.load(); } catch (_) {}
             }
@@ -7194,38 +7186,10 @@ router.get("/u/:username", async (req, res) => {
             return img;
           }
 
-          function profileStoryUrlLooksVideo(url){
-            return /(?:\.(?:mp4|mov|webm|m4v|3gp|3gpp|avi|hevc)(?:$|[?#])|\/video\/)/i.test(String(url || ''));
-          }
-
-          function warmProfileStoryVideoUrl(url){
-            if (!url || !profileStoryUrlLooksVideo(url)) return;
-            const warm = document.createElement('video');
-            warm.preload = 'auto';
-            warm.muted = true;
-            warm.playsInline = true;
-            warm.setAttribute('playsinline', '');
-            warm.setAttribute('webkit-playsinline', '');
-            warm.src = url;
-            try { warm.load(); } catch (_) {}
-          }
-
-          function warmProfileStoryItems(){
-            items.slice(0, 12).forEach(function(item){
-              if (!item || !item.isVideo) return;
-              warmProfileStoryVideoUrl(item.mediaUrl);
-              if (item.fallbackMediaUrl && item.fallbackMediaUrl !== item.mediaUrl) warmProfileStoryVideoUrl(item.fallbackMediaUrl);
-            });
-          }
-
           function makeVideoStory(item){
             const video = document.createElement('video');
             video.className = 'profile-story-stage-media';
-            const primaryUrl = item.mediaUrl || '';
-            const fallbackUrl = item.fallbackMediaUrl || '';
-            video.dataset.profilePrimarySrc = primaryUrl;
-            if (fallbackUrl && fallbackUrl !== primaryUrl) video.dataset.profileFallbackSrc = fallbackUrl;
-            video.src = primaryUrl || fallbackUrl;
+            video.src = item.mediaUrl;
             return bindVideoStory(video);
           }
 
@@ -7363,7 +7327,6 @@ router.get("/u/:username", async (req, res) => {
           window.setInterval(keepProfileStoryPlaying, 2200);
 
           if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
-          warmProfileStoryItems();
           bindVideoStory(currentVideo());
           if (items.length > 1 && !(items[0] && items[0].isVideo)) timer = window.setTimeout(next, 5200);
           showControls();
