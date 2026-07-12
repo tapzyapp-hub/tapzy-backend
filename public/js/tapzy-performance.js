@@ -44,120 +44,6 @@
     return false;
   }
 
-  var STORY_MEDIA_CACHE = "tapzy-story-media-v1";
-  var storyBlobUrls = new Map();
-  var storyMediaPending = new Map();
-  var MAX_STORY_MEDIA_WARM = 36;
-
-  function isStoryMediaUrl(src) {
-    if (!src || /^blob:/i.test(src) || /^data:/i.test(src)) return false;
-    try {
-      var url = new URL(src, location.href);
-      return /\.(?:mp4|mov|m4v|webm|3gp|3gpp|hevc)(?:$|[?#])/i.test(url.pathname) || /res\.cloudinary\.com\/.*\/video\/upload\//i.test(url.href);
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function isStoryVideoElement(video) {
-    return !!(video && video.matches && (
-      video.hasAttribute("data-keep-video-live") ||
-      video.hasAttribute("data-recover-if-blank") ||
-      video.closest("[data-profile-story-stage], .sf-feed, .story-view-shell")
-    ));
-  }
-
-  function storyOriginalSrc(video) {
-    if (!video) return "";
-    var saved = video.dataset && video.dataset.tapzyStoryOriginalSrc;
-    if (saved) return saved;
-    var src = video.currentSrc || video.getAttribute("src") || "";
-    if (!/^blob:/i.test(src) && video.dataset) video.dataset.tapzyStoryOriginalSrc = src;
-    return /^blob:/i.test(src) ? "" : src;
-  }
-
-  function cacheRequestForStoryMedia(src) {
-    var url = new URL(src, location.href);
-    return new Request(url.href, {
-      mode: url.origin === location.origin ? "same-origin" : "cors",
-      credentials: url.origin === location.origin ? "same-origin" : "omit",
-      cache: "force-cache"
-    });
-  }
-
-  function cachedStoryBlobUrl(src) {
-    if (!isStoryMediaUrl(src) || !("caches" in window) || !("fetch" in window) || !("URL" in window)) return Promise.resolve(null);
-    if (storyBlobUrls.has(src)) return Promise.resolve(storyBlobUrls.get(src));
-    if (storyMediaPending.has(src)) return storyMediaPending.get(src);
-    var request;
-    try { request = cacheRequestForStoryMedia(src); } catch (_) { return Promise.resolve(null); }
-    var pending = caches.open(STORY_MEDIA_CACHE).then(function(cache){
-      return cache.match(request, { ignoreVary:true }).then(function(cached){
-        if (cached) return cached;
-        return fetch(request).then(function(response){
-          if (response && response.ok) cache.put(request, response.clone()).catch(function(){});
-          return response;
-        });
-      });
-    }).then(function(response){
-      if (!response || !response.ok) return null;
-      return response.blob();
-    }).then(function(blob){
-      if (!blob || !blob.size) return null;
-      var blobUrl = URL.createObjectURL(blob);
-      storyBlobUrls.set(src, blobUrl);
-      return blobUrl;
-    }).catch(function(){
-      return null;
-    }).finally(function(){
-      storyMediaPending.delete(src);
-    });
-    storyMediaPending.set(src, pending);
-    return pending;
-  }
-
-  function applyCachedStoryVideo(video) {
-    if (!isStoryVideoElement(video)) return;
-    var src = storyOriginalSrc(video);
-    if (!isStoryMediaUrl(src)) return;
-    cachedStoryBlobUrl(src).then(function(blobUrl){
-      if (!blobUrl || !video.isConnected) return;
-      var current = video.currentSrc || video.getAttribute("src") || "";
-      if (/^blob:/i.test(current) || (video.dataset && video.dataset.tapzyStoryBlobApplied === blobUrl)) return;
-      if (!video.paused && video.readyState >= 2) return;
-      if (video.dataset) video.dataset.tapzyStoryBlobApplied = blobUrl;
-      video.setAttribute("src", blobUrl);
-      video.preload = "auto";
-      try { video.load(); } catch (_) {}
-      if (video.autoplay || video.closest(".sf-slide, [data-profile-story-stage], .story-view-shell")) {
-        video.play().catch(function(){});
-      }
-    });
-  }
-
-  function warmStoryMedia(root) {
-    root = root || document;
-    var count = 0;
-    Array.prototype.slice.call(root.querySelectorAll("video")).forEach(function(video){
-      if (count >= MAX_STORY_MEDIA_WARM) return;
-      if (!isStoryVideoElement(video)) return;
-      count += 1;
-      applyCachedStoryVideo(video);
-    });
-    Array.prototype.slice.call(root.querySelectorAll("script[data-profile-story-items]")).forEach(function(script){
-      if (count >= MAX_STORY_MEDIA_WARM) return;
-      try {
-        (JSON.parse(script.textContent || "[]") || []).forEach(function(item){
-          if (count >= MAX_STORY_MEDIA_WARM) return;
-          if (item && item.isVideo && isStoryMediaUrl(item.mediaUrl)) {
-            count += 1;
-            cachedStoryBlobUrl(item.mediaUrl);
-          }
-        });
-      } catch (_) {}
-    });
-  }
-
   function rememberPage(key, html) {
     if (!html) return;
     pageCache.set(key, { html: html, time: Date.now() });
@@ -438,7 +324,6 @@
   }
 
   optimizeMedia(document);
-  warmStoryMedia(document);
   var watchNewVideos = installOffscreenVideoSaver();
   idle(installInstantNavigation);
   idle(installSmartUploads);
@@ -449,7 +334,6 @@
       mutations.forEach(function (mutation) {
         mutation.addedNodes && mutation.addedNodes.forEach(function (node) {
           if (node && node.nodeType === 1) optimizeMedia(node);
-          if (node && node.nodeType === 1) warmStoryMedia(node);
           if (node && node.nodeType === 1 && watchNewVideos) watchNewVideos(node);
         });
       });
