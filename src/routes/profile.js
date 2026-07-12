@@ -6128,7 +6128,107 @@ router.get("/u/:username", async (req, res) => {
       }
 
       /* End normal compact profile strip subtle blue rim */
-/* End final compact profile strip goes black when weather is unavailable */
+/* Compact profile header matches the story feed action rail, turned sideways. */
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected),
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected){
+        min-height:72px!important;
+        padding:8px 12px!important;
+        border-radius:36px!important;
+        border-color:rgba(255,255,255,.10)!important;
+        background:linear-gradient(90deg,rgba(5,8,14,.16),rgba(5,8,14,.04))!important;
+        box-shadow:0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04)!important;
+        backdrop-filter:blur(10px)!important;
+        -webkit-backdrop-filter:blur(10px)!important;
+        overflow:visible!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected)::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected)::after,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected)::before,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected)::after{
+        opacity:0!important;
+        background:transparent!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-top,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-top{
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-start!important;
+        gap:10px!important;
+        min-height:56px!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-main,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-main{
+        display:none!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap{
+        width:56px!important;
+        height:56px!important;
+        flex:0 0 56px!important;
+        border-radius:50%!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar{
+        width:46px!important;
+        height:46px!important;
+        margin:5px!important;
+        border-radius:50%!important;
+        border:2px solid rgba(255,255,255,.65)!important;
+        background:rgba(0,0,0,.4)!important;
+        box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.10) inset!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar img,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar img{
+        border-radius:50%!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+        content:""!important;
+        position:absolute!important;
+        border-radius:50%!important;
+        border:1px solid rgba(82,166,255,.54)!important;
+        background:transparent!important;
+        box-shadow:0 0 18px rgba(47,118,255,.30)!important;
+        filter:none!important;
+        opacity:.86!important;
+        pointer-events:none!important;
+        animation:profileCompactAvatarPulse 2.2s ease-out infinite!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before{
+        inset:0!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after,
+      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+        inset:-5px!important;
+        animation-delay:.75s!important;
+        opacity:.42!important;
+      }
+
+      @keyframes profileCompactAvatarPulse{0%{transform:scale(.88);opacity:.86}70%{transform:scale(1.16);opacity:.12}100%{transform:scale(1.2);opacity:0}}
+
+      @media(max-width:700px){
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected),
+        .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected){
+          min-height:66px!important;
+          padding:7px 11px!important;
+          border-radius:33px!important;
+        }
+      }
+      /* End final compact profile strip goes black when weather is unavailable */
 /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
       @media(min-width:701px){
         .profile-event-card-panel .event-card .event-title{
