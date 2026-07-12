@@ -6135,10 +6135,10 @@ router.get("/u/:username", async (req, res) => {
         height:58px!important;
         width:100%!important;
         padding:3px 8px!important;
-        border:0!important;
+        border:1px solid rgba(90,190,255,.20)!important;
         border-radius:29px!important;
         background:linear-gradient(90deg,rgba(5,8,14,.16),rgba(5,8,14,.04))!important;
-        box-shadow:none!important;
+        box-shadow:0 0 0 1px rgba(80,170,255,.08) inset,0 0 18px rgba(70,160,255,.14),0 10px 26px rgba(0,0,0,.22)!important;
         backdrop-filter:blur(10px)!important;
         -webkit-backdrop-filter:blur(10px)!important;
         overflow:visible!important;
