@@ -27,7 +27,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         }
 
         function renderClientFeedVideo(url, className) {
-          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" data-keep-video-live="1" data-remove-if-blank="1"></video>';
+          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" data-keep-video-live="1" data-recover-if-blank="1"></video>';
         }
 
         const BLANK_VIDEO_TIMEOUT_MS = 30000;
@@ -72,14 +72,19 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           return videoFrameLooksBlack(video);
         }
 
-        function removeBlankVideo(video) {
+        function recoverBlankVideo(video) {
           const container = blankVideoContainer(video);
-          if (!container || !container.isConnected || video.dataset.blankVideoRemoved === "1") return;
-          video.dataset.blankVideoRemoved = "1";
+          if (!container || !container.isConnected || !video || !video.isConnected) return;
+          const source = video.currentSrc || video.getAttribute("src") || "";
           try { video.pause(); } catch (_) {}
-          container.remove();
-          const reelFeed = document.getElementById("reelFeed");
-          if (reelFeed && typeof reelFeed.refreshActive === "function") requestAnimationFrame(reelFeed.refreshActive);
+          if (source) {
+            video.setAttribute("src", source);
+            video.preload = "auto";
+            try { video.load(); } catch (_) {}
+          }
+          video.muted = true;
+          video.setAttribute("muted", "");
+          window.setTimeout(function () { video.play().catch(function () {}); }, 200);
         }
 
         function monitorBlankVideo(video) {
@@ -95,7 +100,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             if (timer) return;
             timer = window.setTimeout(function () {
               timer = null;
-              if (isVideoBlank(video)) removeBlankVideo(video);
+              if (isVideoBlank(video)) recoverBlankVideo(video);
             }, BLANK_VIDEO_TIMEOUT_MS);
           }
           function markHealthy() {
@@ -107,8 +112,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           window.setTimeout(arm, 1200);
         }
 
-        function installBlankVideoRemoval(root) {
-          (root || document).querySelectorAll("video[data-remove-if-blank]").forEach(monitorBlankVideo);
+        function installBlankVideoRecovery(root) {
+          (root || document).querySelectorAll("video[data-recover-if-blank]").forEach(monitorBlankVideo);
         }
 
         function syncReelVideos(feed, active) {
@@ -896,7 +901,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           feed.dataset.activeBound = "1";
           enforceReelImageQuality(feed);
-          installBlankVideoRemoval(feed);
+          installBlankVideoRecovery(feed);
 
 
 
@@ -1792,7 +1797,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
               bindGoingActions(feed);
               enforceReelImageQuality(feed);
-              installBlankVideoRemoval(feed);
+              installBlankVideoRecovery(feed);
 
 
 
@@ -1861,7 +1866,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         setupLiveLocationGate();
         setupEventSharing();
-        installBlankVideoRemoval(document);
+        installBlankVideoRecovery(document);
 
         if (IS_MOBILE_FEED) {
           setupMobileFeedInfinite();
