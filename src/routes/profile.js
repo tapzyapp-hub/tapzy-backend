@@ -6981,10 +6981,13 @@ router.get("/u/:username", async (req, res) => {
 
           function playVideo(video){
             if (!video) return;
+            if (video.readyState === 0) {
+              try { video.load(); } catch (_) {}
+            }
             video.play().catch(function(){
-              if (soundOn) return;
               video.muted = true;
               video.defaultMuted = true;
+              video.setAttribute('muted', '');
               video.play().catch(function(){});
             });
           }
@@ -6993,6 +6996,12 @@ router.get("/u/:username", async (req, res) => {
             if (!video) return;
             try { video.currentTime = 0; } catch (_) {}
             playVideo(video);
+          }
+
+          function keepProfileStoryPlaying(){
+            const video = currentVideo();
+            if (!video || document.visibilityState !== 'visible' || !frame.contains(video) || video.ended) return;
+            if (video.paused || video.readyState < 2) playVideo(video);
           }
 
           function bindVideoStory(video){
@@ -7004,6 +7013,7 @@ router.get("/u/:username", async (req, res) => {
             video.setAttribute('playsinline', '');
             video.setAttribute('webkit-playsinline', '');
             video.preload = 'auto';
+            video.setAttribute('data-keep-video-live', '1');
             updateSoundLabel(video);
             video.addEventListener('ended', function(){
               if (items.length <= 1) {
@@ -7014,14 +7024,19 @@ router.get("/u/:username", async (req, res) => {
             });
             video.addEventListener('pause', function(){
               if (document.visibilityState !== 'visible' || video.ended || !frame.contains(video)) return;
-              window.setTimeout(function(){
-                if (document.visibilityState === 'visible' && frame.contains(video) && video.paused && !video.ended) {
-                  playVideo(video);
-                }
-              }, 250);
+              window.setTimeout(keepProfileStoryPlaying, 180);
+              window.setTimeout(keepProfileStoryPlaying, 900);
+            });
+            ['stalled','waiting','suspend'].forEach(function(name){
+              video.addEventListener(name, function(){
+                window.setTimeout(keepProfileStoryPlaying, 500);
+                window.setTimeout(keepProfileStoryPlaying, 1600);
+              }, { passive:true });
             });
             video.addEventListener('error', function(){ timer = window.setTimeout(next, 1200); }, { once:true });
             window.setTimeout(function(){ playVideo(video); }, 30);
+            window.setTimeout(keepProfileStoryPlaying, 700);
+            window.setTimeout(keepProfileStoryPlaying, 1800);
             return video;
           }
 
@@ -7194,6 +7209,8 @@ router.get("/u/:username", async (req, res) => {
             showControls();
           });
           document.addEventListener('pointerdown', unlockStorySound, { capture:true });
+          document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') window.setTimeout(keepProfileStoryPlaying, 120); });
+          window.setInterval(keepProfileStoryPlaying, 2200);
 
           if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
           bindVideoStory(currentVideo());

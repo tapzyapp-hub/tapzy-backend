@@ -4429,7 +4429,7 @@ router.get("/stories/feed", async (req, res) => {
               var distance = activeIndex >= 0 ? Math.abs(slideIndex - activeIndex) : 99;
               if (slide === active) playFeedSlide(slide);
               else {
-                pauseFeedSlide(slide, isAndroidStoryFeed && distance > 2);
+                pauseFeedSlide(slide, isAndroidStoryFeed && distance > 3);
                 if (distance <= 1) {
                   var nextVideo = slide.querySelector('video');
                   if (nextVideo) prepareFeedVideo(nextVideo);
