@@ -6211,7 +6211,7 @@ router.get("/u/:username", async (req, res) => {
         color:#fff!important;
         text-decoration:none!important;
         font-weight:950!important;
-        box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.18) inset,0 0 16px rgba(255,255,255,.20)!important;
+        box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.18) inset,0 0 12px rgba(255,255,255,.22)!important;
         transform:none!important;
       }
 
@@ -6223,9 +6223,9 @@ router.get("/u/:username", async (req, res) => {
         position:absolute!important;
         inset:-5px!important;
         border-radius:inherit!important;
-        border:1px solid rgba(255,255,255,.82)!important;
+        border:1px solid rgba(82,166,255,.54)!important;
         background:transparent!important;
-        box-shadow:0 0 18px rgba(255,255,255,.38)!important;
+        box-shadow:0 0 18px rgba(47,118,255,.30)!important;
         animation:profileCompactAvatarPulse 2.2s ease-out infinite!important;
         pointer-events:none!important;
         z-index:2!important;
