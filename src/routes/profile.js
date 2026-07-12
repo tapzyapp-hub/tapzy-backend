@@ -262,7 +262,8 @@ router.get("/u/:username", async (req, res) => {
     const followingStoryProfileIdsPromise = currentProfile
       ? prisma.follow.findMany({
           where: { followerProfileId: currentProfile.id },
-          select: { followingProfileId: true },
+          select: { followingProfileId: true, createdAt: true },
+          orderBy: { createdAt: "asc" },
           take: 80,
         })
       : Promise.resolve([]);
@@ -281,7 +282,7 @@ router.get("/u/:username", async (req, res) => {
 
         orderBy: { createdAt: "desc" },
 
-        take: 10,
+        take: 60,
 
       }),
 
@@ -333,8 +334,8 @@ router.get("/u/:username", async (req, res) => {
             expiresAt: { gt: now },
           },
           include: { profile: true },
-          orderBy: { createdAt: "desc" },
-          take: 18,
+          orderBy: [{ profileId: "asc" }, { createdAt: "desc" }],
+          take: Math.min(800, Math.max(80, followingStoryProfileIds.length * 10)),
         })
       : [];
 
@@ -385,10 +386,30 @@ router.get("/u/:username", async (req, res) => {
 
     const showFollowButton = !!(currentProfile && currentProfile.id !== profile.id);
 
-    const ownedStoryItems = activeStories.map((story) => ({ story, owner: profile, isOwn: true }));
-    const followedStoryItems = followingStories.map((story) => ({ story, owner: story.profile || null, isOwn: false }));
+    const storyMediaRank = (story) => (story?.mediaUrl && isVideoUrl(story.mediaUrl)) ? 0 : 1;
+    const sortStoriesForProfileFeed = (a, b) => {
+      const mediaRank = storyMediaRank(a) - storyMediaRank(b);
+      if (mediaRank !== 0) return mediaRank;
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    };
+    const ownedStoryItems = [...activeStories]
+      .sort(sortStoriesForProfileFeed)
+      .map((story) => ({ story, owner: profile, isOwn: true }));
+    const storiesByFollowedProfile = new Map();
+    followingStories.forEach((story) => {
+      if (!story || !story.profileId) return;
+      if (!storiesByFollowedProfile.has(story.profileId)) storiesByFollowedProfile.set(story.profileId, []);
+      storiesByFollowedProfile.get(story.profileId).push(story);
+    });
+    const followedStoryItems = followingStoryProfileIds.flatMap((profileId) => {
+      return (storiesByFollowedProfile.get(profileId) || [])
+        .sort(sortStoriesForProfileFeed)
+        .map((story) => ({ story, owner: story.profile || null, isOwn: false }));
+    });
     const allProfileStoryItems = [...ownedStoryItems, ...followedStoryItems];
-    const featuredStory = allProfileStoryItems[0]?.story || null;
+    const featuredStoryItem = allProfileStoryItems[0] || null;
+    const featuredStory = featuredStoryItem?.story || null;
+    const featuredStoryOwner = featuredStoryItem?.owner || profile;
     const profileStoryFeedItems = allProfileStoryItems.map(({ story, owner, isOwn }) => {
       const ownerName = owner?.name || owner?.username || (isOwn ? displayName : "Tapzy User");
       return {
@@ -641,7 +662,7 @@ router.get("/u/:username", async (req, res) => {
 
                 <div class="profile-story-stage-media-link" data-profile-story-frame aria-label="Profile story feed">
 
-                  ${storyStageMedia(profile, featuredStory)}
+                  ${storyStageMedia(featuredStoryOwner, featuredStory)}
 
                 </div>
 
@@ -649,7 +670,7 @@ router.get("/u/:username", async (req, res) => {
 
                   <div>
 
-                    <strong data-profile-story-owner>${escapeHtml(displayName)}</strong>
+                    <strong data-profile-story-owner>${escapeHtml(featuredStoryOwner?.name || featuredStoryOwner?.username || displayName)}</strong>
 
                     ${
                       featuredStory
