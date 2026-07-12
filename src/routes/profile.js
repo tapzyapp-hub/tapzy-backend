@@ -6258,6 +6258,81 @@ router.get("/u/:username", async (req, res) => {
           border-radius:29px!important;
         }
       }
+      /* Compact weather rail restores the animated weather layer and restyles the temperature chip. */
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected),
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected){
+        min-height:58px!important;
+        height:58px!important;
+        width:100%!important;
+        padding:3px 8px!important;
+        border:0!important;
+        border-radius:29px!important;
+        background:linear-gradient(90deg,rgba(5,8,14,.16),rgba(5,8,14,.04))!important;
+        box-shadow:none!important;
+        backdrop-filter:blur(10px)!important;
+        -webkit-backdrop-filter:blur(10px)!important;
+        overflow:hidden!important;
+        contain:paint!important;
+        clip-path:inset(0 round 29px)!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected) .profile-showcase-bg,
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected) .profile-weather-scene,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected) .profile-showcase-bg,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected) .profile-weather-scene{
+        display:block!important;
+        opacity:.92!important;
+        inset:0!important;
+        border-radius:29px!important;
+        clip-path:inset(0 round 29px)!important;
+        overflow:hidden!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected)::before,
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected)::after,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected)::before,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected)::after{
+        display:block!important;
+        opacity:.30!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected) .profile-showcase-top,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected) .profile-showcase-top{
+        position:relative!important;
+        z-index:5!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected) .profile-weather-label,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected) .profile-weather-label{
+        right:9px!important;
+        top:50%!important;
+        z-index:8!important;
+        min-height:36px!important;
+        max-width:calc(100% - 82px)!important;
+        padding:0 14px!important;
+        border-radius:18px!important;
+        border:1px solid rgba(255,255,255,.12)!important;
+        background:rgba(8,13,20,.34)!important;
+        color:rgba(255,255,255,.92)!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 24px rgba(0,0,0,.18)!important;
+        backdrop-filter:blur(12px)!important;
+        -webkit-backdrop-filter:blur(12px)!important;
+        font-size:13px!important;
+        line-height:1!important;
+        letter-spacing:0!important;
+        transform:translateY(-50%)!important;
+        white-space:nowrap!important;
+      }
+
+      @media(max-width:700px){
+        .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected) .profile-weather-label,
+        .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected) .profile-weather-label{
+          right:8px!important;
+          min-height:34px!important;
+          padding:0 12px!important;
+          font-size:12px!important;
+        }
+      }
       /* End final compact profile strip goes black when weather is unavailable */
 /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
       @media(min-width:701px){
