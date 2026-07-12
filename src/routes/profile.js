@@ -6128,104 +6128,131 @@ router.get("/u/:username", async (req, res) => {
       }
 
       /* End normal compact profile strip subtle blue rim */
-/* Compact profile header matches the story feed action rail, turned sideways. */
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected),
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected){
-        min-height:72px!important;
-        padding:8px 12px!important;
-        border-radius:36px!important;
-        border-color:rgba(255,255,255,.10)!important;
+/* Compact profile header uses the story feed action rail turned sideways. */
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected),
+      .profile-showcase.is-secondary-dim:not(.is-event-selected){
+        min-height:58px!important;
+        height:58px!important;
+        width:100%!important;
+        padding:3px 8px!important;
+        border:0!important;
+        border-radius:29px!important;
         background:linear-gradient(90deg,rgba(5,8,14,.16),rgba(5,8,14,.04))!important;
-        box-shadow:0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04)!important;
+        box-shadow:none!important;
         backdrop-filter:blur(10px)!important;
         -webkit-backdrop-filter:blur(10px)!important;
         overflow:visible!important;
       }
 
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-bg,
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected)::before,
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected)::after,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected)::before,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected)::after{
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-bg,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-bg,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected)::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected)::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected)::before,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected)::after,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-weather-scene,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-weather-scene{
+        display:none!important;
         opacity:0!important;
         background:transparent!important;
       }
 
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-top,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-top{
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-top,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-top{
         display:flex!important;
+        flex-direction:row!important;
         align-items:center!important;
         justify-content:flex-start!important;
         gap:10px!important;
-        min-height:56px!important;
+        min-height:52px!important;
+        height:52px!important;
+        width:100%!important;
       }
 
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-main,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-main{
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-main,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-main{
+        display:none!important;
+        opacity:0!important;
+        pointer-events:none!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap{
+        position:relative!important;
+        width:46px!important;
+        height:46px!important;
+        flex:0 0 46px!important;
+        border-radius:50%!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap::before,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+        content:none!important;
         display:none!important;
       }
 
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap{
-        width:56px!important;
-        height:56px!important;
-        flex:0 0 56px!important;
-        border-radius:50%!important;
-      }
-
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar{
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar{
+        position:relative!important;
         width:46px!important;
         height:46px!important;
-        margin:5px!important;
-        border-radius:50%!important;
+        margin:0!important;
         border:2px solid rgba(255,255,255,.65)!important;
-        background:rgba(0,0,0,.4)!important;
-        box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.10) inset!important;
-      }
-
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar img,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar img{
         border-radius:50%!important;
+        overflow:visible!important;
+        display:grid!important;
+        place-items:center!important;
+        background:rgba(0,0,0,.4)!important;
+        color:#fff!important;
+        text-decoration:none!important;
+        font-weight:950!important;
+        box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.10) inset!important;
+        transform:none!important;
       }
 
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after{
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar::before,
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar::before,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar::after{
         content:""!important;
         position:absolute!important;
-        border-radius:50%!important;
+        inset:-5px!important;
+        border-radius:inherit!important;
         border:1px solid rgba(82,166,255,.54)!important;
         background:transparent!important;
         box-shadow:0 0 18px rgba(47,118,255,.30)!important;
-        filter:none!important;
-        opacity:.86!important;
-        pointer-events:none!important;
         animation:profileCompactAvatarPulse 2.2s ease-out infinite!important;
+        pointer-events:none!important;
+        z-index:2!important;
       }
 
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::before{
-        inset:0!important;
-      }
-
-      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after,
-      .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected) .profile-showcase-avatar-wrap::after{
-        inset:-5px!important;
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar::after,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar::after{
+        inset:-10px!important;
         animation-delay:.75s!important;
         opacity:.42!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar img,
+      .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar img{
+        width:100%!important;
+        height:100%!important;
+        object-fit:cover!important;
+        border-radius:50%!important;
+        display:block!important;
       }
 
       @keyframes profileCompactAvatarPulse{0%{transform:scale(.88);opacity:.86}70%{transform:scale(1.16);opacity:.12}100%{transform:scale(1.2);opacity:0}}
 
       @media(max-width:700px){
-        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-weather-live):not(.is-event-selected),
-        .profile-showcase.is-secondary-dim:not(.is-weather-live):not(.is-event-selected){
-          min-height:66px!important;
-          padding:7px 11px!important;
-          border-radius:33px!important;
+        .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected),
+        .profile-showcase.is-secondary-dim:not(.is-event-selected){
+          min-height:58px!important;
+          height:58px!important;
+          padding:3px 8px!important;
+          border-radius:29px!important;
         }
       }
       /* End final compact profile strip goes black when weather is unavailable */
