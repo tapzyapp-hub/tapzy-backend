@@ -6179,10 +6179,13 @@ router.get("/u/:username", async (req, res) => {
       .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap,
       .profile-showcase.is-secondary-dim:not(.is-event-selected) .profile-showcase-avatar-wrap{
         position:relative!important;
-        width:46px!important;
-        height:46px!important;
-        flex:0 0 46px!important;
+        width:52px!important;
+        height:52px!important;
+        flex:0 0 52px!important;
         border-radius:50%!important;
+        display:grid!important;
+        place-items:center!important;
+        transform:translateX(1px)!important;
       }
 
       .profile-wrap.is-profile-condensed .profile-showcase:not(.is-event-selected) .profile-showcase-avatar-wrap::before,
@@ -6199,7 +6202,7 @@ router.get("/u/:username", async (req, res) => {
         width:46px!important;
         height:46px!important;
         margin:0!important;
-        border:2px solid rgba(255,255,255,.65)!important;
+        border:2px solid rgba(255,255,255,.88)!important;
         border-radius:50%!important;
         overflow:visible!important;
         display:grid!important;
@@ -6208,7 +6211,7 @@ router.get("/u/:username", async (req, res) => {
         color:#fff!important;
         text-decoration:none!important;
         font-weight:950!important;
-        box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.10) inset!important;
+        box-shadow:0 12px 26px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.18) inset,0 0 16px rgba(255,255,255,.20)!important;
         transform:none!important;
       }
 
@@ -6220,9 +6223,9 @@ router.get("/u/:username", async (req, res) => {
         position:absolute!important;
         inset:-5px!important;
         border-radius:inherit!important;
-        border:1px solid rgba(82,166,255,.54)!important;
+        border:1px solid rgba(255,255,255,.82)!important;
         background:transparent!important;
-        box-shadow:0 0 18px rgba(47,118,255,.30)!important;
+        box-shadow:0 0 18px rgba(255,255,255,.38)!important;
         animation:profileCompactAvatarPulse 2.2s ease-out infinite!important;
         pointer-events:none!important;
         z-index:2!important;
