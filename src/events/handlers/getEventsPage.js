@@ -3072,9 +3072,19 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
+    const eventsBootHead = `
+      <script>document.documentElement.classList.add("tz-events-boot");</script>
+      <style>
+        html.tz-events-boot body.events-story-shell{opacity:0;background:#000;}
+        html.tz-events-boot.tz-events-ready body.events-story-shell{opacity:1;transition:opacity .08s ease;}
+        @keyframes tzEventsBootReveal{to{opacity:1;}}
+        html.tz-events-boot:not(.tz-events-ready) body.events-story-shell{animation:tzEventsBootReveal .01s linear .9s forwards;}
+      </style>
+    `;
+
     res.send(
 
-      renderShell("Event Finder", body, "", {
+      renderShell("Event Finder", body, eventsBootHead, {
 
         currentProfile,
 

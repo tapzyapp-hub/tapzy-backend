@@ -2,6 +2,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
   return `
 <script>
 (function () {
+        try { document.documentElement.classList.add("tz-events-ready"); } catch (_) {}
 
         const FEED_PAGE_SIZE = ${JSON.stringify(FEED_PAGE_SIZE)};
 
