@@ -29,6 +29,14 @@
     });
   }
 
+  function isAndroidBrowser() {
+    return /Android/i.test(navigator.userAgent || "");
+  }
+
+  function isFullDocumentRoute(url) {
+    return /^\/(?:events|messages)(?:$|[/?#])/.test((url && (url.pathname + url.search + url.hash)) || "");
+  }
+
   function shouldConserveResources() {
     var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (connection && (connection.saveData || /(?:2g|slow-2g)/i.test(connection.effectiveType || ""))) return true;
@@ -48,6 +56,8 @@
 
   function canPrefetch(url) {
     if (!url || url.origin !== location.origin) return false;
+    if (isAndroidBrowser()) return false;
+    if (isFullDocumentRoute(url)) return false;
     if (shouldConserveResources()) return false;
     if (url.hash && url.pathname === location.pathname && url.search === location.search) return false;
     if (/\.(?:jpg|jpeg|png|webp|gif|mp4|mov|webm|m4v|mp3|wav|ogg|m4a|aac|pdf|zip)$/i.test(url.pathname)) return false;
