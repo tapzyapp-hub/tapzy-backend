@@ -6267,8 +6267,8 @@ router.get("/u/:username", async (req, res) => {
         padding:3px 8px!important;
         border:0!important;
         border-radius:29px!important;
-        background:linear-gradient(90deg,rgba(5,8,14,.16),rgba(5,8,14,.04))!important;
-        box-shadow:none!important;
+        background:#4aa9e8!important;
+        box-shadow:0 10px 26px rgba(0,0,0,.24),0 0 0 1px rgba(255,255,255,.10) inset!important;
         backdrop-filter:blur(10px)!important;
         -webkit-backdrop-filter:blur(10px)!important;
         overflow:hidden!important;
@@ -6281,11 +6281,22 @@ router.get("/u/:username", async (req, res) => {
       .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected) .profile-showcase-bg,
       .profile-showcase.is-weather-live.is-secondary-dim:not(.is-event-selected) .profile-weather-scene{
         display:block!important;
-        opacity:.92!important;
+        opacity:1!important;
         inset:0!important;
         border-radius:29px!important;
         clip-path:inset(0 round 29px)!important;
         overflow:hidden!important;
+      }
+
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.weather-night).weather-sunny:not(.is-event-selected) .profile-showcase-bg,
+      .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.weather-night).weather-clear:not(.is-event-selected) .profile-showcase-bg,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.weather-night).weather-sunny:not(.is-event-selected) .profile-showcase-bg,
+      .profile-showcase.is-weather-live.is-secondary-dim:not(.weather-night).weather-clear:not(.is-event-selected) .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 52% 48%, rgba(255,255,255,.98) 0 7%, rgba(255,250,215,.70) 13%, rgba(255,232,145,.18) 28%, transparent 45%),
+          radial-gradient(ellipse at 72% 50%, rgba(255,255,255,.28), transparent 40%),
+          linear-gradient(90deg, #bdeeff 0%, #71c7f5 44%, #2e8dcc 100%)!important;
+        filter:saturate(1.16) contrast(1.02)!important;
       }
 
       .profile-wrap.is-profile-condensed .profile-showcase.is-weather-live:not(.is-event-selected)::before,
