@@ -36,6 +36,13 @@
     return isVideoFile(file) || isImageFile(file) || type === "application/octet-stream";
   }
 
+  function cloudinaryCompatibleVideoUrl(url) {
+    const value = String(url || "");
+    if (!value || !/res\.cloudinary\.com\//i.test(value) || !/\/video\/upload\//i.test(value)) return value;
+    if (/\/video\/upload\/[^/]*(?:f_mp4|vc_h264|ac_aac)/i.test(value)) return value;
+    return value.replace(/\/video\/upload\//i, "/video/upload/f_mp4,vc_h264,ac_aac,q_auto/");
+  }
+
   function inferMimeType(file) {
     const explicit = String((file && file.type) || "").trim();
     if (explicit) return explicit;
@@ -247,7 +254,7 @@
         }
         resolve({
           ok: true,
-          mediaUrl: data.secure_url,
+          mediaUrl: isVideoFile(file) ? cloudinaryCompatibleVideoUrl(data.secure_url) : data.secure_url,
           filename: data.public_id || file.name || "tapzy-media",
           originalName: file.name || data.original_filename || "tapzy-media",
           mimetype: inferMimeType(file),
@@ -310,7 +317,7 @@
     if (!latest || !latest.secure_url) throw new Error("Cloud upload did not return a media URL");
     return {
       ok: true,
-      mediaUrl: latest.secure_url,
+      mediaUrl: isVideoFile(file) ? cloudinaryCompatibleVideoUrl(latest.secure_url) : latest.secure_url,
       filename: latest.public_id || file.name || "tapzy-media",
       originalName: file.name || latest.original_filename || "tapzy-media",
       mimetype: inferMimeType(file),

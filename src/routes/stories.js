@@ -132,6 +132,13 @@ function isVideoUrl(url) {
 
 }
 
+function compatibleVideoUrl(url) {
+  const value = String(url || "");
+  if (!value || !/res\.cloudinary\.com\//i.test(value) || !/\/video\/upload\//i.test(value)) return value;
+  if (/\/video\/upload\/[^/]*(?:f_mp4|vc_h264|ac_aac)/i.test(value)) return value;
+  return value.replace(/\/video\/upload\//i, "/video/upload/f_mp4,vc_h264,ac_aac,q_auto/");
+}
+
 function safeUrl(value) {
   const raw = String(value || "").trim();
   if (!raw) return null;
@@ -2965,7 +2972,7 @@ router.get("/stories/live/:id/edit", async (req, res) => {
           <div class="live-edit-preview">
             ${
               hasReplay
-                ? `<video src="${escapeHtml(story.mediaUrl)}" controls playsinline preload="metadata"></video>`
+                ? `<video src="${escapeHtml(compatibleVideoUrl(story.mediaUrl))}" controls playsinline preload="metadata"></video>`
                 : `<div class="live-edit-empty">Replay is still processing or was not recorded on this device.</div>`
             }
           </div>
@@ -3933,7 +3940,7 @@ router.get("/stories/feed", async (req, res) => {
         ? isLive
           ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
           : isVideo
-          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" data-keep-video-live="1" data-recover-if-blank="1"></video>`
+          ? `<video class="sf-media" src="${escapeHtml(compatibleVideoUrl(story.mediaUrl))}" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" data-keep-video-live="1" data-recover-if-blank="1"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
@@ -4239,8 +4246,8 @@ router.get("/stories/feed", async (req, res) => {
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
           var tapzySoundMutedByUser = localStorage.getItem('tapzy_story_sound') === '0';
           var isAndroidStoryFeed = /Android/i.test(navigator.userAgent || '');
-          var FEED_KEEP_BEHIND = 1;
-          var FEED_KEEP_AHEAD = 3;
+          var FEED_KEEP_BEHIND = 2;
+          var FEED_KEEP_AHEAD = 5;
           var BLANK_STORY_VIDEO_TIMEOUT_MS = 30000;
           function storyVideoFrameLooksBlack(video){
             if (!video || !(video.videoWidth > 0 && video.videoHeight > 0) || video.readyState < 2) return false;
@@ -4365,9 +4372,8 @@ router.get("/stories/feed", async (req, res) => {
             if (!video.dataset.feedSrc) video.dataset.feedSrc = video.currentSrc || video.getAttribute('src') || '';
             try { video.pause(); } catch(e) {}
             if (video.dataset.feedSrc) {
-              video.removeAttribute('src');
-              video.preload = 'none';
-              try { video.load(); } catch(e) {}
+              if (!video.getAttribute('src')) video.setAttribute('src', video.dataset.feedSrc);
+              video.preload = 'metadata';
             }
           }
           function prepareFeedVideo(video){
@@ -4924,7 +4930,7 @@ router.get("/stories/:username", async (req, res) => {
 
             : isVideoStory
 
-            ? `<video class="story-view-media" src="${escapeHtml(story.mediaUrl)}" autoplay playsinline webkit-playsinline preload="metadata"></video>`
+            ? `<video class="story-view-media" src="${escapeHtml(compatibleVideoUrl(story.mediaUrl))}" autoplay playsinline webkit-playsinline preload="metadata"></video>`
 
             : `<img class="story-view-media" src="${escapeHtml(story.mediaUrl)}" alt="Story media" loading="eager" decoding="async" />`
 

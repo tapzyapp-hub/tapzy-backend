@@ -71,8 +71,15 @@ function isVideoUrl(url) {
 
 
 
+function compatibleVideoUrl(url) {
+  const value = String(url || "");
+  if (!value || !/res\.cloudinary\.com\//i.test(value) || !/\/video\/upload\//i.test(value)) return value;
+  if (/\/video\/upload\/[^/]*(?:f_mp4|vc_h264|ac_aac)/i.test(value)) return value;
+  return value.replace(/\/video\/upload\//i, "/video/upload/f_mp4,vc_h264,ac_aac,q_auto/");
+}
+
 function renderVideoFrame(url, options = {}) {
-  const src = escapeHtml(url || "");
+  const src = escapeHtml(compatibleVideoUrl(url) || "");
   const className = escapeHtml(options.className || "profile-story-card-media");
   const autoplay = options.autoplay ? ' autoplay' : '';
   const muted = options.muted ? ' muted' : '';
@@ -385,7 +392,7 @@ router.get("/u/:username", async (req, res) => {
     const profileStoryFeedItems = allProfileStoryItems.map(({ story, owner, isOwn }) => {
       const ownerName = owner?.name || owner?.username || (isOwn ? displayName : "Tapzy User");
       return {
-        mediaUrl: story.mediaUrl || "",
+        mediaUrl: story.mediaUrl && isVideoUrl(story.mediaUrl) ? compatibleVideoUrl(story.mediaUrl) : (story.mediaUrl || ""),
         isVideo: !!(story.mediaUrl && isVideoUrl(story.mediaUrl)),
         text: story.text || ownerName || "Tapzy Story",
         time: formatStoryTimeShort(story.createdAt),
@@ -6939,6 +6946,34 @@ router.get("/u/:username", async (req, res) => {
             timer = null;
           }
 
+          function videoAdvanceDelay(video){
+            const duration = video && Number.isFinite(video.duration) ? video.duration : 0;
+            if (duration > 0) return Math.min(Math.max(Math.round(duration * 1000) + 900, 4200), 18000);
+            return 10000;
+          }
+
+          function scheduleVideoAdvance(video){
+            clearTimer();
+            if (!video) return;
+            function arm(){
+              clearTimer();
+              timer = window.setTimeout(function(){
+                if (!frame.contains(video)) return;
+                if (items.length <= 1) {
+                  restartVideo(video);
+                  scheduleVideoAdvance(video);
+                  return;
+                }
+                next();
+              }, videoAdvanceDelay(video));
+            }
+            arm();
+            if (!Number.isFinite(video.duration) || video.duration <= 0) {
+              video.addEventListener('loadedmetadata', arm, { once:true });
+            }
+            video.addEventListener('playing', arm, { once:true });
+          }
+
           function hideControls(){
             stage.classList.add('is-controls-dim');
           }
@@ -7127,6 +7162,7 @@ router.get("/u/:username", async (req, res) => {
             if (item.mediaUrl && item.isVideo) {
               node = makeVideoStory(item);
               swapStoryNode(node, item);
+              scheduleVideoAdvance(node);
             } else if (item.mediaUrl) {
               node = makeImageStory(item);
               const swapReady = function(){ swapStoryNode(node, item); };
@@ -7213,8 +7249,9 @@ router.get("/u/:username", async (req, res) => {
           window.setInterval(keepProfileStoryPlaying, 2200);
 
           if (meta && items[0]) meta.textContent = (items[0].time || 'Just now') + ' · Tapzy Story';
-          bindVideoStory(currentVideo());
-          if (items.length > 1 && !(items[0] && items[0].isVideo)) timer = window.setTimeout(next, 5200);
+          const initialVideo = bindVideoStory(currentVideo());
+          if (initialVideo) scheduleVideoAdvance(initialVideo);
+          else if (items.length > 1 && !(items[0] && items[0].isVideo)) timer = window.setTimeout(next, 5200);
           showControls();
         }
 
