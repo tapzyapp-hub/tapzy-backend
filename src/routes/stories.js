@@ -4239,6 +4239,8 @@ router.get("/stories/feed", async (req, res) => {
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
           var tapzySoundMutedByUser = localStorage.getItem('tapzy_story_sound') === '0';
           var isAndroidStoryFeed = /Android/i.test(navigator.userAgent || '');
+          var FEED_KEEP_BEHIND = 1;
+          var FEED_KEEP_AHEAD = 3;
           var BLANK_STORY_VIDEO_TIMEOUT_MS = 30000;
           function storyVideoFrameLooksBlack(video){
             if (!video || !(video.videoWidth > 0 && video.videoHeight > 0) || video.readyState < 2) return false;
@@ -4392,6 +4394,8 @@ router.get("/stories/feed", async (req, res) => {
             var audio = slide.querySelector('audio[data-story-audio]');
             if (video) {
               prepareFeedVideo(video);
+              video.preload = 'auto';
+              if (video.readyState < 2) { try { video.load(); } catch(e) {} }
               if (tapzySoundUnlocked && !tapzySoundMutedByUser) forceSound(video, false);
               video.play().catch(function(){
                 video.muted = true;
@@ -4426,11 +4430,12 @@ router.get("/stories/feed", async (req, res) => {
             installBlankStoryVideoRemoval(document);
 
           slides.forEach(function(slide, slideIndex){
-              var distance = activeIndex >= 0 ? Math.abs(slideIndex - activeIndex) : 99;
+              var offset = activeIndex >= 0 ? slideIndex - activeIndex : 99;
+              var keepWarm = offset >= -FEED_KEEP_BEHIND && offset <= FEED_KEEP_AHEAD;
               if (slide === active) playFeedSlide(slide);
               else {
-                pauseFeedSlide(slide, isAndroidStoryFeed && distance > 3);
-                if (distance <= 1) {
+                pauseFeedSlide(slide, isAndroidStoryFeed && !keepWarm);
+                if (keepWarm) {
                   var nextVideo = slide.querySelector('video');
                   if (nextVideo) prepareFeedVideo(nextVideo);
                 }
@@ -4449,7 +4454,8 @@ router.get("/stories/feed", async (req, res) => {
           }, { root: feed, threshold: [.05,.45,.75] });
           slides.forEach(function(slide, slideIndex){
             var video = slide.querySelector('video');
-            if (isAndroidStoryFeed && slideIndex > 1) releaseFeedVideoSurface(video);
+            if (slideIndex <= FEED_KEEP_AHEAD) prepareFeedVideo(video);
+            else if (isAndroidStoryFeed) releaseFeedVideoSurface(video);
             else prepareFeedVideo(video);
             observer.observe(slide);
           });
