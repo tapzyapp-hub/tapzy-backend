@@ -74,7 +74,11 @@ const staticCache = {
 const uploadsCache = {
   etag: true,
   maxAge: "30d",
-  setHeaders(res) {
+  setHeaders(res, filePath) {
+    if (filePath && /\.(?:mp4|mov|m4v|webm|3gp|3gpp|avi|hevc)$/i.test(filePath)) {
+      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+      return;
+    }
     res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
   },
 };
