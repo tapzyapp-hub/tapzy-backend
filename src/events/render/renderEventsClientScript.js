@@ -27,7 +27,59 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         }
 
         function renderClientFeedVideo(url, className) {
-          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>';
+          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1" data-remove-if-blank="1"></video>';
+        }
+
+        const BLANK_VIDEO_TIMEOUT_MS = 30000;
+
+        function blankVideoContainer(video) {
+          return video && video.closest && video.closest(".js-reel-item,.js-event-card");
+        }
+
+        function isVideoBlank(video) {
+          if (!video || !video.isConnected) return false;
+          if (video.error) return true;
+          if (video.videoWidth > 0 && video.videoHeight > 0) return false;
+          return video.readyState < 2;
+        }
+
+        function removeBlankVideo(video) {
+          const container = blankVideoContainer(video);
+          if (!container || !container.isConnected || video.dataset.blankVideoRemoved === "1") return;
+          video.dataset.blankVideoRemoved = "1";
+          try { video.pause(); } catch (_) {}
+          container.remove();
+          const reelFeed = document.getElementById("reelFeed");
+          if (reelFeed && typeof reelFeed.refreshActive === "function") requestAnimationFrame(reelFeed.refreshActive);
+        }
+
+        function monitorBlankVideo(video) {
+          if (!video || video.dataset.blankVideoWatch === "1") return;
+          video.dataset.blankVideoWatch = "1";
+          let timer = null;
+          function clearTimer() {
+            if (timer) window.clearTimeout(timer);
+            timer = null;
+          }
+          function arm() {
+            if (!isVideoBlank(video)) { clearTimer(); return; }
+            if (timer) return;
+            timer = window.setTimeout(function () {
+              timer = null;
+              if (isVideoBlank(video)) removeBlankVideo(video);
+            }, BLANK_VIDEO_TIMEOUT_MS);
+          }
+          function markHealthy() {
+            if (video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) clearTimer();
+          }
+          ["loadeddata", "canplay", "playing", "timeupdate"].forEach(function (name) { video.addEventListener(name, markHealthy, { passive: true }); });
+          ["error", "stalled", "waiting", "emptied"].forEach(function (name) { video.addEventListener(name, arm, { passive: true }); });
+          arm();
+          window.setTimeout(arm, 1200);
+        }
+
+        function installBlankVideoRemoval(root) {
+          (root || document).querySelectorAll("video[data-remove-if-blank]").forEach(monitorBlankVideo);
         }
 
         function syncReelVideos(feed, active) {
@@ -815,6 +867,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           feed.dataset.activeBound = "1";
           enforceReelImageQuality(feed);
+          installBlankVideoRemoval(feed);
 
 
 
@@ -1710,6 +1763,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
               bindGoingActions(feed);
               enforceReelImageQuality(feed);
+              installBlankVideoRemoval(feed);
 
 
 
@@ -1778,6 +1832,8 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         setupLiveLocationGate();
         setupEventSharing();
+        installBlankVideoRemoval(document);
+
         if (IS_MOBILE_FEED) {
           setupMobileFeedInfinite();
         } else {

@@ -6,7 +6,7 @@ function isVideoUrl(url) {
 }
 
 function renderFeedVideo(url, className) {
-  return `<video class="${className}" src="${escapeHtml(url)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>`;
+  return `<video class="${className}" src="${escapeHtml(url)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1" data-remove-if-blank="1"></video>`;
 }
 
 function renderGoingButton(event, currentProfile, goingSet) {

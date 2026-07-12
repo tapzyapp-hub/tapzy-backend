@@ -578,7 +578,7 @@ function fallbackEventStreams() {
       description: "Parties, DJs, dance floors, and nightlife energy from Tapzy.",
       venueName: "Tapzy Live",
       city: "Live Now",
-      startAt: new Date(now + 120000),
+      startAt: new Date(now + 300000),
     },
   ];
 }
@@ -3933,7 +3933,7 @@ router.get("/stories/feed", async (req, res) => {
         ? isLive
           ? renderLiveStreamMedia(story.mediaUrl, story.text || `${displayName}'s live`, index)
           : isVideo
-          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>`
+          ? `<video class="sf-media" src="${escapeHtml(story.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1" data-remove-if-blank="1"></video>`
           : `<img class="sf-media" src="${escapeHtml(story.mediaUrl)}" alt="${escapeHtml(story.text || `${displayName}'s story`)}" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" />`
         : `<div class="sf-text-story"><span>${escapeHtml(story.text || `${displayName}'s story`)}</span></div>`;
       const eventLabel = story.event?.title
@@ -4027,7 +4027,7 @@ router.get("/stories/feed", async (req, res) => {
         const media = liveUrl && isLiveStreamUrl(liveUrl)
           ? renderLiveStreamMedia(liveUrl, title, index)
           : videoUrl
-          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1"></video>`
+          ? `<video class="sf-media sf-stream-video" src="${escapeHtml(videoUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-keep-video-live="1" data-remove-if-blank="1"></video>`
           : `<div class="sf-virtual-stream sf-virtual-motion" style="--stream-bg:${escapeHtml(eventStreamGradient(index))}"><span>${escapeHtml(category)}</span></div>`;
         const when = event.startAt ? formatPrettyLocal(event.startAt) : "Live now";
         const text = event.description || `${category} from Tapzy events happening now.`;
@@ -4239,6 +4239,46 @@ router.get("/stories/feed", async (req, res) => {
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
           var tapzySoundMutedByUser = localStorage.getItem('tapzy_story_sound') === '0';
           var isAndroidStoryFeed = /Android/i.test(navigator.userAgent || '');
+          var BLANK_STORY_VIDEO_TIMEOUT_MS = 30000;
+          function isStoryVideoBlank(video){
+            if (!video || !video.isConnected) return false;
+            if (video.error) return true;
+            if (video.videoWidth > 0 && video.videoHeight > 0) return false;
+            return video.readyState < 2;
+          }
+          function removeBlankStoryVideo(video){
+            var slide = video && video.closest ? video.closest('.sf-slide') : null;
+            if (!slide || !slide.isConnected || video.dataset.blankVideoRemoved === '1') return;
+            video.dataset.blankVideoRemoved = '1';
+            try { video.pause(); } catch(e) {}
+            slide.remove();
+            slides = Array.prototype.slice.call(document.querySelectorAll('.sf-slide'));
+            if (typeof syncFeedPlayback === 'function') requestAnimationFrame(syncFeedPlayback);
+          }
+          function monitorBlankStoryVideo(video){
+            if (!video || video.dataset.blankVideoWatch === '1') return;
+            video.dataset.blankVideoWatch = '1';
+            var timer = null;
+            function clearTimer(){ if (timer) clearTimeout(timer); timer = null; }
+            function arm(){
+              if (!isStoryVideoBlank(video)) { clearTimer(); return; }
+              if (timer) return;
+              timer = setTimeout(function(){
+                timer = null;
+                if (isStoryVideoBlank(video)) removeBlankStoryVideo(video);
+              }, BLANK_STORY_VIDEO_TIMEOUT_MS);
+            }
+            function markHealthy(){
+              if (video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) clearTimer();
+            }
+            ['loadeddata','canplay','playing','timeupdate'].forEach(function(name){ video.addEventListener(name, markHealthy, { passive:true }); });
+            ['error','stalled','waiting','emptied'].forEach(function(name){ video.addEventListener(name, arm, { passive:true }); });
+            arm();
+            setTimeout(arm, 1200);
+          }
+          function installBlankStoryVideoRemoval(root){
+            Array.prototype.slice.call((root || document).querySelectorAll('video[data-remove-if-blank]')).forEach(monitorBlankStoryVideo);
+          }
           function setActionRailsIdle(idle){
             actionRails.forEach(function(rail){ rail.classList.toggle('is-idle', !!idle); });
           }
@@ -4356,7 +4396,9 @@ router.get("/stories/feed", async (req, res) => {
           function syncFeedPlayback(){
             var active = visibleFeedSlide();
             var activeIndex = slides.indexOf(active);
-            slides.forEach(function(slide, slideIndex){
+            installBlankStoryVideoRemoval(document);
+
+          slides.forEach(function(slide, slideIndex){
               var distance = activeIndex >= 0 ? Math.abs(slideIndex - activeIndex) : 99;
               if (slide === active) playFeedSlide(slide);
               else {
