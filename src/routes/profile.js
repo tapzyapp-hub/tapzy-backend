@@ -469,7 +469,7 @@ router.get("/u/:username", async (req, res) => {
           var width = window.innerWidth || document.documentElement.clientWidth || 0;
           var edge = touch.clientX <= 36 ? "left" : (width && touch.clientX >= width - 36 ? "right" : "");
           edgeSwipe = edge ? { edge: edge, x: touch.clientX, y: touch.clientY } : null;
-          if (edgeSwipe && event.cancelable) event.preventDefault();
+          // Let normal vertical Android scrolling start cleanly; only block once a real horizontal edge swipe is detected.
         }
         function stopEdgeSwipe(event){
           if (!edgeSwipe || !event.touches || event.touches.length !== 1) return;
@@ -483,7 +483,7 @@ router.get("/u/:username", async (req, res) => {
           }
         }
         document.addEventListener("touchstart", startEdgeSwipe, { passive:false });
-        document.addEventListener("touchmove", stopEdgeSwipe, { passive:false });
+        document.addEventListener("touchmove", stopEdgeSwipe, { passive:false, capture:true });
         document.addEventListener("touchend", function(){ edgeSwipe = null; }, { passive:true });
         document.addEventListener("touchcancel", function(){ edgeSwipe = null; }, { passive:true });
         function pinHorizontalScroll(){
@@ -511,10 +511,12 @@ router.get("/u/:username", async (req, res) => {
         background-color:#000!important;
       }
       html{
-        overscroll-behavior:none!important;
+        overscroll-behavior-x:none!important;
+        overscroll-behavior-y:auto!important;
       }
       body{
-        overscroll-behavior:none!important;
+        overscroll-behavior-x:none!important;
+        overscroll-behavior-y:auto!important;
       }
       .profile-wrap::before{
         content:"";
@@ -537,6 +539,8 @@ router.get("/u/:username", async (req, res) => {
       body{
         position:relative!important;
         touch-action:pan-y!important;
+        overflow-y:auto!important;
+        -webkit-overflow-scrolling:touch!important;
       }
       .profile-wrap,
       .profile-showcase,
@@ -550,6 +554,8 @@ router.get("/u/:username", async (req, res) => {
       .profile-wrap{
         width:100%!important;
         overflow-x:hidden!important;
+        overflow-y:visible!important;
+        touch-action:pan-y!important;
       }
     </style>
 
