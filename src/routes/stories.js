@@ -4296,6 +4296,14 @@ router.get("/stories/feed", async (req, res) => {
           var FEED_KEEP_BEHIND = 1;
           var FEED_KEEP_AHEAD = 3;
           var BLANK_STORY_VIDEO_TIMEOUT_MS = 30000;
+          var FEED_TRANSITION_MS = 900;
+          function runWithFeedLoader(action){
+            if (typeof window.__tapzyShowPageLoader === 'function') window.__tapzyShowPageLoader();
+            window.setTimeout(function(){
+              action();
+              if (typeof window.__tapzyHidePageLoader === 'function') window.__tapzyHidePageLoader();
+            }, FEED_TRANSITION_MS);
+          }
           function storyVideoFrameLooksBlack(video){
             if (!video || !(video.videoWidth > 0 && video.videoHeight > 0) || video.readyState < 2) return false;
             try {
@@ -4532,17 +4540,20 @@ router.get("/stories/feed", async (req, res) => {
 
           tabs.forEach(function(tab){
             tab.addEventListener('click', function(){
-              var filter = tab.getAttribute('data-filter');
-              var visible = 0;
-              tabs.forEach(function(item){ item.classList.toggle('is-active', item === tab); });
-              slides.forEach(function(slide){
-                var show = filter === 'all' || slide.getAttribute('data-' + filter) === '1';
-                slide.hidden = !show;
-                if (show) visible += 1;
+              runWithFeedLoader(function(){
+                var filter = tab.getAttribute('data-filter');
+                var visible = 0;
+                tabs.forEach(function(item){ item.classList.toggle('is-active', item === tab); });
+                slides.forEach(function(slide){
+                  var show = filter === 'all' || slide.getAttribute('data-' + filter) === '1';
+                  slide.hidden = !show;
+                  if (show) visible += 1;
+                });
+                empty.classList.toggle('is-visible', visible === 0);
+                feed.scrollTop = 0;
+                wakeActionRails();
+                scheduleFeedPlaybackSync(80);
               });
-              empty.classList.toggle('is-visible', visible === 0);
-              feed.scrollTop = 0;
-              wakeActionRails();
             });
           });
           var playbackSettleTimer = null;
@@ -4705,7 +4716,12 @@ router.get("/stories/feed", async (req, res) => {
               return;
             }
             if (event.target.closest('[data-search]')) {
-              location.href = '${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}';
+              event.preventDefault();
+              if (typeof window.__tapzyShowPageLoader === 'function') window.__tapzyShowPageLoader();
+              window.setTimeout(function(){
+                location.href = '${currentProfile?.username ? `/discovery/${escapeHtml(currentProfile.username)}?tab=search` : "/auth"}';
+              }, FEED_TRANSITION_MS);
+              return;
             }
             wakeActionRails();
           });
