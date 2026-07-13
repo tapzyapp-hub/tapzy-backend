@@ -1301,7 +1301,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               loader.style.visibility = loading && hasMore ? "visible" : "hidden";
               loader.setAttribute("aria-hidden", loading && hasMore ? "false" : "true");
               end.style.display = hasMore ? "none" : "block";
-              if (button) button.style.display = "none";
+              if (button) button.style.display = hasMore && !loading ? "block" : "none";
             }
 
             function nearBottom() {
@@ -1322,7 +1322,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               try {
                 const qs = new URLSearchParams({
                   page: String(page),
-                  limit: String(Math.min(FEED_PAGE_SIZE, 10)),
+                  limit: String(FEED_PAGE_SIZE),
                   city: "",
                   category: category || "all"
                 });
@@ -1386,11 +1386,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             }
 
             window.addEventListener("scroll", onScroll, { passive: true });
+            window.addEventListener("touchmove", onScroll, { passive: true });
             window.addEventListener("resize", onScroll, { passive: true });
             window.addEventListener("orientationchange", () => window.setTimeout(onScroll, 250), { passive: true });
             if (button) button.addEventListener("click", loadMore);
             syncFooter();
             window.setTimeout(onScroll, 250);
+            window.setInterval(onScroll, 1200);
             return;
           }
 
