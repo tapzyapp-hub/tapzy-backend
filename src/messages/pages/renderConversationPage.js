@@ -347,7 +347,7 @@ module.exports = function renderConversationPage({
 
   return `
 
-    <div class="wrap tz-message-page-wrap">
+    <div class="wrap">
 
       <div class="tz-chat-shell">
 
@@ -375,7 +375,6 @@ module.exports = function renderConversationPage({
 
 
 <style>
-
 
   .tz-chat-shell{
 

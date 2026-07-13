@@ -179,6 +179,7 @@ module.exports = async function getMessagesPage(req, res) {
         pageTitle: "Messages",
         pageType: "messages-list",
         storiesBottomNav: true,
+        storiesTopNavActive: "messages",
       })
     );
   } catch (e) {
