@@ -332,7 +332,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
 
 
-    <form class="stories-create-form" method="POST" action="/stories" enctype="multipart/form-data" data-story-composer>
+    <form class="stories-create-form" method="POST" action="/stories" enctype="multipart/form-data" data-story-composer data-no-page-loader>
 
       <div class="stories-form-grid stories-form-grid-premium">
 
