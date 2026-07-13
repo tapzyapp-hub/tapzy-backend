@@ -54,6 +54,31 @@ app.use(
 app.use(compression({ threshold: 1024 }));
 
 const LOCKED_VIEWPORT = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
+const HORIZONTAL_LOCK_HEAD = `
+<style data-tapzy-horizontal-lock>
+  html,
+  body{
+    max-width:100%!important;
+    overflow-x:hidden!important;
+    overscroll-behavior-x:none!important;
+  }
+</style>
+<script data-tapzy-horizontal-lock>
+  (function(){
+    function pinHorizontalScroll(){
+      if (window.scrollX || document.documentElement.scrollLeft || document.body.scrollLeft) {
+        document.documentElement.scrollLeft = 0;
+        document.body.scrollLeft = 0;
+        window.scrollTo(0, window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0);
+      }
+    }
+    window.addEventListener("scroll", pinHorizontalScroll, { passive:true });
+    window.addEventListener("resize", pinHorizontalScroll, { passive:true });
+    window.addEventListener("orientationchange", function(){ window.setTimeout(pinHorizontalScroll, 60); }, { passive:true });
+    document.addEventListener("touchmove", function(){ window.requestAnimationFrame(pinHorizontalScroll); }, { passive:true });
+    pinHorizontalScroll();
+  })();
+</script>`;
 
 app.use((req, res, next) => {
   const originalSend = res.send.bind(res);
@@ -65,6 +90,9 @@ app.use((req, res, next) => {
         body = body.replace(/<meta\s+name=["']viewport["'][^>]*>/gi, '<meta name="viewport" content="' + LOCKED_VIEWPORT + '" />');
       } else if (/<head[^>]*>/i.test(body)) {
         body = body.replace(/<head([^>]*)>/i, '<head$1>\n<meta name="viewport" content="' + LOCKED_VIEWPORT + '" />');
+      }
+      if (!/data-tapzy-horizontal-lock/i.test(body) && /<head[^>]*>/i.test(body)) {
+        body = body.replace(/<head([^>]*)>/i, "<head$1>\n" + HORIZONTAL_LOCK_HEAD);
       }
     }
     return originalSend(body);

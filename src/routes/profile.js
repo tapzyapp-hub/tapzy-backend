@@ -448,6 +448,51 @@ router.get("/u/:username", async (req, res) => {
 
     const body = `
 
+    <script data-tapzy-horizontal-lock>
+      (function(){
+        function pinHorizontalScroll(){
+          if (window.scrollX || document.documentElement.scrollLeft || document.body.scrollLeft) {
+            document.documentElement.scrollLeft = 0;
+            document.body.scrollLeft = 0;
+            window.scrollTo(0, window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0);
+          }
+        }
+        window.addEventListener("scroll", pinHorizontalScroll, { passive:true });
+        window.addEventListener("resize", pinHorizontalScroll, { passive:true });
+        window.addEventListener("orientationchange", function(){ window.setTimeout(pinHorizontalScroll, 60); }, { passive:true });
+        document.addEventListener("touchmove", function(){ window.requestAnimationFrame(pinHorizontalScroll); }, { passive:true });
+        pinHorizontalScroll();
+      })();
+    </script>
+
+    <style id="tapzy-profile-horizontal-lock">
+      html,
+      body{
+        width:100%!important;
+        max-width:100%!important;
+        min-width:0!important;
+        overflow-x:hidden!important;
+        overscroll-behavior-x:none!important;
+      }
+      body{
+        position:relative!important;
+        touch-action:pan-y!important;
+      }
+      .profile-wrap,
+      .profile-showcase,
+      .profile-story-stage,
+      .profile-panel,
+      .profile-event-card-panel{
+        max-width:100%!important;
+        min-width:0!important;
+        box-sizing:border-box!important;
+      }
+      .profile-wrap{
+        width:100%!important;
+        overflow-x:hidden!important;
+      }
+    </style>
+
     <style id="tapzy-profile-first-paint-guard">
       html:not(.tz-profile-ready) .profile-wrap,
       html:not(.tz-profile-ready) .profile-photo-viewer{
