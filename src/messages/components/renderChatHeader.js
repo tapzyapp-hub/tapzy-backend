@@ -43,7 +43,6 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
               ${iBlockedThem ? `<div class="tz-chat-partner-badge">Blocked</div>` : ""}
               ${theyBlockedMe ? `<div class="tz-chat-partner-badge">Unavailable</div>` : ""}
             </div>
-            <div class="tz-chat-partner-handle">@${escapeHtml(username)}</div>
           </div>
         </div>
       </div>

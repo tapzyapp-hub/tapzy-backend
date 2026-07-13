@@ -160,7 +160,7 @@ function renderVideoPreviewFrame(url, escapeHtml, extra = {}) {
   const controls = extra.controls === false ? '' : ' controls';
   const autoplay = extra.autoplay ? ' autoplay' : '';
   const muted = extra.muted ? ' muted' : '';
-  const preload = escapeHtml(extra.preload || 'metadata');
+  const preload = escapeHtml(extra.preload || 'auto');
   const aria = escapeHtml(extra.ariaLabel || 'Play video');
   return `
     <div class="tz-video-frame${extra.autoplay ? ' is-autoplay' : ''}" data-video-frame>
@@ -168,7 +168,7 @@ function renderVideoPreviewFrame(url, escapeHtml, extra = {}) {
         <div class="tz-video-preview-blur"></div>
         <div class="tz-video-preview-badge">▶</div>
       </div>
-      <video class="${className}"${controls}${autoplay}${muted} preload="${preload}" playsinline webkit-playsinline src="${src}"></video>
+      <video class="${className}"${controls}${autoplay}${muted} preload="${preload}" playsinline webkit-playsinline muted poster="${src}#t=0.1" src="${src}#t=0.1"></video>
     </div>
   `;
 }
@@ -4264,6 +4264,26 @@ module.exports = function renderConversationPage({
 
   body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
     background:#000 !important;
+  }
+
+
+  /* chat-video-preview-fix */
+  body:not(.tz-has-stories-top-nav) .tz-video-preview{
+    background:radial-gradient(circle at 50% 50%, rgba(18,26,42,.28), rgba(3,5,10,.10) 62%);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-video-preview-blur{
+    display:none;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-video-preview-badge{
+    background:rgba(8,12,20,.58);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-video{
+    background:#000;
   }
 </style>
 
