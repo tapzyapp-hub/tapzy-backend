@@ -4,6 +4,7 @@ module.exports = function renderChatComposer({ conversationId }) {
 
     <form
       id="tzChatForm"
+      data-no-page-loader
       autocomplete="off"
       method="POST"
       action="/messages/${conversationId}"
