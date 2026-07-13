@@ -450,6 +450,17 @@ router.get("/u/:username", async (req, res) => {
 
     <script data-tapzy-horizontal-lock>
       (function(){
+        var lastTouchEnd = 0;
+        function stopZoom(event){ if(event && event.preventDefault) event.preventDefault(); }
+        document.addEventListener("gesturestart", stopZoom, { passive:false });
+        document.addEventListener("gesturechange", stopZoom, { passive:false });
+        document.addEventListener("gestureend", stopZoom, { passive:false });
+        document.addEventListener("touchend", function(event){
+          var now = Date.now();
+          if (now - lastTouchEnd <= 300) stopZoom(event);
+          lastTouchEnd = now;
+        }, { passive:false });
+        document.addEventListener("wheel", function(event){ if(event.ctrlKey) stopZoom(event); }, { passive:false });
         function pinHorizontalScroll(){
           if (window.scrollX || document.documentElement.scrollLeft || document.body.scrollLeft) {
             document.documentElement.scrollLeft = 0;
