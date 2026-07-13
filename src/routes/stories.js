@@ -597,7 +597,6 @@ router.get("/stories", async (req, res) => {
   try {
 
     const currentProfile = req.currentProfile || null;
-
     const now = new Date();
 
 
@@ -3923,6 +3922,8 @@ router.get("/stories/live/:id", async (req, res) => {
 router.get("/stories/feed", async (req, res) => {
   try {
     const currentProfile = req.currentProfile || null;
+    const requestedFeedFilter = String(req.query.filter || "").toLowerCase();
+    const initialFeedFilter = requestedFeedFilter === "following" ? "following" : "all";
     const now = new Date();
     const followingIds = new Set();
 
@@ -4280,11 +4281,11 @@ router.get("/stories/feed", async (req, res) => {
     <body>
       <main class="sf-app">
         <header class="sf-top">
-          <a class="sf-brand" href="/stories" aria-label="Back to Stories">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</a>
+          <button class="sf-brand tz-ai-trigger" type="button" data-tapzy-ai-open aria-label="Ask Tapzy">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</button>
           <nav class="sf-tabs" aria-label="Story feed filters">
             <a class="sf-tab" href="/events">Events</a>
-            <button class="sf-tab" type="button" data-filter="following">Following</button>
-            <button class="sf-tab is-active" type="button" data-filter="all">Discover</button>
+            <button class="sf-tab${initialFeedFilter === "following" ? " is-active" : ""}" type="button" data-filter="following">Following</button>
+            <button class="sf-tab${initialFeedFilter === "all" ? " is-active" : ""}" type="button" data-filter="all">Discover</button>
             <a class="sf-tab" href="/messages">Messages</a>
           </nav>
           <button class="sf-search" type="button" data-search aria-label="Search Tapzy">
@@ -4306,12 +4307,26 @@ router.get("/stories/feed", async (req, res) => {
           </a>
         </nav>
       </main>
+      ${renderTapzyAssistant({ username: currentProfile?.username || "User", pageType: initialFeedFilter === "following" ? "following" : "stories" })}
       <script>
         (function(){
           var feed = document.querySelector('.sf-feed');
           var slides = Array.prototype.slice.call(document.querySelectorAll('.sf-slide'));
           var tabs = Array.prototype.slice.call(document.querySelectorAll('.sf-tab[data-filter]'));
           var empty = document.querySelector('.sf-no-results');
+          var initialFilter = "${initialFeedFilter}";
+          function applyStoryFilter(filter, activeTab, resetScroll){
+            var visible = 0;
+            tabs.forEach(function(item){ item.classList.toggle('is-active', activeTab ? item === activeTab : item.getAttribute('data-filter') === filter); });
+            slides.forEach(function(slide){
+              var show = filter === 'all' || slide.getAttribute('data-' + filter) === '1';
+              slide.hidden = !show;
+              if (show) visible += 1;
+            });
+            if (empty) empty.classList.toggle('is-visible', visible === 0);
+            if (resetScroll && feed) feed.scrollTop = 0;
+          }
+          applyStoryFilter(initialFilter, null, false);
           var actionRails = Array.prototype.slice.call(document.querySelectorAll('.sf-actions'));
           var actionIdleTimer = null;
           var tapzySoundUnlocked = localStorage.getItem('tapzy_story_sound') === '1';
@@ -4566,15 +4581,7 @@ router.get("/stories/feed", async (req, res) => {
             tab.addEventListener('click', function(){
               runWithFeedLoader(function(){
                 var filter = tab.getAttribute('data-filter');
-                var visible = 0;
-                tabs.forEach(function(item){ item.classList.toggle('is-active', item === tab); });
-                slides.forEach(function(slide){
-                  var show = filter === 'all' || slide.getAttribute('data-' + filter) === '1';
-                  slide.hidden = !show;
-                  if (show) visible += 1;
-                });
-                empty.classList.toggle('is-visible', visible === 0);
-                feed.scrollTop = 0;
+                applyStoryFilter(filter, tab, true);
                 wakeActionRails();
                 scheduleFeedPlaybackSync(80);
               });
