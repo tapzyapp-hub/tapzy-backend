@@ -4085,62 +4085,62 @@ router.get("/u/:username", async (req, res) => {
 
       /* profile-story-compact-taskbar-final: wins after mobile layout rules */
       .profile-story-stage-caption{
-        bottom:92px !important;
+        bottom:82px !important;
       }
       .profile-story-taskbar{
-        left:18px !important;
-        right:18px !important;
-        bottom:18px !important;
-        gap:9px !important;
-        padding:8px !important;
-        min-height:64px !important;
-        border-radius:32px !important;
-        border:1px solid rgba(255,255,255,.13) !important;
-        background:linear-gradient(180deg,rgba(18,20,26,.42),rgba(5,7,12,.56)) !important;
-        box-shadow:0 18px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08) !important;
-        backdrop-filter:blur(18px) saturate(1.15) !important;
-        -webkit-backdrop-filter:blur(18px) saturate(1.15) !important;
+        left:20px !important;
+        right:20px !important;
+        bottom:16px !important;
+        gap:7px !important;
+        padding:6px !important;
+        min-height:54px !important;
+        border-radius:999px !important;
+        border:1px solid rgba(122,186,255,.18) !important;
+        background:linear-gradient(180deg,rgba(18,26,36,.34),rgba(3,5,10,.52)) !important;
+        box-shadow:0 12px 34px rgba(0,0,0,.30),0 0 18px rgba(81,164,255,.08),inset 0 1px 0 rgba(255,255,255,.08) !important;
+        backdrop-filter:blur(20px) saturate(1.18) !important;
+        -webkit-backdrop-filter:blur(20px) saturate(1.18) !important;
       }
       .profile-story-rail{
-        gap:8px !important;
+        gap:7px !important;
         align-items:center !important;
       }
       .profile-story-rail-btn{
         width:auto !important;
-        min-width:88px !important;
+        min-width:78px !important;
         flex:0 0 auto !important;
-        min-height:48px !important;
-        padding:0 16px !important;
-        border-radius:18px !important;
-        font-size:13px !important;
+        min-height:42px !important;
+        padding:0 12px !important;
+        border-radius:16px !important;
+        font-size:12px !important;
         line-height:1 !important;
         letter-spacing:0 !important;
       }
       .profile-story-stage-sound{
-        width:52px !important;
-        height:52px !important;
-        min-width:52px !important;
-        min-height:52px !important;
+        width:46px !important;
+        height:46px !important;
+        min-width:46px !important;
+        min-height:46px !important;
         border-radius:999px !important;
         border:2px solid rgba(255,255,255,.82) !important;
         background:rgba(5,7,12,.58) !important;
-        box-shadow:0 0 0 7px rgba(255,255,255,.045),0 0 26px rgba(118,194,255,.22),inset 0 1px 0 rgba(255,255,255,.12) !important;
+        box-shadow:0 0 0 5px rgba(255,255,255,.04),0 0 22px rgba(118,194,255,.20),inset 0 1px 0 rgba(255,255,255,.12) !important;
         animation:none !important;
       }
       .profile-story-stage-sound::before{
-        inset:-7px !important;
+        inset:-6px !important;
         border-color:rgba(255,255,255,.16) !important;
-        box-shadow:0 0 22px rgba(92,166,255,.16) !important;
+        box-shadow:0 0 18px rgba(92,166,255,.15) !important;
         opacity:.62 !important;
       }
       .profile-story-stage-sound::after{display:none !important;}
-      .profile-story-stage-sound svg{padding:12px !important;}
+      .profile-story-stage-sound svg{padding:10px !important;}
       @media(max-width:430px){
-        .profile-story-stage-caption{left:20px !important;right:20px !important;bottom:88px !important;}
-        .profile-story-taskbar{left:18px !important;right:18px !important;bottom:max(14px, env(safe-area-inset-bottom)) !important;min-height:62px !important;padding:7px !important;gap:7px !important;border-radius:30px !important;}
-        .profile-story-rail{gap:7px !important;}
-        .profile-story-rail-btn{min-width:82px !important;min-height:46px !important;padding:0 13px !important;border-radius:17px !important;font-size:12px !important;}
-        .profile-story-stage-sound{width:50px !important;height:50px !important;min-width:50px !important;min-height:50px !important;}
+        .profile-story-stage-caption{left:20px !important;right:20px !important;bottom:78px !important;}
+        .profile-story-taskbar{left:18px !important;right:18px !important;bottom:max(12px, env(safe-area-inset-bottom)) !important;min-height:54px !important;padding:6px !important;gap:6px !important;border-radius:999px !important;}
+        .profile-story-rail{gap:6px !important;}
+        .profile-story-rail-btn{min-width:74px !important;min-height:40px !important;padding:0 10px !important;border-radius:15px !important;font-size:11.5px !important;}
+        .profile-story-stage-sound{width:44px !important;height:44px !important;min-width:44px !important;min-height:44px !important;}
       }
 
       /* TAPZY MOBILE LAYOUT MATCH FIX: force Edit Profile to use the same full-width mobile layout as the rest of the app. */
