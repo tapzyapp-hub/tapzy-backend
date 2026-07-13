@@ -686,7 +686,7 @@ function requireOwnerAccess(profile, req, res) {
 
     <title>Access denied</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 
     <style>
 
@@ -944,7 +944,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
     <title>${escapeHtml(resolvedTitle)}</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 
     <meta name="description" content="${escapeHtml(resolvedDescription)}" />
 

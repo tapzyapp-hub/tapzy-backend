@@ -1276,9 +1276,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           if (!grid || !loader || !end) return;
 
-          const isAndroid = /Android/i.test(navigator.userAgent || "");
+          const useStableAppendFeed = true;
 
-          if (isAndroid) {
+          if (useStableAppendFeed) {
             let page = 2;
             let loading = false;
             let hasMore = loader.dataset.hasMore === "1";

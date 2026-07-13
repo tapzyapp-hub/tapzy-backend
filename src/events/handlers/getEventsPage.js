@@ -2849,8 +2849,7 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .mobile-events-grid .event-card,
-        .mobile-events-grid .event-card:hover,
-        .mobile-events-grid .event-card.is-touch-active{
+        .mobile-events-grid .event-card:hover{
           border-radius:32px !important;
           clip-path:inset(0 round 32px) !important;
           overflow:hidden !important;
