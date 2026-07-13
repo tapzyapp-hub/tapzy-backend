@@ -448,8 +448,20 @@ router.get("/u/:username", async (req, res) => {
 
     const body = `
 
-    <script data-tapzy-horizontal-lock>
+    <script data-tapzy-horizontal-lock data-tapzy-profile-zoom-lock>
       (function(){
+        function stopProfileZoom(event){
+          if (event && event.cancelable && event.preventDefault) event.preventDefault();
+        }
+        document.addEventListener("gesturestart", stopProfileZoom, { passive:false, capture:true });
+        document.addEventListener("gesturechange", stopProfileZoom, { passive:false, capture:true });
+        document.addEventListener("gestureend", stopProfileZoom, { passive:false, capture:true });
+        document.addEventListener("touchmove", function(event){
+          if (event.touches && event.touches.length > 1) stopProfileZoom(event);
+        }, { passive:false, capture:true });
+        document.addEventListener("wheel", function(event){
+          if (event.ctrlKey) stopProfileZoom(event);
+        }, { passive:false, capture:true });
         var edgeSwipe = null;
         function startEdgeSwipe(event){
           if (!event.touches || event.touches.length !== 1) { edgeSwipe = null; return; }
@@ -490,6 +502,30 @@ router.get("/u/:username", async (req, res) => {
     </script>
 
     <style id="tapzy-profile-horizontal-lock">
+      html,
+      body,
+      .tz-has-stories-top-nav,
+      .tz-has-stories-bottom-nav,
+      .profile-wrap{
+        background:#000!important;
+        background-color:#000!important;
+      }
+      html{
+        overscroll-behavior:none!important;
+      }
+      body{
+        overscroll-behavior:none!important;
+      }
+      .profile-wrap::before{
+        content:"";
+        position:fixed;
+        inset:-120px;
+        z-index:-1;
+        background:#000;
+        pointer-events:none;
+      }
+      .profile-wrap{isolation:isolate;}
+      /* tapzy-profile-black-backdrop */
       html,
       body{
         width:100%!important;
