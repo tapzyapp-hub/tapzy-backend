@@ -347,7 +347,7 @@ module.exports = function renderConversationPage({
 
   return `
 
-    <div class="wrap tz-message-page-wrap">
+    <div class="wrap tz-message-page-wrap" style="padding-top:calc(env(safe-area-inset-top, 0px) + 188px);">
 
       <div class="tz-chat-shell">
 
@@ -388,15 +388,6 @@ module.exports = function renderConversationPage({
   }
 
 
-  body.tz-has-stories-top-nav .tz-message-page-wrap .tz-chat-shell{
-    margin-top:42px !important;
-  }
-
-  @media(max-width:700px){
-    body.tz-has-stories-top-nav .tz-message-page-wrap .tz-chat-shell{
-      margin-top:46px !important;
-    }
-  }
 
   .tz-chat-shell{
 
