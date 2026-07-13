@@ -2197,7 +2197,22 @@ router.get("/stories/live/new", async (req, res) => {
     <html lang="en">
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+      <script data-tapzy-zoom-lock>
+        (function(){
+          var lastTouchEnd = 0;
+          function stopZoom(event){ if(event && event.preventDefault) event.preventDefault(); }
+          document.addEventListener("gesturestart", stopZoom, { passive:false });
+          document.addEventListener("gesturechange", stopZoom, { passive:false });
+          document.addEventListener("gestureend", stopZoom, { passive:false });
+          document.addEventListener("touchend", function(event){
+            var now = Date.now();
+            if (now - lastTouchEnd <= 300) stopZoom(event);
+            lastTouchEnd = now;
+          }, { passive:false });
+          document.addEventListener("wheel", function(event){ if(event.ctrlKey) stopZoom(event); }, { passive:false });
+        })();
+      </script>
       <meta name="theme-color" content="#000000" />
       <title>Go Live · Tapzy</title>
       <style>
@@ -3118,7 +3133,22 @@ router.get("/stories/live/:id", async (req, res) => {
     <html lang="en">
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+      <script data-tapzy-zoom-lock>
+        (function(){
+          var lastTouchEnd = 0;
+          function stopZoom(event){ if(event && event.preventDefault) event.preventDefault(); }
+          document.addEventListener("gesturestart", stopZoom, { passive:false });
+          document.addEventListener("gesturechange", stopZoom, { passive:false });
+          document.addEventListener("gestureend", stopZoom, { passive:false });
+          document.addEventListener("touchend", function(event){
+            var now = Date.now();
+            if (now - lastTouchEnd <= 300) stopZoom(event);
+            lastTouchEnd = now;
+          }, { passive:false });
+          document.addEventListener("wheel", function(event){ if(event.ctrlKey) stopZoom(event); }, { passive:false });
+        })();
+      </script>
       <meta name="theme-color" content="#000000" />
       <title>${escapeHtml(story.text || "Tapzy Live")}</title>
       <style>
@@ -4080,7 +4110,22 @@ router.get("/stories/feed", async (req, res) => {
     <html lang="en">
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+      <script data-tapzy-zoom-lock>
+        (function(){
+          var lastTouchEnd = 0;
+          function stopZoom(event){ if(event && event.preventDefault) event.preventDefault(); }
+          document.addEventListener("gesturestart", stopZoom, { passive:false });
+          document.addEventListener("gesturechange", stopZoom, { passive:false });
+          document.addEventListener("gestureend", stopZoom, { passive:false });
+          document.addEventListener("touchend", function(event){
+            var now = Date.now();
+            if (now - lastTouchEnd <= 300) stopZoom(event);
+            lastTouchEnd = now;
+          }, { passive:false });
+          document.addEventListener("wheel", function(event){ if(event.ctrlKey) stopZoom(event); }, { passive:false });
+        })();
+      </script>
       <meta name="theme-color" content="#000000" />
       <title>Story Feed · Tapzy</title>
       <style>
