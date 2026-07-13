@@ -958,6 +958,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
   const pageType = shellOptions.pageType || "general";
   const showStoriesBottomNav = !!shellOptions.storiesBottomNav;
+  const hideTopBar = shellOptions.hideTopBar === true;
   const bodyClass = String(shellOptions.bodyClass || "").trim();
   const storiesTopNavActive = shellOptions.storiesTopNavActive || "";
 
@@ -3155,7 +3156,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
   <body class="${[showStoriesBottomNav ? "tz-has-stories-bottom-nav" : "", storiesTopNavActive ? "tz-has-stories-top-nav" : "", escapeHtml(bodyClass)].filter(Boolean).join(" ")}">
 
-    ${renderTopBar({ currentProfile, pageTitle, pageType })}
+    ${hideTopBar ? "" : renderTopBar({ currentProfile, pageTitle, pageType })}
 
     ${storiesTopNavActive ? renderStoriesTopNav({ currentProfile, active: storiesTopNavActive }) : ""}
 
