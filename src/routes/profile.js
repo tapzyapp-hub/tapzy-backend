@@ -450,17 +450,29 @@ router.get("/u/:username", async (req, res) => {
 
     <script data-tapzy-horizontal-lock>
       (function(){
-        var lastTouchEnd = 0;
-        function stopZoom(event){ if(event && event.preventDefault) event.preventDefault(); }
-        document.addEventListener("gesturestart", stopZoom, { passive:false });
-        document.addEventListener("gesturechange", stopZoom, { passive:false });
-        document.addEventListener("gestureend", stopZoom, { passive:false });
-        document.addEventListener("touchend", function(event){
-          var now = Date.now();
-          if (now - lastTouchEnd <= 300) stopZoom(event);
-          lastTouchEnd = now;
-        }, { passive:false });
-        document.addEventListener("wheel", function(event){ if(event.ctrlKey) stopZoom(event); }, { passive:false });
+        var edgeSwipe = null;
+        function startEdgeSwipe(event){
+          if (!event.touches || event.touches.length !== 1) { edgeSwipe = null; return; }
+          var touch = event.touches[0];
+          var width = window.innerWidth || document.documentElement.clientWidth || 0;
+          var edge = touch.clientX <= 28 ? "left" : (width && touch.clientX >= width - 28 ? "right" : "");
+          edgeSwipe = edge ? { edge: edge, x: touch.clientX, y: touch.clientY } : null;
+        }
+        function stopEdgeSwipe(event){
+          if (!edgeSwipe || !event.touches || event.touches.length !== 1) return;
+          var touch = event.touches[0];
+          var dx = touch.clientX - edgeSwipe.x;
+          var dy = touch.clientY - edgeSwipe.y;
+          var isBrowserSwipe = (edgeSwipe.edge === "left" && dx > 8) || (edgeSwipe.edge === "right" && dx < -8);
+          if (isBrowserSwipe && Math.abs(dx) > Math.abs(dy) * 1.15) {
+            event.preventDefault();
+            pinHorizontalScroll();
+          }
+        }
+        document.addEventListener("touchstart", startEdgeSwipe, { passive:true });
+        document.addEventListener("touchmove", stopEdgeSwipe, { passive:false });
+        document.addEventListener("touchend", function(){ edgeSwipe = null; }, { passive:true });
+        document.addEventListener("touchcancel", function(){ edgeSwipe = null; }, { passive:true });
         function pinHorizontalScroll(){
           if (window.scrollX || document.documentElement.scrollLeft || document.body.scrollLeft) {
             document.documentElement.scrollLeft = 0;
