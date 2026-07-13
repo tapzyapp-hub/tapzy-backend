@@ -1006,25 +1006,29 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
     </script>
 
     <style data-tapzy-page-loader>
-  html.tapzy-page-loading,
-  html.tapzy-page-loading body{background:#000!important;}
-  html.tapzy-page-loading body::before{content:"";position:fixed;inset:0;z-index:2147483644;background:#000;pointer-events:none;}
-  html.tapzy-page-loading body::after{content:"";position:fixed;left:50%;top:50%;z-index:2147483645;width:86px;height:86px;transform:translate(-50%,-50%);border-radius:28px;background:linear-gradient(145deg,#2f76ff,#1145ad);box-shadow:0 24px 70px rgba(47,118,255,.38),0 0 0 1px rgba(255,255,255,.16) inset;-webkit-mask:url('/images/tapzy-mark-white.png') center / 70% 70% no-repeat;mask:url('/images/tapzy-mark-white.png') center / 70% 70% no-repeat;animation:tapzyPageLoaderPulse 1.45s ease-in-out infinite;pointer-events:none;}
-  @keyframes tapzyPageLoaderPulse{0%,100%{opacity:.78;transform:translate(-50%,-50%) scale(.94);filter:drop-shadow(0 0 14px rgba(47,118,255,.32));}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);filter:drop-shadow(0 0 28px rgba(111,210,255,.62));}}
-</style>
-<script data-tapzy-page-loader>
-  (function(){
-    var root=document.documentElement;
-    var hideTimer=null;
-    function showLoader(){if(hideTimer)window.clearTimeout(hideTimer);root.classList.add('tapzy-page-loading');root.classList.remove('tapzy-page-ready');}
-    function hideLoader(){if(hideTimer)window.clearTimeout(hideTimer);hideTimer=window.setTimeout(function(){root.classList.remove('tapzy-page-loading');root.classList.add('tapzy-page-ready');},80);}
-    window.__tapzyShowPageLoader=showLoader;window.__tapzyHidePageLoader=hideLoader;showLoader();
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){window.requestAnimationFrame(hideLoader);},{once:true});else window.requestAnimationFrame(hideLoader);
-    window.addEventListener('load',hideLoader,{once:true});window.addEventListener('pageshow',hideLoader);window.addEventListener('beforeunload',showLoader);window.addEventListener('pagehide',showLoader);
-    document.addEventListener('submit',function(event){var form=event.target;if(!form||form.hasAttribute('data-no-page-loader'))return;showLoader();},true);
-    document.addEventListener('click',function(event){var link=event.target&&event.target.closest?event.target.closest('a[href]'):null;if(!link||event.defaultPrevented)return;if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;if(link.target&&link.target!=='_self')return;if(link.hasAttribute('download')||link.hasAttribute('data-no-page-loader'))return;var url;try{url=new URL(link.href,location.href);}catch(_){return;}if(url.origin!==location.origin)return;if(url.pathname===location.pathname&&url.search===location.search&&url.hash)return;showLoader();},true);
-  })();
-</script>
+      html.tapzy-page-loading,
+      html.tapzy-page-loading body{background:#000!important;overflow:hidden!important;overscroll-behavior:none!important;}
+      html.tapzy-page-loading body::before{content:"";position:fixed;inset:0;z-index:2147483644;background:radial-gradient(circle at 50% 38%,rgba(47,118,255,.32),rgba(47,118,255,0) 30%),radial-gradient(circle at 50% 46%,rgba(111,210,255,.14),rgba(111,210,255,0) 46%),linear-gradient(180deg,#06101f 0%,#02050b 48%,#000 100%);pointer-events:none;}
+      html.tapzy-page-loading body::after{content:"";position:fixed;left:50%;top:50%;z-index:2147483645;width:86px;height:86px;transform:translate(-50%,-50%);border-radius:26px;background:url('/images/tapzy-mark-white.png') center / 62% 62% no-repeat,linear-gradient(145deg,#2f7bff 0%,#1959e6 52%,#0d34a8 100%);box-shadow:0 24px 76px rgba(47,118,255,.46),0 0 44px rgba(111,210,255,.34),0 0 0 1px rgba(255,255,255,.22) inset;animation:tapzyPageLoaderPulse 1.45s ease-in-out infinite;pointer-events:none;}
+      @keyframes tapzyPageLoaderPulse{0%,100%{opacity:.86;transform:translate(-50%,-50%) scale(.94);box-shadow:0 18px 58px rgba(47,118,255,.30),0 0 0 0 rgba(80,152,255,.36),0 0 0 1px rgba(255,255,255,.18) inset;}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);box-shadow:0 28px 92px rgba(47,118,255,.58),0 0 0 18px rgba(80,152,255,.08),0 0 0 1px rgba(255,255,255,.24) inset;}}
+    </style>
+    <script data-tapzy-page-loader>
+      (function(){
+        var root=document.documentElement;
+        var minMs=1250;
+        var shownAt=Date.now();
+        var hideTimer=null;
+        var navigating=false;
+        function showLoader(){shownAt=Date.now();if(hideTimer)window.clearTimeout(hideTimer);root.classList.add('tapzy-page-loading');root.classList.remove('tapzy-page-ready');}
+        function hideLoader(){if(navigating)return;if(hideTimer)window.clearTimeout(hideTimer);var wait=Math.max(0,minMs-(Date.now()-shownAt));hideTimer=window.setTimeout(function(){root.classList.remove('tapzy-page-loading');root.classList.add('tapzy-page-ready');},wait);}
+        function samePageHash(url){return url.pathname===location.pathname&&url.search===location.search&&url.hash;}
+        window.__tapzyShowPageLoader=showLoader;window.__tapzyHidePageLoader=hideLoader;showLoader();
+        if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){window.requestAnimationFrame(hideLoader);},{once:true});else window.requestAnimationFrame(hideLoader);
+        window.addEventListener('load',hideLoader,{once:true});window.addEventListener('pageshow',function(){navigating=false;hideLoader();});window.addEventListener('beforeunload',showLoader);window.addEventListener('pagehide',showLoader);
+        document.addEventListener('click',function(event){var link=event.target&&event.target.closest?event.target.closest('a[href]'):null;if(!link||event.defaultPrevented)return;if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;if(link.target&&link.target!=='_self')return;if(link.hasAttribute('download')||link.hasAttribute('data-no-page-loader'))return;var url;try{url=new URL(link.href,location.href);}catch(_){return;}if(url.origin!==location.origin||samePageHash(url))return;event.preventDefault();navigating=true;showLoader();window.setTimeout(function(){location.href=url.href;},minMs);},true);
+        document.addEventListener('submit',function(event){var form=event.target;if(!form||form.hasAttribute('data-no-page-loader')||form.getAttribute('data-tapzy-loader-submitting')==='1')return;event.preventDefault();form.setAttribute('data-tapzy-loader-submitting','1');navigating=true;showLoader();window.setTimeout(function(){HTMLFormElement.prototype.submit.call(form);},minMs);},true);
+      })();
+    </script>
 
     ${extraHead}
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
