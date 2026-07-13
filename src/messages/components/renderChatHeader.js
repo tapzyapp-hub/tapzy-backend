@@ -37,12 +37,13 @@ module.exports = function renderChatHeader({ other, escapeHtml, conversationId, 
           <div class="tz-chat-partner-copy">
             <div class="tz-chat-partner-name-row">
               <div class="tz-chat-partner-name">${escapeHtml(name)}</div>
-              <div class="tz-chat-partner-badge">Signal</div>
+              <div class="tz-chat-partner-badge">Contact</div>
               ${isPinned ? `<div class="tz-chat-partner-badge">Pinned</div>` : ""}
               ${isMuted ? `<div class="tz-chat-partner-badge">Muted</div>` : ""}
               ${iBlockedThem ? `<div class="tz-chat-partner-badge">Blocked</div>` : ""}
               ${theyBlockedMe ? `<div class="tz-chat-partner-badge">Unavailable</div>` : ""}
             </div>
+            <div class="tz-chat-partner-handle">@${escapeHtml(username)}</div>
           </div>
         </div>
       </div>

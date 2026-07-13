@@ -3464,6 +3464,306 @@ module.exports = function renderConversationPage({
       width:calc(100vw - 28px) !important;
     }
   }
+
+
+  /* contacts-style-message-rebuild */
+  body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+    width:min(100%, 640px);
+    max-width:640px;
+    margin:0 auto;
+    padding:18px 20px calc(126px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-shell{
+    max-width:100%;
+    margin:0 auto;
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-shell::before,
+  body:not(.tz-has-stories-top-nav) .tz-chat-shell::after{
+    display:none;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar{
+    margin:0;
+    padding:16px;
+    min-height:118px;
+    border-radius:32px;
+    border:1px solid rgba(119,190,255,.18);
+    background:
+      radial-gradient(520px 180px at 50% -20%, rgba(150,210,255,.22), transparent 58%),
+      radial-gradient(440px 160px at 86% 0%, rgba(76,145,255,.13), transparent 54%),
+      linear-gradient(180deg, rgba(22,35,49,.94), rgba(6,9,15,.98));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      inset 0 -18px 36px rgba(0,0,0,.22),
+      0 0 0 1px rgba(86,160,255,.08),
+      0 18px 48px rgba(0,0,0,.34),
+      0 0 34px rgba(90,170,255,.12);
+    overflow:hidden;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    opacity:.05;
+    pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,.8) .65px, transparent .65px);
+    background-size:10px 10px;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar-left{
+    position:relative;
+    z-index:2;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-back{
+    width:42px;
+    height:42px;
+    border-radius:15px;
+    font-size:26px;
+    background:linear-gradient(180deg, rgba(5,8,14,.88), rgba(0,0,0,.94));
+    border:1px solid rgba(127,210,255,.20);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.28);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner{
+    flex:1;
+    min-width:0;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-avatar{
+    width:64px;
+    height:64px;
+    border-radius:22px;
+    border:1px solid rgba(150,210,255,.28);
+    box-shadow:0 0 0 1px rgba(255,255,255,.05) inset, 0 0 24px rgba(90,170,255,.18);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-name{
+    font-size:26px;
+    font-weight:900;
+    letter-spacing:-.4px;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-badge{
+    display:none;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar-actions{
+    position:relative;
+    z-index:2;
+    margin-left:auto;
+    gap:8px;
+    align-items:center;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-pill,
+  body:not(.tz-has-stories-top-nav) .tz-chat-settings-menu summary{
+    min-width:74px;
+    min-height:38px;
+    height:38px;
+    padding:0 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:850;
+    background:linear-gradient(180deg, rgba(8,11,18,.88), rgba(0,0,0,.94));
+    border:1px solid rgba(127,210,255,.16);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 10px 24px rgba(0,0,0,.24);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-pill-danger{
+    color:#ffdbe2;
+    border-color:rgba(255,108,144,.28);
+    background:linear-gradient(180deg, rgba(54,15,24,.88), rgba(18,4,9,.96));
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-window{
+    min-height:44vh;
+    max-height:52vh;
+    padding:14px;
+    border-radius:30px;
+    border:1px solid rgba(119,190,255,.14);
+    background:
+      radial-gradient(560px 190px at 50% -20%, rgba(68,136,255,.12), transparent 58%),
+      linear-gradient(180deg, rgba(3,5,10,.98), rgba(0,0,0,1));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.04),
+      0 0 0 1px rgba(76,150,255,.05),
+      0 18px 46px rgba(0,0,0,.30);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-date-divider span{
+    min-height:34px;
+    padding:0 16px;
+    border-radius:999px;
+    background:linear-gradient(180deg, rgba(20,24,34,.92), rgba(8,10,15,.96));
+    border:1px solid rgba(255,255,255,.10);
+    color:#dce8f8;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-bubble{
+    border-radius:24px;
+    border:1px solid rgba(127,210,255,.12);
+    box-shadow:0 14px 34px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-bubble.mine,
+  body:not(.tz-has-stories-top-nav) .tz-chat-bubble.other{
+    background:
+      radial-gradient(260px 100px at 70% 0%, rgba(95,165,255,.13), transparent 62%),
+      linear-gradient(180deg, rgba(25,31,44,.95), rgba(8,10,16,.99));
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+    margin-top:0;
+    padding:12px;
+    border-radius:30px;
+    border:1px solid rgba(119,190,255,.16);
+    background:
+      radial-gradient(440px 120px at 50% 0%, rgba(95,165,255,.10), transparent 64%),
+      linear-gradient(180deg, rgba(12,17,25,.96), rgba(0,0,0,.98));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 18px 46px rgba(0,0,0,.30);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer-inner{
+    gap:10px;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-input-wrap{
+    min-height:54px;
+    border-radius:999px;
+    background:linear-gradient(180deg, rgba(20,22,30,.94), rgba(7,8,12,.98));
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-input{
+    min-height:52px;
+    padding:15px 18px;
+    font-size:16px;
+    font-weight:800;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-upload-pill,
+  body:not(.tz-has-stories-top-nav) .tz-chat-send{
+    width:54px;
+    height:54px;
+    min-width:54px;
+    border-radius:999px;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-send{
+    width:auto;
+    min-width:88px;
+    padding:0 20px;
+    background:linear-gradient(180deg, #f9fcff, #dceeff);
+    color:#07101c;
+    border-color:rgba(255,255,255,.7);
+    font-weight:900;
+  }
+
+  @media(max-width:700px){
+    body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+      width:100%;
+      max-width:100%;
+      padding:14px 20px calc(126px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-shell{
+      gap:12px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar{
+      min-height:104px;
+      border-radius:28px;
+      padding:12px;
+      flex-wrap:nowrap;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-back{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner-avatar{
+      width:54px;
+      height:54px;
+      border-radius:19px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner-name{
+      font-size:22px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar-actions{
+      flex:0 0 auto;
+      gap:6px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-pill,
+    body:not(.tz-has-stories-top-nav) .tz-chat-settings-menu summary{
+      min-width:62px;
+      height:34px;
+      min-height:34px;
+      padding:0 10px;
+      font-size:11px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-window{
+      min-height:44vh;
+      max-height:50vh;
+      border-radius:28px;
+      padding:12px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-bubble{
+      max-width:84%;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+      border-radius:28px;
+      padding:10px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-input-wrap{
+      min-height:50px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-input{
+      min-height:48px;
+      padding:13px 16px;
+      font-size:15px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-upload-pill,
+    body:not(.tz-has-stories-top-nav) .tz-chat-send{
+      width:50px;
+      height:50px;
+      min-width:50px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-send{
+      min-width:78px;
+      padding:0 16px;
+    }
+  }
 </style>
 
 
