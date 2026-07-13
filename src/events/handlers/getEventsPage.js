@@ -510,6 +510,47 @@ module.exports = async function getEventsPage(req, res) {
       .events-chip-row::-webkit-scrollbar{ display:none; }
       .events-chip{ flex:0 0 auto; min-width:124px; text-align:center; padding:13px 18px; border-radius:999px; text-decoration:none; font-weight:800; font-size:12px; letter-spacing:.065em; text-transform:uppercase; color:rgba(255,255,255,.9); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06); }
       .events-chip.is-active{ background:#eef3fb; color:#101626; border-color:rgba(255,255,255,.45); }
+
+
+      /* events-pill-autohide */
+      .events-chip-wrap{
+        position:relative;
+        transition:min-height .26s ease, margin .26s ease, padding .26s ease;
+      }
+      .events-chip-row{
+        max-height:72px;
+        transition:opacity .24s ease, transform .24s ease, filter .24s ease, max-height .26s ease, padding .26s ease;
+      }
+      .events-chip-wrap.is-pill-hidden{
+        min-height:34px;
+        margin-top:0 !important;
+        margin-bottom:8px !important;
+        padding-top:0;
+        padding-bottom:0;
+        touch-action:manipulation;
+      }
+      .events-chip-wrap.is-pill-hidden .events-chip-row{
+        max-height:0;
+        padding-top:0 !important;
+        padding-bottom:0 !important;
+        opacity:0;
+        transform:translateY(-12px) scale(.985);
+        filter:blur(2px);
+        pointer-events:none;
+      }
+      .events-chip-wrap.is-pill-hidden::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        min-height:34px;
+        pointer-events:auto;
+      }
+      .events-chip-wrap.is-pill-visible .events-chip-row{
+        opacity:1;
+        transform:translateY(0) scale(1);
+        filter:none;
+      }
+
       .events-location-prompt{ position:relative; overflow:hidden; margin:18px 0 24px; padding:26px; border-radius:30px; border:1px solid rgba(127,210,255,.28); background:radial-gradient(520px 260px at 92% -10%, rgba(83,184,255,.22), transparent 58%), radial-gradient(380px 220px at 8% 0%, rgba(255,255,255,.08), transparent 56%), linear-gradient(180deg, rgba(19,28,43,.88), rgba(7,9,14,.96)); box-shadow:0 26px 80px rgba(0,0,0,.44), 0 0 0 1px rgba(255,255,255,.05) inset, 0 0 46px rgba(83,184,255,.10); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
       .events-location-prompt h2{ margin:8px 0 8px; font-size:28px; letter-spacing:-.04em; }
       .events-location-prompt p{ max-width:680px; line-height:1.55; }
@@ -3017,6 +3058,62 @@ module.exports = async function getEventsPage(req, res) {
 </style>
 
 
+
+
+
+    <script data-events-pill-autohide>
+      (function(){
+        var wrap = document.querySelector('.events-chip-wrap');
+        if (!wrap || wrap.dataset.autohideReady === '1') return;
+        wrap.dataset.autohideReady = '1';
+        var hideTimer = null;
+        var tapCount = 0;
+        var tapTimer = null;
+        var downX = 0;
+        var downY = 0;
+        var moved = false;
+        var HIDE_DELAY = 5000;
+        function hidePills(){
+          wrap.classList.remove('is-pill-visible');
+          wrap.classList.add('is-pill-hidden');
+        }
+        function showPills(){
+          wrap.classList.remove('is-pill-hidden');
+          wrap.classList.add('is-pill-visible');
+          scheduleHide();
+        }
+        function scheduleHide(){
+          if (hideTimer) window.clearTimeout(hideTimer);
+          hideTimer = window.setTimeout(hidePills, HIDE_DELAY);
+        }
+        wrap.classList.add('is-pill-visible');
+        scheduleHide();
+        wrap.addEventListener('pointerdown', function(event){
+          downX = event.clientX || 0;
+          downY = event.clientY || 0;
+          moved = false;
+        }, { passive:true });
+        wrap.addEventListener('pointermove', function(event){
+          if (Math.abs((event.clientX || 0) - downX) > 10 || Math.abs((event.clientY || 0) - downY) > 10) moved = true;
+        }, { passive:true });
+        wrap.addEventListener('pointerup', function(event){
+          if (moved) return;
+          if (!wrap.classList.contains('is-pill-hidden')) {
+            scheduleHide();
+            return;
+          }
+          tapCount += 1;
+          if (tapTimer) window.clearTimeout(tapTimer);
+          tapTimer = window.setTimeout(function(){ tapCount = 0; }, 760);
+          if (tapCount >= 3) {
+            tapCount = 0;
+            if (tapTimer) window.clearTimeout(tapTimer);
+            showPills();
+          }
+        }, { passive:true });
+        wrap.addEventListener('scroll', function(){ if (!wrap.classList.contains('is-pill-hidden')) scheduleHide(); }, { passive:true });
+      })();
+    </script>
 
     ${renderEventsClientScript({ FEED_PAGE_SIZE, category: activeCategory, isHotNearbyMode, citySections, currentProfile, liveLat, liveLng, radiusKm, usingClosestAreaFallback, closestAreaFallback })}
 
