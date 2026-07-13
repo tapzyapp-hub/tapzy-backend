@@ -4285,6 +4285,85 @@ module.exports = function renderConversationPage({
   body:not(.tz-has-stories-top-nav) .tz-chat-video{
     background:#000;
   }
+
+
+  /* chat-rounded-bars-pulse-avatar */
+  @keyframes tzChatAvatarPulse{
+    0%,100%{
+      box-shadow:
+        0 0 0 2px rgba(255,255,255,.88),
+        0 0 0 7px rgba(60,145,255,.18),
+        0 0 24px rgba(88,165,255,.30);
+    }
+    50%{
+      box-shadow:
+        0 0 0 2px rgba(255,255,255,.98),
+        0 0 0 11px rgba(60,145,255,.08),
+        0 0 34px rgba(88,165,255,.46);
+    }
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar,
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+    border-radius:42px !important;
+    padding:12px 14px !important;
+    background:
+      radial-gradient(360px 120px at 18% 0%, rgba(68,136,255,.14), transparent 62%),
+      linear-gradient(180deg, rgba(10,12,18,.94), rgba(0,0,0,.98)) !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.05),
+      0 18px 42px rgba(0,0,0,.36),
+      0 0 34px rgba(78,148,255,.10) !important;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar{
+    min-height:78px !important;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-avatar{
+    width:54px !important;
+    height:54px !important;
+    min-width:54px !important;
+    border-radius:999px !important;
+    border:0 !important;
+    animation:tzChatAvatarPulse 2.2s ease-in-out infinite;
+    overflow:hidden;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-avatar img,
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-avatar span{
+    border-radius:999px !important;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-back,
+  body:not(.tz-has-stories-top-nav) .tz-chat-pill,
+  body:not(.tz-has-stories-top-nav) .tz-chat-settings-menu summary,
+  body:not(.tz-has-stories-top-nav) .tz-chat-upload-pill,
+  body:not(.tz-has-stories-top-nav) .tz-chat-send,
+  body:not(.tz-has-stories-top-nav) .tz-chat-input-wrap{
+    border-radius:999px !important;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-input-wrap{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.05),
+      0 8px 22px rgba(0,0,0,.22) !important;
+  }
+
+  @media(max-width:390px){
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar,
+    body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+      border-radius:36px !important;
+      padding:10px !important;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner-avatar{
+      width:50px !important;
+      height:50px !important;
+      min-width:50px !important;
+    }
+  }
 </style>
 
 
