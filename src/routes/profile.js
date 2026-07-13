@@ -455,8 +455,9 @@ router.get("/u/:username", async (req, res) => {
           if (!event.touches || event.touches.length !== 1) { edgeSwipe = null; return; }
           var touch = event.touches[0];
           var width = window.innerWidth || document.documentElement.clientWidth || 0;
-          var edge = touch.clientX <= 28 ? "left" : (width && touch.clientX >= width - 28 ? "right" : "");
+          var edge = touch.clientX <= 36 ? "left" : (width && touch.clientX >= width - 36 ? "right" : "");
           edgeSwipe = edge ? { edge: edge, x: touch.clientX, y: touch.clientY } : null;
+          if (edgeSwipe && event.cancelable) event.preventDefault();
         }
         function stopEdgeSwipe(event){
           if (!edgeSwipe || !event.touches || event.touches.length !== 1) return;
@@ -469,7 +470,7 @@ router.get("/u/:username", async (req, res) => {
             pinHorizontalScroll();
           }
         }
-        document.addEventListener("touchstart", startEdgeSwipe, { passive:true });
+        document.addEventListener("touchstart", startEdgeSwipe, { passive:false });
         document.addEventListener("touchmove", stopEdgeSwipe, { passive:false });
         document.addEventListener("touchend", function(){ edgeSwipe = null; }, { passive:true });
         document.addEventListener("touchcancel", function(){ edgeSwipe = null; }, { passive:true });
