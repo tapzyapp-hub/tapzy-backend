@@ -3764,6 +3764,209 @@ module.exports = function renderConversationPage({
       padding:0 16px;
     }
   }
+
+
+  /* contacts-style-message-polish */
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    column-gap:12px;
+    row-gap:10px;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar-left{
+    min-width:0;
+    width:100%;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-copy{
+    min-width:0;
+    flex:1 1 auto;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-name-row{
+    display:block;
+    min-width:0;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-name{
+    display:block;
+    max-width:100%;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-partner-handle{
+    margin-top:4px;
+    font-size:14px;
+    font-weight:750;
+    color:rgba(222,234,250,.66);
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar-actions{
+    justify-content:flex-end;
+    flex-wrap:nowrap;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer-inner{
+    display:grid;
+    grid-template-columns:54px minmax(0,1fr) 64px minmax(78px,auto);
+    align-items:center;
+    gap:10px;
+    width:100%;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-input-wrap{
+    width:100%;
+    min-width:0;
+    display:flex;
+    align-items:center;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-input{
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
+    white-space:nowrap;
+    line-height:1.2;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer-subrow{
+    padding:0 6px;
+  }
+
+  @media(max-width:700px){
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar{
+      grid-template-columns:1fr;
+      padding:14px;
+      min-height:124px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar-left{
+      width:100%;
+      gap:10px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner{
+      min-width:0;
+      flex:1 1 auto;
+      gap:10px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner-name{
+      font-size:22px;
+      line-height:1.08;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner-handle{
+      font-size:13px;
+      line-height:1.1;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar-actions{
+      width:100%;
+      justify-content:flex-end;
+      padding-left:50px;
+      margin-top:-2px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-pill,
+    body:not(.tz-has-stories-top-nav) .tz-chat-settings-menu summary{
+      min-width:82px;
+      height:38px;
+      min-height:38px;
+      font-size:12px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+      padding:12px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-composer-inner{
+      grid-template-columns:48px minmax(0,1fr) 58px 82px;
+      gap:8px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-upload-pill,
+    body:not(.tz-has-stories-top-nav) .tz-chat-send{
+      width:48px;
+      height:48px;
+      min-width:48px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-send{
+      min-width:82px;
+      width:82px;
+      padding:0 12px;
+      font-size:15px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-input-wrap{
+      min-height:48px;
+      border-radius:24px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-input{
+      min-height:46px;
+      padding:13px 14px;
+      font-size:14px;
+      white-space:nowrap;
+    }
+  }
+
+  @media(max-width:390px){
+    body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+      padding-left:14px;
+      padding-right:14px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar{
+      padding:12px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner-avatar{
+      width:50px;
+      height:50px;
+      border-radius:18px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-partner-name{
+      font-size:20px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-topbar-actions{
+      padding-left:48px;
+      gap:8px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-pill,
+    body:not(.tz-has-stories-top-nav) .tz-chat-settings-menu summary{
+      min-width:74px;
+      padding:0 10px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-composer-inner{
+      grid-template-columns:46px minmax(0,1fr) 52px 74px;
+      gap:7px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-upload-pill,
+    body:not(.tz-has-stories-top-nav) .tz-chat-send{
+      width:46px;
+      height:46px;
+      min-width:46px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-send{
+      min-width:74px;
+      width:74px;
+      font-size:14px;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-input{
+      font-size:13px;
+      padding:12px 12px;
+    }
+  }
 </style>
 
 
