@@ -378,12 +378,23 @@ module.exports = function renderConversationPage({
 
   /* messages-top-nav-spacing: keep the fixed Tapzy nav from covering the chat header */
   body.tz-has-stories-top-nav .tz-message-page-wrap{
-    padding-top:calc(env(safe-area-inset-top, 0px) + 132px) !important;
+    padding-top:calc(env(safe-area-inset-top, 0px) + 170px) !important;
   }
 
   @media(max-width:700px){
     body.tz-has-stories-top-nav .tz-message-page-wrap{
-      padding-top:calc(env(safe-area-inset-top, 0px) + 124px) !important;
+      padding-top:calc(env(safe-area-inset-top, 0px) + 162px) !important;
+    }
+  }
+
+
+  body.tz-has-stories-top-nav .tz-message-page-wrap .tz-chat-shell{
+    margin-top:42px !important;
+  }
+
+  @media(max-width:700px){
+    body.tz-has-stories-top-nav .tz-message-page-wrap .tz-chat-shell{
+      margin-top:46px !important;
     }
   }
 
