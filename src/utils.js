@@ -1100,6 +1100,23 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
       *{box-sizing:border-box}
 
+      html,
+      body,
+      *{
+        scrollbar-width:none!important;
+        -ms-overflow-style:none!important;
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar,
+      *::-webkit-scrollbar{
+        width:0!important;
+        height:0!important;
+        display:none!important;
+        background:transparent!important;
+      }
+
+
       html[data-tapzy-reduce-motion="1"] *,
       html[data-tapzy-reduce-motion="1"] *::before,
       html[data-tapzy-reduce-motion="1"] *::after{

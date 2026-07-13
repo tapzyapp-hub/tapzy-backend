@@ -57,6 +57,20 @@ const LOCKED_VIEWPORT = "width=device-width, initial-scale=1, maximum-scale=1, u
 const HORIZONTAL_LOCK_HEAD = `
 <style data-tapzy-horizontal-lock>
   html,
+  body,
+  *{
+    scrollbar-width:none!important;
+    -ms-overflow-style:none!important;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar{
+    width:0!important;
+    height:0!important;
+    display:none!important;
+    background:transparent!important;
+  }
+  html,
   body{
     max-width:100%!important;
     overflow-x:hidden!important;
