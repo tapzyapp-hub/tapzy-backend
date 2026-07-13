@@ -4389,6 +4389,61 @@ module.exports = function renderConversationPage({
     box-shadow:none !important;
     transform:none !important;
   }
+
+
+  /* chat-layout-position-lock */
+  body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+    min-height:calc(100svh - 112px);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-shell{
+    width:100%;
+    min-height:min(720px, calc(100svh - 190px));
+    height:min(720px, calc(100svh - 190px));
+    display:grid !important;
+    grid-template-rows:auto minmax(0, 1fr) auto;
+    align-content:stretch;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-topbar,
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+    flex:0 0 auto;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-window{
+    min-height:0 !important;
+    max-height:none !important;
+    height:auto !important;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+    position:relative !important;
+    bottom:auto !important;
+    margin-top:0 !important;
+  }
+
+  @media(max-width:700px){
+    body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+      min-height:calc(100svh - 108px);
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-shell{
+      min-height:calc(100svh - 198px);
+      height:calc(100svh - 198px);
+    }
+  }
+
+  @media(max-width:390px){
+    body:not(.tz-has-stories-top-nav) .tz-chat-shell{
+      min-height:calc(100svh - 190px);
+      height:calc(100svh - 190px);
+    }
+  }
 </style>
 
 
