@@ -4241,6 +4241,30 @@ module.exports = function renderConversationPage({
       padding-top:calc(env(safe-area-inset-top, 0px) + 50px) !important;
     }
   }
+
+
+  /* chat-black-safe-area */
+  html,
+  body,
+  body:not(.tz-has-stories-top-nav){
+    background:#000 !important;
+  }
+
+  body:not(.tz-has-stories-top-nav)::before{
+    content:"";
+    position:fixed;
+    left:0;
+    right:0;
+    top:0;
+    height:calc(env(safe-area-inset-top, 0px) + 90px);
+    background:#000;
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+    background:#000 !important;
+  }
 </style>
 
 
