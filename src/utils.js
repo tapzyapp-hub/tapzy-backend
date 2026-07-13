@@ -1016,7 +1016,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
     <script data-tapzy-page-loader>
       (function(){
         var root=document.documentElement;
-        var minMs=750;
+        var minMs=600;
         var shownAt=Date.now();
         var hideTimer=null;
         var navigating=false;
