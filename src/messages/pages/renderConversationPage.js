@@ -4213,6 +4213,34 @@ module.exports = function renderConversationPage({
       font-size:13px;
     }
   }
+
+
+  /* chat-stack-lower-center */
+  body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+    padding-top:calc(env(safe-area-inset-top, 0px) + 54px) !important;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-window{
+    min-height:46vh;
+    max-height:48vh;
+  }
+
+  @media(max-width:700px){
+    body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+      padding-top:calc(env(safe-area-inset-top, 0px) + 58px) !important;
+    }
+
+    body:not(.tz-has-stories-top-nav) .tz-chat-window{
+      min-height:45vh;
+      max-height:47vh;
+    }
+  }
+
+  @media(max-width:390px){
+    body:not(.tz-has-stories-top-nav) .wrap:has(.tz-chat-shell){
+      padding-top:calc(env(safe-area-inset-top, 0px) + 50px) !important;
+    }
+  }
 </style>
 
 
