@@ -4131,9 +4131,15 @@ router.get("/stories/feed", async (req, res) => {
     const slides = storySlides || eventSlides;
 
     const profileHref = currentProfile?.username ? `/u/${currentProfile.username}` : "/auth";
-    const emptyMessage = slides
-      ? ""
-      : `<div class="sf-empty"><div class="sf-empty-mark">${tapzyMarkImg("tapzy-mark tapzy-mark-empty")}</div><h1>No live stories yet</h1><p>Be the first to share what is happening.</p></div>`;
+    const feedEmptyState = `<div class="sf-empty">
+      <div class="sf-empty-network"><span class="sf-empty-dot"></span><span>Tapzy Network™</span></div>
+      <div class="sf-empty-center">
+        <div class="sf-empty-mark">${tapzyMarkImg("tapzy-mark tapzy-mark-empty")}</div>
+        <h1>No active stories</h1>
+        <p>Create a 24-hour update to fill this space.</p>
+      </div>
+    </div>`;
+    const emptyMessage = slides ? "" : feedEmptyState;
 
     res.send(`<!doctype html>
     <html lang="en">
@@ -4231,18 +4237,21 @@ router.get("/stories/feed", async (req, res) => {
         .sf-nav.is-active{color:#fff}
         .sf-nav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
         .sf-create{width:56px;height:38px;display:grid;place-items:center;border:2px solid #fff;border-radius:11px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;text-decoration:none;font-size:29px;font-weight:900;line-height:1;box-shadow:0 5px 18px rgba(35,102,231,.42)}
-        .sf-empty{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;text-align:center;background:radial-gradient(circle at 50% 30%,#172753,#07080c 54%,#000)}
-        .sf-empty-mark{position:relative;display:grid;place-items:center;width:74px;height:74px;border-radius:24px;background:linear-gradient(145deg,#2f76ff,#1145ad);color:#fff;box-shadow:0 18px 44px rgba(35,102,231,.34),inset 0 1px 0 rgba(255,255,255,.16);animation:sfLogoPulse 2.25s ease-in-out infinite;will-change:transform,box-shadow}
-        .sf-empty-mark::before{content:"";position:absolute;inset:-12px;border-radius:32px;background:radial-gradient(circle,rgba(47,118,255,.36),rgba(47,118,255,0) 70%);animation:sfLogoHalo 2.25s ease-out infinite;z-index:-1}
-        .sf-empty-mark::after{content:"";position:absolute;inset:0;border-radius:24px;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,0) 45%);pointer-events:none}
+        .sf-empty{position:relative;height:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;background:radial-gradient(circle at 50% 29%,rgba(31,64,119,.92),rgba(8,13,24,.96) 43%,#020305 74%,#000)}
+        .sf-empty-network{position:absolute;top:calc(var(--safe-top) + 34px);left:28px;display:flex;align-items:center;gap:14px;color:#fff;font-size:clamp(24px,7.5vw,38px);line-height:1;font-weight:900;letter-spacing:-.035em;text-shadow:0 12px 34px rgba(0,0,0,.5)}
+        .sf-empty-dot{width:30px;height:30px;border-radius:999px;background:#5ad9ff;box-shadow:0 0 22px rgba(90,217,255,.58),0 0 48px rgba(90,217,255,.24);flex:0 0 auto}
+        .sf-empty-center{display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:36px}
+        .sf-empty-mark{position:relative;display:grid;place-items:center;width:clamp(106px,28vw,140px);height:clamp(106px,28vw,140px);border-radius:31px;background:linear-gradient(145deg,#337dff,#1554d9 58%,#0d38a9);color:#fff;box-shadow:0 24px 64px rgba(35,102,231,.38),0 0 54px rgba(60,125,255,.22),inset 0 1px 0 rgba(255,255,255,.18);animation:sfLogoPulse 2.25s ease-in-out infinite;will-change:transform,box-shadow}
+        .sf-empty-mark::before{content:"";position:absolute;inset:-28px;border-radius:44px;background:radial-gradient(circle,rgba(47,118,255,.42),rgba(47,118,255,0) 70%);animation:sfLogoHalo 2.25s ease-out infinite;z-index:-1}
+        .sf-empty-mark::after{content:"";position:absolute;inset:0;border-radius:31px;background:linear-gradient(135deg,rgba(255,255,255,.24),rgba(255,255,255,0) 45%);pointer-events:none}
         .tapzy-mark-empty{width:66%;height:66%;filter:drop-shadow(0 3px 8px rgba(0,0,0,.22));animation:sfLogoInnerPulse 2.25s ease-in-out infinite}
         @keyframes sfLogoPulse{0%,100%{transform:scale(1);box-shadow:0 18px 44px rgba(35,102,231,.34),inset 0 1px 0 rgba(255,255,255,.16)}50%{transform:scale(1.075);box-shadow:0 22px 62px rgba(35,102,231,.58),0 0 32px rgba(79,145,255,.38),inset 0 1px 0 rgba(255,255,255,.22)}}
         @keyframes sfLogoHalo{0%{opacity:.48;transform:scale(.86)}60%{opacity:.16;transform:scale(1.32)}100%{opacity:0;transform:scale(1.45)}}
         @keyframes sfLogoInnerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
-        .sf-empty h1{margin:22px 0 8px;font-size:clamp(32px,8vw,46px);line-height:1.04;font-weight:860;letter-spacing:-.033em;color:#fff;text-wrap:balance;text-shadow:0 1px 18px rgba(255,255,255,.1),0 14px 34px rgba(0,0,0,.42);font-feature-settings:"kern" 1,"ss01" 1}
-        .sf-empty p{max-width:340px;margin:0;color:rgba(224,231,246,.75);font-size:clamp(17px,4.25vw,22px);line-height:1.32;font-weight:460;letter-spacing:-.012em;text-wrap:balance;text-shadow:0 10px 28px rgba(0,0,0,.35)}
-        .sf-no-results{position:fixed;z-index:12;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:#090909;color:#c8ccda}
-        .sf-no-results.is-visible{display:grid}
+        .sf-empty h1{margin:34px 0 20px;font-size:clamp(42px,11vw,66px);line-height:.98;font-weight:920;letter-spacing:-.04em;color:#fff;text-wrap:balance;text-shadow:0 1px 18px rgba(255,255,255,.1),0 14px 34px rgba(0,0,0,.42);font-feature-settings:"kern" 1,"ss01" 1}
+        .sf-empty p{max-width:560px;margin:0;color:rgba(224,231,246,.84);font-size:clamp(22px,6vw,34px);line-height:1.2;font-weight:760;letter-spacing:-.024em;text-wrap:balance;text-shadow:0 10px 28px rgba(0,0,0,.35)}
+        .sf-no-results{position:fixed;z-index:12;inset:0;display:none;text-align:center;background:#000;color:#c8ccda}
+        .sf-no-results.is-visible{display:block}
         .sf-pull-refresh{position:fixed;z-index:30;top:calc(var(--safe-top) + 68px);left:50%;transform:translate(-50%,-20px);opacity:0;pointer-events:none;padding:8px 14px;border-radius:999px;background:rgba(8,12,18,.72);border:1px solid rgba(125,210,255,.28);box-shadow:0 10px 28px rgba(0,0,0,.35),0 0 22px rgba(80,170,255,.18);backdrop-filter:blur(14px);color:#eaf6ff;font-size:12px;font-weight:850;transition:opacity .18s ease,transform .18s ease}
         .sf-pull-refresh.is-visible{opacity:1;transform:translate(-50%,0)}
         .sf-pull-refresh.is-ready{border-color:rgba(146,220,255,.56);box-shadow:0 10px 28px rgba(0,0,0,.35),0 0 30px rgba(80,170,255,.34)}
@@ -4258,7 +4267,7 @@ router.get("/stories/feed", async (req, res) => {
         ${renderStoriesTopNav({ currentProfile, active: initialFeedFilter === "following" ? "following" : "discover" })}
 
         <section class="sf-feed" aria-label="Tapzy story feed">${slides || emptyMessage}</section>
-        <div class="sf-no-results">No stories in this section yet.</div>
+        <div class="sf-no-results">${feedEmptyState}</div>
         <div class="sf-pull-refresh" data-pull-refresh>Pull to refresh</div>
 
         <nav class="sf-bottom" aria-label="Primary navigation">
