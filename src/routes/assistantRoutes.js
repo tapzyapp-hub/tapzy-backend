@@ -303,8 +303,7 @@ function extractResponseText(data) {
         else if (typeof part?.output_text === "string") pieces.push(part.output_text);
       }
     }
-    return pieces.join("
-").trim();
+    return pieces.join(" ").trim();
   }
   return "";
 }
