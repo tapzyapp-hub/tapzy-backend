@@ -20,6 +20,10 @@ const {
 
   renderTapzyAssistant,
 
+  renderStoriesTopNav,
+
+  renderStoriesTopNavCss,
+
   escapeHtml,
 
   publicAbsoluteUrl,
@@ -4154,6 +4158,7 @@ router.get("/stories/feed", async (req, res) => {
       <meta name="theme-color" content="#000000" />
       <title>Story Feed · Tapzy</title>
       <style>
+        ${renderStoriesTopNavCss()}
         :root{color-scheme:dark;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         *{box-sizing:border-box}
         html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -4186,37 +4191,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-shade{pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.42) 0,transparent 24%,transparent 54%,rgba(0,0,0,.12) 65%,rgba(0,0,0,.9) 100%)}
         .sf-text-story{position:absolute;inset:0;display:grid;place-items:center;padding:52px 44px 180px;background:radial-gradient(circle at 30% 20%,#27376b 0,#14172a 35%,#06070c 78%);font-size:clamp(28px,7vw,48px);font-weight:850;line-height:1.08;text-align:center}
         .sf-live-now-card{background:radial-gradient(circle at 50% 30%,rgba(255,40,95,.28),transparent 32%),radial-gradient(circle at 40% 70%,rgba(47,118,255,.24),transparent 36%),#05060b;color:#fff;letter-spacing:.02em}
-        .sf-top{position:fixed;z-index:20;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(var(--safe-top) + 18px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.54),transparent)}
-        .sf-brand{position:absolute;left:16px;top:calc(var(--safe-top) + 16px);display:grid;place-items:center;width:38px;height:38px;border:2px solid rgba(255,255,255,.9);border-radius:12px;color:#fff;text-decoration:none;background:rgba(3,6,12,.24);box-shadow:0 10px 26px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-        .tapzy-mark{display:block;width:72%;height:72%;object-fit:contain}
-        .sf-tabs{display:flex;gap:18px;align-items:center}
-        .sf-tab{position:relative;border:0;background:none;padding:8px 0;color:rgba(255,255,255,.68);font-weight:750;font-size:15px;cursor:pointer}
-        .sf-tab.is-active{color:#fff}
-        .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-5px;width:26px;height:3px;border-radius:5px;background:#fff;transform:translateX(-50%)}
-        .sf-search{position:absolute;z-index:35;right:4px;top:calc(var(--safe-top) + 8px);display:grid;place-items:center;width:56px;height:56px;border:0;background:transparent;padding:13px;color:#fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-        .sf-search svg,.sf-action svg,.sf-sound svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-        @media(max-width:430px){
-          .sf-top{min-height:66px;gap:12px;padding:calc(var(--safe-top) + 15px) 50px 14px}
-          .sf-brand{left:14px;top:calc(var(--safe-top) + 14px);width:36px;height:36px;border-radius:12px}
-          .sf-tabs{gap:12px}
-          .sf-tab{font-size:13px;font-weight:800;padding:7px 0}
-          .sf-tab.is-active::after{bottom:-4px;width:24px;height:3px}
-          .sf-search{right:2px;top:calc(var(--safe-top) + 7px);width:54px;height:54px;padding:12px}
-        }
-        @media(max-width:360px){
-          .sf-top{gap:5px;padding-left:36px;padding-right:34px}
-          .sf-brand{width:30px;height:30px}
-          .sf-tabs{gap:5px}
-          .sf-tab{font-size:10px}
-          .sf-search{right:0;width:50px;height:50px;padding:12px}
-        }
-        @media(max-width:320px){
-          .sf-top{gap:4px;padding-left:32px;padding-right:30px}
-          .sf-brand{left:6px;width:28px;height:28px;border-radius:9px}
-          .sf-tabs{gap:4px}
-          .sf-tab{font-size:9.4px}
-          .sf-search{right:0;width:48px;height:48px;padding:12px}
-        }
+        .sf-action svg,.sf-sound svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
         .sf-copy{position:absolute;z-index:4;left:18px;right:92px;bottom:calc(var(--safe-bottom) + 82px);text-shadow:0 2px 12px rgba(0,0,0,.7)}
         .sf-author{display:block;width:max-content;max-width:100%;margin-bottom:8px;color:#fff;text-decoration:none;font-size:17px;font-weight:850}
         .sf-copy p{margin:0 0 8px;font-size:15px;line-height:1.35}
@@ -4275,23 +4250,12 @@ router.get("/stories/feed", async (req, res) => {
           .sf-app{max-width:520px;margin:0 auto;box-shadow:0 0 80px rgba(0,0,0,.8)}
           body{background:#111}
         }
-        @media(max-width:430px){.sf-tabs{gap:12px}.sf-tab{font-size:13px}.sf-top{padding-left:50px;padding-right:50px}.sf-copy{left:14px}}
+        @media(max-width:430px){.sf-copy{left:14px}}
       </style>
     </head>
     <body>
       <main class="sf-app">
-        <header class="sf-top">
-          <button class="sf-brand tz-ai-trigger" type="button" data-tapzy-ai-open aria-label="Ask Tapzy">${tapzyMarkImg("tapzy-mark tapzy-mark-brand")}</button>
-          <nav class="sf-tabs" aria-label="Story feed filters">
-            <a class="sf-tab" href="/events">Events</a>
-            <button class="sf-tab${initialFeedFilter === "following" ? " is-active" : ""}" type="button" data-filter="following">Following</button>
-            <button class="sf-tab${initialFeedFilter === "all" ? " is-active" : ""}" type="button" data-filter="all">Discover</button>
-            <a class="sf-tab" href="/messages">Messages</a>
-          </nav>
-          <button class="sf-search" type="button" data-search aria-label="Search Tapzy">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
-          </button>
-        </header>
+        ${renderStoriesTopNav({ currentProfile, active: initialFeedFilter === "following" ? "following" : "discover" })}
 
         <section class="sf-feed" aria-label="Tapzy story feed">${slides || emptyMessage}</section>
         <div class="sf-no-results">No stories in this section yet.</div>

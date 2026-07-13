@@ -933,6 +933,23 @@ function renderStoriesTopNav({ currentProfile = null, active = "discover" } = {}
   `;
 }
 
+function renderStoriesTopNavCss() {
+  return `
+.tz-story-top-nav{position:fixed;z-index:60;top:0;left:0;right:0;min-height:72px;display:flex;align-items:center;justify-content:center;gap:26px;padding:calc(env(safe-area-inset-top, 0px) + 18px) 58px 16px;background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08))}
+.tz-story-brand{position:absolute;left:16px;top:calc(env(safe-area-inset-top, 0px) + 16px);width:38px;height:38px;display:grid;place-items:center;border:2px solid rgba(255,255,255,.9);border-radius:12px;color:#fff;text-decoration:none;background:rgba(3,6,12,.24);box-shadow:0 10px 26px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.tz-story-brand img{width:72%;height:72%;object-fit:contain;display:block}
+.tz-story-tabs{display:flex;gap:18px;align-items:center;min-width:0}
+.tz-story-tab{position:relative;border:0;background:none;padding:8px 0;color:rgba(255,255,255,.68);font-weight:750;font-size:15px;text-decoration:none;white-space:nowrap}
+.tz-story-tab.is-active{color:#fff}
+.tz-story-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-5px;width:26px;height:3px;border-radius:5px;background:#fff;transform:translateX(-50%)}
+.tz-story-search{position:absolute;z-index:35;right:4px;top:calc(env(safe-area-inset-top, 0px) + 8px);display:grid;place-items:center;width:56px;height:56px;padding:13px;color:#fff;text-decoration:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tz-story-search svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:430px){.tz-story-top-nav{min-height:66px;gap:12px;padding:calc(env(safe-area-inset-top, 0px) + 15px) 50px 14px}.tz-story-brand{left:14px;top:calc(env(safe-area-inset-top, 0px) + 14px);width:36px;height:36px;border-radius:12px}.tz-story-tabs{gap:12px}.tz-story-tab{font-size:13px;font-weight:800;padding:7px 0}.tz-story-tab.is-active::after{bottom:-4px;width:24px;height:3px}.tz-story-search{right:2px;top:calc(env(safe-area-inset-top, 0px) + 7px);width:54px;height:54px;padding:12px}}
+@media(max-width:360px){.tz-story-top-nav{gap:5px;padding-left:36px;padding-right:34px}.tz-story-brand{width:30px;height:30px;border-width:2px}.tz-story-tabs{gap:5px}.tz-story-tab{font-size:10px}.tz-story-search{right:0;width:50px;height:50px;padding:12px}}
+@media(max-width:320px){.tz-story-top-nav{gap:4px;padding-left:32px;padding-right:30px}.tz-story-brand{left:6px;width:28px;height:28px;border-radius:9px}.tz-story-tabs{gap:4px}.tz-story-tab{font-size:9.4px}.tz-story-search{right:0;width:48px;height:48px;padding:12px}}
+`;
+}
+
 function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
   const currentProfile = shellOptions.currentProfile || null;
@@ -2852,207 +2869,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
 
 
-      .tz-story-top-nav{
-
-        position:sticky;
-
-        z-index:60;
-
-        top:0;
-
-        left:0;
-
-        right:0;
-
-        min-height:72px;
-
-        display:flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        gap:26px;
-
-        padding:calc(env(safe-area-inset-top, 0px) + 18px) 58px 16px;
-
-        background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.56),rgba(0,0,0,.08));
-
-      }
-
-
-
-      .tz-story-brand{
-
-        position:absolute;
-
-        left:16px;
-
-        top:calc(env(safe-area-inset-top, 0px) + 16px);
-
-        width:38px;
-
-        height:38px;
-
-        display:grid;
-
-        place-items:center;
-
-        border:2px solid rgba(255,255,255,.9);
-
-        border-radius:12px;
-
-        color:#fff;
-
-        text-decoration:none;
-
-        background:rgba(3,6,12,.24);
-
-        box-shadow:0 10px 26px rgba(0,0,0,.22);
-
-        backdrop-filter:blur(10px);
-
-        -webkit-backdrop-filter:blur(10px);
-
-      }
-
-
-
-      .tz-story-brand img{
-
-        width:72%;
-
-        height:72%;
-
-        object-fit:contain;
-
-        display:block;
-
-      }
-
-
-
-      .tz-story-tabs{
-
-        display:flex;
-
-        gap:18px;
-
-        align-items:center;
-
-        min-width:0;
-
-      }
-
-
-
-      .tz-story-tab{
-
-        position:relative;
-
-        border:0;
-
-        background:none;
-
-        padding:8px 0;
-
-        color:rgba(255,255,255,.68);
-
-        font-weight:750;
-
-        font-size:15px;
-
-        text-decoration:none;
-
-        white-space:nowrap;
-
-      }
-
-
-
-      .tz-story-tab.is-active{
-
-        color:#fff;
-
-      }
-
-
-
-      .tz-story-tab.is-active::after{
-
-        content:"";
-
-        position:absolute;
-
-        left:50%;
-
-        bottom:-5px;
-
-        width:26px;
-
-        height:3px;
-
-        border-radius:5px;
-
-        background:#fff;
-
-        transform:translateX(-50%);
-
-      }
-
-
-
-      .tz-story-search{
-
-        position:absolute;
-
-        z-index:35;
-
-        right:4px;
-
-        top:calc(env(safe-area-inset-top, 0px) + 8px);
-
-        display:grid;
-
-        place-items:center;
-
-        width:56px;
-
-        height:56px;
-
-        padding:13px;
-
-        color:#fff;
-
-        text-decoration:none;
-
-        touch-action:manipulation;
-
-        -webkit-tap-highlight-color:transparent;
-
-      }
-
-
-
-      .tz-story-search svg{
-
-        width:100%;
-
-        height:100%;
-
-        fill:none;
-
-        stroke:currentColor;
-
-        stroke-width:2;
-
-        stroke-linecap:round;
-
-        stroke-linejoin:round;
-
-      }
-
-
+      ${renderStoriesTopNavCss()}
 
       body.tz-has-stories-top-nav > .tz-topbar{
 
@@ -3874,6 +3691,10 @@ module.exports = {
 
   renderTopBar,
 
+
+  renderStoriesTopNav,
+
+  renderStoriesTopNavCss,
   renderShell,
 
   renderTapzyAssistant,
