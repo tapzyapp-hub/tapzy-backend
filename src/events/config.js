@@ -7,7 +7,7 @@ const TOP_CITY_ORDER = [
 ];
 
 const MAIN_QUERY_LIMIT = 600;
-const FEED_PAGE_SIZE = 400;
+const FEED_PAGE_SIZE = 12;
 
 module.exports = {
   TOP_CITY_ORDER,

@@ -1301,7 +1301,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               loader.style.visibility = loading && hasMore ? "visible" : "hidden";
               loader.setAttribute("aria-hidden", loading && hasMore ? "false" : "true");
               end.style.display = hasMore ? "none" : "block";
-              if (button) button.style.display = hasMore && !loading ? "block" : "none";
+              if (button) button.style.display = "none";
             }
 
             function nearBottom() {

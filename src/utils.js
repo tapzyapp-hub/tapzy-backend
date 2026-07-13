@@ -688,6 +688,22 @@ function requireOwnerAccess(profile, req, res) {
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 
+    <script>
+      (function(){
+        var lastTouchEnd = 0;
+        function stopZoom(event){ if(event && event.preventDefault) event.preventDefault(); }
+        document.addEventListener('gesturestart', stopZoom, { passive:false });
+        document.addEventListener('gesturechange', stopZoom, { passive:false });
+        document.addEventListener('gestureend', stopZoom, { passive:false });
+        document.addEventListener('touchend', function(event){
+          var now = Date.now();
+          if (now - lastTouchEnd <= 300) stopZoom(event);
+          lastTouchEnd = now;
+        }, { passive:false });
+        document.addEventListener('wheel', function(event){ if(event.ctrlKey) stopZoom(event); }, { passive:false });
+      })();
+    </script>
+
     <style>
 
       body{font-family:Arial,sans-serif;background:#050505;color:#fff;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -945,6 +961,22 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
     <title>${escapeHtml(resolvedTitle)}</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+
+    <script>
+      (function(){
+        var lastTouchEnd = 0;
+        function stopZoom(event){ if(event && event.preventDefault) event.preventDefault(); }
+        document.addEventListener('gesturestart', stopZoom, { passive:false });
+        document.addEventListener('gesturechange', stopZoom, { passive:false });
+        document.addEventListener('gestureend', stopZoom, { passive:false });
+        document.addEventListener('touchend', function(event){
+          var now = Date.now();
+          if (now - lastTouchEnd <= 300) stopZoom(event);
+          lastTouchEnd = now;
+        }, { passive:false });
+        document.addEventListener('wheel', function(event){ if(event.ctrlKey) stopZoom(event); }, { passive:false });
+      })();
+    </script>
 
     <meta name="description" content="${escapeHtml(resolvedDescription)}" />
 
