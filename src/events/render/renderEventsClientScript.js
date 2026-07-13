@@ -2,7 +2,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
   return `
 <script>
 (function () {
-        try { document.documentElement.classList.add("tz-events-ready"); } catch (_) {}
 
         const FEED_PAGE_SIZE = ${JSON.stringify(FEED_PAGE_SIZE)};
 
@@ -21,118 +20,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
         const IS_MOBILE_FEED = window.matchMedia && window.matchMedia("(max-width: 700px)").matches;
 
 
-
-        function isClientVideoUrl(url) {
-          const value = String(url || "").trim();
-          return /\.(?:mp4|mov|m4v|webm|3gp|3gpp|avi|hevc)(?:[?#].*)?$/i.test(value) || /\/video\//i.test(value);
-        }
-
-        function renderClientFeedVideo(url, className) {
-          return '<video class="' + escapeUnsafe(className) + '" src="' + escapeUnsafe(url) + '" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" data-keep-video-live="1" data-recover-if-blank="1"></video>';
-        }
-
-        const BLANK_VIDEO_TIMEOUT_MS = 30000;
-
-        function blankVideoContainer(video) {
-          return video && video.closest && video.closest(".js-reel-item,.js-event-card");
-        }
-
-        function videoFrameLooksBlack(video) {
-          if (!video || !(video.videoWidth > 0 && video.videoHeight > 0) || video.readyState < 2) return false;
-          try {
-            const canvas = document.createElement("canvas");
-            const size = 24;
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext("2d", { willReadFrequently: true });
-            if (!ctx) return false;
-            ctx.drawImage(video, 0, 0, size, size);
-            const pixels = ctx.getImageData(0, 0, size, size).data;
-            let total = 0;
-            let bright = 0;
-            for (let i = 0; i < pixels.length; i += 4) {
-              const luma = (pixels[i] * 0.2126) + (pixels[i + 1] * 0.7152) + (pixels[i + 2] * 0.0722);
-              total += luma;
-              if (luma > 36) bright += 1;
-            }
-            const sampleCount = pixels.length / 4;
-            return (total / sampleCount) < 10 && bright <= 2;
-          } catch (_) {
-            return false;
-          }
-        }
-
-        function videoHasVisibleFrame(video) {
-          return !!(video && video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2 && !videoFrameLooksBlack(video));
-        }
-
-        function isVideoBlank(video) {
-          if (!video || !video.isConnected) return false;
-          if (video.error) return true;
-          if (!(video.videoWidth > 0 && video.videoHeight > 0)) return video.readyState < 2;
-          return videoFrameLooksBlack(video);
-        }
-
-        function recoverBlankVideo(video) {
-          const container = blankVideoContainer(video);
-          if (!container || !container.isConnected || !video || !video.isConnected) return;
-          const source = video.currentSrc || video.getAttribute("src") || "";
-          try { video.pause(); } catch (_) {}
-          if (source) {
-            video.setAttribute("src", source);
-            video.preload = "auto";
-            try { video.load(); } catch (_) {}
-          }
-          video.muted = true;
-          video.setAttribute("muted", "");
-          window.setTimeout(function () { video.play().catch(function () {}); }, 200);
-        }
-
-        function monitorBlankVideo(video) {
-          if (!video || video.dataset.blankVideoWatch === "1") return;
-          video.dataset.blankVideoWatch = "1";
-          let timer = null;
-          function clearTimer() {
-            if (timer) window.clearTimeout(timer);
-            timer = null;
-          }
-          function arm() {
-            if (!isVideoBlank(video)) { clearTimer(); return; }
-            if (timer) return;
-            timer = window.setTimeout(function () {
-              timer = null;
-              if (isVideoBlank(video)) recoverBlankVideo(video);
-            }, BLANK_VIDEO_TIMEOUT_MS);
-          }
-          function markHealthy() {
-            if (videoHasVisibleFrame(video)) clearTimer();
-          }
-          ["loadeddata", "canplay", "playing", "timeupdate"].forEach(function (name) { video.addEventListener(name, function () { markHealthy(); arm(); }, { passive: true }); });
-          ["error", "stalled", "waiting", "emptied"].forEach(function (name) { video.addEventListener(name, arm, { passive: true }); });
-          arm();
-          window.setTimeout(arm, 1200);
-        }
-
-        function installBlankVideoRecovery(root) {
-          (root || document).querySelectorAll("video[data-recover-if-blank]").forEach(monitorBlankVideo);
-        }
-
-        function syncReelVideos(feed, active) {
-          if (!feed) return;
-          Array.from(feed.querySelectorAll("video.reel-video")).forEach((video) => {
-            const item = video.closest(".js-reel-item");
-            if (item && item === active) {
-              video.muted = true;
-              video.setAttribute("muted", "");
-              video.setAttribute("playsinline", "");
-              video.setAttribute("webkit-playsinline", "");
-              if (video.readyState === 0) { try { video.load(); } catch (_) {} }
-              video.play().catch(() => {});
-            } else {
-              try { video.pause(); } catch (_) {}
-            }
-          });
-        }
 
         function escapeUnsafe(value) {
 
@@ -351,12 +238,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           const image = event.imageUrl || pickFallbackImage(event);
 
-          const hasVideoMedia = isClientVideoUrl(image);
-
-          const mediaStyle = hasVideoMedia
-            ? "background-image:linear-gradient(180deg, rgba(12,20,34,.18), rgba(2,5,12,.84));"
-            : "background-image:\r\n                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),\r\n                url('" + escapeUnsafe(image) + "');";
-
           const when = formatClientDate(event.startAt);
 
           const categoryText = getClientCategory(event);
@@ -371,7 +252,11 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
             <div class="event-card js-event-card">
 
-              <div class="event-media" style="\${mediaStyle}">\${hasVideoMedia ? renderClientFeedVideo(image, "event-media-video") : ""}</div>
+              <div class="event-media" style="background-image:
+
+                linear-gradient(180deg, rgba(6,8,14,.06), rgba(6,8,14,.18) 22%, rgba(3,5,10,.62) 60%, rgba(0,0,0,.94)),
+
+                url('\${escapeUnsafe(image)}');"></div>
 
 
 
@@ -569,11 +454,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function renderClientReelV2(event) {
           const image = event.imageUrl || pickFallbackImage(event);
-          const hasVideoMedia = isClientVideoUrl(image);
-          const reelClass = hasVideoMedia ? "reel-item js-reel-item has-video-media" : "reel-item js-reel-item";
-          const reelBackdropStyle = hasVideoMedia
-            ? "background-image:radial-gradient(circle at 35% 22%, rgba(74,167,255,.28), transparent 42%), linear-gradient(180deg,#151b26,#03050a);"
-            : "background-image:url('" + escapeUnsafe(image) + "');";
           const when = formatClientDate(event.startAt);
           const date = event.startAt ? new Date(event.startAt) : null;
           const validDate = date && !Number.isNaN(date.getTime());
@@ -585,10 +465,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
           const goingCount = Number(event.goingCount || 0);
 
           return \`
-            <section class="\${reelClass}" data-event-id="\${escapeUnsafe(event.id)}">
-              <div class="reel-bg" style="\${reelBackdropStyle}"></div>
-              \${hasVideoMedia ? renderClientFeedVideo(image, "reel-video") : ""}
-              <div class="reel-ambient" style="\${reelBackdropStyle}"></div>
+            <section class="reel-item js-reel-item" data-event-id="\${escapeUnsafe(event.id)}">
+              <div class="reel-bg" style="background-image:url('\${escapeUnsafe(image)}');"></div>
+              <div class="reel-ambient" style="background-image:url('\${escapeUnsafe(image)}');"></div>
               <div class="reel-vignette"></div>
               <div class="reel-grain"></div>
               <div class="reel-content">
@@ -902,7 +781,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           feed.dataset.activeBound = "1";
           enforceReelImageQuality(feed);
-          installBlankVideoRecovery(feed);
 
 
 
@@ -941,7 +819,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             all.forEach((item) => item.classList.remove("is-active"));
 
             if (best) best.classList.add("is-active");
-            syncReelVideos(feed, best);
 
           }
 
@@ -1276,9 +1153,9 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           if (!grid || !loader || !end) return;
 
-          const useStableAppendFeed = true;
+          const isAndroid = /Android/i.test(navigator.userAgent || "");
 
-          if (useStableAppendFeed) {
+          if (isAndroid) {
             let page = 2;
             let loading = false;
             let hasMore = loader.dataset.hasMore === "1";
@@ -1322,7 +1199,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
               try {
                 const qs = new URLSearchParams({
                   page: String(page),
-                  limit: String(FEED_PAGE_SIZE),
+                  limit: String(Math.min(FEED_PAGE_SIZE, 10)),
                   city: "",
                   category: category || "all"
                 });
@@ -1386,13 +1263,11 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
             }
 
             window.addEventListener("scroll", onScroll, { passive: true });
-            window.addEventListener("touchmove", onScroll, { passive: true });
             window.addEventListener("resize", onScroll, { passive: true });
             window.addEventListener("orientationchange", () => window.setTimeout(onScroll, 250), { passive: true });
             if (button) button.addEventListener("click", loadMore);
             syncFooter();
             window.setTimeout(onScroll, 250);
-            window.setInterval(onScroll, 1200);
             return;
           }
 
@@ -1800,7 +1675,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
               bindGoingActions(feed);
               enforceReelImageQuality(feed);
-              installBlankVideoRecovery(feed);
 
 
 
@@ -1869,8 +1743,6 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         setupLiveLocationGate();
         setupEventSharing();
-        installBlankVideoRecovery(document);
-
         if (IS_MOBILE_FEED) {
           setupMobileFeedInfinite();
         } else {
