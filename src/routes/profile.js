@@ -7930,6 +7930,8 @@ router.get("/u/:username", async (req, res) => {
 
         storiesBottomNav: true,
 
+        hideTopBar: true,
+
         metaDescription: `${displayName} on Tapzy Network™. View profile, quick share links, stories, and contact details.`,
 
       })
