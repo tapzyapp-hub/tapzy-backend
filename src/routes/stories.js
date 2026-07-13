@@ -4168,7 +4168,7 @@ router.get("/stories/feed", async (req, res) => {
         .sf-tab{position:relative;border:0;background:none;padding:8px 0;color:rgba(255,255,255,.68);font-weight:750;font-size:15px;cursor:pointer}
         .sf-tab.is-active{color:#fff}
         .sf-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-5px;width:26px;height:3px;border-radius:5px;background:#fff;transform:translateX(-50%)}
-        .sf-search{position:absolute;right:15px;top:calc(var(--safe-top) + 16px);width:40px;height:40px;border:0;background:none;padding:7px;cursor:pointer}
+        .sf-search{position:absolute;z-index:35;right:4px;top:calc(var(--safe-top) + 8px);display:grid;place-items:center;width:56px;height:56px;border:0;background:transparent;padding:13px;color:#fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
         .sf-search svg,.sf-action svg,.sf-sound svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
         @media(max-width:430px){
           .sf-top{min-height:66px;gap:12px;padding:calc(var(--safe-top) + 15px) 50px 14px}
@@ -4176,21 +4176,21 @@ router.get("/stories/feed", async (req, res) => {
           .sf-tabs{gap:12px}
           .sf-tab{font-size:13px;font-weight:800;padding:7px 0}
           .sf-tab.is-active::after{bottom:-4px;width:24px;height:3px}
-          .sf-search{right:12px;top:calc(var(--safe-top) + 14px);width:36px;height:36px;padding:5px}
+          .sf-search{right:2px;top:calc(var(--safe-top) + 7px);width:54px;height:54px;padding:12px}
         }
         @media(max-width:360px){
           .sf-top{gap:5px;padding-left:36px;padding-right:34px}
           .sf-brand{width:30px;height:30px}
           .sf-tabs{gap:5px}
           .sf-tab{font-size:10px}
-          .sf-search{width:30px;height:30px;padding:5px}
+          .sf-search{right:0;width:50px;height:50px;padding:12px}
         }
         @media(max-width:320px){
           .sf-top{gap:4px;padding-left:32px;padding-right:30px}
           .sf-brand{left:6px;width:28px;height:28px;border-radius:9px}
           .sf-tabs{gap:4px}
           .sf-tab{font-size:9.4px}
-          .sf-search{right:4px;width:28px;height:28px;padding:4px}
+          .sf-search{right:0;width:48px;height:48px;padding:12px}
         }
         .sf-copy{position:absolute;z-index:4;left:18px;right:92px;bottom:calc(var(--safe-bottom) + 82px);text-shadow:0 2px 12px rgba(0,0,0,.7)}
         .sf-author{display:block;width:max-content;max-width:100%;margin-bottom:8px;color:#fff;text-decoration:none;font-size:17px;font-weight:850}
