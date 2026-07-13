@@ -347,7 +347,7 @@ module.exports = function renderConversationPage({
 
   return `
 
-    <div class="wrap tz-message-page-wrap" style="padding-top:calc(env(safe-area-inset-top, 0px) + 188px);">
+    <div class="wrap tz-message-page-wrap">
 
       <div class="tz-chat-shell">
 
@@ -375,18 +375,6 @@ module.exports = function renderConversationPage({
 
 
 <style>
-
-  /* messages-top-nav-spacing: keep the fixed Tapzy nav from covering the chat header */
-  body.tz-has-stories-top-nav .tz-message-page-wrap{
-    padding-top:calc(env(safe-area-inset-top, 0px) + 170px) !important;
-  }
-
-  @media(max-width:700px){
-    body.tz-has-stories-top-nav .tz-message-page-wrap{
-      padding-top:calc(env(safe-area-inset-top, 0px) + 162px) !important;
-    }
-  }
-
 
 
   .tz-chat-shell{
