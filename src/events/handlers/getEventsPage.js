@@ -187,7 +187,7 @@ module.exports = async function getEventsPage(req, res) {
     const body = `
 
     <header class="events-story-top">
-      <a class="events-story-brand" href="/stories/feed" aria-label="Stories home">
+      <button class="events-story-brand tz-ai-trigger" type="button" data-tapzy-ai-open aria-label="Ask Tapzy">
         <img src="/images/tapzy-mark-white.png" alt="" aria-hidden="true" decoding="async" />
       </a>
       <nav class="events-story-tabs" aria-label="Primary sections">
@@ -250,7 +250,7 @@ module.exports = async function getEventsPage(req, res) {
 
       <section class="event-feed-mobile mobile-only" hidden>
         <header class="event-feed-top">
-          <a class="event-feed-brand" href="/" aria-label="Tapzy home">T</a>
+          <button class="event-feed-brand tz-ai-trigger" type="button" data-tapzy-ai-open aria-label="Ask Tapzy">T</button>
           <nav class="event-feed-tabs" aria-label="Event feed filters">
             ${[
               ["nearby", "Nearby"],
@@ -448,6 +448,7 @@ module.exports = async function getEventsPage(req, res) {
         -webkit-backdrop-filter:blur(10px);
       }
       .events-story-brand img{width:72%;height:72%;object-fit:contain;display:block;}
+      .events-story-brand.tz-ai-trigger,.event-feed-brand.tz-ai-trigger{appearance:none;-webkit-appearance:none;font:inherit;cursor:pointer;padding:0;color:inherit;text-decoration:none;}
       .events-story-tabs{
         display:flex;
         gap:18px;
