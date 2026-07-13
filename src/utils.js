@@ -2986,6 +2986,21 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
 
 
+      /* tz-story-content-offset: keep shared fixed header from covering page content */
+      body.tz-has-stories-top-nav:not(.events-story-shell) > .wrap,
+      body.tz-has-stories-top-nav:not(.events-story-shell) > .container,
+      body.tz-has-stories-top-nav:not(.events-story-shell) > main{
+        padding-top:calc(env(safe-area-inset-top, 0px) + 92px);
+      }
+
+      @media(max-width:430px){
+        body.tz-has-stories-top-nav:not(.events-story-shell) > .wrap,
+        body.tz-has-stories-top-nav:not(.events-story-shell) > .container,
+        body.tz-has-stories-top-nav:not(.events-story-shell) > main{
+          padding-top:calc(env(safe-area-inset-top, 0px) + 84px);
+        }
+      }
+
       body.tz-has-stories-bottom-nav .wrap,
       body.tz-has-stories-bottom-nav .container,
       body.tz-has-stories-bottom-nav main{
