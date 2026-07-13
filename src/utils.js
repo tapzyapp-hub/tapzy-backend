@@ -1005,6 +1005,27 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
       })();
     </script>
 
+    <style data-tapzy-page-loader>
+  html.tapzy-page-loading,
+  html.tapzy-page-loading body{background:#000!important;}
+  html.tapzy-page-loading body::before{content:"";position:fixed;inset:0;z-index:2147483644;background:#000;pointer-events:none;}
+  html.tapzy-page-loading body::after{content:"";position:fixed;left:50%;top:50%;z-index:2147483645;width:86px;height:86px;transform:translate(-50%,-50%);border-radius:28px;background:linear-gradient(145deg,#2f76ff,#1145ad);box-shadow:0 24px 70px rgba(47,118,255,.38),0 0 0 1px rgba(255,255,255,.16) inset;-webkit-mask:url('/images/tapzy-mark-white.png') center / 70% 70% no-repeat;mask:url('/images/tapzy-mark-white.png') center / 70% 70% no-repeat;animation:tapzyPageLoaderPulse 1.45s ease-in-out infinite;pointer-events:none;}
+  @keyframes tapzyPageLoaderPulse{0%,100%{opacity:.78;transform:translate(-50%,-50%) scale(.94);filter:drop-shadow(0 0 14px rgba(47,118,255,.32));}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);filter:drop-shadow(0 0 28px rgba(111,210,255,.62));}}
+</style>
+<script data-tapzy-page-loader>
+  (function(){
+    var root=document.documentElement;
+    var hideTimer=null;
+    function showLoader(){if(hideTimer)window.clearTimeout(hideTimer);root.classList.add('tapzy-page-loading');root.classList.remove('tapzy-page-ready');}
+    function hideLoader(){if(hideTimer)window.clearTimeout(hideTimer);hideTimer=window.setTimeout(function(){root.classList.remove('tapzy-page-loading');root.classList.add('tapzy-page-ready');},80);}
+    window.__tapzyShowPageLoader=showLoader;window.__tapzyHidePageLoader=hideLoader;showLoader();
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){window.requestAnimationFrame(hideLoader);},{once:true});else window.requestAnimationFrame(hideLoader);
+    window.addEventListener('load',hideLoader,{once:true});window.addEventListener('pageshow',hideLoader);window.addEventListener('beforeunload',showLoader);window.addEventListener('pagehide',showLoader);
+    document.addEventListener('submit',function(event){var form=event.target;if(!form||form.hasAttribute('data-no-page-loader'))return;showLoader();},true);
+    document.addEventListener('click',function(event){var link=event.target&&event.target.closest?event.target.closest('a[href]'):null;if(!link||event.defaultPrevented)return;if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;if(link.target&&link.target!=='_self')return;if(link.hasAttribute('download')||link.hasAttribute('data-no-page-loader'))return;var url;try{url=new URL(link.href,location.href);}catch(_){return;}if(url.origin!==location.origin)return;if(url.pathname===location.pathname&&url.search===location.search&&url.hash)return;showLoader();},true);
+  })();
+</script>
+
     ${extraHead}
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
