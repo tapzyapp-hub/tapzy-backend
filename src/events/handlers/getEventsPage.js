@@ -479,11 +479,16 @@ module.exports = async function getEventsPage(req, res) {
       }
       .events-story-search{
         position:absolute;
-        right:15px;
-        top:calc(env(safe-area-inset-top, 0px) + 16px);
-        width:40px;
-        height:40px;
-        padding:7px;
+        z-index:35;
+        right:4px;
+        top:calc(env(safe-area-inset-top, 0px) + 8px);
+        display:grid;
+        place-items:center;
+        width:56px;
+        height:56px;
+        padding:13px;
+        touch-action:manipulation;
+        -webkit-tap-highlight-color:transparent;
         color:#fff;
         text-decoration:none;
       }
@@ -494,21 +499,21 @@ module.exports = async function getEventsPage(req, res) {
         .events-story-tabs{gap:12px;}
         .events-story-tab{font-size:13px;font-weight:800;padding:7px 0;}
         .events-story-tab.is-active::after{bottom:-4px;width:24px;height:3px;}
-        .events-story-search{right:12px;top:calc(env(safe-area-inset-top, 0px) + 14px);width:36px;height:36px;padding:6px;}
+        .events-story-search{right:2px;top:calc(env(safe-area-inset-top, 0px) + 7px);width:54px;height:54px;padding:12px;}
       }
       @media(max-width:360px){
         .events-story-top{gap:5px;padding-left:36px;padding-right:34px;}
         .events-story-brand{width:30px;height:30px;}
         .events-story-tabs{gap:5px;}
         .events-story-tab{font-size:10px;}
-        .events-story-search{width:30px;height:30px;padding:5px;}
+        .events-story-search{right:0;width:50px;height:50px;padding:12px;}
       }
       @media(max-width:320px){
         .events-story-top{gap:4px;padding-left:32px;padding-right:30px;}
         .events-story-brand{left:6px;width:28px;height:28px;border-radius:9px;}
         .events-story-tabs{gap:4px;}
         .events-story-tab{font-size:9.4px;}
-        .events-story-search{right:4px;width:28px;height:28px;padding:4px;}
+        .events-story-search{right:0;width:48px;height:48px;padding:12px;}
       }
 
       .mobile-only{ display:none; }
@@ -2642,11 +2647,11 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .events-story-search{
-          right:15px;
-          top:calc(env(safe-area-inset-top, 0px) + 16px);
-          width:40px;
-          height:40px;
-          padding:7px;
+          right:4px;
+          top:calc(env(safe-area-inset-top, 0px) + 8px);
+          width:56px;
+          height:56px;
+          padding:13px;
         }
 
         @media(max-width:340px){
@@ -2882,11 +2887,11 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .events-story-search{
-          right:12px !important;
-          top:calc(env(safe-area-inset-top, 0px) + 14px) !important;
-          width:36px !important;
-          height:36px !important;
-          padding:6px !important;
+          right:2px !important;
+          top:calc(env(safe-area-inset-top, 0px) + 7px) !important;
+          width:54px !important;
+          height:54px !important;
+          padding:12px !important;
         }
       }
 
@@ -2905,7 +2910,7 @@ module.exports = async function getEventsPage(req, res) {
 
         .events-story-tabs{gap:5px !important;}
         .events-story-tab{font-size:10px !important;}
-        .events-story-search{right:4px !important;width:30px !important;height:30px !important;padding:5px !important;}
+        .events-story-search{right:0 !important;width:50px !important;height:50px !important;padding:12px !important;}
       }
 
       @media(max-width:320px){
@@ -2923,7 +2928,7 @@ module.exports = async function getEventsPage(req, res) {
 
         .events-story-tabs{gap:4px !important;}
         .events-story-tab{font-size:9.4px !important;}
-        .events-story-search{width:28px !important;height:28px !important;padding:4px !important;}
+        .events-story-search{right:0 !important;width:48px !important;height:48px !important;padding:12px !important;}
       }
 
     

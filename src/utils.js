@@ -1016,7 +1016,7 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
     <script data-tapzy-page-loader>
       (function(){
         var root=document.documentElement;
-        var minMs=900;
+        var minMs=750;
         var shownAt=Date.now();
         var hideTimer=null;
         var navigating=false;
@@ -2990,19 +2990,29 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
 
         position:absolute;
 
-        right:15px;
+        z-index:35;
 
-        top:calc(env(safe-area-inset-top, 0px) + 16px);
+        right:4px;
 
-        width:40px;
+        top:calc(env(safe-area-inset-top, 0px) + 8px);
 
-        height:40px;
+        display:grid;
 
-        padding:7px;
+        place-items:center;
+
+        width:56px;
+
+        height:56px;
+
+        padding:13px;
 
         color:#fff;
 
         text-decoration:none;
+
+        touch-action:manipulation;
+
+        -webkit-tap-highlight-color:transparent;
 
       }
 
@@ -3066,11 +3076,11 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-search{
-          right:12px;
-          top:calc(env(safe-area-inset-top, 0px) + 14px);
-          width:36px;
-          height:36px;
-          padding:5px;
+          right:2px;
+          top:calc(env(safe-area-inset-top, 0px) + 7px);
+          width:54px;
+          height:54px;
+          padding:12px;
         }
       }
 
@@ -3096,9 +3106,10 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-search{
-          width:30px;
-          height:30px;
-          padding:5px;
+          right:0;
+          width:50px;
+          height:50px;
+          padding:12px;
         }
       }
 
@@ -3125,10 +3136,10 @@ function renderShell(title, body, extraHead = "", shellOptions = {}) {
         }
 
         .tz-story-search{
-          right:4px;
-          width:28px;
-          height:28px;
-          padding:4px;
+          right:0;
+          width:48px;
+          height:48px;
+          padding:12px;
         }
       }
 
