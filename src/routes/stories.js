@@ -4296,7 +4296,7 @@ router.get("/stories/feed", async (req, res) => {
           var FEED_KEEP_BEHIND = 1;
           var FEED_KEEP_AHEAD = 3;
           var BLANK_STORY_VIDEO_TIMEOUT_MS = 30000;
-          var FEED_TRANSITION_MS = 900;
+          var FEED_TRANSITION_MS = 750;
           function runWithFeedLoader(action){
             if (typeof window.__tapzyShowPageLoader === 'function') window.__tapzyShowPageLoader();
             window.setTimeout(function(){
