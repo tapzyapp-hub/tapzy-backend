@@ -280,8 +280,7 @@ function compactAssistantContext(context) {
       parts.push("Web results: " + web.results.slice(0, 5).map((item, index) => (index + 1) + ". " + [item.title, item.snippet, item.rating ? "rating " + item.rating : "", item.link].filter(Boolean).join(" | ")).join(" || "));
     }
   }
-  return parts.join("
-").slice(0, 7000);
+  return parts.join("\n\n").slice(0, 7000);
 }
 
 function asOpenAIMemory(memory, message) {
