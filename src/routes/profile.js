@@ -3197,6 +3197,112 @@ router.get("/u/:username", async (req, res) => {
         box-shadow:0 0 18px rgba(87,170,255,.24), inset 0 1px 0 rgba(255,255,255,.08);
       }
 
+
+
+      /* profile-story-compact-taskbar: match the story feed glass control feel */
+      .profile-story-stage-caption{
+        bottom:92px;
+      }
+
+      .profile-story-taskbar{
+        left:18px;
+        right:18px;
+        bottom:18px;
+        gap:9px;
+        padding:8px;
+        min-height:64px;
+        border-radius:32px;
+        border:1px solid rgba(255,255,255,.13);
+        background:linear-gradient(180deg,rgba(18,20,26,.42),rgba(5,7,12,.56));
+        box-shadow:0 18px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+        backdrop-filter:blur(18px) saturate(1.15);
+        -webkit-backdrop-filter:blur(18px) saturate(1.15);
+      }
+
+      .profile-story-rail{
+        gap:8px;
+        align-items:center;
+      }
+
+      .profile-story-rail-btn{
+        width:auto;
+        min-width:88px;
+        flex:0 0 auto;
+        min-height:48px;
+        padding:0 16px;
+        border-radius:18px;
+        font-size:13px;
+        line-height:1;
+        letter-spacing:0;
+        border:1px solid rgba(255,255,255,.10);
+        background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 8px 20px rgba(0,0,0,.18);
+      }
+
+      .profile-story-stage-sound{
+        width:52px;
+        height:52px;
+        min-width:52px;
+        min-height:52px;
+        border-radius:999px;
+        border:2px solid rgba(255,255,255,.82);
+        background:rgba(5,7,12,.58);
+        box-shadow:0 0 0 7px rgba(255,255,255,.045),0 0 26px rgba(118,194,255,.22),inset 0 1px 0 rgba(255,255,255,.12);
+        animation:none;
+      }
+
+      .profile-story-stage-sound::before{
+        inset:-7px;
+        border-color:rgba(255,255,255,.16);
+        box-shadow:0 0 22px rgba(92,166,255,.16);
+        opacity:.62;
+      }
+
+      .profile-story-stage-sound::after{
+        display:none;
+      }
+
+      .profile-story-stage-sound svg{
+        padding:12px;
+      }
+
+      @media(max-width:430px){
+        .profile-story-stage-caption{
+          left:20px;
+          right:20px;
+          bottom:88px;
+        }
+
+        .profile-story-taskbar{
+          left:18px;
+          right:18px;
+          bottom:max(14px, env(safe-area-inset-bottom));
+          min-height:62px;
+          padding:7px;
+          gap:7px;
+          border-radius:30px;
+        }
+
+        .profile-story-rail{
+          gap:7px;
+        }
+
+        .profile-story-rail-btn{
+          min-width:82px;
+          min-height:46px;
+          padding:0 13px;
+          border-radius:17px;
+          font-size:12px;
+        }
+
+        .profile-story-stage-sound{
+          width:50px;
+          height:50px;
+          min-width:50px;
+          min-height:50px;
+        }
+      }
+
       .profile-story-copy-toast{
         position:absolute;
         left:50%;
@@ -3974,6 +4080,68 @@ router.get("/u/:username", async (req, res) => {
       }
 
     
+
+
+
+      /* profile-story-compact-taskbar-final: wins after mobile layout rules */
+      .profile-story-stage-caption{
+        bottom:92px !important;
+      }
+      .profile-story-taskbar{
+        left:18px !important;
+        right:18px !important;
+        bottom:18px !important;
+        gap:9px !important;
+        padding:8px !important;
+        min-height:64px !important;
+        border-radius:32px !important;
+        border:1px solid rgba(255,255,255,.13) !important;
+        background:linear-gradient(180deg,rgba(18,20,26,.42),rgba(5,7,12,.56)) !important;
+        box-shadow:0 18px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08) !important;
+        backdrop-filter:blur(18px) saturate(1.15) !important;
+        -webkit-backdrop-filter:blur(18px) saturate(1.15) !important;
+      }
+      .profile-story-rail{
+        gap:8px !important;
+        align-items:center !important;
+      }
+      .profile-story-rail-btn{
+        width:auto !important;
+        min-width:88px !important;
+        flex:0 0 auto !important;
+        min-height:48px !important;
+        padding:0 16px !important;
+        border-radius:18px !important;
+        font-size:13px !important;
+        line-height:1 !important;
+        letter-spacing:0 !important;
+      }
+      .profile-story-stage-sound{
+        width:52px !important;
+        height:52px !important;
+        min-width:52px !important;
+        min-height:52px !important;
+        border-radius:999px !important;
+        border:2px solid rgba(255,255,255,.82) !important;
+        background:rgba(5,7,12,.58) !important;
+        box-shadow:0 0 0 7px rgba(255,255,255,.045),0 0 26px rgba(118,194,255,.22),inset 0 1px 0 rgba(255,255,255,.12) !important;
+        animation:none !important;
+      }
+      .profile-story-stage-sound::before{
+        inset:-7px !important;
+        border-color:rgba(255,255,255,.16) !important;
+        box-shadow:0 0 22px rgba(92,166,255,.16) !important;
+        opacity:.62 !important;
+      }
+      .profile-story-stage-sound::after{display:none !important;}
+      .profile-story-stage-sound svg{padding:12px !important;}
+      @media(max-width:430px){
+        .profile-story-stage-caption{left:20px !important;right:20px !important;bottom:88px !important;}
+        .profile-story-taskbar{left:18px !important;right:18px !important;bottom:max(14px, env(safe-area-inset-bottom)) !important;min-height:62px !important;padding:7px !important;gap:7px !important;border-radius:30px !important;}
+        .profile-story-rail{gap:7px !important;}
+        .profile-story-rail-btn{min-width:82px !important;min-height:46px !important;padding:0 13px !important;border-radius:17px !important;font-size:12px !important;}
+        .profile-story-stage-sound{width:50px !important;height:50px !important;min-width:50px !important;min-height:50px !important;}
+      }
 
       /* TAPZY MOBILE LAYOUT MATCH FIX: force Edit Profile to use the same full-width mobile layout as the rest of the app. */
       @media(max-width:700px){
