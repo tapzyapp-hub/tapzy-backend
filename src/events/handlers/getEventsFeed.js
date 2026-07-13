@@ -19,7 +19,7 @@ module.exports = async function getEventsFeed(req, res) {
     triggerEventAutoRefreshIfDue("events-feed-catch-up");
 
     const page = Math.max(1, Number(req.query.page || 1));
-    const limit = Math.min(24, Math.max(1, Number(req.query.limit || FEED_PAGE_SIZE)));
+    const limit = Math.min(400, Math.max(1, Number(req.query.limit || FEED_PAGE_SIZE)));
     const skip = (page - 1) * limit;
     const city = String(req.query.city || "").trim();
     const rawCategory = String(req.query.category || "all").trim().toLowerCase();

@@ -53,6 +53,25 @@ app.use(
 
 app.use(compression({ threshold: 1024 }));
 
+const LOCKED_VIEWPORT = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
+
+app.use((req, res, next) => {
+  const originalSend = res.send.bind(res);
+  res.send = function patchedSend(body) {
+    const contentType = String(res.getHeader("Content-Type") || "");
+    const looksHtml = typeof body === "string" && /<html|<!doctype html|<head/i.test(body);
+    if (looksHtml && (!contentType || /html/i.test(contentType))) {
+      if (/<meta\s+name=["']viewport["'][^>]*>/i.test(body)) {
+        body = body.replace(/<meta\s+name=["']viewport["'][^>]*>/gi, '<meta name="viewport" content="' + LOCKED_VIEWPORT + '" />');
+      } else if (/<head[^>]*>/i.test(body)) {
+        body = body.replace(/<head([^>]*)>/i, '<head$1>\n<meta name="viewport" content="' + LOCKED_VIEWPORT + '" />');
+      }
+    }
+    return originalSend(body);
+  };
+  next();
+});
+
 app.use(cookieParser());
 app.use(express.json({ limit: "12mb" }));
 app.use(express.urlencoded({ extended: true, limit: "12mb" }));
