@@ -315,15 +315,26 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
     const input = [
       {
         role: "developer",
-        content: "You are Ask Tapzy, the built-in assistant inside Tapzy. Be natural, warm, concise, and conversational. You can answer normal questions, follow-ups, local planning questions, Tapzy questions, directions, food, weather, events, and community discovery. Use the provided Tapzy context and web results when relevant. If live data is missing, say so plainly and give the best next step. Do not pretend to know private user data that was not provided. Keep answers mobile-friendly, usually 1-4 short paragraphs. When useful, suggest one clear action."
+        content: [
+          "You are Ask Tapzy, the built-in assistant inside Tapzy.",
+          "Be natural, warm, concise, and conversational.",
+          "You can answer normal questions, follow-ups, local planning questions, Tapzy questions, directions, food, weather, events, and community discovery.",
+          "Use the provided Tapzy context and web results when relevant.",
+          "If live data is missing, say so plainly and give the best next step.",
+          "Do not pretend to know private user data that was not provided.",
+          "Keep answers mobile-friendly, usually 1-4 short paragraphs.",
+          "When useful, suggest one clear action."
+        ].join(" ")
       },
       {
         role: "user",
-        content: "Current Tapzy context:
-User: " + username + "
-Page: " + pageType + "
-Path: " + currentPath + "
-" + (contextText || "No live context loaded.")
+        content: [
+          "Current Tapzy context:",
+          contextText || "No live context available.",
+          "Page: " + (pageType || "unknown"),
+          "Path: " + (currentPath || "unknown"),
+          "Username: " + (username || "guest")
+        ].join("\n")
       },
       ...asOpenAIMemory(memory, message),
       { role: "user", content: message },
