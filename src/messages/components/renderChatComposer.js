@@ -4,6 +4,7 @@ module.exports = function renderChatComposer({ conversationId }) {
 
     <form
       id="tzChatForm"
+      autocomplete="off"
       method="POST"
       action="/messages/${conversationId}"
       enctype="multipart/form-data"
@@ -24,6 +25,7 @@ module.exports = function renderChatComposer({ conversationId }) {
             name="text"
             placeholder="Send a Tapzy signal..."
             rows="1"
+            enterkeyhint="send"
           ></textarea>
         </div>
 

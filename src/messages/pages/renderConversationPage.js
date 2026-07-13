@@ -376,6 +376,17 @@ module.exports = function renderConversationPage({
 
 <style>
 
+  /* messages-top-nav-spacing: keep the fixed Tapzy nav from covering the chat header */
+  body.tz-has-stories-top-nav .wrap:has(.tz-chat-shell){
+    padding-top:calc(env(safe-area-inset-top, 0px) + 96px) !important;
+  }
+
+  @media(max-width:700px){
+    body.tz-has-stories-top-nav .wrap:has(.tz-chat-shell){
+      padding-top:calc(env(safe-area-inset-top, 0px) + 88px) !important;
+    }
+  }
+
   .tz-chat-shell{
 
     position:relative;
