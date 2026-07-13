@@ -4364,6 +4364,31 @@ module.exports = function renderConversationPage({
       min-width:50px !important;
     }
   }
+
+
+  /* chat-composer-single-rim */
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer{
+    border:1px solid rgba(120,180,255,.16) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.04),
+      0 16px 38px rgba(0,0,0,.34),
+      0 0 30px rgba(78,148,255,.10) !important;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer-inner{
+    padding:0 !important;
+    border:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+
+  body:not(.tz-has-stories-top-nav) .tz-chat-composer-inner:focus-within{
+    border:0 !important;
+    box-shadow:none !important;
+    transform:none !important;
+  }
 </style>
 
 
