@@ -4343,13 +4343,13 @@ router.get("/stories/feed", async (req, res) => {
             }
           }
           function storyVideoHasVisibleFrame(video){
-            return !!(video && video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2 && !storyVideoFrameLooksBlack(video));
+            return !!(video && video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2);
           }
           function isStoryVideoBlank(video){
             if (!video || !video.isConnected) return false;
             if (video.error) return true;
-            if (!(video.videoWidth > 0 && video.videoHeight > 0)) return video.readyState < 2;
-            return storyVideoFrameLooksBlack(video);
+            if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) return false;
+            return video.readyState < 2 && !(video.currentTime > 0);
           }
           function recoverBlankStoryVideo(video){
             var slide = video && video.closest ? video.closest('.sf-slide') : null;
@@ -4392,7 +4392,7 @@ router.get("/stories/feed", async (req, res) => {
               setTimeout(function(){ if (isStoryVideoBlank(video)) recoverBlankStoryVideo(video); }, 6500);
             }
             ['loadeddata','canplay','playing','timeupdate'].forEach(function(name){ video.addEventListener(name, function(){ markHealthy(); arm(); }, { passive:true }); });
-            ['error','stalled','waiting','emptied'].forEach(function(name){ video.addEventListener(name, function(){ quickRecover(); arm(); }, { passive:true }); });
+            video.addEventListener('error', function(){ quickRecover(); arm(); }, { passive:true });
             arm();
             setTimeout(arm, 1200);
           }
