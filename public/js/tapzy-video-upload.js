@@ -1,15 +1,15 @@
 (function () {
   if (window.TapzyVideoUpload) return;
 
-  const MIN_CHUNK_SIZE = 8 * 1024 * 1024;
-  const MOBILE_FAST_CHUNK_SIZE = 12 * 1024 * 1024;
-  const MAX_CHUNK_SIZE = 16 * 1024 * 1024;
-  const CLOUDINARY_CHUNK_SIZE = 20 * 1024 * 1024;
+  const MIN_CHUNK_SIZE = 10 * 1024 * 1024;
+  const MOBILE_FAST_CHUNK_SIZE = 16 * 1024 * 1024;
+  const MAX_CHUNK_SIZE = 24 * 1024 * 1024;
+  const CLOUDINARY_CHUNK_SIZE = 24 * 1024 * 1024;
   const CLOUDINARY_CHUNK_UPLOAD_BYTES = 24 * 1024 * 1024;
   const DIRECT_UPLOAD_BYTES = 8 * 1024 * 1024;
   const START_OPTIMIZE_BYTES = 120 * 1024 * 1024;
-  const MOBILE_FAST_CHUNK_BYTES = 48 * 1024 * 1024;
-  const MAX_PARALLEL_CHUNKS = 6;
+  const MOBILE_FAST_CHUNK_BYTES = 64 * 1024 * 1024;
+  const MAX_PARALLEL_CHUNKS = 8;
   const MAX_EDGE = 960;
   const FPS = 24;
   const VIDEO_BITRATE = 1300000;
@@ -104,8 +104,8 @@
 
     if (info.saveData || /(?:^|-)2g$/.test(info.effectiveType)) limit = 2;
     else if (info.effectiveType === "3g") limit = info.mobile ? 3 : 4;
-    else if (info.mobile) limit = 5;
-    else if (info.effectiveType === "4g") limit = 6;
+    else if (info.mobile) limit = 6;
+    else if (info.effectiveType === "4g") limit = 8;
     else limit = 5;
 
     return Math.max(1, Math.min(limit, totalChunks));

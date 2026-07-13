@@ -2220,14 +2220,14 @@ router.get("/stories/live/new", async (req, res) => {
         *{box-sizing:border-box}
         html,body{margin:0;width:100%;height:100%;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
         .tl-recorder{position:relative;height:100%;min-height:100svh;background:#000;overflow:hidden;isolation:isolate}
-        video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:linear-gradient(180deg,#1d2022,#07090c)}
+        video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:linear-gradient(180deg,#1d2022,#07090c)}
         .tl-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.50),rgba(0,0,0,.05) 26%,rgba(0,0,0,.10) 48%,rgba(0,0,0,.82) 100%);pointer-events:none}
         .tl-top{position:absolute;top:calc(var(--safe-top) + 18px);left:22px;right:22px;display:flex;align-items:center;justify-content:space-between;z-index:4}
         .tl-badge{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border-radius:999px;background:rgba(16,18,26,.58);border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 34px rgba(0,0,0,.25);backdrop-filter:blur(18px) saturate(1.2);font-size:12px;font-weight:950;letter-spacing:.18em}
         .tl-dot{width:9px;height:9px;border-radius:999px;background:#ff285f;box-shadow:0 0 18px rgba(255,40,95,.75)}
         .tl-close{width:54px;height:54px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(18,18,20,.42);color:#fff;text-decoration:none;display:grid;place-items:center;font-size:30px;font-weight:300;box-shadow:0 14px 34px rgba(0,0,0,.26);backdrop-filter:blur(16px)}
         .tl-copy{display:none}
-        .tl-controls{position:absolute;left:14px;right:14px;bottom:calc(var(--safe-bottom) + 14px);z-index:3;display:grid;gap:12px;padding:14px;border-radius:30px;background:linear-gradient(180deg,rgba(13,16,22,.46),rgba(8,9,12,.76));border:1px solid rgba(255,255,255,.12);box-shadow:0 22px 70px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.10);backdrop-filter:blur(22px) saturate(1.25)}
+        .tl-controls{position:absolute;left:14px;right:14px;bottom:calc(var(--safe-bottom) + 14px);z-index:3;display:grid;gap:12px;padding:14px;border-radius:30px;background:linear-gradient(180deg,rgba(13,16,22,.46),rgba(8,9,12,.76));border:1px solid rgba(255,255,255,.12);box-shadow:0 22px 70px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.10);backdrop-filter:blur(22px) saturate(1.25);-webkit-backdrop-filter:blur(22px) saturate(1.25)}
         .tl-dock-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:2px 2px 0}.tl-dock-title{min-width:0}
         .tl-kicker{display:flex;align-items:center;gap:7px;margin:0 0 5px;color:rgba(228,238,255,.74);font-size:11px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}.tl-kicker::before{content:"";width:7px;height:7px;border-radius:999px;background:#ff285f;box-shadow:0 0 14px rgba(255,40,95,.75)}
         h1{margin:0;font-size:clamp(32px,9vw,46px);line-height:.92;letter-spacing:0;font-weight:950;text-shadow:0 12px 34px rgba(0,0,0,.56)}
@@ -2246,6 +2246,13 @@ router.get("/stories/live/new", async (req, res) => {
         .tl-chat-line.is-self span{color:#fff}.tl-chat-line.is-gift{color:#fff;background:linear-gradient(135deg,rgba(255,45,85,.46),rgba(47,118,255,.36));border-radius:14px;padding:6px 8px}
         .is-recording #chatSetup{grid-column:1 / -1}
         .is-recording .tl-live-chat-form{display:grid}
+        .is-recording .tl-controls{left:12px;right:12px;bottom:calc(var(--safe-bottom) + 10px);display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:999px;background:rgba(3,5,10,.46);box-shadow:0 14px 42px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.08)}
+        .is-recording .tl-dock-head,.is-recording .tl-title-wrap,.is-recording .tl-studio-grid{display:none!important}
+        .is-recording .tl-buttons{display:grid;grid-template-columns:minmax(0,1fr) 64px 64px;gap:8px;width:100%}
+        .is-recording .tl-buttons button{min-height:44px;border-radius:999px;font-size:13px;padding:0 10px}
+        .is-recording .tl-danger{grid-column:auto;display:block}
+        .is-recording .tl-ghost{display:block}
+        .is-recording .tl-cancel{display:none}
 
         .tl-buttons{display:grid;grid-template-columns:1.15fr .85fr .85fr;gap:10px;align-items:center}button{min-height:54px;border:0;border-radius:18px;font:inherit;font-weight:950;font-size:16px;cursor:pointer;color:#fff;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none!important}.tl-primary{background:linear-gradient(135deg,#31d6ff,#2d6bff 52%,#123fbd);box-shadow:0 0 34px rgba(47,118,255,.36)}.tl-danger{display:none;background:linear-gradient(135deg,#ff5f7e,#e90044);box-shadow:0 0 28px rgba(255,30,82,.25)}.is-recording .tl-primary{display:none}.is-recording .tl-danger{display:block}.tl-ghost{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}.tl-cancel{color:#ffd6de;background:rgba(255,45,85,.12);border-color:rgba(255,90,120,.18)}
         .is-recording .tl-dot{animation:pulse 1s infinite}.is-recording .tl-badge{background:rgba(48,11,22,.58);border-color:rgba(255,64,112,.22)}@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.72}}
@@ -2343,7 +2350,8 @@ router.get("/stories/live/new", async (req, res) => {
           const setupFloatingChat = document.getElementById('setupFloatingChat');
           const setupChatForm = document.getElementById('setupChatForm');
           const setupChatInput = document.getElementById('setupChatInput');
-          const CHUNK_SIZE = 8 * 1024 * 1024;
+          const CHUNK_SIZE = 12 * 1024 * 1024;
+          const LIVE_CHUNK_CONCURRENCY = 4;
           const DIRECT_LIMIT = 110 * 1024 * 1024;
           let stream = null;
           let recorder = null;
@@ -2424,7 +2432,7 @@ router.get("/stories/live/new", async (req, res) => {
           }
           function scheduleControlsHide(){
             if (controlsIdleTimer) clearTimeout(controlsIdleTimer);
-            controlsIdleTimer = setTimeout(hideControls, 20000);
+            controlsIdleTimer = setTimeout(hideControls, root.classList.contains('is-recording') ? 6000 : 14000);
           }
           function registerFilmingTap(event){
             if (event.target.closest('button,a,input,label')) {
@@ -2470,9 +2478,18 @@ router.get("/stories/live/new", async (req, res) => {
           async function startCamera(){
             if (stream) stream.getTracks().forEach(function(track){ track.stop(); });
             stream = await navigator.mediaDevices.getUserMedia({
-              video:{ facingMode:facingMode, width:{ ideal:720 }, height:{ ideal:1280 } },
+              video:{ facingMode:{ ideal:facingMode }, width:{ ideal:720, max:1280 }, height:{ ideal:1280, max:1920 }, aspectRatio:{ ideal:9/16 }, frameRate:{ ideal:30, max:30 }, resizeMode:{ ideal:'none' } },
               audio:true,
             });
+            const videoTrack = stream.getVideoTracks && stream.getVideoTracks()[0];
+            if (videoTrack && videoTrack.getCapabilities && videoTrack.applyConstraints) {
+              try {
+                const caps = videoTrack.getCapabilities();
+                if (caps && caps.zoom && typeof caps.zoom.min === 'number') {
+                  await videoTrack.applyConstraints({ advanced:[{ zoom:caps.zoom.min }] });
+                }
+              } catch(e) {}
+            }
             preview.srcObject = stream;
             await preview.play().catch(function(){});
             syncStreamToPeers();
@@ -2601,12 +2618,19 @@ router.get("/stories/live/new", async (req, res) => {
               size:file.size,
               totalChunks:totalChunks,
             });
-            for (let index = 0; index < totalChunks; index += 1) {
+            let nextIndex = 0;
+            let uploaded = 0;
+            async function uploadNextChunk(){
+              const index = nextIndex++;
+              if (index >= totalChunks) return;
               const start = index * CHUNK_SIZE;
               const chunk = file.slice(start, Math.min(file.size, start + CHUNK_SIZE));
               await uploadChunkWithRetry(session.uploadId, index, chunk);
-              setStatus('Uploading ' + Math.round(((index + 1) / totalChunks) * 100) + '%');
+              uploaded += 1;
+              setStatus('Uploading ' + Math.round((uploaded / totalChunks) * 100) + '%');
+              await uploadNextChunk();
             }
+            await Promise.all(Array.from({ length:Math.min(LIVE_CHUNK_CONCURRENCY, totalChunks) }, uploadNextChunk));
             return postJson('/media/chunk/' + encodeURIComponent(session.uploadId) + '/complete', {});
           }
           function uploadCloudFile(file, signature){
