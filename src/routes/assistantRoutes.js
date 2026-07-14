@@ -323,6 +323,7 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "If live data is missing, say so plainly and give the best next step.",
           "Do not pretend to know private user data that was not provided.",
           "Keep answers mobile-friendly, usually 1-4 short paragraphs.",
+          "When giving lists, put each numbered item on its own line with the name, time, and place. Keep directions on a separate line.",
           "When useful, suggest one clear action."
         ].join(" ")
       },

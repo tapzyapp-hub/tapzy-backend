@@ -75,13 +75,25 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function getClientDescription(event) {
 
-          const text = String(event.description || "").replace(/\s+/g, " ").trim();
+          const text = String(event.description || "")
+
+            .replace(/\*\*PLEASE NOTE\*\*[^.]*?(?:date\/time|fraud)\.?/gi, "")
+
+            .replace(/([a-z0-9)])([A-Z])/g, "$1 $2")
+
+            .replace(/\s+/g, " ")
+
+            .trim();
 
           if (!text) return "";
 
-          if (text.length <= 120) return text;
+          const firstSentence = (text.match(/[^.!?]+[.!?]+/) || [text])[0].trim();
 
-          return text.slice(0, 117).trim() + "...";
+          const preview = firstSentence.length >= 42 ? firstSentence : text;
+
+          if (preview.length <= 132) return preview;
+
+          return preview.slice(0, 129).trim() + "...";
 
         }
 

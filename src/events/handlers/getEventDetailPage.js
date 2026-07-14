@@ -20,6 +20,43 @@ function sourceLocation(event) {
   return String(event?.venueName || event?.address || event?.city || "Not listed by source").trim();
 }
 
+function cleanEventDescriptionText(value) {
+  return String(value || "")
+    .replace(/\*\*PLEASE NOTE\*\*[^.]*?(?:date\/time|fraud)\.?/gi, "")
+    .replace(/([a-z0-9)])([A-Z])/g, "$1 $2")
+    .replace(/\b(\d{1,2}:\d{2}\s*(?:am|pm))(?=[A-Z])/gi, "$1 ")
+    .replace(/\b(\d{1,2}\s*(?:am|pm))(?=[A-Z])/gi, "$1 ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function renderEventDescriptionHtml(value) {
+  const text = cleanEventDescriptionText(value);
+  if (!text) {
+    return '<p class="tz-event-detail-muted">This event source has not shared a full description yet.</p>';
+  }
+  const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+  const groups = [];
+  let current = [];
+  let length = 0;
+  sentences.forEach((raw) => {
+    const sentence = raw.trim();
+    if (!sentence) return;
+    current.push(sentence);
+    length += sentence.length;
+    if (current.length >= 2 || length >= 190) {
+      groups.push(current.join(" "));
+      current = [];
+      length = 0;
+    }
+  });
+  if (current.length) groups.push(current.join(" "));
+  return groups.slice(0, 5).map((paragraph, index) => {
+    const className = index === 0 ? "tz-event-detail-lede" : "tz-event-detail-paragraph";
+    return '<p class="' + className + '">' + escapeHtml(paragraph) + '</p>';
+  }).join("");
+}
+
 module.exports = async function getEventDetailPage(req, res) {
 
 
@@ -227,7 +264,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
             <div class="tz-event-detail-copy">
 
-              ${escapeHtml(fullDescription)}
+              ${renderEventDescriptionHtml(fullDescription)}
 
             </div>
 
@@ -698,13 +735,49 @@ module.exports = async function getEventDetailPage(req, res) {
 
       .tz-event-detail-copy{
 
-        margin-top:14px;
+        margin-top:16px;
 
         color:#d9e4f2;
 
-        line-height:1.85;
-
         font-size:15px;
+
+      }
+
+      .tz-event-detail-copy p{
+
+        margin:0 0 16px;
+
+        line-height:1.7;
+
+      }
+
+      .tz-event-detail-lede{
+
+        color:#f5f9ff;
+
+        font-size:17px;
+
+        line-height:1.62 !important;
+
+        font-weight:780;
+
+        letter-spacing:-.18px;
+
+      }
+
+      .tz-event-detail-paragraph{
+
+        color:rgba(224,234,247,.86);
+
+        font-weight:560;
+
+      }
+
+      .tz-event-detail-muted{
+
+        color:rgba(220,232,250,.62);
+
+        font-weight:700;
 
       }
 

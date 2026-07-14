@@ -1245,13 +1245,21 @@ module.exports = async function getEventsPage(req, res) {
 
       .event-copy{
 
-        margin-top:12px;
+        margin-top:14px;
 
-        line-height:1.7;
+        line-height:1.48;
 
-        font-size:14px;
+        font-size:15px;
 
-        max-width:92%;
+        font-weight:720;
+
+        letter-spacing:-.12px;
+
+        color:rgba(242,247,255,.9);
+
+        text-shadow:0 10px 28px rgba(0,0,0,.32);
+
+        max-width:94%;
 
         display:-webkit-box;
 
@@ -1613,13 +1621,19 @@ module.exports = async function getEventsPage(req, res) {
 
         margin-top:12px;
 
-        line-height:1.72;
+        line-height:1.5;
 
         font-size:15px;
 
+        font-weight:720;
+
+        letter-spacing:-.12px;
+
         max-width:95%;
 
-        color:#e3ecf7;
+        color:#f2f7ff;
+
+        text-shadow:0 10px 28px rgba(0,0,0,.32);
 
       }
 
@@ -1884,8 +1898,8 @@ module.exports = async function getEventsPage(req, res) {
         }
 
         .mobile-events-grid .event-copy{
-          font-size:clamp(16px, 4.2vw, 20px);
-          line-height:1.45;
+          font-size:clamp(15px, 3.9vw, 18px);
+          line-height:1.38;
           -webkit-line-clamp:2;
           max-width:100%;
         }

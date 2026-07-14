@@ -364,11 +364,25 @@ function getShortDescription(event) {
 
 
 
-  const cleaned = source.replace(/\s+/g, " ").trim();
+  const cleaned = source
 
-  if (cleaned.length <= 120) return cleaned;
+    .replace(/\*\*PLEASE NOTE\*\*[^.]*?(?:date\/time|fraud)\.?/gi, "")
 
-  return cleaned.slice(0, 117).trim() + "...";
+    .replace(/([a-z0-9)])([A-Z])/g, "$1 $2")
+
+    .replace(/\s+/g, " ")
+
+    .trim();
+
+  if (!cleaned) return "";
+
+  const firstSentence = (cleaned.match(/[^.!?]+[.!?]+/) || [cleaned])[0].trim();
+
+  const preview = firstSentence.length >= 42 ? firstSentence : cleaned;
+
+  if (preview.length <= 132) return preview;
+
+  return preview.slice(0, 129).trim() + "...";
 
 }
 
