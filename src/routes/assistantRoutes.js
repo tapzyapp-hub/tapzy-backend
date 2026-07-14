@@ -512,7 +512,8 @@ async function handleRealtimeCallRequest(req, res) {
     }
 
     const session = await requestRealtimeSessionFromOpenAI();
-    const response = await fetch("https://api.openai.com/v1/realtime/calls", {
+    const realtimeUrl = "https://api.openai.com/v1/realtime?model=" + encodeURIComponent(session.model || OPENAI_REALTIME_MODEL);
+    const response = await fetch(realtimeUrl, {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + session.clientSecret,
