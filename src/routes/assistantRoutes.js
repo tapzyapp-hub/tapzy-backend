@@ -7,6 +7,11 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.4-mini";
 const OPENAI_REALTIME_MODEL = process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1";
 const OPENAI_REALTIME_VOICE = process.env.OPENAI_REALTIME_VOICE || "marin";
+const OPENAI_VECTOR_STORE_IDS = String(process.env.OPENAI_VECTOR_STORE_IDS || process.env.OPENAI_FILE_SEARCH_VECTOR_STORE_IDS || "")
+  .split(",")
+  .map((id) => id.trim())
+  .filter(Boolean);
+const OPENAI_ENABLE_WEB_SEARCH = process.env.OPENAI_ENABLE_WEB_SEARCH !== "false";
 
 const router = express.Router();
 
@@ -23,6 +28,55 @@ function asSafeNumber(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+
+function normalizeCountryCode(value) {
+  const text = asSafeString(value, 40).toUpperCase();
+  if (/^[A-Z]{2}$/.test(text)) return text;
+  if (text === "CANADA") return "CA";
+  if (text === "UNITED STATES" || text === "USA" || text === "US") return "US";
+  return "CA";
+}
+
+function buildOpenAITools(context) {
+  const tools = [];
+  if (OPENAI_ENABLE_WEB_SEARCH) {
+    const location = context?.location || {};
+    const eventCountry = Array.isArray(context?.events) && context.events[0] ? context.events[0].country : "";
+    const webTool = { type: "web_search" };
+    if (location.city) {
+      webTool.user_location = {
+        type: "approximate",
+        country: normalizeCountryCode(eventCountry || "CA"),
+        city: asSafeString(location.city, 80),
+        region: asSafeString(location.city, 80),
+        timezone: "America/Toronto",
+      };
+    }
+    tools.push(webTool);
+  }
+  if (OPENAI_VECTOR_STORE_IDS.length) {
+    tools.push({ type: "file_search", vector_store_ids: OPENAI_VECTOR_STORE_IDS });
+  }
+  return tools;
+}
+
+function extractResponseCitations(data) {
+  const citations = [];
+  const seen = new Set();
+  const output = Array.isArray(data?.output) ? data.output : [];
+  for (const item of output) {
+    const content = Array.isArray(item?.content) ? item.content : [];
+    for (const part of content) {
+      const annotations = Array.isArray(part?.annotations) ? part.annotations : [];
+      for (const note of annotations) {
+        if (note?.type !== "url_citation" || !note.url || seen.has(note.url)) continue;
+        seen.add(note.url);
+        citations.push({ title: asSafeString(note.title || note.url, 120), url: asSafeString(note.url, 500) });
+      }
+    }
+  }
+  return citations.slice(0, 4);
+}
 
 function getDistanceKm(lat1, lon1, lat2, lon2) {
   if (![lat1, lon1, lat2, lon2].every(Number.isFinite)) return null;
@@ -344,25 +398,45 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
       ...asOpenAIMemory(memory, message),
       { role: "user", content: message },
     ];
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const tools = buildOpenAITools(context);
+    const payload = {
+      model: OPENAI_MODEL,
+      input,
+      max_output_tokens: 650,
+    };
+    if (tools.length) payload.tools = tools;
+    let response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + OPENAI_API_KEY,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        input,
-        max_output_tokens: 650,
-      }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout ? AbortSignal.timeout(9000) : undefined,
     });
-    const data = await response.json().catch(() => null);
+    let data = await response.json().catch(() => null);
+    if (!response.ok && tools.length) {
+      console.error("OpenAI assistant tools failed, retrying without tools:", data?.error?.message || response.status);
+      delete payload.tools;
+      response = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + OPENAI_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout ? AbortSignal.timeout(9000) : undefined,
+      });
+      data = await response.json().catch(() => null);
+    }
     if (!response.ok) {
       console.error("OpenAI assistant failed:", data?.error?.message || response.status);
       return "";
     }
-    return asSafeString(extractResponseText(data), 5000);
+    const text = asSafeString(extractResponseText(data), 5000);
+    const citations = extractResponseCitations(data);
+    const sourceText = citations.length ? "\n\nSources:\n" + citations.map((item, index) => (index + 1) + ". " + item.title + " - " + item.url).join("\n") : "";
+    return asSafeString(text + sourceText, 6000);
   } catch (error) {
     console.error("OpenAI assistant error:", error?.message || error);
     return "";
