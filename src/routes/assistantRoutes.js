@@ -466,6 +466,8 @@ async function handleRealtimeCallRequest(req, res) {
     return res.status(400).json({ ok: false, error: "Missing voice connection offer." });
   }
 
+  console.log("Tapzy realtime SDP offer", { length: sdp.length, startsWith: sdp.slice(0, 24) });
+
   try {
     const response = await fetch("https://api.openai.com/v1/realtime?model=" + encodeURIComponent(OPENAI_REALTIME_MODEL), {
       method: "POST",
