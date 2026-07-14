@@ -1,6 +1,23 @@
 const { escapeHtml } = require('../../utils');
 const { normalizeCategory, getShortDescription, getUrgencyBadge, pickImage } = require('../helpers/eventServerUtils');
 
+function formatEventDate(value) {
+  if (!value) return 'Not listed by source';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Not listed by source';
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function sourceLocation(event) {
+  return String(event?.venueName || event?.address || event?.city || 'Not listed by source').trim();
+}
+
 function renderGoingButton(event, currentProfile, goingSet) {
   if (!currentProfile) return '';
   const isGoing = goingSet && goingSet.has(event.id);
@@ -14,7 +31,7 @@ function renderGoingButton(event, currentProfile, goingSet) {
 
 function renderEventCard(event, currentProfile, goingSet, goingCounts) {
   const image = pickImage(event);
-  const when = event.startAt ? new Date(event.startAt).toLocaleString() : 'Date coming soon';
+  const when = formatEventDate(event.startAt);
   const categoryText = normalizeCategory(event) || 'Event';
   const shortDescription = getShortDescription(event);
   const badge = getUrgencyBadge(event);
@@ -44,7 +61,7 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
         <div class="event-meta">
           <div class="event-meta-row"><span class="event-meta-label">When</span><span class="event-meta-value">${escapeHtml(when)}</span></div>
-          <div class="event-meta-row"><span class="event-meta-label">Where</span><span class="event-meta-value">${escapeHtml(event.venueName || event.address || event.city || 'Location coming soon')}</span></div>
+          <div class="event-meta-row"><span class="event-meta-label">Where</span><span class="event-meta-value">${escapeHtml(sourceLocation(event))}</span></div>
           ${event.city ? `<div class="event-meta-row"><span class="event-meta-label">City</span><span class="event-meta-value">${escapeHtml(event.city)}</span></div>` : ''}
         </div>
 
@@ -64,7 +81,7 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
 function renderReelItem(event, currentProfile, goingSet, goingCounts) {
   const image = pickImage(event);
-  const when = event.startAt ? new Date(event.startAt).toLocaleString() : 'Date coming soon';
+  const when = formatEventDate(event.startAt);
   const date = event.startAt ? new Date(event.startAt) : null;
   const dateMonth = date ? date.toLocaleString('en-US', { month: 'short' }).toUpperCase() : 'SOON';
   const dateDay = date ? date.getDate() : '•';
@@ -128,7 +145,7 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
           <div class="reel-sub">${escapeHtml(shortDescription)}</div>
           <div class="reel-location">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
-            <span>${escapeHtml(event.venueName || event.address || event.city || 'Location coming soon')}</span>
+            <span>${escapeHtml(sourceLocation(event))}</span>
           </div>
           <div class="reel-time">${escapeHtml(when)}</div>
           <div class="reel-footer-row">

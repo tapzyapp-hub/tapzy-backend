@@ -360,7 +360,7 @@ function getShortDescription(event) {
 
   const source = String(event?.description || "").trim();
 
-  if (!source) return "Premium event discovery inside Tapzy Network™.";
+  if (!source) return "";
 
 
 
@@ -744,6 +744,7 @@ function sortRanked(events) {
 
 function buildWhere({ city, category, now }) {
   const where = {
+    source: { not: "tapzy_seed" },
     OR: [
       { startAt: null },
       { startAt: { gte: now } },

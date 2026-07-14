@@ -2,8 +2,7 @@
 const prisma = require("../../prisma");
 const { renderShell, renderTapzyAssistant, escapeHtml } = require("../../utils");
 const { TOP_CITY_ORDER, MAIN_QUERY_LIMIT, FEED_PAGE_SIZE } = require("../config");
-const {
-  seedEventsIfEmpty,
+const {
   startOfDay,
   endOfDay,
   isBetween,
@@ -30,10 +29,6 @@ module.exports = async function getEventsPage(req, res) {
   try {
 
     triggerEventAutoRefreshIfDue("events-page-catch-up");
-
-    await seedEventsIfEmpty(prisma);
-
-
 
     const currentProfile = req.currentProfile || null;
 
@@ -2967,6 +2962,7 @@ module.exports = async function getEventsPage(req, res) {
       .event-pill-stack{
         min-width:0;
         max-width:100%;
+        flex-wrap:nowrap;
       }
 
       .event-pill{
@@ -2980,49 +2976,57 @@ module.exports = async function getEventsPage(req, res) {
       .event-pill-soft{
         max-width:min(46%, 176px);
         min-width:0;
+        white-space:normal;
       }
 
       @media(max-width:430px){
         .mobile-events-grid .event-topline{
-          display:grid;
-          grid-template-columns:minmax(0, 1fr) auto;
-          gap:8px;
-          align-items:start;
+          display:flex;
+          flex-wrap:nowrap;
+          justify-content:space-between;
+          gap:6px;
+          align-items:flex-start;
         }
 
         .mobile-events-grid .event-pill-stack{
           display:flex;
-          flex-wrap:wrap;
-          gap:7px;
+          flex-wrap:nowrap;
+          gap:6px;
           min-width:0;
-          max-width:100%;
+          max-width:calc(100% - 104px);
         }
 
         .mobile-events-grid .event-pill{
-          min-height:28px;
-          padding-inline:10px;
-          font-size:9px;
-          letter-spacing:.62px;
+          min-height:32px;
+          padding-inline:9px;
+          font-size:8.6px;
+          letter-spacing:.5px;
           max-width:100%;
         }
 
         .mobile-events-grid .event-pill-soft{
-          justify-self:end;
-          max-width:116px;
+          flex:0 0 auto;
+          align-self:flex-start;
+          max-width:104px;
           padding-inline:9px;
-          font-size:8.8px;
-          letter-spacing:.42px;
+          font-size:8.4px;
+          letter-spacing:.34px;
+          line-height:1.25;
+          text-align:center;
         }
       }
 
       @media(max-width:370px){
         .mobile-events-grid .event-topline{
-          grid-template-columns:1fr;
+          gap:5px;
+        }
+
+        .mobile-events-grid .event-pill-stack{
+          max-width:calc(100% - 92px);
         }
 
         .mobile-events-grid .event-pill-soft{
-          justify-self:start;
-          max-width:100%;
+          max-width:92px;
         }
 
         .mobile-events-grid .event-title{

@@ -1,7 +1,24 @@
 
 const prisma = require("../../prisma");
-const { renderShell, renderTapzyAssistant, escapeHtml, formatPrettyLocal } = require("../../utils");
+const { renderShell, renderTapzyAssistant, escapeHtml } = require("../../utils");
 const { normalizeCategory, getShortDescription, pickImage, getUrgencyBadge } = require("../helpers/eventServerUtils");
+
+function formatEventDate(value) {
+  if (!value) return "Not listed by source";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not listed by source";
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function sourceLocation(event) {
+  return String(event?.venueName || event?.address || event?.city || "Not listed by source").trim();
+}
 
 module.exports = async function getEventDetailPage(req, res) {
 
@@ -46,13 +63,13 @@ module.exports = async function getEventDetailPage(req, res) {
 
     const shortDescription = getShortDescription(event);
 
-    const when = event.startAt ? formatPrettyLocal(event.startAt) : "Date coming soon";
+    const when = formatEventDate(event.startAt);
 
     const badge = getUrgencyBadge(event);
 
     const fullDescription =
 
-      String(event.description || "").trim() || "Premium event discovery inside Tapzy Network™.";
+      String(event.description || "").trim();
 
 
 
@@ -122,7 +139,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
               <div class="tz-event-detail-meta-label">Where</div>
 
-              <div class="tz-event-detail-meta-value">${escapeHtml(event.venueName || event.address || event.city || "Location coming soon")}</div>
+              <div class="tz-event-detail-meta-value">${escapeHtml(sourceLocation(event))}</div>
 
             </div>
 
@@ -248,7 +265,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Venue</span>
 
-                <strong>${escapeHtml(event.venueName || "Venue coming soon")}</strong>
+                <strong>${escapeHtml(event.venueName || "Not listed by source")}</strong>
 
               </div>
 
@@ -256,7 +273,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Address</span>
 
-                <strong>${escapeHtml(event.address || event.city || "Location coming soon")}</strong>
+                <strong>${escapeHtml(event.address || event.city || "Not listed by source")}</strong>
 
               </div>
 
@@ -264,7 +281,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Price</span>
 
-                <strong>${escapeHtml(event.priceText || "See source")}</strong>
+                <strong>${escapeHtml(event.priceText || "Not listed by source")}</strong>
 
               </div>
 
@@ -398,11 +415,13 @@ module.exports = async function getEventDetailPage(req, res) {
 
         justify-content:space-between;
 
-        gap:10px;
+        gap:8px;
 
-        align-items:center;
+        align-items:flex-start;
 
         margin-bottom:14px;
+
+        min-width:0;
 
       }
 
@@ -414,7 +433,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
         gap:8px;
 
-        flex-wrap:wrap;
+        flex-wrap:nowrap;
 
       }
 
@@ -472,6 +491,33 @@ module.exports = async function getEventDetailPage(req, res) {
 
         border-color:rgba(111,210,255,.32);
 
+      }
+
+      /* Event detail pill small-screen stability */
+      .tz-pill-stack{
+        min-width:0;
+        max-width:calc(100% - 118px);
+      }
+
+      .tz-pill-stack .tz-event-pill{
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .tz-event-pill-soft{
+        flex:0 0 auto;
+        max-width:118px;
+        line-height:1.25;
+        text-align:center;
+        white-space:normal;
+      }
+
+      @media(max-width:380px){
+        .tz-event-detail-topline{ gap:6px; }
+        .tz-pill-stack{ max-width:calc(100% - 96px); gap:6px; }
+        .tz-event-pill{ min-height:30px; padding-inline:9px; font-size:8.5px; letter-spacing:.48px; }
+        .tz-event-pill-soft{ max-width:96px; }
       }
 
 
@@ -900,6 +946,8 @@ module.exports = async function getEventDetailPage(req, res) {
         pageTitle: event.title || "Event",
 
         pageType: "events",
+
+        hideTopBar: true,
 
       })
 
