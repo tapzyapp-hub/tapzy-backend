@@ -467,16 +467,13 @@ async function handleRealtimeCallRequest(req, res) {
   }
 
   try {
-    const form = new FormData();
-    form.set("sdp", sdp);
-    form.set("session", JSON.stringify(buildRealtimeSessionConfig()));
-
-    const response = await fetch("https://api.openai.com/v1/realtime/calls", {
+    const response = await fetch("https://api.openai.com/v1/realtime?model=" + encodeURIComponent(OPENAI_REALTIME_MODEL), {
       method: "POST",
       headers: {
         Authorization: "Bearer " + OPENAI_API_KEY,
+        "Content-Type": "application/sdp",
       },
-      body: form,
+      body: sdp,
     });
 
     const answerSdp = await response.text();
