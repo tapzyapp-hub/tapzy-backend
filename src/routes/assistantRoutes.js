@@ -269,10 +269,11 @@ function compactAssistantContext(context) {
   const events = Array.isArray(context?.events) ? context.events.slice(0, 6) : [];
   if (events.length) {
     parts.push("Tapzy events: " + events.map((event, index) => {
-      const place = [event.venueName, event.city].filter(Boolean).join(" / ");
+      const place = [event.venueName, event.address, event.city].filter(Boolean).join(" / ");
       const time = event.startAt ? new Date(event.startAt).toISOString() : "time unknown";
       const attending = event.attendingCount ? event.attendingCount + " going" : "";
-      return (index + 1) + ". " + [event.title, place, time, event.priceText, attending, event.id ? "/events/" + event.id : ""].filter(Boolean).join(" | ");
+      const distance = Number.isFinite(event.distanceKm) ? (Math.round(event.distanceKm * 10) / 10) + " km away" : "";
+      return (index + 1) + ". " + [event.title, event.category, place, time, event.priceText, distance, attending, event.id ? "/events/" + event.id : ""].filter(Boolean).join(" | ");
     }).join(" || "));
   }
   const web = context?.web;
@@ -321,7 +322,8 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "You are Ask Tapzy, the built-in assistant inside Tapzy.",
           "Be natural, warm, concise, and conversational.",
           "You can answer normal questions, follow-ups, local planning questions, Tapzy questions, directions, food, weather, events, and community discovery.",
-          "Use the provided Tapzy context and web results when relevant.",
+          "Use the user's location, weather, Tapzy event data, web results, current page, and conversation memory before giving generic advice.",
+          "When the user asks near me, tonight, nearby, where should I go, food, directions, weather, or plans, behave location-first and action-first.",
           "If live data is missing, say so plainly and give the best next step.",
           "Do not pretend to know private user data that was not provided.",
           "Keep answers mobile-friendly, usually 1-4 short paragraphs.",
@@ -440,13 +442,20 @@ function extractRealtimeClientSecret(data) {
   ).trim();
 }
 
-async function requestRealtimeSessionFromOpenAI() {
+async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
+  const contextText = compactAssistantContext(context);
+  const location = context?.location || {};
   const instructions = [
     "You are Ask Tapzy, the built-in real-time voice assistant inside Tapzy.",
-    "Be warm, quick, natural, and useful.",
-    "Help with Tapzy, local events, places, plans, food, directions, weather, and normal questions.",
-    "Keep spoken answers concise unless the user asks for detail."
-  ].join(" ");
+    "Be warm, quick, natural, and useful. Speak like a smart local friend, not a generic chatbot.",
+    "Use the user's current location, weather, Tapzy events, and web context when available.",
+    "If the user asks what is nearby, tonight, where to eat, where to go, directions, weather, or plans, answer from the local context first.",
+    "If exact live data is missing, say that briefly and give the best next step inside Tapzy.",
+    "Keep spoken answers concise unless the user asks for detail.",
+    location.city ? "Current city: " + location.city + "." : "Current city is unknown unless the user says it.",
+    meta.currentPath ? "Current Tapzy path: " + meta.currentPath + "." : "",
+    contextText ? "Current Tapzy context:\n" + contextText : ""
+  ].filter(Boolean).join("\n");
 
   const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
     method: "POST",
@@ -488,7 +497,14 @@ async function handleRealtimeSessionRequest(req, res) {
     if (!OPENAI_API_KEY || typeof fetch !== "function") {
       return res.status(503).json({ ok: false, error: "Realtime voice needs OPENAI_API_KEY on the server." });
     }
-    const session = await requestRealtimeSessionFromOpenAI();
+    const body = req.body || {};
+    const context = await buildAssistantContext(body);
+    const session = await requestRealtimeSessionFromOpenAI(context, {
+      pageType: asSafeString(body.pageType || "general", 80),
+      username: asSafeString(body.username || "User", 80),
+      currentPath: asSafeString(body.currentPath || "/", 300),
+      currentUrl: asSafeString(body.currentUrl || "", 500),
+    });
     return res.json({ ok: true, ...session });
   } catch (error) {
     console.error("OpenAI realtime session error:", error?.message || error);
