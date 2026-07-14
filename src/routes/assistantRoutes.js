@@ -427,7 +427,103 @@ async function handleAssistantRequest(req, res) {
   }
 }
 
+
+function extractRealtimeClientSecret(data) {
+  return String(
+    data?.client_secret?.value ||
+    data?.client_secret ||
+    data?.value ||
+    data?.secret ||
+    ""
+  ).trim();
+}
+
+async function requestRealtimeSessionFromOpenAI() {
+  const instructions = [
+    "You are Ask Tapzy, the built-in real-time voice assistant inside Tapzy.",
+    "Be warm, quick, natural, and useful.",
+    "Help with Tapzy, local events, places, plans, food, directions, weather, and normal questions.",
+    "Keep spoken answers concise unless the user asks for detail."
+  ].join(" ");
+
+  const attempts = [
+    {
+      url: "https://api.openai.com/v1/realtime/client_secrets",
+      body: {
+        session: {
+          type: "realtime",
+          model: OPENAI_REALTIME_MODEL,
+          instructions,
+          audio: {
+            output: { voice: OPENAI_REALTIME_VOICE }
+          }
+        }
+      }
+    },
+    {
+      url: "https://api.openai.com/v1/realtime/sessions",
+      body: {
+        model: OPENAI_REALTIME_MODEL,
+        voice: OPENAI_REALTIME_VOICE,
+        instructions,
+        modalities: ["text", "audio"]
+      }
+    }
+  ];
+
+  let lastError = "Realtime session unavailable.";
+  for (const attempt of attempts) {
+    try {
+      const response = await fetch(attempt.url, {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + OPENAI_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(attempt.body),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        lastError = data?.error?.message || ("Realtime session failed with status " + response.status);
+        continue;
+      }
+      const clientSecret = extractRealtimeClientSecret(data);
+      if (clientSecret) {
+        return {
+          clientSecret,
+          model: data?.model || attempt.body.model || attempt.body.session?.model || OPENAI_REALTIME_MODEL,
+          voice: OPENAI_REALTIME_VOICE,
+        };
+      }
+      lastError = "Realtime session did not return a client secret.";
+    } catch (error) {
+      lastError = error?.message || lastError;
+    }
+  }
+
+  const error = new Error(lastError);
+  error.status = 502;
+  throw error;
+}
+
+async function handleRealtimeSessionRequest(req, res) {
+  try {
+    if (!OPENAI_API_KEY || typeof fetch !== "function") {
+      return res.status(503).json({ ok: false, error: "Realtime voice needs OPENAI_API_KEY on the server." });
+    }
+    const session = await requestRealtimeSessionFromOpenAI();
+    return res.json({ ok: true, ...session });
+  } catch (error) {
+    console.error("OpenAI realtime session error:", error?.message || error);
+    return res.status(error.status || 500).json({
+      ok: false,
+      error: error?.message || "Realtime voice is temporarily unavailable.",
+    });
+  }
+}
+
 router.post("/chat", handleAssistantRequest);
 router.post("/reply", handleAssistantRequest);
+router.post("/realtime-session", handleRealtimeSessionRequest);
 
 module.exports = router;
