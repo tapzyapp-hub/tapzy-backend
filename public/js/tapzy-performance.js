@@ -242,7 +242,7 @@
   function installServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
     if (!window.isSecureContext && location.hostname !== "localhost") return;
-    navigator.serviceWorker.register("/sw.js").catch(function () {});
+    navigator.serviceWorker.register("/sw.js?v=20260714-realtime-ga").catch(function () {});
   }
 
   function installOffscreenVideoSaver() {
