@@ -461,7 +461,7 @@ async function handleRealtimeCallRequest(req, res) {
     return res.status(503).json({ ok: false, error: "Tapzy voice is missing the OpenAI API key." });
   }
 
-  const sdp = String(req.body || "").trim();
+  const sdp = Buffer.isBuffer(req.body) ? req.body.toString("utf8").trim() : (typeof req.body === "string" ? req.body.trim() : String(req.body?.sdp || "").trim());
   if (!sdp) {
     return res.status(400).json({ ok: false, error: "Missing voice connection offer." });
   }
@@ -576,6 +576,6 @@ async function handleRealtimeSessionRequest(req, res) {
 router.post("/chat", handleAssistantRequest);
 router.post("/reply", handleAssistantRequest);
 router.post("/realtime-session", handleRealtimeSessionRequest);
-router.post("/realtime-call", express.text({ type: ["application/sdp", "text/plain"], limit: "2mb" }), handleRealtimeCallRequest);
+router.post("/realtime-call", express.raw({ type: ["application/sdp", "text/plain", "application/octet-stream", "*/*"], limit: "2mb" }), handleRealtimeCallRequest);
 
 module.exports = router;
