@@ -440,6 +440,58 @@ function extractRealtimeClientSecret(data) {
   ).trim();
 }
 
+function buildRealtimeSessionConfig() {
+  return {
+    type: "realtime",
+    model: OPENAI_REALTIME_MODEL,
+    instructions: [
+      "You are Ask Tapzy, the built-in real-time voice assistant inside Tapzy.",
+      "Be warm, quick, natural, and useful.",
+      "Help with Tapzy, local events, places, plans, food, directions, weather, and normal questions.",
+      "Keep spoken answers concise unless the user asks for detail."
+    ].join(" "),
+    audio: {
+      output: { voice: OPENAI_REALTIME_VOICE }
+    }
+  };
+}
+
+async function handleRealtimeCallRequest(req, res) {
+  if (!OPENAI_API_KEY) {
+    return res.status(503).json({ ok: false, error: "Tapzy voice is missing the OpenAI API key." });
+  }
+
+  const sdp = String(req.body || "").trim();
+  if (!sdp) {
+    return res.status(400).json({ ok: false, error: "Missing voice connection offer." });
+  }
+
+  try {
+    const form = new FormData();
+    form.set("sdp", sdp);
+    form.set("session", JSON.stringify(buildRealtimeSessionConfig()));
+
+    const response = await fetch("https://api.openai.com/v1/realtime/calls", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + OPENAI_API_KEY,
+      },
+      body: form,
+    });
+
+    const answerSdp = await response.text();
+    if (!response.ok) {
+      console.error("OpenAI realtime call failed", response.status, answerSdp.slice(0, 500));
+      return res.status(response.status).json({ ok: false, error: "OpenAI voice connection failed." });
+    }
+
+    return res.type("application/sdp").send(answerSdp);
+  } catch (error) {
+    console.error("Tapzy realtime call failed", error);
+    return res.status(500).json({ ok: false, error: "Tapzy voice is temporarily unavailable." });
+  }
+}
+
 async function requestRealtimeSessionFromOpenAI() {
   const instructions = [
     "You are Ask Tapzy, the built-in real-time voice assistant inside Tapzy.",
@@ -527,5 +579,6 @@ async function handleRealtimeSessionRequest(req, res) {
 router.post("/chat", handleAssistantRequest);
 router.post("/reply", handleAssistantRequest);
 router.post("/realtime-session", handleRealtimeSessionRequest);
+router.post("/realtime-call", express.text({ type: ["application/sdp", "text/plain"], limit: "2mb" }), handleRealtimeCallRequest);
 
 module.exports = router;
