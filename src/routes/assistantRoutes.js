@@ -511,12 +511,11 @@ async function handleRealtimeCallRequest(req, res) {
       return res.status(400).type("text/plain").send("Realtime voice offer was empty. Please refresh Tapzy and try again.");
     }
 
-    const session = await requestRealtimeSessionFromOpenAI();
-    const realtimeUrl = "https://api.openai.com/v1/realtime?model=" + encodeURIComponent(session.model || OPENAI_REALTIME_MODEL);
+    const realtimeUrl = "https://api.openai.com/v1/realtime?model=" + encodeURIComponent(OPENAI_REALTIME_MODEL);
     const response = await fetch(realtimeUrl, {
       method: "POST",
       headers: {
-        "Authorization": "Bearer " + session.clientSecret,
+        "Authorization": "Bearer " + OPENAI_API_KEY,
         "Content-Type": "application/sdp",
       },
       body: offerSdp,
