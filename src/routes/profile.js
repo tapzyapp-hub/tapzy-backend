@@ -2839,8 +2839,7 @@ router.get("/u/:username", async (req, res) => {
         inset:0;
         pointer-events:none;
         background:
-          linear-gradient(180deg, rgba(0,0,0,.50) 0%, transparent 22%, transparent 58%, rgba(0,0,0,.76) 100%),
-          radial-gradient(circle at 92% 50%, rgba(4,8,16,.56), transparent 28%);
+          linear-gradient(180deg, rgba(0,0,0,.50) 0%, transparent 22%, transparent 58%, rgba(0,0,0,.76) 100%);
         z-index:2;
         transition:opacity .32s ease;
       }
