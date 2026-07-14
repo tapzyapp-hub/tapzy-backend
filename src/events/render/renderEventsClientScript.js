@@ -222,7 +222,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           return \`
 
-            <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form" data-event-id="\${escapeUnsafe(event.id)}" style="margin:0;">
+            <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form" data-no-page-loader data-event-id="\${escapeUnsafe(event.id)}" style="margin:0;">
 
               <button class="btn btnGhost js-save-btn\${isGoing ? " is-going" : ""}" data-event-id="\${escapeUnsafe(event.id)}" type="submit">\${label}</button>
 
@@ -480,7 +480,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
                 </div>
                 <aside class="reel-action-rail" aria-label="Event actions">
                   \${HAS_CURRENT_PROFILE ? \`
-                    <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form reel-rail-form" data-event-id="\${escapeUnsafe(event.id)}">
+                    <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form reel-rail-form" data-no-page-loader data-event-id="\${escapeUnsafe(event.id)}">
                       <button class="reel-rail-action js-save-btn\${event.isGoing ? " is-going" : ""}" data-event-id="\${escapeUnsafe(event.id)}" type="submit" aria-label="\${event.isGoing ? "Remove Going" : "Mark Going"}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="m8 14 2.4 2.4L16 11"/></svg><span>\${event.isGoing ? "Going" : "Join"}</span>
                       </button>

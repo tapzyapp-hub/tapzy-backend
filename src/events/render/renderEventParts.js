@@ -6,7 +6,7 @@ function renderGoingButton(event, currentProfile, goingSet) {
   const isGoing = goingSet && goingSet.has(event.id);
   const label = isGoing ? "Going ✓" : 'Going';
   return `
-    <form method="POST" action="/events/${encodeURIComponent(event.id)}/going" class="js-save-form" data-event-id="${escapeHtml(event.id)}" style="margin:0;">
+    <form method="POST" action="/events/${encodeURIComponent(event.id)}/going" class="js-save-form" data-no-page-loader data-event-id="${escapeHtml(event.id)}" style="margin:0;">
       <button class="btn btnGhost js-save-btn${isGoing ? ' is-going' : ''}" data-event-id="${escapeHtml(event.id)}" type="submit">${escapeHtml(label)}</button>
     </form>
   `;
@@ -95,7 +95,7 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
 
         <aside class="reel-action-rail" aria-label="Event actions">
           ${currentProfile ? `
-            <form method="POST" action="/events/${encodeURIComponent(event.id)}/going" class="js-save-form reel-rail-form" data-event-id="${escapeHtml(event.id)}">
+            <form method="POST" action="/events/${encodeURIComponent(event.id)}/going" class="js-save-form reel-rail-form" data-no-page-loader data-event-id="${escapeHtml(event.id)}">
               <button class="reel-rail-action js-save-btn${isGoing ? ' is-going' : ''}" data-event-id="${escapeHtml(event.id)}" type="submit" aria-label="${isGoing ? 'Remove Going' : 'Mark Going'}">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="m8 14 2.4 2.4L16 11"/></svg>
                 <span>${isGoing ? 'Going' : 'Join'}</span>
