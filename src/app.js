@@ -172,10 +172,6 @@ const uploadsCache = {
   },
 };
 
-app.get("/sw.js", (req, res) => {
-  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.sendFile(path.join(__dirname, "..", "public", "sw.js"));
-});
 
 app.use(express.static(path.join(__dirname, "..", "public"), staticCache));
 app.use("/uploads", express.static(uploadsDir, uploadsCache));

@@ -1,5 +1,6 @@
-const TAPZY_CACHE = "tapzy-static-v15-realtime-ga";
+const TAPZY_CACHE = "tapzy-static-v14";
 const STATIC_ASSETS = [
+  "/js/tapzy-performance.js",
   "/images/tapzy-logo-white.png",
   "/images/tapzy-mark-white.png",
 ];
