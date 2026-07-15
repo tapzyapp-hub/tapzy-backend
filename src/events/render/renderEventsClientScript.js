@@ -75,25 +75,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function getClientDescription(event) {
 
-          const text = String(event.description || "")
+          const text = String(event.description || "").replace(/\s+/g, " ").trim();
 
-            .replace(/\*\*PLEASE NOTE\*\*[^.]*?(?:date\/time|fraud)\.?/gi, "")
+          if (!text) return "Premium event discovery inside Tapzy Network™.";
 
-            .replace(/([a-z0-9)])([A-Z])/g, "$1 $2")
+          if (text.length <= 120) return text;
 
-            .replace(/\s+/g, " ")
-
-            .trim();
-
-          if (!text) return "";
-
-          const firstSentence = (text.match(/[^.!?]+[.!?]+/) || [text])[0].trim();
-
-          const preview = firstSentence.length >= 42 ? firstSentence : text;
-
-          if (preview.length <= 132) return preview;
-
-          return preview.slice(0, 129).trim() + "...";
+          return text.slice(0, 117).trim() + "...";
 
         }
 
@@ -209,13 +197,13 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function formatClientDate(value) {
 
-          if (!value) return "Not listed by source";
+          if (!value) return "Date coming soon";
 
           const d = new Date(value);
 
-          if (Number.isNaN(d.getTime())) return "Not listed by source";
+          if (Number.isNaN(d.getTime())) return "Date coming soon";
 
-          return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+          return d.toLocaleString();
 
         }
 
@@ -234,7 +222,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           return \`
 
-            <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form" data-no-page-loader data-event-id="\${escapeUnsafe(event.id)}" style="margin:0;">
+            <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form" data-event-id="\${escapeUnsafe(event.id)}" style="margin:0;">
 
               <button class="btn btnGhost js-save-btn\${isGoing ? " is-going" : ""}" data-event-id="\${escapeUnsafe(event.id)}" type="submit">\${label}</button>
 
@@ -328,7 +316,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
                     <span class="event-meta-label">Where</span>
 
-                    <span class="event-meta-value">\${escapeUnsafe(event.venueName || event.address || event.city || "Not listed by source")}</span>
+                    <span class="event-meta-value">\${escapeUnsafe(event.venueName || event.address || event.city || "Location coming soon")}</span>
 
                   </div>
 
@@ -437,7 +425,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
                     <div>\${escapeUnsafe(when)}</div>
 
-                    <div>\${escapeUnsafe(event.venueName || event.address || event.city || "Not listed by source")}</div>
+                    <div>\${escapeUnsafe(event.venueName || event.city || "Location coming soon")}</div>
 
                   </div>
 
@@ -492,7 +480,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
                 </div>
                 <aside class="reel-action-rail" aria-label="Event actions">
                   \${HAS_CURRENT_PROFILE ? \`
-                    <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form reel-rail-form" data-no-page-loader data-event-id="\${escapeUnsafe(event.id)}">
+                    <form method="POST" action="/events/\${escapeUnsafe(event.id)}/going" class="js-save-form reel-rail-form" data-event-id="\${escapeUnsafe(event.id)}">
                       <button class="reel-rail-action js-save-btn\${event.isGoing ? " is-going" : ""}" data-event-id="\${escapeUnsafe(event.id)}" type="submit" aria-label="\${event.isGoing ? "Remove Going" : "Mark Going"}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="m8 14 2.4 2.4L16 11"/></svg><span>\${event.isGoing ? "Going" : "Join"}</span>
                       </button>
@@ -507,7 +495,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
                   <div class="reel-eyebrow"><span class="reel-live-dot"></span>\${escapeUnsafe(badge)}</div>
                   <h2 class="reel-title">\${escapeUnsafe(event.title)}</h2>
                   <div class="reel-sub">\${escapeUnsafe(shortDescription)}</div>
-                  <div class="reel-location"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>\${escapeUnsafe(event.venueName || event.address || event.city || "Not listed by source")}</span></div>
+                  <div class="reel-location"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>\${escapeUnsafe(event.venueName || event.address || event.city || "Location coming soon")}</span></div>
                   <div class="reel-time">\${escapeUnsafe(when)}</div>
                   <div class="reel-footer-row">
                     <a class="reel-open-btn" href="/events/view/\${escapeUnsafe(event.id)}">View event <span>→</span></a>

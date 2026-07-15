@@ -1,61 +1,7 @@
 
 const prisma = require("../../prisma");
-const { renderShell, renderTapzyAssistant, escapeHtml } = require("../../utils");
+const { renderShell, renderTapzyAssistant, escapeHtml, formatPrettyLocal } = require("../../utils");
 const { normalizeCategory, getShortDescription, pickImage, getUrgencyBadge } = require("../helpers/eventServerUtils");
-
-function formatEventDate(value) {
-  if (!value) return "Not listed by source";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Not listed by source";
-  return date.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function sourceLocation(event) {
-  return String(event?.venueName || event?.address || event?.city || "Not listed by source").trim();
-}
-
-function cleanEventDescriptionText(value) {
-  return String(value || "")
-    .replace(/\*\*PLEASE NOTE\*\*[^.]*?(?:date\/time|fraud)\.?/gi, "")
-    .replace(/([a-z0-9)])([A-Z])/g, "$1 $2")
-    .replace(/\b(\d{1,2}:\d{2}\s*(?:am|pm))(?=[A-Z])/gi, "$1 ")
-    .replace(/\b(\d{1,2}\s*(?:am|pm))(?=[A-Z])/gi, "$1 ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function renderEventDescriptionHtml(value) {
-  const text = cleanEventDescriptionText(value);
-  if (!text) {
-    return '<p class="tz-event-detail-muted">This event source has not shared a full description yet.</p>';
-  }
-  const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
-  const groups = [];
-  let current = [];
-  let length = 0;
-  sentences.forEach((raw) => {
-    const sentence = raw.trim();
-    if (!sentence) return;
-    current.push(sentence);
-    length += sentence.length;
-    if (current.length >= 2 || length >= 190) {
-      groups.push(current.join(" "));
-      current = [];
-      length = 0;
-    }
-  });
-  if (current.length) groups.push(current.join(" "));
-  return groups.slice(0, 5).map((paragraph, index) => {
-    const className = index === 0 ? "tz-event-detail-lede" : "tz-event-detail-paragraph";
-    return '<p class="' + className + '">' + escapeHtml(paragraph) + '</p>';
-  }).join("");
-}
 
 module.exports = async function getEventDetailPage(req, res) {
 
@@ -100,13 +46,13 @@ module.exports = async function getEventDetailPage(req, res) {
 
     const shortDescription = getShortDescription(event);
 
-    const when = formatEventDate(event.startAt);
+    const when = event.startAt ? formatPrettyLocal(event.startAt) : "Date coming soon";
 
     const badge = getUrgencyBadge(event);
 
     const fullDescription =
 
-      String(event.description || "").trim();
+      String(event.description || "").trim() || "Premium event discovery inside Tapzy Network™.";
 
 
 
@@ -176,7 +122,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
               <div class="tz-event-detail-meta-label">Where</div>
 
-              <div class="tz-event-detail-meta-value">${escapeHtml(sourceLocation(event))}</div>
+              <div class="tz-event-detail-meta-value">${escapeHtml(event.venueName || event.address || event.city || "Location coming soon")}</div>
 
             </div>
 
@@ -264,7 +210,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
             <div class="tz-event-detail-copy">
 
-              ${renderEventDescriptionHtml(fullDescription)}
+              ${escapeHtml(fullDescription)}
 
             </div>
 
@@ -302,7 +248,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Venue</span>
 
-                <strong>${escapeHtml(event.venueName || "Not listed by source")}</strong>
+                <strong>${escapeHtml(event.venueName || "Venue coming soon")}</strong>
 
               </div>
 
@@ -310,7 +256,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Address</span>
 
-                <strong>${escapeHtml(event.address || event.city || "Not listed by source")}</strong>
+                <strong>${escapeHtml(event.address || event.city || "Location coming soon")}</strong>
 
               </div>
 
@@ -318,7 +264,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Price</span>
 
-                <strong>${escapeHtml(event.priceText || "Not listed by source")}</strong>
+                <strong>${escapeHtml(event.priceText || "See source")}</strong>
 
               </div>
 
@@ -452,13 +398,11 @@ module.exports = async function getEventDetailPage(req, res) {
 
         justify-content:space-between;
 
-        gap:8px;
+        gap:10px;
 
-        align-items:flex-start;
+        align-items:center;
 
         margin-bottom:14px;
-
-        min-width:0;
 
       }
 
@@ -470,7 +414,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
         gap:8px;
 
-        flex-wrap:nowrap;
+        flex-wrap:wrap;
 
       }
 
@@ -528,33 +472,6 @@ module.exports = async function getEventDetailPage(req, res) {
 
         border-color:rgba(111,210,255,.32);
 
-      }
-
-      /* Event detail pill small-screen stability */
-      .tz-pill-stack{
-        min-width:0;
-        max-width:calc(100% - 118px);
-      }
-
-      .tz-pill-stack .tz-event-pill{
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-
-      .tz-event-pill-soft{
-        flex:0 0 auto;
-        max-width:118px;
-        line-height:1.25;
-        text-align:center;
-        white-space:normal;
-      }
-
-      @media(max-width:380px){
-        .tz-event-detail-topline{ gap:6px; }
-        .tz-pill-stack{ max-width:calc(100% - 96px); gap:6px; }
-        .tz-event-pill{ min-height:30px; padding-inline:9px; font-size:8.5px; letter-spacing:.48px; }
-        .tz-event-pill-soft{ max-width:96px; }
       }
 
 
@@ -735,49 +652,13 @@ module.exports = async function getEventDetailPage(req, res) {
 
       .tz-event-detail-copy{
 
-        margin-top:16px;
+        margin-top:14px;
 
         color:#d9e4f2;
 
+        line-height:1.85;
+
         font-size:15px;
-
-      }
-
-      .tz-event-detail-copy p{
-
-        margin:0 0 16px;
-
-        line-height:1.7;
-
-      }
-
-      .tz-event-detail-lede{
-
-        color:#f5f9ff;
-
-        font-size:17px;
-
-        line-height:1.62 !important;
-
-        font-weight:780;
-
-        letter-spacing:-.18px;
-
-      }
-
-      .tz-event-detail-paragraph{
-
-        color:rgba(224,234,247,.86);
-
-        font-weight:560;
-
-      }
-
-      .tz-event-detail-muted{
-
-        color:rgba(220,232,250,.62);
-
-        font-weight:700;
 
       }
 
@@ -1019,8 +900,6 @@ module.exports = async function getEventDetailPage(req, res) {
         pageTitle: event.title || "Event",
 
         pageType: "events",
-
-        hideTopBar: true,
 
       })
 

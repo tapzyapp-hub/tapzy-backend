@@ -360,29 +360,15 @@ function getShortDescription(event) {
 
   const source = String(event?.description || "").trim();
 
-  if (!source) return "";
+  if (!source) return "Premium event discovery inside Tapzy Network™.";
 
 
 
-  const cleaned = source
+  const cleaned = source.replace(/\s+/g, " ").trim();
 
-    .replace(/\*\*PLEASE NOTE\*\*[^.]*?(?:date\/time|fraud)\.?/gi, "")
+  if (cleaned.length <= 120) return cleaned;
 
-    .replace(/([a-z0-9)])([A-Z])/g, "$1 $2")
-
-    .replace(/\s+/g, " ")
-
-    .trim();
-
-  if (!cleaned) return "";
-
-  const firstSentence = (cleaned.match(/[^.!?]+[.!?]+/) || [cleaned])[0].trim();
-
-  const preview = firstSentence.length >= 42 ? firstSentence : cleaned;
-
-  if (preview.length <= 132) return preview;
-
-  return preview.slice(0, 129).trim() + "...";
+  return cleaned.slice(0, 117).trim() + "...";
 
 }
 
@@ -758,7 +744,6 @@ function sortRanked(events) {
 
 function buildWhere({ city, category, now }) {
   const where = {
-    source: { not: "tapzy_seed" },
     OR: [
       { startAt: null },
       { startAt: { gte: now } },
