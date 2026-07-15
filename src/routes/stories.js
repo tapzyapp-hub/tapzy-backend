@@ -4311,6 +4311,59 @@ router.get("/stories/feed", async (req, res) => {
           var FEED_KEEP_AHEAD = 3;
           var BLANK_STORY_VIDEO_TIMEOUT_MS = 30000;
           var FEED_TRANSITION_MS = 600;
+          var ambientNav = document.querySelector('[data-story-ambient-nav]');
+          var ambientCanvas = ambientNav ? ambientNav.querySelector('.tz-story-ambient-canvas') : null;
+          var ambientCtx = ambientCanvas ? ambientCanvas.getContext('2d', { alpha:false }) : null;
+          var ambientVideo = null;
+          var ambientRaf = 0;
+          var ambientLastPaint = 0;
+          var ambientDisabled = false;
+          function resizeAmbientCanvas(){
+            if (!ambientNav || !ambientCanvas) return false;
+            var rect = ambientNav.getBoundingClientRect();
+            var ratio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+            var width = Math.max(24, Math.round(rect.width * ratio));
+            var height = Math.max(8, Math.round(rect.height * ratio));
+            if (ambientCanvas.width !== width) ambientCanvas.width = width;
+            if (ambientCanvas.height !== height) ambientCanvas.height = height;
+            return true;
+          }
+          function stopAmbientVideo(){
+            ambientVideo = null;
+            if (ambientRaf) cancelAnimationFrame(ambientRaf);
+            ambientRaf = 0;
+            ambientLastPaint = 0;
+            if (ambientNav) ambientNav.classList.remove('has-video-ambient');
+          }
+          function paintAmbientVideo(now){
+            if (!ambientVideo || !ambientVideo.isConnected || ambientDisabled || !ambientCtx || !ambientCanvas) { stopAmbientVideo(); return; }
+            ambientRaf = requestAnimationFrame(paintAmbientVideo);
+            if (ambientVideo.paused || ambientVideo.readyState < 2 || !(ambientVideo.videoWidth > 0 && ambientVideo.videoHeight > 0)) return;
+            if (now && ambientLastPaint && now - ambientLastPaint < 66) return;
+            ambientLastPaint = now || Date.now();
+            try {
+              resizeAmbientCanvas();
+              var sourceHeight = Math.max(2, Math.round(ambientVideo.videoHeight * 0.18));
+              ambientCtx.drawImage(ambientVideo, 0, 0, ambientVideo.videoWidth, sourceHeight, 0, 0, ambientCanvas.width, ambientCanvas.height);
+              if (ambientNav) ambientNav.classList.add('has-video-ambient');
+            } catch (e) {
+              ambientDisabled = true;
+              stopAmbientVideo();
+            }
+          }
+          function syncAmbientVideo(slide){
+            if (!ambientCanvas || !ambientCtx || ambientDisabled) return;
+            var video = slide && slide.querySelector ? slide.querySelector('video.sf-media, video.sf-stream-video, video') : null;
+            if (!video) { stopAmbientVideo(); return; }
+            if (ambientVideo === video && ambientRaf) return;
+            stopAmbientVideo();
+            ambientVideo = video;
+            ['loadeddata','canplay','playing','timeupdate'].forEach(function(name){
+              video.addEventListener(name, function(){ if (ambientVideo === video && !ambientRaf) ambientRaf = requestAnimationFrame(paintAmbientVideo); }, { passive:true });
+            });
+            ambientRaf = requestAnimationFrame(paintAmbientVideo);
+          }
+          window.addEventListener('resize', function(){ resizeAmbientCanvas(); }, { passive:true });
           function runWithFeedLoader(action){
             if (typeof window.__tapzyShowPageLoader === 'function') window.__tapzyShowPageLoader();
             window.setTimeout(function(){
@@ -4517,6 +4570,7 @@ router.get("/stories/feed", async (req, res) => {
           function syncFeedPlayback(){
             var active = visibleFeedSlide();
             var activeIndex = slides.indexOf(active);
+            syncAmbientVideo(active);
             installBlankStoryVideoRecovery(document);
 
           slides.forEach(function(slide, slideIndex){
@@ -4538,7 +4592,7 @@ router.get("/stories/feed", async (req, res) => {
               var audio = entry.target.querySelector('audio[data-story-audio]');
               if (!video && !audio) return;
               if (isAndroidStoryFeed) { scheduleFeedPlaybackSync(0); return; }
-              if (entry.isIntersecting && entry.intersectionRatio > .45) playFeedSlide(entry.target);
+              if (entry.isIntersecting && entry.intersectionRatio > .45) { playFeedSlide(entry.target); syncAmbientVideo(entry.target); }
               else pauseFeedSlide(entry.target);
             });
           }, { root: feed, threshold: [.05,.45,.75] });
