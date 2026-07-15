@@ -3,7 +3,6 @@ const prisma = require("../../prisma");
 const { renderShell, renderTapzyAssistant, escapeHtml } = require("../../utils");
 const { TOP_CITY_ORDER, MAIN_QUERY_LIMIT, FEED_PAGE_SIZE } = require("../config");
 const {
-  seedEventsIfEmpty,
   startOfDay,
   endOfDay,
   isBetween,
@@ -14,6 +13,7 @@ const {
   filterNearbyEvents,
   getClosestAreaEvents,
   isAllowedHotCategory,
+  isSeededEvent,
 } = require("../helpers/eventServerUtils");
 const {
   renderEventCard,
@@ -30,8 +30,6 @@ module.exports = async function getEventsPage(req, res) {
   try {
 
     triggerEventAutoRefreshIfDue("events-page-catch-up");
-
-    await seedEventsIfEmpty(prisma);
 
 
 
@@ -74,7 +72,7 @@ module.exports = async function getEventsPage(req, res) {
 
 
 
-    const allHotEvents = rawEvents.filter(isAllowedHotCategory);
+    const allHotEvents = rawEvents.filter((event) => isAllowedHotCategory(event) && !isSeededEvent(event));
 
     const localEvents = isHotNearbyMode
       ? filterNearbyEvents(allHotEvents, { lat: liveLat, lng: liveLng, radiusKm })
@@ -3145,6 +3143,8 @@ module.exports = async function getEventsPage(req, res) {
         storiesBottomNav: true,
 
         bodyClass: "events-story-shell",
+
+        hideTopBar: true,
 
       })
 

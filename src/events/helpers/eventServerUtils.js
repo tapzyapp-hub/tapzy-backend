@@ -356,19 +356,78 @@ function getEventCategoryGroup(event) {
 
 }
 
+function formatEventDateTime(event) {
+  if (!event?.startAt) return "Date coming soon";
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "America/Toronto",
+      timeZoneName: "short",
+    }).format(new Date(event.startAt));
+  } catch (_) {
+    return new Date(event.startAt).toLocaleString();
+  }
+}
+
+function hasRealCoordinates(event) {
+  return Number.isFinite(Number(event?.latitude)) && Number.isFinite(Number(event?.longitude));
+}
+
+function getEventPlace(event) {
+  return [event?.venueName, event?.address, event?.city, event?.region]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
+function getEventAddressLabel(event) {
+  return String(event?.address || "").trim();
+}
+
+function getDirectionsUrl(event) {
+  if (hasRealCoordinates(event)) {
+    return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(Number(event.latitude) + "," + Number(event.longitude));
+  }
+
+  const query = getEventPlace(event);
+  return query ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query) : "";
+}
+
+function cleanEventDescription(event) {
+  return String(event?.description || "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/<br\s*\/?\s*>/gi, "\n")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/([a-z0-9%\)])\.([A-Z])/g, "$1. $2")
+    .replace(/([a-z0-9%\)])!([A-Z])/g, "$1! $2")
+    .replace(/([a-z0-9%\)])\?([A-Z])/g, "$1? $2")
+    .replace(/([,:;])([^\s])/g, "$1 $2")
+    .replace(/\s+([.,!?;:])/g, "$1")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s+/g, "\n")
+    .replace(/\s*\n\s*/g, "\n")
+    .trim();
+}
+
+function isSeededEvent(event) {
+  return String(event?.source || "").toLowerCase() === "tapzy_seed" || !!event?.rawPayload?.seeded;
+}
+
 function getShortDescription(event) {
 
-  const source = String(event?.description || "").trim();
+  const source = cleanEventDescription(event);
 
   if (!source) return "Premium event discovery inside Tapzy Network™.";
-
-
 
   const cleaned = source.replace(/\s+/g, " ").trim();
 
   if (cleaned.length <= 120) return cleaned;
 
-  return cleaned.slice(0, 117).trim() + "...";
+  return cleaned.slice(0, 117).replace(/[\s,.;:!?-]+$/, "").trim() + "...";
 
 }
 
@@ -766,6 +825,13 @@ module.exports = {
   endOfDay,
   isBetween,
   normalizeCategory,
+  formatEventDateTime,
+  hasRealCoordinates,
+  getEventPlace,
+  getEventAddressLabel,
+  getDirectionsUrl,
+  cleanEventDescription,
+  isSeededEvent,
   getShortDescription,
   pickImage,
   isHeroQualityImage,

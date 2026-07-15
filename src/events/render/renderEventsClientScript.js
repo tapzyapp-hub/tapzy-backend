@@ -75,7 +75,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function getClientDescription(event) {
 
-          const text = String(event.description || "").replace(/\s+/g, " ").trim();
+          const text = String(event.description || "").replace(/\*\*(.*?)\*\*/g, "$1").replace(/([a-z0-9%\)])\.([A-Z])/g, "$1. $2").replace(/([a-z0-9%\)])!([A-Z])/g, "$1! $2").replace(/([a-z0-9%\)])\?([A-Z])/g, "$1? $2").replace(/\s+/g, " ").trim();
 
           if (!text) return "Premium event discovery inside Tapzy Network™.";
 
@@ -195,6 +195,19 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
 
 
+        function getClientPlace(event) {
+          return String(event.place || [event.venueName, event.address, event.city, event.region].filter(Boolean).join(", ") || "Location coming soon");
+        }
+
+        function getClientDirectionsUrl(event) {
+          if (event.directionsUrl) return String(event.directionsUrl);
+          if (event.latitude !== null && event.latitude !== undefined && event.longitude !== null && event.longitude !== undefined) {
+            return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(event.latitude + "," + event.longitude);
+          }
+          const place = getClientPlace(event);
+          return place && place !== "Location coming soon" ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(place) : "";
+        }
+
         function formatClientDate(value) {
 
           if (!value) return "Date coming soon";
@@ -203,7 +216,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           if (Number.isNaN(d.getTime())) return "Date coming soon";
 
-          return d.toLocaleString();
+          return new Intl.DateTimeFormat("en-CA", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Toronto", timeZoneName:"short" }).format(d);
 
         }
 
@@ -238,7 +251,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           const image = event.imageUrl || pickFallbackImage(event);
 
-          const when = formatClientDate(event.startAt);
+          const when = event.displayTime || formatClientDate(event.startAt);
 
           const categoryText = getClientCategory(event);
 
@@ -316,7 +329,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
                     <span class="event-meta-label">Where</span>
 
-                    <span class="event-meta-value">\${escapeUnsafe(event.venueName || event.address || event.city || "Location coming soon")}</span>
+                    <span class="event-meta-value">\${escapeUnsafe(getClientPlace(event))}</span>
 
                   </div>
 
@@ -367,7 +380,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
           const image = event.imageUrl || pickFallbackImage(event);
 
-          const when = formatClientDate(event.startAt);
+          const when = event.displayTime || formatClientDate(event.startAt);
 
           const categoryText = getClientCategory(event);
 
@@ -425,7 +438,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
                     <div>\${escapeUnsafe(when)}</div>
 
-                    <div>\${escapeUnsafe(event.venueName || event.city || "Location coming soon")}</div>
+                    <div>\${escapeUnsafe(getClientPlace(event))}</div>
 
                   </div>
 
@@ -454,7 +467,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
 
         function renderClientReelV2(event) {
           const image = event.imageUrl || pickFallbackImage(event);
-          const when = formatClientDate(event.startAt);
+          const when = event.displayTime || formatClientDate(event.startAt);
           const date = event.startAt ? new Date(event.startAt) : null;
           const validDate = date && !Number.isNaN(date.getTime());
           const dateMonth = validDate ? date.toLocaleString("en-US", { month: "short" }).toUpperCase() : "SOON";
@@ -495,7 +508,7 @@ module.exports = function renderEventsClientScript({ FEED_PAGE_SIZE, category, i
                   <div class="reel-eyebrow"><span class="reel-live-dot"></span>\${escapeUnsafe(badge)}</div>
                   <h2 class="reel-title">\${escapeUnsafe(event.title)}</h2>
                   <div class="reel-sub">\${escapeUnsafe(shortDescription)}</div>
-                  <div class="reel-location"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>\${escapeUnsafe(event.venueName || event.address || event.city || "Location coming soon")}</span></div>
+                  <div class="reel-location"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>\${escapeUnsafe(getClientPlace(event))}</span></div>
                   <div class="reel-time">\${escapeUnsafe(when)}</div>
                   <div class="reel-footer-row">
                     <a class="reel-open-btn" href="/events/view/\${escapeUnsafe(event.id)}">View event <span>→</span></a>

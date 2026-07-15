@@ -1,7 +1,7 @@
 
 const prisma = require("../../prisma");
-const { renderShell, renderTapzyAssistant, escapeHtml, formatPrettyLocal } = require("../../utils");
-const { normalizeCategory, getShortDescription, pickImage, getUrgencyBadge } = require("../helpers/eventServerUtils");
+const { renderShell, renderTapzyAssistant, escapeHtml } = require("../../utils");
+const { normalizeCategory, getShortDescription, cleanEventDescription, pickImage, getUrgencyBadge, isSeededEvent, formatEventDateTime, getEventPlace, getEventAddressLabel, getDirectionsUrl } = require("../helpers/eventServerUtils");
 
 module.exports = async function getEventDetailPage(req, res) {
 
@@ -26,7 +26,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
 
 
-    if (!event) return res.status(404).send("Event not found");
+    if (!event || isSeededEvent(event)) return res.status(404).send("Event not found");
 
 
 
@@ -46,15 +46,28 @@ module.exports = async function getEventDetailPage(req, res) {
 
     const shortDescription = getShortDescription(event);
 
-    const when = event.startAt ? formatPrettyLocal(event.startAt) : "Date coming soon";
+    const when = formatEventDateTime(event);
+
+    const place = getEventPlace(event) || "Location coming soon";
+
+    const addressLabel = getEventAddressLabel(event);
+
+    const directionsUrl = getDirectionsUrl(event);
 
     const badge = getUrgencyBadge(event);
 
     const fullDescription =
 
-      String(event.description || "").trim() || "Premium event discovery inside Tapzy Network™.";
+      cleanEventDescription(event) || "Premium event discovery inside Tapzy Network™.";
 
 
+
+    const fullDescriptionHtml = fullDescription
+      .split(/(?<=[.!?])\s+(?=[A-Z0-9*])|\n+/)
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => `<p>${escapeHtml(part)}</p>`)
+      .join("");
 
     const body = `
 
@@ -122,7 +135,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
               <div class="tz-event-detail-meta-label">Where</div>
 
-              <div class="tz-event-detail-meta-value">${escapeHtml(event.venueName || event.address || event.city || "Location coming soon")}</div>
+              <div class="tz-event-detail-meta-value">${escapeHtml(place)}</div>
 
             </div>
 
@@ -210,7 +223,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
             <div class="tz-event-detail-copy">
 
-              ${escapeHtml(fullDescription)}
+              ${fullDescriptionHtml}
 
             </div>
 
@@ -256,7 +269,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Address</span>
 
-                <strong>${escapeHtml(event.address || event.city || "Location coming soon")}</strong>
+                <strong>${escapeHtml(addressLabel || "No verified street address listed")}</strong>
 
               </div>
 
@@ -662,6 +675,18 @@ module.exports = async function getEventDetailPage(req, res) {
 
       }
 
+      .tz-event-detail-copy p{
+
+        margin:0 0 16px;
+
+      }
+
+      .tz-event-detail-copy p:last-child{
+
+        margin-bottom:0;
+
+      }
+
 
 
       .tz-event-detail-list{
@@ -900,6 +925,8 @@ module.exports = async function getEventDetailPage(req, res) {
         pageTitle: event.title || "Event",
 
         pageType: "events",
+
+        hideTopBar: true,
 
       })
 
