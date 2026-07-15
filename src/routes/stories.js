@@ -267,9 +267,24 @@ function storyRing(profile, storyCount, hasLiveStory) {
 
 
 function storyComposerHero(activeStories = []) {
-  const story = activeStories.find((item) => item && (item.mediaUrl || item.text)) || null;
-  if (!story) {
+  const story = activeStories.find((item) => item && item.mediaUrl) || null;
+  if (story) {
+    const mediaUrl = story.mediaUrl || "";
+    const storyText = escapeHtml(story.text || "Your current story");
+    const media = isVideoUrl(mediaUrl)
+      ? `<video class="stories-hero-media" src="${escapeHtml(compatibleVideoUrl(mediaUrl))}" autoplay muted loop playsinline webkit-playsinline preload="metadata"></video>`
+      : `<img class="stories-hero-media" src="${escapeHtml(mediaUrl)}" alt="${storyText}" loading="eager" decoding="async" />`;
+
     return `
+      ${media}
+      <div class="stories-hero-meta">
+        <span>Now playing</span>
+        <strong>${storyText}</strong>
+      </div>
+    `;
+  }
+
+  return `
       <div class="stories-hero-toronto" aria-hidden="true">
         <span class="stories-toronto-sky"></span>
         <span class="stories-toronto-cn"></span>
@@ -285,23 +300,6 @@ function storyComposerHero(activeStories = []) {
         <strong>City backdrop</strong>
       </div>
     `;
-  }
-
-  const mediaUrl = story.mediaUrl || "";
-  const storyText = escapeHtml(story.text || "Your current story");
-  const media = mediaUrl
-    ? isVideoUrl(mediaUrl)
-      ? `<video class="stories-hero-media" src="${escapeHtml(compatibleVideoUrl(mediaUrl))}" autoplay muted loop playsinline webkit-playsinline preload="metadata"></video>`
-      : `<img class="stories-hero-media" src="${escapeHtml(mediaUrl)}" alt="${storyText}" loading="eager" decoding="async" />`
-    : `<div class="stories-hero-text-story">${storyText}</div>`;
-
-  return `
-    ${media}
-    <div class="stories-hero-meta">
-      <span>Now playing</span>
-      <strong>${storyText}</strong>
-    </div>
-  `;
 }
 
 function storyComposer(currentProfile, upcomingEvents, activeStories = []) {
