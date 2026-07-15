@@ -178,6 +178,28 @@ function buildGeneralWebAnswer(message, context = {}) {
   return intro + webSearchNote(web);
 }
 
+function isAskingForEventFeed(text) {
+  return includesAny(text, ["what events", "which events", "show events", "list events", "events are", "event data", "tapzy events", "tapsi events", "what's happening", "whats happening", "happening tonight", "going on tonight"]);
+}
+
+function buildDirectEventFeedAnswer(message, context = {}) {
+  const text = normalize(message);
+  const events = pickEvents(context.events, message, isAskingForEventFeed(text) ? 8 : 5);
+  if (!events.length) return "";
+  const intro = isAskingForEventFeed(text)
+    ? "Here is the direct Tapzy events feed I have loaded:"
+    : "From the Tapzy events feed, these are the strongest matches:";
+  return [
+    intro,
+    events.map((event, index) => {
+      const line = formatEventLine(event, index);
+      const links = [eventLink(event), event.ticketUrl || event.eventUrl ? "tickets/info: " + cleanText(event.ticketUrl || event.eventUrl) : "", eventMapsLink(event) ? "directions: " + eventMapsLink(event) : ""].filter(Boolean).join(" | ");
+      return line + (links ? "\n   " + links : "");
+    }).join("\n"),
+    "Ask me to narrow this by vibe, price, distance, date, city, who is going, or best first pick."
+  ].join("\n");
+}
+
 function buildEventSuggestions(message, context = {}) {
   const events = pickEvents(context.events, message, 6);
   const city = cityLabel(context);
@@ -511,6 +533,8 @@ async function buildAssistantReply({ message, pageType = "general", isAuthPage =
   if (intent === "help") return "Ask Tapzy can help with local plans, Tapzy events, food, date ideas, directions, weather-aware choices, profile copy, message openers, search/discovery, Pair, QR/NFC sharing, growth ideas, and community questions like who is going or who is nearby. Even without web, I use Tapzy context, events, location, weather, memory, and practical reasoning.";
   if (intent === "about") return formatTapzyKnowledge();
   if (intent === "who") return "I am Ask Tapzy. The goal is to feel less like a chatbot and more like Tapzy knowing what you need: places, plans, people, directions, and actions.";
+  const directFeedAnswer = buildDirectEventFeedAnswer(message, context);
+  if (directFeedAnswer && (intent === "events" || isAskingForEventFeed(msg))) return directFeedAnswer;
   if (intent === "events") return buildEventSuggestions(message, context);
   if (intent === "community") return buildCommunityAnswer(message, context);
   if (intent === "message-coach") return buildMessageCoachAnswer(message, context);

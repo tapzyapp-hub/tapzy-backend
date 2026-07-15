@@ -343,6 +343,39 @@ async function buildAssistantContext(body) {
 }
 
 
+function compactEventForAssistantFeed(event, index) {
+  const place = [event.venueName, event.address, event.city, event.region].filter(Boolean).join(" / ");
+  const directions = event.latitude !== null && event.latitude !== undefined && event.longitude !== null && event.longitude !== undefined
+    ? "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(event.latitude + "," + event.longitude)
+    : "";
+  return {
+    rank: index + 1,
+    id: event.id || "",
+    title: asSafeString(event.title || "Untitled event", 160),
+    category: asSafeString(event.category || "", 80),
+    description: asSafeString(event.description || "", 360),
+    venue: asSafeString(event.venueName || "", 140),
+    address: asSafeString(event.address || "", 180),
+    city: asSafeString(event.city || "", 80),
+    place: asSafeString(place, 260),
+    startsAt: event.startAt ? new Date(event.startAt).toISOString() : "",
+    endsAt: event.endAt ? new Date(event.endAt).toISOString() : "",
+    price: asSafeString(event.priceText || "", 80),
+    distanceKm: Number.isFinite(event.distanceKm) ? Math.round(event.distanceKm * 10) / 10 : null,
+    attendingCount: Number(event.attendingCount || 0),
+    attendees: Array.isArray(event.attendees) ? event.attendees.map((profile) => asSafeString(profile?.name || profile?.username || "", 80)).filter(Boolean).slice(0, 8) : [],
+    ticketUrl: asSafeString(event.ticketUrl || event.eventUrl || "", 500),
+    directionsUrl: directions,
+    tapzyUrl: event.id ? "/events/view/" + event.id : "",
+    isUpcoming: event.isUpcoming !== false,
+  };
+}
+
+function buildDirectTapzyEventsFeed(context, limit = 80) {
+  const events = Array.isArray(context?.events) ? context.events.slice(0, limit) : [];
+  return events.map(compactEventForAssistantFeed);
+}
+
 function compactAssistantContext(context) {
   const parts = [];
   const location = context?.location || {};
@@ -373,7 +406,7 @@ function compactAssistantContext(context) {
       parts.push("Web results: " + web.results.slice(0, 5).map((item, index) => (index + 1) + ". " + [item.title, item.snippet, item.rating ? "rating " + item.rating : "", item.link].filter(Boolean).join(" | ")).join(" || "));
     }
   }
-  return parts.join("\n\n").slice(0, 7000);
+  return parts.join("\n\n").slice(0, 30000);
 }
 
 function asOpenAIMemory(memory, message) {
@@ -413,7 +446,9 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "Be natural, warm, concise, and conversational.",
           "You can answer normal questions, follow-ups, local planning questions, Tapzy questions, directions, food, weather, events, profile help, messages, search, pair, QR/NFC sharing, and community discovery.",
           "Use the user's location, weather, Tapzy event data, web results, current page, and conversation memory before giving generic advice.",
-          "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
+          "The DIRECT_TAPZY_EVENTS_FEED_JSON block is the authoritative Tapzy events feed. For event questions, answer directly from that feed before using web or generic reasoning.",
+          "The DIRECT_TAPZY_EVENTS_FEED_JSON block is the authoritative Tapzy events feed. For event questions, answer directly from that feed before using web or generic reasoning.",
+    "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
           "When the user asks near me, tonight, nearby, where should I go, food, directions, weather, or plans, behave location-first and action-first.",
           "If live data is missing, say so plainly and give the best next step.",
           "Do not pretend to know private user data that was not provided.",
