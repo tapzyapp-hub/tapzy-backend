@@ -266,7 +266,42 @@ function storyRing(profile, storyCount, hasLiveStory) {
 
 
 
-function storyComposer(currentProfile, upcomingEvents) {
+function storyComposerHero(activeStories = []) {
+  const story = activeStories.find((item) => item && (item.mediaUrl || item.text)) || null;
+  if (!story) {
+    return `
+      <div class="stories-hero-weather" aria-hidden="true">
+        <span class="stories-weather-sun"></span>
+        <span class="stories-weather-cloud stories-weather-cloud-one"></span>
+        <span class="stories-weather-cloud stories-weather-cloud-two"></span>
+        <span class="stories-weather-spark stories-weather-spark-one"></span>
+        <span class="stories-weather-spark stories-weather-spark-two"></span>
+      </div>
+      <div class="stories-hero-meta">
+        <span>Beautiful weather</span>
+        <strong>Clear skies</strong>
+      </div>
+    `;
+  }
+
+  const mediaUrl = story.mediaUrl || "";
+  const storyText = escapeHtml(story.text || "Your current story");
+  const media = mediaUrl
+    ? isVideoUrl(mediaUrl)
+      ? `<video class="stories-hero-media" src="${escapeHtml(compatibleVideoUrl(mediaUrl))}" autoplay muted loop playsinline webkit-playsinline preload="metadata"></video>`
+      : `<img class="stories-hero-media" src="${escapeHtml(mediaUrl)}" alt="${storyText}" loading="eager" decoding="async" />`
+    : `<div class="stories-hero-text-story">${storyText}</div>`;
+
+  return `
+    ${media}
+    <div class="stories-hero-meta">
+      <span>Now playing</span>
+      <strong>${storyText}</strong>
+    </div>
+  `;
+}
+
+function storyComposer(currentProfile, upcomingEvents, activeStories = []) {
   const soundRows = TAPZY_SOUND_LIBRARY.map((sound, index) => `
     <button class="stories-sound-row${index === 0 ? " is-featured" : ""}" type="button" data-sound-choice data-sound-id="${escapeHtml(sound.id)}" data-sound-title="${escapeHtml(sound.title)}" data-sound-artist="${escapeHtml(sound.artist)}" data-sound-url="${escapeHtml(sound.url)}" data-sound-duration="${escapeHtml(sound.duration)}">
       <span class="stories-sound-cover stories-sound-cover-${escapeHtml(sound.tone)}"><span></span></span>
@@ -313,6 +348,12 @@ function storyComposer(currentProfile, upcomingEvents) {
   <section class="stories-create-card tapzy-premium-card">
 
     <div class="stories-composer-top">
+
+      <div class="stories-hero-screen">
+
+        ${storyComposerHero(activeStories)}
+
+      </div>
 
       <div class="stories-create-head">
 
@@ -606,8 +647,17 @@ router.get("/stories", async (req, res) => {
 
 
     let upcomingEvents = [];
+    let activeComposerStories = [];
 
     if (currentProfile) {
+      activeComposerStories = await prisma.story.findMany({
+        where: {
+          profileId: currentProfile.id,
+          expiresAt: { gt: now },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      });
 
       const goingRows = await prisma.eventAttendance.findMany({
 
@@ -653,7 +703,7 @@ router.get("/stories", async (req, res) => {
 
     <div class="wrap stories-wrap">
 
-      ${storyComposer(currentProfile, upcomingEvents)}
+      ${storyComposer(currentProfile, upcomingEvents, activeComposerStories)}
 
     </div>
 
@@ -743,13 +793,10 @@ router.get("/stories", async (req, res) => {
         border-radius:30px;
         overflow:hidden;
         border:1px solid rgba(190,224,255,.24);
-        background:
-          radial-gradient(560px 210px at 50% -12%, rgba(218,242,255,.32), transparent 70%),
-          radial-gradient(360px 170px at 14% 18%, rgba(85,170,255,.14), transparent 72%),
-          linear-gradient(180deg, rgba(82,112,130,.38), rgba(17,30,47,.16) 44%, rgba(2,5,13,.80));
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.045), 0 20px 54px rgba(0,0,0,.28), 0 0 40px rgba(96,170,255,.08);
-        backdrop-filter:blur(20px) saturate(1.22);
-        -webkit-backdrop-filter:blur(20px) saturate(1.22);
+        background:rgba(10,16,26,.24);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.34), inset 0 0 0 1px rgba(255,255,255,.055), 0 20px 54px rgba(0,0,0,.28), 0 0 40px rgba(96,170,255,.08);
+        backdrop-filter:blur(24px) saturate(1.26);
+        -webkit-backdrop-filter:blur(24px) saturate(1.26);
       }
 
       .stories-composer-top::before{
@@ -761,6 +808,7 @@ router.get("/stories", async (req, res) => {
           linear-gradient(90deg, rgba(255,255,255,.06), transparent 20%, transparent 80%, rgba(255,255,255,.05)),
           radial-gradient(420px 160px at 50% 10%, rgba(184,226,255,.14), transparent 72%);
         pointer-events:none;
+        z-index:2;
       }
 
       .stories-composer-top::after{
@@ -772,12 +820,190 @@ router.get("/stories", async (req, res) => {
         height:40%;
         background:linear-gradient(180deg, transparent, rgba(0,0,0,.26));
         pointer-events:none;
+        z-index:2;
+      }
+
+      .stories-hero-screen{
+        position:absolute;
+        inset:0;
+        overflow:hidden;
+        border-radius:inherit;
+        background:linear-gradient(180deg, rgba(173,214,240,.34), rgba(7,13,24,.28) 42%, rgba(0,0,0,.58));
+      }
+
+      .stories-hero-screen::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:2;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.03) 32%, rgba(0,0,0,.28)),
+          radial-gradient(520px 190px at 50% 0%, rgba(225,246,255,.24), transparent 70%);
+        backdrop-filter:blur(5px) saturate(1.08);
+        -webkit-backdrop-filter:blur(5px) saturate(1.08);
+        pointer-events:none;
+      }
+
+      .stories-hero-screen::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        z-index:4;
+        border-radius:inherit;
+        border:1px solid rgba(255,255,255,.13);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -34px 70px rgba(0,0,0,.24);
+        pointer-events:none;
+      }
+
+      .stories-hero-media{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        transform:scale(1.02);
+        filter:saturate(1.06) contrast(1.02);
+      }
+
+      .stories-hero-text-story{
+        position:absolute;
+        inset:0;
+        display:grid;
+        place-items:center;
+        padding:34px;
+        background:radial-gradient(circle at 30% 20%, rgba(71,118,255,.36), transparent 42%), linear-gradient(160deg, #101728, #02050c);
+        color:#fff;
+        font-size:clamp(24px,5vw,42px);
+        font-weight:850;
+        line-height:1.08;
+        text-align:center;
+        text-wrap:balance;
+      }
+
+      .stories-hero-meta{
+        position:absolute;
+        left:22px;
+        right:22px;
+        bottom:18px;
+        z-index:5;
+        display:flex;
+        align-items:flex-end;
+        justify-content:space-between;
+        gap:12px;
+        color:#fff;
+        text-shadow:0 10px 24px rgba(0,0,0,.42);
+        pointer-events:none;
+      }
+
+      .stories-hero-meta span{
+        color:rgba(232,242,255,.76);
+        font-size:11px;
+        font-weight:850;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+      }
+
+      .stories-hero-meta strong{
+        max-width:62%;
+        overflow:hidden;
+        color:rgba(255,255,255,.92);
+        font-size:14px;
+        font-weight:850;
+        line-height:1.1;
+        text-align:right;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      .stories-hero-weather{
+        position:absolute;
+        inset:0;
+        background:
+          radial-gradient(circle at 78% 22%, rgba(255,236,160,.55), transparent 18%),
+          linear-gradient(180deg, #7fc8ff 0%, #c9ecff 42%, #f7fbff 100%);
+        animation:storiesWeatherGlow 8s ease-in-out infinite alternate;
+      }
+
+      .stories-weather-sun{
+        position:absolute;
+        right:58px;
+        top:48px;
+        width:82px;
+        height:82px;
+        border-radius:50%;
+        background:radial-gradient(circle, #fff8c8 0%, #ffd76f 56%, rgba(255,194,75,0) 72%);
+        box-shadow:0 0 70px rgba(255,220,120,.65);
+        animation:storiesSunFloat 7s ease-in-out infinite;
+      }
+
+      .stories-weather-cloud{
+        position:absolute;
+        width:180px;
+        height:58px;
+        border-radius:999px;
+        background:rgba(255,255,255,.72);
+        filter:blur(.2px);
+        box-shadow:34px -18px 0 rgba(255,255,255,.62), 74px 4px 0 rgba(255,255,255,.54), 0 18px 36px rgba(76,134,180,.18);
+      }
+
+      .stories-weather-cloud-one{
+        left:34px;
+        top:82px;
+        animation:storiesCloudDrift 18s linear infinite;
+      }
+
+      .stories-weather-cloud-two{
+        left:58%;
+        top:146px;
+        transform:scale(.72);
+        opacity:.74;
+        animation:storiesCloudDriftSmall 24s linear infinite reverse;
+      }
+
+      .stories-weather-spark{
+        position:absolute;
+        width:8px;
+        height:8px;
+        border-radius:50%;
+        background:rgba(255,255,255,.82);
+        box-shadow:0 0 18px rgba(255,255,255,.86);
+        animation:storiesSparkle 3.2s ease-in-out infinite;
+      }
+
+      .stories-weather-spark-one{left:22%;top:38%}
+      .stories-weather-spark-two{right:28%;top:62%;animation-delay:1.1s}
+
+      @keyframes storiesWeatherGlow{
+        from{filter:saturate(1) brightness(.98)}
+        to{filter:saturate(1.12) brightness(1.06)}
+      }
+
+      @keyframes storiesSunFloat{
+        0%,100%{transform:translate3d(0,0,0) scale(1)}
+        50%{transform:translate3d(-8px,8px,0) scale(1.04)}
+      }
+
+      @keyframes storiesCloudDrift{
+        from{transform:translateX(-18px)}
+        to{transform:translateX(22px)}
+      }
+
+      @keyframes storiesCloudDriftSmall{
+        from{transform:translateX(-18px) scale(.72)}
+        to{transform:translateX(22px) scale(.72)}
+      }
+
+      @keyframes storiesSparkle{
+        0%,100%{opacity:.25;transform:scale(.72)}
+        50%{opacity:.95;transform:scale(1.25)}
       }
 
       .stories-composer-top .stories-create-head{
         width:100%;
         justify-content:center;
         text-align:center;
+        position:relative;
+        z-index:6;
       }
 
       .stories-composer-top .stories-create-head > div{
