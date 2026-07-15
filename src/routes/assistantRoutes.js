@@ -232,7 +232,39 @@ async function buildAssistantContext(body) {
   const city = inferCity(latitude, longitude, rawCity);
   const weather = await fetchCurrentWeather(latitude, longitude);
 
-  const rows = await prisma.eventFinderItem.findMany({
+  const eventSelect = {
+    id: true,
+    title: true,
+    description: true,
+    venueName: true,
+    address: true,
+    city: true,
+    region: true,
+    country: true,
+    category: true,
+    startAt: true,
+    endAt: true,
+    latitude: true,
+    longitude: true,
+    priceText: true,
+    eventUrl: true,
+    ticketUrl: true,
+    attendingBy: {
+      where: { status: "going" },
+      take: 8,
+      select: {
+        profile: {
+          select: {
+            username: true,
+            name: true,
+            photo: true,
+          },
+        },
+      },
+    },
+  };
+
+  const upcomingRows = await prisma.eventFinderItem.findMany({
     where: {
       OR: [
         { startAt: null },
@@ -244,57 +276,45 @@ async function buildAssistantContext(body) {
       { createdAt: "desc" },
     ],
     take: 400,
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      venueName: true,
-      address: true,
-      city: true,
-      region: true,
-      country: true,
-      category: true,
-      startAt: true,
-      endAt: true,
-      latitude: true,
-      longitude: true,
-      priceText: true,
-      eventUrl: true,
-      ticketUrl: true,
-      attendingBy: {
-        where: { status: "going" },
-        take: 8,
-        select: {
-          profile: {
-            select: {
-              username: true,
-              name: true,
-              photo: true,
-            },
-          },
-        },
-      },
-    },
+    select: eventSelect,
   });
+
+  let rows = upcomingRows;
+  if (rows.length < 12) {
+    const recentRows = await prisma.eventFinderItem.findMany({
+      orderBy: [
+        { startAt: "desc" },
+        { createdAt: "desc" },
+      ],
+      take: 400,
+      select: eventSelect,
+    });
+    const seenEventIds = new Set(rows.map((event) => String(event.id || "")));
+    rows = rows.concat(recentRows.filter((event) => !seenEventIds.has(String(event.id || "")))).slice(0, 400);
+  }
 
   const web = await fetchAssistantWebSearch(body.message || "", { latitude, longitude, city }, weather);
 
   const events = rows.map((event) => {
     const distanceKm = getDistanceKm(latitude, longitude, event.latitude, event.longitude);
+    const startsAt = event.startAt ? new Date(event.startAt).getTime() : null;
+    const isUpcoming = startsAt === null || startsAt >= now.getTime();
     return {
       ...event,
       distanceKm,
+      isUpcoming,
       attendingCount: event.attendingBy.length,
       attendees: event.attendingBy.map((row) => row.profile).filter(Boolean),
       attendingBy: undefined,
     };
   }).sort((a, b) => {
+    if (a.isUpcoming !== b.isUpcoming) return a.isUpcoming ? -1 : 1;
     if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
     if (a.distanceKm !== null) return -1;
     if (b.distanceKm !== null) return 1;
     const aTime = a.startAt ? new Date(a.startAt).getTime() : Number.MAX_SAFE_INTEGER;
     const bTime = b.startAt ? new Date(b.startAt).getTime() : Number.MAX_SAFE_INTEGER;
-    return aTime - bTime;
+    return a.isUpcoming ? aTime - bTime : bTime - aTime;
   });
 
   return {
@@ -380,6 +400,7 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "Be natural, warm, concise, and conversational.",
           "You can answer normal questions, follow-ups, local planning questions, Tapzy questions, directions, food, weather, events, and community discovery.",
           "Use the user's location, weather, Tapzy event data, web results, current page, and conversation memory before giving generic advice.",
+          "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
           "When the user asks near me, tonight, nearby, where should I go, food, directions, weather, or plans, behave location-first and action-first.",
           "If live data is missing, say so plainly and give the best next step.",
           "Do not pretend to know private user data that was not provided.",
@@ -526,6 +547,7 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
     "You are Ask Tapzy, the built-in real-time voice assistant inside Tapzy.",
     "Be warm, quick, natural, and useful. Speak like a smart local friend, not a generic chatbot.",
     "Use the user's current location, weather, Tapzy events, and web context when available.",
+    "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
     "If the user asks what is nearby, tonight, where to eat, where to go, directions, weather, or plans, answer from the local context first.",
     "If exact live data is missing, say that briefly and give the best next step inside Tapzy.",
     "Keep spoken answers concise unless the user asks for detail.",

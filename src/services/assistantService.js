@@ -51,7 +51,7 @@ function eventDestination(event) {
 }
 
 function eventLink(event) {
-  return event && event.id ? "/events/" + encodeURIComponent(event.id) : "/events";
+  return event && event.id ? "/events/view/" + encodeURIComponent(event.id) : "/events";
 }
 
 function eventMapsLink(event) {
@@ -415,7 +415,7 @@ async function buildAssistantReply({ message, pageType = "general", isAuthPage =
     if (includesAny(msg, ["create account", "sign up"])) return "To create your Tapzy account, choose a clean username, enter an email you control, and use a password with at least 8 characters.";
     return "This is the Tapzy auth page. You can sign in, create an account, or ask what Tapzy does.";
   }
-  if (pageType === "events") return "You are in Event Finder. Ask things like what is going on tonight, show me concerts, who is at Ribfest, or find car meets.";
+  if (pageType === "events") return buildEventSuggestions(message, context);
   if (pageType === "discovery") return "You are in Discover. Ask Tapzy can help turn discovery into action: nearby people, stories, events, places, directions, and plans.";
   if (pageType === "profile") return "You are on a Tapzy profile page. I can help improve the profile, open QR/contact flows, or connect profile activity to stories, events, and messages.";
   if (pageType === "edit") return "You are editing your Tapzy profile. Focus on a clean title, strong bio, good profile image, and the links that matter most.";
