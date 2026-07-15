@@ -71,7 +71,6 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
   const categoryText = normalizeCategory(event) || 'Event';
   const shortDescription = getShortDescription(event);
   const badge = getUrgencyBadge(event);
-  const place = getEventPlace(event) || 'Location coming soon';
   const goingCount = goingCounts?.get(event.id) || 0;
   const isGoing = !!(goingSet && goingSet.has(event.id));
 
