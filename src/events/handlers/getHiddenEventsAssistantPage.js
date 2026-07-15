@@ -74,6 +74,7 @@ async function getHiddenEventsAssistantPage(req, res, next) {
       currentProfile,
       pageTitle: "Events",
       activeNav: "events",
+      hideTopBar: true,
     }));
   } catch (error) {
     next(error);
