@@ -1,7 +1,7 @@
 const router = require("express").Router();
 
 const getEventsFeed = require("../events/handlers/getEventsFeed");
-const getEventsPage = require("../events/handlers/getHiddenEventsAssistantPage");
+const getEventsPage = require("../events/handlers/getEventsPage");
 const getEventDetailPage = require("../events/handlers/getEventDetailPage");
 const postAdminSync = require("../events/handlers/postAdminSync");
 const postToggleGoing = require("../events/handlers/postToggleGoing");
