@@ -243,7 +243,7 @@ async function buildAssistantContext(body) {
       { startAt: "asc" },
       { createdAt: "desc" },
     ],
-    take: 80,
+    take: 400,
     select: {
       id: true,
       title: true,
@@ -320,14 +320,17 @@ function compactAssistantContext(context) {
   if (weather) {
     parts.push("Weather: " + [weather.temperatureC !== null && weather.temperatureC !== undefined ? weather.temperatureC + " C" : "", weather.condition, weather.windKph !== null && weather.windKph !== undefined ? "wind " + weather.windKph + " km/h" : ""].filter(Boolean).join(", "));
   }
-  const events = Array.isArray(context?.events) ? context.events.slice(0, 6) : [];
+  const events = Array.isArray(context?.events) ? context.events.slice(0, 40) : [];
   if (events.length) {
     parts.push("Tapzy events: " + events.map((event, index) => {
       const place = [event.venueName, event.address, event.city].filter(Boolean).join(" / ");
       const time = event.startAt ? new Date(event.startAt).toISOString() : "time unknown";
       const attending = event.attendingCount ? event.attendingCount + " going" : "";
       const distance = Number.isFinite(event.distanceKm) ? (Math.round(event.distanceKm * 10) / 10) + " km away" : "";
-      return (index + 1) + ". " + [event.title, event.category, place, time, event.priceText, distance, attending, event.id ? "/events/" + event.id : ""].filter(Boolean).join(" | ");
+      const directions = event.latitude !== null && event.latitude !== undefined && event.longitude !== null && event.longitude !== undefined
+        ? "maps: https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(event.latitude + "," + event.longitude)
+        : "";
+      return (index + 1) + ". " + [event.title, event.category, event.description, place, event.address, time, event.priceText, distance, attending, event.ticketUrl, directions, event.id ? "/events/view/" + event.id : ""].filter(Boolean).join(" | ");
     }).join(" || "));
   }
   const web = context?.web;
