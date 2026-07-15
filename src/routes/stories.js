@@ -270,16 +270,19 @@ function storyComposerHero(activeStories = []) {
   const story = activeStories.find((item) => item && (item.mediaUrl || item.text)) || null;
   if (!story) {
     return `
-      <div class="stories-hero-weather" aria-hidden="true">
-        <span class="stories-weather-sun"></span>
-        <span class="stories-weather-cloud stories-weather-cloud-one"></span>
-        <span class="stories-weather-cloud stories-weather-cloud-two"></span>
-        <span class="stories-weather-spark stories-weather-spark-one"></span>
-        <span class="stories-weather-spark stories-weather-spark-two"></span>
+      <div class="stories-hero-toronto" aria-hidden="true">
+        <span class="stories-toronto-sky"></span>
+        <span class="stories-toronto-cn"></span>
+        <span class="stories-toronto-building stories-toronto-building-one"></span>
+        <span class="stories-toronto-building stories-toronto-building-two"></span>
+        <span class="stories-toronto-building stories-toronto-building-three"></span>
+        <span class="stories-toronto-lake"></span>
+        <span class="stories-toronto-light stories-toronto-light-one"></span>
+        <span class="stories-toronto-light stories-toronto-light-two"></span>
       </div>
       <div class="stories-hero-meta">
-        <span>Beautiful weather</span>
-        <strong>Clear skies</strong>
+        <span>Toronto live</span>
+        <strong>City backdrop</strong>
       </div>
     `;
   }
@@ -915,87 +918,134 @@ router.get("/stories", async (req, res) => {
         white-space:nowrap;
       }
 
-      .stories-hero-weather{
+      .stories-hero-toronto{
         position:absolute;
         inset:0;
+        overflow:hidden;
         background:
-          radial-gradient(circle at 78% 22%, rgba(255,236,160,.55), transparent 18%),
-          linear-gradient(180deg, #7fc8ff 0%, #c9ecff 42%, #f7fbff 100%);
-        animation:storiesWeatherGlow 8s ease-in-out infinite alternate;
+          radial-gradient(circle at 58% 28%, rgba(102,198,255,.34), transparent 22%),
+          radial-gradient(circle at 26% 18%, rgba(255,118,182,.20), transparent 24%),
+          linear-gradient(180deg, #06162b 0%, #0a2440 42%, #07111e 67%, #02050b 100%);
+        animation:storiesTorontoGlow 9s ease-in-out infinite alternate;
       }
 
-      .stories-weather-sun{
+      .stories-toronto-sky{
         position:absolute;
-        right:58px;
-        top:48px;
-        width:82px;
-        height:82px;
-        border-radius:50%;
-        background:radial-gradient(circle, #fff8c8 0%, #ffd76f 56%, rgba(255,194,75,0) 72%);
-        box-shadow:0 0 70px rgba(255,220,120,.65);
-        animation:storiesSunFloat 7s ease-in-out infinite;
+        inset:-18% -10% 36%;
+        background:
+          linear-gradient(115deg, transparent 0 24%, rgba(75,210,255,.18) 36%, transparent 52%),
+          linear-gradient(70deg, transparent 0 34%, rgba(255,104,190,.13) 49%, transparent 66%);
+        filter:blur(10px);
+        opacity:.9;
+        animation:storiesTorontoAurora 11s ease-in-out infinite alternate;
       }
 
-      .stories-weather-cloud{
+      .stories-toronto-cn{
         position:absolute;
-        width:180px;
-        height:58px;
-        border-radius:999px;
-        background:rgba(255,255,255,.72);
-        filter:blur(.2px);
-        box-shadow:34px -18px 0 rgba(255,255,255,.62), 74px 4px 0 rgba(255,255,255,.54), 0 18px 36px rgba(76,134,180,.18);
-      }
-
-      .stories-weather-cloud-one{
-        left:34px;
-        top:82px;
-        animation:storiesCloudDrift 18s linear infinite;
-      }
-
-      .stories-weather-cloud-two{
-        left:58%;
-        top:146px;
-        transform:scale(.72);
-        opacity:.74;
-        animation:storiesCloudDriftSmall 24s linear infinite reverse;
-      }
-
-      .stories-weather-spark{
-        position:absolute;
+        left:50%;
+        bottom:29%;
         width:8px;
-        height:8px;
+        height:132px;
+        border-radius:999px 999px 0 0;
+        background:linear-gradient(180deg, rgba(235,249,255,.92), rgba(116,188,242,.78) 48%, rgba(27,62,98,.90));
+        box-shadow:0 0 24px rgba(96,203,255,.42);
+        transform:translateX(-50%);
+      }
+
+      .stories-toronto-cn::before{
+        content:"";
+        position:absolute;
+        left:50%;
+        top:42px;
+        width:58px;
+        height:12px;
+        border-radius:999px;
+        background:linear-gradient(90deg, rgba(47,94,140,.78), rgba(232,247,255,.92), rgba(47,94,140,.78));
+        box-shadow:0 0 18px rgba(132,216,255,.36);
+        transform:translateX(-50%);
+      }
+
+      .stories-toronto-cn::after{
+        content:"";
+        position:absolute;
+        left:50%;
+        top:-36px;
+        width:2px;
+        height:40px;
+        border-radius:999px;
+        background:rgba(230,249,255,.86);
+        box-shadow:0 0 14px rgba(145,220,255,.54);
+        transform:translateX(-50%);
+      }
+
+      .stories-toronto-building{
+        position:absolute;
+        bottom:28%;
+        border-radius:5px 5px 0 0;
+        background:linear-gradient(180deg, rgba(21,49,78,.94), rgba(5,14,26,.98));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 24px rgba(48,150,255,.10);
+      }
+
+      .stories-toronto-building::after{
+        content:"";
+        position:absolute;
+        inset:12px 7px 8px;
+        opacity:.7;
+        background:
+          repeating-linear-gradient(180deg, rgba(190,230,255,.72) 0 3px, transparent 3px 14px),
+          repeating-linear-gradient(90deg, rgba(190,230,255,.34) 0 3px, transparent 3px 16px);
+        mix-blend-mode:screen;
+      }
+
+      .stories-toronto-building-one{left:14%;width:54px;height:84px}
+      .stories-toronto-building-two{left:30%;width:70px;height:112px}
+      .stories-toronto-building-three{right:16%;width:74px;height:98px}
+
+      .stories-toronto-lake{
+        position:absolute;
+        left:0;
+        right:0;
+        bottom:0;
+        height:34%;
+        background:
+          repeating-linear-gradient(180deg, rgba(164,222,255,.14) 0 2px, transparent 2px 13px),
+          linear-gradient(180deg, rgba(20,73,112,.62), rgba(3,9,18,.96));
+        filter:saturate(1.1);
+        animation:storiesTorontoWater 5.5s ease-in-out infinite alternate;
+      }
+
+      .stories-toronto-light{
+        position:absolute;
+        bottom:26%;
+        width:7px;
+        height:7px;
         border-radius:50%;
-        background:rgba(255,255,255,.82);
-        box-shadow:0 0 18px rgba(255,255,255,.86);
-        animation:storiesSparkle 3.2s ease-in-out infinite;
+        background:#fff5c8;
+        box-shadow:0 0 24px rgba(255,218,128,.92), 0 38px 22px rgba(255,196,82,.20);
+        animation:storiesTorontoTwinkle 2.8s ease-in-out infinite;
       }
 
-      .stories-weather-spark-one{left:22%;top:38%}
-      .stories-weather-spark-two{right:28%;top:62%;animation-delay:1.1s}
+      .stories-toronto-light-one{left:23%}
+      .stories-toronto-light-two{right:28%;animation-delay:1.1s}
 
-      @keyframes storiesWeatherGlow{
-        from{filter:saturate(1) brightness(.98)}
-        to{filter:saturate(1.12) brightness(1.06)}
+      @keyframes storiesTorontoGlow{
+        from{filter:saturate(1) brightness(.96)}
+        to{filter:saturate(1.14) brightness(1.06)}
       }
 
-      @keyframes storiesSunFloat{
-        0%,100%{transform:translate3d(0,0,0) scale(1)}
-        50%{transform:translate3d(-8px,8px,0) scale(1.04)}
+      @keyframes storiesTorontoAurora{
+        from{transform:translate3d(-16px,0,0) scale(1);opacity:.72}
+        to{transform:translate3d(18px,8px,0) scale(1.04);opacity:1}
       }
 
-      @keyframes storiesCloudDrift{
-        from{transform:translateX(-18px)}
-        to{transform:translateX(22px)}
+      @keyframes storiesTorontoWater{
+        from{transform:translateY(0);background-position:0 0,0 0}
+        to{transform:translateY(2px);background-position:18px 12px,0 0}
       }
 
-      @keyframes storiesCloudDriftSmall{
-        from{transform:translateX(-18px) scale(.72)}
-        to{transform:translateX(22px) scale(.72)}
-      }
-
-      @keyframes storiesSparkle{
-        0%,100%{opacity:.25;transform:scale(.72)}
-        50%{opacity:.95;transform:scale(1.25)}
+      @keyframes storiesTorontoTwinkle{
+        0%,100%{opacity:.42;transform:scale(.86)}
+        50%{opacity:1;transform:scale(1.18)}
       }
 
       .stories-composer-top .stories-create-head{
