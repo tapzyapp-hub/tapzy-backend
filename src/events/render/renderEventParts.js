@@ -1,5 +1,5 @@
 const { escapeHtml } = require('../../utils');
-const { normalizeCategory, getShortDescription, getUrgencyBadge, pickImage, formatEventDateTime, getEventPlace, getDirectionsUrl } = require('../helpers/eventServerUtils');
+const { normalizeCategory, getShortDescription, getUrgencyBadge, pickImage } = require('../helpers/eventServerUtils');
 
 function renderGoingButton(event, currentProfile, goingSet) {
   if (!currentProfile) return '';
@@ -14,12 +14,10 @@ function renderGoingButton(event, currentProfile, goingSet) {
 
 function renderEventCard(event, currentProfile, goingSet, goingCounts) {
   const image = pickImage(event);
-  const when = formatEventDateTime(event);
+  const when = event.startAt ? new Date(event.startAt).toLocaleString() : 'Date coming soon';
   const categoryText = normalizeCategory(event) || 'Event';
   const shortDescription = getShortDescription(event);
   const badge = getUrgencyBadge(event);
-  const place = getEventPlace(event) || 'Location coming soon';
-  const directionsUrl = getDirectionsUrl(event);
   const goingCount = goingCounts?.get(event.id) || 0;
 
   return `
@@ -46,14 +44,13 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
         <div class="event-meta">
           <div class="event-meta-row"><span class="event-meta-label">When</span><span class="event-meta-value">${escapeHtml(when)}</span></div>
-          <div class="event-meta-row"><span class="event-meta-label">Where</span><span class="event-meta-value">${escapeHtml(place)}</span></div>
+          <div class="event-meta-row"><span class="event-meta-label">Where</span><span class="event-meta-value">${escapeHtml(event.venueName || event.address || event.city || 'Location coming soon')}</span></div>
           ${event.city ? `<div class="event-meta-row"><span class="event-meta-label">City</span><span class="event-meta-value">${escapeHtml(event.city)}</span></div>` : ''}
         </div>
 
         <div class="event-actions-primary">
           <a class="btn btnLuxury" href="/events/view/${encodeURIComponent(event.id)}">Open Event</a>
           ${event.ticketUrl ? `<a class="btn btnDark" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.ticketUrl)}">Tickets</a>` : ''}
-          ${directionsUrl ? `<a class="btn btnDark" target="_blank" rel="noopener noreferrer" href="${escapeHtml(directionsUrl)}">Directions</a>` : ''}
         </div>
 
         <div class="event-actions-secondary">
@@ -67,7 +64,7 @@ function renderEventCard(event, currentProfile, goingSet, goingCounts) {
 
 function renderReelItem(event, currentProfile, goingSet, goingCounts) {
   const image = pickImage(event);
-  const when = formatEventDateTime(event);
+  const when = event.startAt ? new Date(event.startAt).toLocaleString() : 'Date coming soon';
   const date = event.startAt ? new Date(event.startAt) : null;
   const dateMonth = date ? date.toLocaleString('en-US', { month: 'short' }).toUpperCase() : 'SOON';
   const dateDay = date ? date.getDate() : '•';
@@ -75,7 +72,6 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
   const shortDescription = getShortDescription(event);
   const badge = getUrgencyBadge(event);
   const place = getEventPlace(event) || 'Location coming soon';
-  const directionsUrl = getDirectionsUrl(event);
   const goingCount = goingCounts?.get(event.id) || 0;
   const isGoing = !!(goingSet && goingSet.has(event.id));
 
@@ -116,12 +112,6 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 16-8-6 16-3-6-7-2Zm7 2 9-10"/></svg>
             <span>Share</span>
           </button>
-          ${directionsUrl ? `
-            <a class="reel-rail-action" target="_blank" rel="noopener noreferrer" href="${escapeHtml(directionsUrl)}" aria-label="Get directions">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
-              <span>Map</span>
-            </a>
-          ` : ''}
           ${event.ticketUrl ? `
             <a class="reel-rail-action" target="_blank" rel="noopener noreferrer" href="${escapeHtml(event.ticketUrl)}" aria-label="Buy tickets">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 0 0 4v6h16v-6a2 2 0 0 0 0-4V5H4v2Z"/><path d="M13 5v12"/></svg>
@@ -139,7 +129,7 @@ function renderReelItem(event, currentProfile, goingSet, goingCounts) {
           <div class="reel-sub">${escapeHtml(shortDescription)}</div>
           <div class="reel-location">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
-            <span>${escapeHtml(place)}</span>
+            <span>${escapeHtml(event.venueName || event.address || event.city || 'Location coming soon')}</span>
           </div>
           <div class="reel-time">${escapeHtml(when)}</div>
           <div class="reel-footer-row">

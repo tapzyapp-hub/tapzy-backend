@@ -13,9 +13,6 @@ const {
   isAllowedHotCategory,
   pickImage,
   isSeededEvent,
-  formatEventDateTime,
-  getEventPlace,
-  getDirectionsUrl,
 } = require("../helpers/eventServerUtils");
 
 module.exports = async function getEventsFeed(req, res) {
@@ -50,7 +47,6 @@ module.exports = async function getEventsFeed(req, res) {
         title: true,
         description: true,
         venueName: true,
-        address: true,
         city: true,
         category: true,
         startAt: true,
@@ -125,9 +121,6 @@ module.exports = async function getEventsFeed(req, res) {
       imageUrl: pickImage(event),
       category: normalizeCategory(event),
       description: getShortDescription(event),
-      place: getEventPlace(event),
-      displayTime: formatEventDateTime(event),
-      directionsUrl: getDirectionsUrl(event),
       urgencyBadge: getUrgencyBadge(event),
       isGoing: goingSet.has(event.id),
       goingCount: goingCounts.get(event.id) || 0,

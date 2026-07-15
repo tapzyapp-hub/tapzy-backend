@@ -1,7 +1,7 @@
 
 const prisma = require("../../prisma");
-const { renderShell, renderTapzyAssistant, escapeHtml } = require("../../utils");
-const { normalizeCategory, getShortDescription, cleanEventDescription, pickImage, getUrgencyBadge, isSeededEvent, formatEventDateTime, getEventPlace, getEventAddressLabel, getDirectionsUrl } = require("../helpers/eventServerUtils");
+const { renderShell, renderTapzyAssistant, escapeHtml, formatPrettyLocal } = require("../../utils");
+const { normalizeCategory, getShortDescription, cleanEventDescription, pickImage, getUrgencyBadge, isSeededEvent } = require("../helpers/eventServerUtils");
 
 module.exports = async function getEventDetailPage(req, res) {
 
@@ -46,13 +46,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
     const shortDescription = getShortDescription(event);
 
-    const when = formatEventDateTime(event);
-
-    const place = getEventPlace(event) || "Location coming soon";
-
-    const addressLabel = getEventAddressLabel(event);
-
-    const directionsUrl = getDirectionsUrl(event);
+    const when = event.startAt ? formatPrettyLocal(event.startAt) : "Date coming soon";
 
     const badge = getUrgencyBadge(event);
 
@@ -135,7 +129,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
               <div class="tz-event-detail-meta-label">Where</div>
 
-              <div class="tz-event-detail-meta-value">${escapeHtml(place)}</div>
+              <div class="tz-event-detail-meta-value">${escapeHtml(event.venueName || event.address || event.city || "Location coming soon")}</div>
 
             </div>
 
@@ -269,7 +263,7 @@ module.exports = async function getEventDetailPage(req, res) {
 
                 <span>Address</span>
 
-                <strong>${escapeHtml(addressLabel || "No verified street address listed")}</strong>
+                <strong>${escapeHtml(event.address || event.city || "Location coming soon")}</strong>
 
               </div>
 

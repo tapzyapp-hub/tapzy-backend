@@ -346,8 +346,10 @@ async function buildAssistantContext(body) {
 
 
 function compactEventForAssistantFeed(event, index) {
-  const place = getAssistantEventPlace(event);
-  const directions = getAssistantDirectionsUrl(event);
+  const place = [event.venueName, event.address, event.city, event.region].filter(Boolean).join(" / ");
+  const directions = event.latitude !== null && event.latitude !== undefined && event.longitude !== null && event.longitude !== undefined
+    ? "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(event.latitude + "," + event.longitude)
+    : "";
   return {
     rank: index + 1,
     id: event.id || "",
@@ -358,7 +360,7 @@ function compactEventForAssistantFeed(event, index) {
     address: asSafeString(event.address || "", 180),
     city: asSafeString(event.city || "", 80),
     place: asSafeString(place, 260),
-    startsAt: formatAssistantEventTime(event),
+    startsAt: event.startAt ? new Date(event.startAt).toISOString() : "",
     endsAt: event.endAt ? new Date(event.endAt).toISOString() : "",
     price: asSafeString(event.priceText || "", 80),
     distanceKm: Number.isFinite(event.distanceKm) ? Math.round(event.distanceKm * 10) / 10 : null,
@@ -389,8 +391,8 @@ function compactAssistantContext(context) {
   const events = Array.isArray(context?.events) ? context.events.slice(0, 40) : [];
   if (events.length) {
     parts.push("Tapzy events: " + events.map((event, index) => {
-      const place = getAssistantEventPlace(event);
-      const time = formatAssistantEventTime(event);
+      const place = [event.venueName, event.address, event.city].filter(Boolean).join(" / ");
+      const time = event.startAt ? new Date(event.startAt).toISOString() : "time unknown";
       const attending = event.attendingCount ? event.attendingCount + " going" : "";
       const distance = Number.isFinite(event.distanceKm) ? (Math.round(event.distanceKm * 10) / 10) + " km away" : "";
       const directions = event.latitude !== null && event.latitude !== undefined && event.longitude !== null && event.longitude !== undefined
