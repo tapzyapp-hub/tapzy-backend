@@ -396,9 +396,9 @@ function storyComposer(currentProfile, upcomingEvents, activeStories = []) {
 
             <span class="stories-upload-icon">＋</span>
 
-            <span class="stories-upload-title">Add photo or video</span>
+            <span class="stories-upload-title">Add media</span>
 
-            <span class="stories-upload-subtitle" data-upload-label>Photos or videos · duration is not limited</span>
+            <span class="stories-upload-subtitle" data-upload-label>Photo or video for your story</span>
 
           </label>
 
@@ -1081,12 +1081,13 @@ router.get("/stories", async (req, res) => {
 
         grid-template-columns:1fr 1fr;
 
-        gap:0;
+        gap:14px;
         border-radius:28px;
-        border:1px solid rgba(188,220,255,.13);
-        background:linear-gradient(180deg, rgba(4,7,14,.56), rgba(2,3,8,.84));
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 18px 48px rgba(0,0,0,.24);
-        overflow:hidden;
+        border:1px solid rgba(188,220,255,.10);
+        background:linear-gradient(180deg, rgba(5,8,15,.34), rgba(2,3,8,.62));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 18px 48px rgba(0,0,0,.20);
+        overflow:visible;
+        padding:14px;
 
       }
 
@@ -1100,7 +1101,12 @@ router.get("/stories", async (req, res) => {
 
         gap:8px;
         padding:20px;
-        border-bottom:1px solid rgba(255,255,255,.07);
+        border:1px solid rgba(185,218,255,.10);
+        border-radius:24px;
+        background:
+          radial-gradient(320px 140px at 18% 0%, rgba(106,181,255,.08), transparent 62%),
+          linear-gradient(180deg, rgba(7,11,20,.62), rgba(3,5,11,.78));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 14px 34px rgba(0,0,0,.16);
 
       }
 
@@ -1137,21 +1143,32 @@ router.get("/stories", async (req, res) => {
 
         min-height:52px;
 
-        border-radius:16px;
+        border-radius:18px;
 
-        border:1px solid rgba(255,255,255,.075);
+        border:1px solid rgba(190,222,255,.12);
 
-        background:rgba(5,8,14,.86);
+        background:linear-gradient(180deg, rgba(3,6,12,.66), rgba(1,3,8,.78));
 
         color:#fff;
 
-        padding:14px 16px;
+        padding:15px 17px;
 
         box-sizing:border-box;
 
         font-size:15px;
         font-weight:550;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+        outline:none;
+        transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
 
+      }
+
+      .stories-field textarea:focus,
+      .stories-field input:focus,
+      .stories-field select:focus{
+        border-color:rgba(134,207,255,.42);
+        background:linear-gradient(180deg, rgba(5,9,18,.74), rgba(2,4,10,.86));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 3px rgba(67,158,255,.10), 0 0 28px rgba(67,158,255,.10);
       }
 
       .stories-field textarea::placeholder,
@@ -1174,11 +1191,16 @@ router.get("/stories", async (req, res) => {
 
       .stories-create-actions{
 
-        margin-top:14px;
+        margin-top:16px;
         display:flex;
         align-items:center;
-        gap:10px;
+        gap:12px;
         flex-wrap:wrap;
+        padding:14px;
+        border:1px solid rgba(185,218,255,.09);
+        border-radius:24px;
+        background:linear-gradient(180deg, rgba(7,11,20,.48), rgba(3,5,10,.64));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
 
       }
 
@@ -1192,26 +1214,35 @@ router.get("/stories", async (req, res) => {
 
         justify-content:center;
 
-        min-height:48px;
+        min-height:52px;
 
-        padding:0 18px;
+        padding:0 22px;
 
         border-radius:999px;
 
         text-decoration:none;
 
-        border:1px solid rgba(255,255,255,.08);
+        border:1px solid rgba(210,235,255,.12);
 
-        background:linear-gradient(180deg, rgba(18,21,31,.96), rgba(10,12,18,.98));
+        background:
+          radial-gradient(circle at 50% 0%, rgba(255,255,255,.10), transparent 50%),
+          linear-gradient(180deg, rgba(18,25,42,.92), rgba(8,12,22,.98));
 
         color:#fff;
 
-        font-size:14px;
+        font-size:15px;
 
-        font-weight:800;
+        font-weight:850;
 
         cursor:pointer;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 12px 28px rgba(0,0,0,.18);
+        transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;
 
+      }
+
+      .stories-btn:hover{
+        transform:translateY(-1px);
+        filter:brightness(1.05);
       }
 
 
@@ -1222,9 +1253,10 @@ router.get("/stories", async (req, res) => {
 
         background:
 
-          radial-gradient(circle at 50% 0%, rgba(150,230,255,.18), transparent 55%),
+          radial-gradient(circle at 50% 0%, rgba(210,244,255,.30), transparent 54%),
 
-          linear-gradient(180deg, rgba(40,92,210,.92), rgba(18,41,92,.98));
+          linear-gradient(180deg, rgba(54,117,245,.96), rgba(16,45,125,.98));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 14px 32px rgba(47,118,255,.26), 0 0 24px rgba(76,165,255,.14);
 
       }
 
@@ -1634,26 +1666,41 @@ router.get("/stories", async (req, res) => {
       }
 
       .stories-upload-drop{
-        min-height:88px;
-        border-radius:18px;
-        border:1px solid rgba(160,190,230,.16);
-        background:rgba(5,8,14,.78);
+        position:relative;
+        min-height:104px;
+        border-radius:22px;
+        border:1px solid rgba(160,214,255,.20);
+        background:
+          radial-gradient(180px 90px at 18% 20%, rgba(55,139,255,.18), transparent 68%),
+          linear-gradient(180deg, rgba(8,13,24,.66), rgba(2,4,10,.78));
         display:grid;
-        grid-template-columns:44px minmax(0,1fr);
+        grid-template-columns:54px minmax(0,1fr);
         align-items:center;
         justify-content:start;
-        column-gap:12px;
+        column-gap:14px;
         cursor:pointer;
         text-align:left;
-        padding:14px;
-        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+        padding:16px;
+        transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
         overflow:hidden;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 14px 34px rgba(0,0,0,.18);
+      }
+
+      .stories-upload-drop::after{
+        content:"";
+        position:absolute;
+        inset:1px;
+        border-radius:inherit;
+        border:1px solid rgba(255,255,255,.035);
+        background:linear-gradient(110deg, transparent 0%, rgba(255,255,255,.08) 42%, transparent 58%);
+        opacity:.42;
+        pointer-events:none;
       }
 
       .stories-upload-drop:hover{
         transform:translateY(-1px);
-        border-color:rgba(150,220,255,.42);
-        box-shadow:0 16px 40px rgba(0,0,0,.22), 0 0 30px rgba(70,160,255,.08);
+        border-color:rgba(150,220,255,.48);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.09), 0 16px 40px rgba(0,0,0,.22), 0 0 34px rgba(70,160,255,.13);
       }
 
       .stories-upload-drop input{
@@ -1661,22 +1708,24 @@ router.get("/stories", async (req, res) => {
       }
 
       .stories-upload-icon{
-        width:44px;
-        height:44px;
+        width:54px;
+        height:54px;
         border-radius:50%;
         display:flex;
         align-items:center;
         justify-content:center;
-        font-size:24px;
+        font-size:29px;
         color:#fff;
-        background:linear-gradient(180deg, rgba(42,94,210,.94), rgba(18,43,98,.98));
-        box-shadow:0 10px 24px rgba(36,100,255,.22);
+        background:
+          radial-gradient(circle at 38% 24%, rgba(255,255,255,.34), transparent 30%),
+          linear-gradient(180deg, rgba(55,116,244,.98), rgba(17,45,122,.98));
+        box-shadow:0 12px 28px rgba(36,100,255,.30), 0 0 28px rgba(83,177,255,.12);
       }
 
       .stories-upload-title{
         color:#fff;
-        font-weight:900;
-        font-size:15px;
+        font-weight:850;
+        font-size:17px;
         align-self:end;
         min-width:0;
         max-width:100%;
@@ -1687,9 +1736,9 @@ router.get("/stories", async (req, res) => {
 
       .stories-upload-subtitle,
       .stories-post-status{
-        color:#96a5bd;
+        color:#aebbd0;
         font-size:12px;
-        font-weight:700;
+        font-weight:750;
         grid-column:2;
         align-self:start;
         min-width:0;
@@ -1701,11 +1750,11 @@ router.get("/stories", async (req, res) => {
 
       .stories-preview-card{
         min-height:190px;
-        border-radius:0;
-        border:0;
-        border-left:1px solid rgba(255,255,255,.07);
-        border-bottom:1px solid rgba(255,255,255,.07);
-        background:#05070c;
+        border-radius:24px;
+        border:1px solid rgba(185,218,255,.10);
+        background:
+          radial-gradient(260px 140px at 50% 0%, rgba(106,181,255,.08), transparent 65%),
+          #05070c;
         overflow:hidden;
         display:flex;
         align-items:center;
@@ -1713,6 +1762,7 @@ router.get("/stories", async (req, res) => {
         color:#9eabc0;
         font-size:13px;
         font-weight:800;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 14px 34px rgba(0,0,0,.16);
       }
 
       .stories-preview-card img,
@@ -1726,10 +1776,11 @@ router.get("/stories", async (req, res) => {
 
 
       .stories-event-hint{
-        margin-top:8px;
-        color:#91a1b8;
+        margin-top:9px;
+        color:#a4b2c8;
         font-size:12px;
-        font-weight:700;
+        font-weight:750;
+        line-height:1.38;
       }
 
       .stories-manual-event{
@@ -1854,14 +1905,23 @@ router.get("/stories", async (req, res) => {
 
         .stories-create-actions{
           margin-top:14px;
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+          padding:12px;
         }
 
         .stories-create-actions .stories-btn{
-          min-height:38px;
-          padding:0 13px;
-          border-radius:13px;
-          font-size:13px;
-          width:auto;
+          min-height:46px;
+          padding:0 14px;
+          border-radius:16px;
+          font-size:14px;
+          width:100%;
+        }
+
+        .stories-post-status{
+          grid-column:1 / -1;
+          text-align:center;
         }
       }
 
