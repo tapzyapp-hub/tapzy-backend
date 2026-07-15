@@ -8,7 +8,6 @@ const {
   buildWhere,
   isAllowedHotCategory,
 } = require("../helpers/eventServerUtils");
-const { renderEventCard } = require("../render/renderEventParts");
 const { triggerEventAutoRefreshIfDue } = require("../../services/eventAutoRefreshScheduler");
 
 const FILTERS = [
@@ -50,47 +49,56 @@ function renderFilter(filter, activeCategory, counts) {
     escapeHtml(filter.label) + " <span>" + escapeHtml(counts[filter.key] || 0) + "</span></a>";
 }
 
-function renderQuickList(events) {
-  return events.slice(0, 8).map((event, index) => {
-    return "<a class=\"clean-event-row\" href=\"/events/view/" + encodeURIComponent(event.id) + "\">" +
-      "<span class=\"clean-event-rank\">" + (index + 1) + "</span>" +
-      "<span class=\"clean-event-row-main\"><strong>" + escapeHtml(event.title || "Untitled event") + "</strong>" +
-      "<small>" + escapeHtml(eventTimeLabel(event)) + " - " + escapeHtml(eventPlaceLabel(event)) + "</small></span>" +
-      "<span class=\"clean-event-row-chip\">" + escapeHtml(normalizeCategory(event) || "Event") + "</span>" +
-      "</a>";
+function compactEventMeta(event) {
+  return [eventTimeLabel(event), eventPlaceLabel(event)].filter(Boolean).join(" - ");
+}
+
+function renderEventRows(events) {
+  return events.map((event, index) => {
+    const category = normalizeCategory(event) || "Event";
+    const price = event.priceText ? "<span>" + escapeHtml(event.priceText) + "</span>" : "";
+    const ticket = event.ticketUrl ? "<a class=\"premium-event-action\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"" + escapeHtml(event.ticketUrl) + "\">Tickets</a>" : "";
+    return "<article class=\"premium-event-row\">" +
+      "<a class=\"premium-event-main\" href=\"/events/view/" + encodeURIComponent(event.id) + "\">" +
+        "<span class=\"premium-event-rank\">" + (index + 1) + "</span>" +
+        "<span class=\"premium-event-copy\"><strong>" + escapeHtml(event.title || "Untitled event") + "</strong>" +
+        "<small>" + escapeHtml(compactEventMeta(event)) + "</small></span>" +
+      "</a>" +
+      "<span class=\"premium-event-side\"><span>" + escapeHtml(category) + "</span>" + price + ticket + "</span>" +
+    "</article>";
   }).join("");
 }
 
 function renderCleanStyles() {
   return [
     "<style>",
-    "html,body{background:#000!important;min-height:100%;overflow-x:hidden;}",
-    ".clean-events-page{min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 22px) 16px calc(88px + env(safe-area-inset-bottom,0px));color:#fff;background:radial-gradient(circle at 50% 0%,rgba(34,112,255,.22),transparent 34%),#000;}",
-    ".clean-events-hero{max-width:1080px;margin:0 auto 18px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:16px;padding:18px 0 8px;}",
-    ".clean-events-mark{width:64px;height:64px;border:0;border-radius:20px;display:grid;place-items:center;background:linear-gradient(145deg,#2f7bff,#1455df);box-shadow:0 0 42px rgba(47,123,255,.42);cursor:pointer;}",
-    ".clean-events-mark img{width:72%;height:72%;object-fit:contain;display:block;}",
-    ".clean-events-kicker{margin:0 0 4px;color:#89b9ff;font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;}",
-    ".clean-events-hero h1{margin:0;font-size:clamp(32px,7vw,68px);line-height:.94;letter-spacing:0;font-weight:950;}",
-    ".clean-events-copy{max-width:640px;margin:10px 0 0;color:rgba(255,255,255,.68);font-size:15px;line-height:1.45;}",
-    ".clean-events-filters{max-width:1080px;margin:0 auto 20px;display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}",
+    "html,body{background:#061327!important;min-height:100%;overflow-x:hidden;}",
+    ".clean-events-page{min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 18px) 14px calc(88px + env(safe-area-inset-bottom,0px));color:#fff;background:radial-gradient(circle at 50% -12%,rgba(34,112,255,.26),transparent 34%),linear-gradient(180deg,#071a34 0%,#061327 42%,#030913 100%);}",
+    ".premium-events-top{max-width:980px;margin:0 auto 16px;display:flex;align-items:center;gap:13px;padding:4px 2px 8px;}",
+    ".premium-events-mark{width:48px;height:48px;border:1px solid rgba(255,255,255,.18);border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(47,123,255,.92),rgba(20,85,223,.88));box-shadow:0 18px 46px rgba(20,92,255,.32),inset 0 1px 0 rgba(255,255,255,.22);cursor:pointer;}",
+    ".premium-events-mark img{width:72%;height:72%;object-fit:contain;display:block;}",
+    ".premium-events-top p{margin:0;color:rgba(185,208,244,.72);font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;}",
+    ".premium-events-top h1{margin:1px 0 0;font-size:26px;line-height:1;font-weight:950;letter-spacing:0;}",
+    ".clean-events-filters{max-width:980px;margin:0 auto 16px;display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}",
     ".clean-events-filters::-webkit-scrollbar{display:none;}",
-    ".clean-events-filter{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 15px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-size:13px;font-weight:850;}",
-    ".clean-events-filter span{color:rgba(255,255,255,.58);font-size:12px;}",
-    ".clean-events-filter.is-active{background:#fff;color:#07101f;border-color:#fff;}",
-    ".clean-events-filter.is-active span{color:rgba(7,16,31,.58);}",
-    ".clean-events-snapshot{max-width:1080px;margin:0 auto 22px;display:grid;gap:8px;}",
-    ".clean-event-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:58px;padding:10px 12px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.055);color:#fff;text-decoration:none;}",
-    ".clean-event-rank{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:rgba(47,123,255,.22);color:#aecdff;font-size:12px;font-weight:900;}",
-    ".clean-event-row-main{min-width:0;display:grid;gap:4px;}",
-    ".clean-event-row-main strong{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}",
-    ".clean-event-row-main small{font-size:12px;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}",
-    ".clean-event-row-chip{font-size:11px;font-weight:900;color:#9fc5ff;text-transform:uppercase;letter-spacing:.6px;}",
-    ".clean-events-grid{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;}",
-    ".clean-events-grid .event-card{min-height:520px;}",
+    ".clean-events-filter{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid rgba(160,195,245,.18);background:rgba(17,39,72,.58);color:rgba(239,246,255,.86);text-decoration:none;font-size:12px;font-weight:900;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}",
+    ".clean-events-filter span{color:rgba(190,211,244,.62);font-size:11px;}",
+    ".clean-events-filter.is-active{background:rgba(238,246,255,.96);color:#071527;border-color:rgba(255,255,255,.68);}",
+    ".clean-events-filter.is-active span{color:rgba(7,21,39,.55);}",
+    ".premium-events-list{max-width:980px;margin:0 auto;display:grid;gap:14px;}",
+    ".premium-event-row{min-height:104px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:17px 20px 17px 18px;border:1px solid rgba(156,188,233,.22);border-radius:28px;background:linear-gradient(180deg,rgba(20,43,78,.78),rgba(14,34,64,.74));box-shadow:0 18px 50px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);}",
+    ".premium-event-main{min-width:0;display:grid;grid-template-columns:68px minmax(0,1fr);align-items:center;gap:18px;color:#fff;text-decoration:none;}",
+    ".premium-event-rank{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(35,91,178,.92),rgba(22,67,139,.92));color:#c9dcff;font-size:21px;font-weight:950;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 10px 24px rgba(13,57,139,.24);}",
+    ".premium-event-copy{min-width:0;display:grid;gap:8px;}",
+    ".premium-event-copy strong{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(22px,3.1vw,33px);line-height:1.05;font-weight:950;letter-spacing:0;}",
+    ".premium-event-copy small{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(204,216,235,.66);font-size:clamp(15px,2.2vw,23px);line-height:1.15;font-weight:650;}",
+    ".premium-event-side{display:flex;align-items:center;gap:8px;max-width:220px;justify-content:flex-end;flex-wrap:wrap;}",
+    ".premium-event-side span,.premium-event-action{min-height:30px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;border:1px solid rgba(174,205,255,.16);background:rgba(255,255,255,.055);color:rgba(220,235,255,.72);font-size:11px;font-weight:900;text-decoration:none;white-space:nowrap;}",
+    ".premium-event-action{color:#fff;background:rgba(47,123,255,.24);}",
     ".clean-events-empty{max-width:760px;margin:80px auto;text-align:center;color:rgba(255,255,255,.72);}",
     ".clean-events-empty h2{margin:0 0 10px;color:#fff;font-size:34px;}",
-    "@media(max-width:900px){.clean-events-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.clean-events-grid .event-card{min-height:480px;}}",
-    "@media(max-width:640px){.clean-events-page{padding-left:12px;padding-right:12px;}.clean-events-hero{grid-template-columns:1fr;text-align:center;justify-items:center;margin-bottom:14px;}.clean-events-copy{font-size:14px;}.clean-events-grid{grid-template-columns:1fr;gap:16px;}.clean-events-grid .event-card{min-height:min(72svh,620px);}.clean-event-row{grid-template-columns:30px minmax(0,1fr);}.clean-event-row-chip{display:none;}}",
+    "@media(max-width:720px){.clean-events-page{padding-left:12px;padding-right:12px;}.premium-events-top{margin-bottom:12px}.premium-events-list{gap:12px}.premium-event-row{min-height:92px;padding:14px 14px;border-radius:24px;grid-template-columns:1fr}.premium-event-main{grid-template-columns:62px minmax(0,1fr);gap:13px}.premium-event-rank{width:52px;height:52px;border-radius:17px;font-size:19px}.premium-event-side{display:none}.premium-event-copy strong{font-size:24px}.premium-event-copy small{font-size:17px}.clean-events-filters{margin-bottom:14px}}",
+    "@media(max-width:390px){.premium-event-main{grid-template-columns:54px minmax(0,1fr);gap:11px}.premium-event-rank{width:48px;height:48px;border-radius:16px;font-size:18px}.premium-event-copy strong{font-size:20px}.premium-event-copy small{font-size:15px}.premium-event-row{border-radius:22px}}",
     "</style>",
   ].join("");
 }
@@ -144,18 +152,15 @@ module.exports = async function getEventsPage(req, res) {
     };
 
     const eventsHtml = visibleEvents.length
-      ? [
-          "<section class=\"clean-events-snapshot\" aria-label=\"Top events snapshot\">" + renderQuickList(visibleEvents) + "</section>",
-          "<section class=\"clean-events-grid\" aria-label=\"Events\">" + visibleEvents.map((event) => renderEventCard(event, currentProfile, goingSet, goingCounts)).join("") + "</section>",
-        ].join("")
+      ? "<section class=\"premium-events-list\" aria-label=\"Events\">" + renderEventRows(visibleEvents) + "</section>"
       : "<section class=\"clean-events-empty\"><h2>No events found here yet.</h2><p>Try another filter, or ask Tapzy what kind of plan you want and it can suggest a fallback.</p></section>";
 
     const body = [
       "<main class=\"clean-events-page\">",
-      "<section class=\"clean-events-hero\">",
-      "<button class=\"clean-events-mark tz-ai-trigger\" type=\"button\" data-tapzy-ai-open aria-label=\"Ask Tapzy about events\"><img src=\"/images/tapzy-mark-white.png\" alt=\"\" aria-hidden=\"true\" /></button>",
-      "<div><p class=\"clean-events-kicker\">Tapzy Events</p><h1>Find something worth doing.</h1><p class=\"clean-events-copy\">A clean feed of Tapzy events. Ask Tapzy reads the same event data and can help pick one.</p></div>",
-      "</section>",
+      "<header class=\"premium-events-top\">",
+      "<button class=\"premium-events-mark tz-ai-trigger\" type=\"button\" data-tapzy-ai-open aria-label=\"Ask Tapzy about events\"><img src=\"/images/tapzy-mark-white.png\" alt=\"\" aria-hidden=\"true\" /></button>",
+      "<div><p>Tapzy Events</p><h1>Events</h1></div>",
+      "</header>",
       "<nav class=\"clean-events-filters\" aria-label=\"Event filters\">" + FILTERS.map((filter) => renderFilter(filter, activeCategory, counts)).join("") + "</nav>",
       eventsHtml,
       "</main>",
