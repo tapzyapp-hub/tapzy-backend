@@ -322,7 +322,7 @@ function storyComposer(currentProfile, upcomingEvents) {
 
           <h2 class="stories-title">Post Story</h2>
 
-          <div class="stories-subtitle">Share a 24-hour update from your Tapzy profile.</div>
+          <div class="stories-subtitle">Share a polished 24-hour moment with the people following your Tapzy profile.</div>
 
         </div>
 
@@ -338,9 +338,9 @@ function storyComposer(currentProfile, upcomingEvents) {
 
         <div class="stories-field stories-field-full">
 
-          <label>Caption</label>
+          <label>Story caption</label>
 
-          <textarea name="text" maxlength="280" placeholder="What’s happening? Going somewhere tonight? At an event right now?"></textarea>
+          <textarea name="text" maxlength="280" placeholder="Set the scene. Where are you, who are you with, or what should people notice?"></textarea>
 
           <div class="stories-caption-meter"><span data-caption-count>0</span>/280</div>
 
@@ -678,6 +678,7 @@ router.get("/stories", async (req, res) => {
         max-width:1120px;
 
         padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px));
+        padding-top:18px;
 
       }
 
@@ -703,7 +704,7 @@ router.get("/stories", async (req, res) => {
 
         box-shadow:0 20px 52px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.04);
 
-        padding:22px;
+        padding:24px;
 
       }
 
@@ -719,21 +720,45 @@ router.get("/stories", async (req, res) => {
 
       .stories-kicker{
 
-        color:#8aa5cf;
+        color:#b7caff;
 
         text-transform:uppercase;
 
-        letter-spacing:2.5px;
+        letter-spacing:5px;
 
-        font-size:11px;
+        font-size:12px;
         font-weight:900;
+        text-shadow:0 0 22px rgba(135,176,255,.25);
 
       }
 
       .stories-composer-top{
         position:relative;
-        margin:-4px -2px 0;
-        padding:8px 2px 18px;
+        margin:-6px -4px 20px;
+        min-height:310px;
+        display:flex;
+        align-items:flex-start;
+        justify-content:center;
+        padding:54px 28px 32px;
+        border-radius:30px;
+        overflow:hidden;
+        border:1px solid rgba(178,216,255,.20);
+        background:
+          radial-gradient(520px 220px at 50% -18%, rgba(196,232,255,.26), transparent 68%),
+          linear-gradient(180deg, rgba(70,101,118,.40), rgba(18,31,48,.24) 42%, rgba(4,8,16,.76));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.20), inset 0 0 0 1px rgba(255,255,255,.035), 0 22px 58px rgba(0,0,0,.32);
+        backdrop-filter:blur(20px) saturate(1.22);
+        -webkit-backdrop-filter:blur(20px) saturate(1.22);
+      }
+
+      .stories-composer-top::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.09), transparent 38%),
+          radial-gradient(420px 160px at 50% 12%, rgba(175,218,255,.12), transparent 72%);
+        pointer-events:none;
       }
 
       .stories-composer-top::after{
@@ -742,20 +767,34 @@ router.get("/stories", async (req, res) => {
         left:0;
         right:0;
         bottom:0;
-        height:1px;
-        background:linear-gradient(90deg,transparent,rgba(120,170,235,.28),transparent);
+        height:44%;
+        background:linear-gradient(180deg, transparent, rgba(0,0,0,.32));
+        pointer-events:none;
+      }
+
+      .stories-composer-top .stories-create-head{
+        width:100%;
+        justify-content:center;
+        text-align:center;
+      }
+
+      .stories-composer-top .stories-create-head > div{
+        max-width:720px;
       }
 
 
 
       .stories-title{
 
-        margin:10px 0 0 0;
+        margin:18px 0 0 0;
 
-        font-size:34px;
+        font-size:clamp(46px, 7vw, 76px);
 
-        line-height:1;
-        letter-spacing:-.035em;
+        line-height:.92;
+        letter-spacing:0;
+        font-weight:950;
+        color:#fff;
+        text-shadow:0 18px 42px rgba(0,0,0,.35), 0 0 34px rgba(190,225,255,.16);
 
       }
 
@@ -763,15 +802,16 @@ router.get("/stories", async (req, res) => {
 
       .stories-subtitle{
 
-        margin-top:10px;
+        margin:20px auto 0;
 
-        max-width:460px;
+        max-width:650px;
 
-        color:#aab9d0;
+        color:#d8e5fb;
 
-        line-height:1.45;
+        line-height:1.35;
 
-        font-size:15px;
+        font-size:clamp(17px, 2vw, 24px);
+        font-weight:650;
 
       }
 
@@ -797,7 +837,7 @@ router.get("/stories", async (req, res) => {
 
       .stories-create-form{
 
-        margin-top:16px;
+        margin-top:0;
 
       }
 
@@ -810,9 +850,10 @@ router.get("/stories", async (req, res) => {
         grid-template-columns:1fr 1fr;
 
         gap:0;
-        border-radius:22px;
-        border:1px solid rgba(255,255,255,.075);
-        background:rgba(0,0,0,.18);
+        border-radius:28px;
+        border:1px solid rgba(188,220,255,.13);
+        background:linear-gradient(180deg, rgba(4,7,14,.56), rgba(2,3,8,.84));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 18px 48px rgba(0,0,0,.24);
         overflow:hidden;
 
       }
@@ -826,7 +867,7 @@ router.get("/stories", async (req, res) => {
         flex-direction:column;
 
         gap:8px;
-        padding:16px;
+        padding:20px;
         border-bottom:1px solid rgba(255,255,255,.07);
 
       }
@@ -845,10 +886,11 @@ router.get("/stories", async (req, res) => {
 
         color:#fff;
 
-        font-size:13px;
+        font-size:14px;
 
         font-weight:900;
         color:#dce8ff;
+        letter-spacing:.01em;
 
       }
 
@@ -1268,12 +1310,28 @@ router.get("/stories", async (req, res) => {
 
         }
 
+        .stories-composer-top{
+          min-height:260px;
+          margin:-4px -2px 18px;
+          padding:44px 18px 28px;
+          border-radius:28px;
+        }
+
+        .stories-kicker{
+          font-size:11px;
+          letter-spacing:3.4px;
+        }
+
 
 
         .stories-title{
 
-          font-size:32px;
+          font-size:48px;
 
+        }
+
+        .stories-subtitle{
+          font-size:18px;
         }
 
 
@@ -1498,8 +1556,29 @@ router.get("/stories", async (req, res) => {
 
       @media(max-width:520px){
         .stories-create-card{
-          padding:16px;
+          padding:14px;
           overflow:hidden;
+        }
+
+        .stories-wrap{
+          padding-top:10px;
+        }
+
+        .stories-composer-top{
+          min-height:232px;
+          margin:-2px -1px 16px;
+          padding:38px 16px 24px;
+          border-radius:26px;
+        }
+
+        .stories-title{
+          font-size:42px;
+        }
+
+        .stories-subtitle{
+          max-width:310px;
+          font-size:16px;
+          line-height:1.38;
         }
 
         .stories-form-grid-premium,
