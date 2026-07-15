@@ -6,7 +6,6 @@ const {
   eventMatchesCategoryGroup,
   sortRanked,
   buildWhere,
-  isAllowedHotCategory,
 } = require("../helpers/eventServerUtils");
 const { triggerEventAutoRefreshIfDue } = require("../../services/eventAutoRefreshScheduler");
 
@@ -15,6 +14,7 @@ const FILTERS = [
   { key: "sports", label: "Sports" },
   { key: "concerts", label: "Concerts" },
   { key: "dances", label: "Dances" },
+  { key: "other", label: "Other" },
 ];
 
 function cleanCategory(value) {
@@ -24,6 +24,10 @@ function cleanCategory(value) {
 
 function filterHref(filter) {
   return filter === "all" ? "/events" : "/events?category=" + encodeURIComponent(filter);
+}
+
+function isOtherCategory(event) {
+  return !eventMatchesCategoryGroup(event, "sports") && !eventMatchesCategoryGroup(event, "concerts") && !eventMatchesCategoryGroup(event, "dances");
 }
 
 function eventTimeLabel(event) {
@@ -85,6 +89,7 @@ function renderCleanStyles() {
     ".clean-events-filter span{color:rgba(190,211,244,.62);font-size:11px;}",
     ".clean-events-filter.is-active{background:rgba(238,246,255,.96);color:#071527;border-color:rgba(255,255,255,.68);}",
     ".clean-events-filter.is-active span{color:rgba(7,21,39,.55);}",
+    ".premium-events-count{max-width:980px;margin:-6px auto 14px;color:rgba(204,216,235,.62);font-size:12px;font-weight:800;letter-spacing:.4px;}",
     ".premium-events-list{max-width:980px;margin:0 auto;display:grid;gap:14px;}",
     ".premium-event-row{min-height:104px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:17px 20px 17px 18px;border:1px solid rgba(156,188,233,.22);border-radius:28px;background:linear-gradient(180deg,rgba(20,43,78,.78),rgba(14,34,64,.74));box-shadow:0 18px 50px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);}",
     ".premium-event-main{min-width:0;display:grid;grid-template-columns:68px minmax(0,1fr);align-items:center;gap:18px;color:#fff;text-decoration:none;}",
@@ -116,11 +121,13 @@ module.exports = async function getEventsPage(req, res) {
       take: MAIN_QUERY_LIMIT,
     });
 
-    const hotEvents = sortRanked(rawEvents.filter(isAllowedHotCategory));
+    const allEvents = sortRanked(rawEvents);
     const events = activeCategory === "all"
-      ? hotEvents
-      : hotEvents.filter((event) => eventMatchesCategoryGroup(event, activeCategory));
-    const visibleEvents = events.slice(0, 36);
+      ? allEvents
+      : activeCategory === "other"
+        ? allEvents.filter(isOtherCategory)
+        : allEvents.filter((event) => eventMatchesCategoryGroup(event, activeCategory));
+    const visibleEvents = events;
     const eventIds = visibleEvents.map((event) => event.id);
     const goingCounts = new Map();
     let goingSet = new Set();
@@ -145,10 +152,11 @@ module.exports = async function getEventsPage(req, res) {
     }
 
     const counts = {
-      all: hotEvents.length,
-      sports: hotEvents.filter((event) => eventMatchesCategoryGroup(event, "sports")).length,
-      concerts: hotEvents.filter((event) => eventMatchesCategoryGroup(event, "concerts")).length,
-      dances: hotEvents.filter((event) => eventMatchesCategoryGroup(event, "dances")).length,
+      all: allEvents.length,
+      sports: allEvents.filter((event) => eventMatchesCategoryGroup(event, "sports")).length,
+      concerts: allEvents.filter((event) => eventMatchesCategoryGroup(event, "concerts")).length,
+      dances: allEvents.filter((event) => eventMatchesCategoryGroup(event, "dances")).length,
+      other: allEvents.filter(isOtherCategory).length,
     };
 
     const eventsHtml = visibleEvents.length
@@ -162,6 +170,7 @@ module.exports = async function getEventsPage(req, res) {
       "<div><p>Tapzy Events</p><h1>Events</h1></div>",
       "</header>",
       "<nav class=\"clean-events-filters\" aria-label=\"Event filters\">" + FILTERS.map((filter) => renderFilter(filter, activeCategory, counts)).join("") + "</nav>",
+      "<div class=\"premium-events-count\">Showing " + visibleEvents.length + " of " + allEvents.length + " events</div>",
       eventsHtml,
       "</main>",
       renderTapzyAssistant({ username: currentProfile?.username || "User", pageType: "events" }),
