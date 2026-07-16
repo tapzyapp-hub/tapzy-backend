@@ -5417,7 +5417,201 @@ router.get("/u/:username", async (req, res) => {
         .tz-edit-section{border-radius:24px !important;}
       }
 
-      /* End premium edit profile rebuild polish */
+
+      .tz-identity-tour-section{
+        min-height:690px;
+        overflow:hidden;
+        transform-style:preserve-3d;
+      }
+      .tz-identity-tour-screen{
+        position:absolute;
+        inset:0;
+        z-index:8;
+        display:grid;
+        place-items:stretch;
+        min-height:100%;
+        border-radius:inherit;
+        overflow:hidden;
+        opacity:0;
+        pointer-events:none;
+        transform:scale(.985);
+        transition:opacity .7s ease, transform .7s ease;
+        background:#02040a;
+      }
+      .tz-identity-tour-section.is-tour-active .tz-edit-section-head,
+      .tz-identity-tour-section.is-tour-active .tz-edit-grid{
+        opacity:0;
+        transform:scale(.97);
+        pointer-events:none;
+        transition:opacity .45s ease, transform .45s ease;
+      }
+      .tz-identity-tour-section.is-tour-active .tz-identity-tour-screen{
+        opacity:1;
+        pointer-events:auto;
+        transform:scale(1);
+      }
+      .tz-mansion-sky{
+        position:absolute;
+        inset:0;
+        background:
+          radial-gradient(circle at 62% 16%, rgba(255,247,207,.78), rgba(255,247,207,.08) 9%, transparent 23%),
+          radial-gradient(520px 280px at 50% 0%, rgba(130,204,255,.30), transparent 62%),
+          linear-gradient(180deg, #08131f 0%, #101a29 38%, #02050c 100%);
+      }
+      .tz-mansion-sky::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
+        transform:translateX(-120%);
+        animation:tzMansionGleam 7s ease-in-out 1.2s infinite;
+      }
+      .tz-mansion-camera{
+        position:absolute;
+        inset:0;
+        perspective:900px;
+        transform-style:preserve-3d;
+        animation:tzMansionTour 12s cubic-bezier(.2,.76,.18,1) infinite;
+      }
+      .tz-mansion-estate{
+        position:absolute;
+        left:50%;
+        top:28%;
+        width:min(80%, 760px);
+        height:270px;
+        transform:translateX(-50%) rotateY(-23deg) translateZ(-80px);
+        transform-style:preserve-3d;
+        filter:drop-shadow(0 32px 48px rgba(0,0,0,.56));
+      }
+      .tz-mansion-core,
+      .tz-mansion-wing,
+      .tz-mansion-roof,
+      .tz-mansion-door,
+      .tz-mansion-window{
+        position:absolute;
+        display:block;
+      }
+      .tz-mansion-core{
+        left:30%;
+        right:30%;
+        bottom:30px;
+        height:168px;
+        border-radius:18px 18px 10px 10px;
+        background:linear-gradient(110deg,#edf6ff,#8ea9c3 42%,#20334c 100%);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.88), inset -26px 0 44px rgba(17,35,58,.42);
+      }
+      .tz-mansion-wing{
+        bottom:30px;
+        width:32%;
+        height:126px;
+        border-radius:15px 15px 9px 9px;
+        background:linear-gradient(105deg,#dcefff,#7e9dbb 52%,#182a43 100%);
+      }
+      .tz-wing-left{left:2%;transform:rotateY(16deg)}
+      .tz-wing-right{right:2%;transform:rotateY(-16deg)}
+      .tz-mansion-roof{
+        left:25%;
+        right:25%;
+        bottom:192px;
+        height:56px;
+        clip-path:polygon(50% 0,100% 100%,0 100%);
+        background:linear-gradient(140deg,#ffffff,#98b6d8 48%,#263956);
+      }
+      .tz-mansion-door{
+        left:45%;
+        bottom:30px;
+        width:10%;
+        height:86px;
+        border-radius:999px 999px 5px 5px;
+        background:linear-gradient(180deg,#08111f,#02050b);
+        box-shadow:0 0 34px rgba(102,191,255,.35), inset 0 0 0 2px rgba(255,255,255,.20);
+      }
+      .tz-mansion-window{
+        width:42px;
+        height:54px;
+        border-radius:999px 999px 8px 8px;
+        background:linear-gradient(180deg,rgba(255,249,205,.96),rgba(92,189,255,.44));
+        box-shadow:0 0 24px rgba(255,232,145,.34), inset 0 0 0 2px rgba(255,255,255,.36);
+      }
+      .tz-mansion-window.w1{left:15%;bottom:86px}.tz-mansion-window.w2{left:35%;bottom:112px}.tz-mansion-window.w3{right:35%;bottom:112px}.tz-mansion-window.w4{right:15%;bottom:86px}
+      .tz-mansion-drive{
+        position:absolute;
+        left:50%;
+        bottom:-40px;
+        width:64%;
+        height:360px;
+        transform:translateX(-50%) rotateX(70deg);
+        transform-origin:bottom;
+        border-radius:999px 999px 0 0;
+        background:linear-gradient(180deg,rgba(218,235,255,.28),rgba(86,112,150,.18),rgba(0,0,0,.92));
+        box-shadow:0 -18px 60px rgba(90,176,255,.20);
+      }
+      .tz-mansion-interior{
+        position:absolute;
+        inset:0;
+        opacity:0;
+        transform:translateZ(120px) scale(1.1);
+        animation:tzInteriorReveal 12s cubic-bezier(.2,.76,.18,1) infinite;
+        background:
+          radial-gradient(420px 220px at 50% 16%, rgba(255,236,184,.26), transparent 58%),
+          linear-gradient(90deg,rgba(255,255,255,.08),transparent 16%,transparent 84%,rgba(255,255,255,.08)),
+          linear-gradient(180deg,#121a26,#03050a);
+      }
+      .tz-interior-arch{position:absolute;left:18%;right:18%;top:12%;height:58%;border-radius:999px 999px 30px 30px;border:2px solid rgba(219,237,255,.24);box-shadow:0 0 60px rgba(110,190,255,.12) inset}
+      .tz-interior-chandelier{position:absolute;left:50%;top:13%;width:106px;height:106px;border-radius:999px;transform:translateX(-50%);background:radial-gradient(circle,#fff6d8,rgba(255,208,107,.26) 40%,transparent 70%);filter:blur(.2px);box-shadow:0 0 60px rgba(255,215,135,.44)}
+      .tz-interior-stair{position:absolute;bottom:18%;width:35%;height:38%;border-top:2px solid rgba(255,255,255,.22);background:repeating-linear-gradient(180deg,rgba(255,255,255,.13) 0 6px,transparent 6px 18px)}
+      .tz-interior-stair.left{left:10%;transform:skewY(-14deg)}.tz-interior-stair.right{right:10%;transform:skewY(14deg)}
+      .tz-interior-runway{position:absolute;left:44%;right:44%;bottom:-8%;height:58%;background:linear-gradient(180deg,rgba(255,236,189,.32),rgba(47,118,255,.10),transparent);transform:perspective(260px) rotateX(62deg);transform-origin:bottom}
+      .tz-identity-tour-copy{
+        position:absolute;
+        z-index:3;
+        left:24px;
+        right:24px;
+        bottom:22px;
+        display:grid;
+        gap:6px;
+        text-shadow:0 10px 28px rgba(0,0,0,.72);
+      }
+      .tz-identity-tour-copy span{
+        color:rgba(204,230,255,.72);
+        font-size:11px;
+        font-weight:950;
+        letter-spacing:.22em;
+        text-transform:uppercase;
+      }
+      .tz-identity-tour-copy strong{
+        color:#fff;
+        font-size:clamp(34px,8vw,72px);
+        line-height:.9;
+        letter-spacing:0;
+      }
+      .tz-identity-tour-copy em{
+        color:rgba(255,255,255,.66);
+        font-style:normal;
+        font-size:13px;
+        font-weight:850;
+      }
+      @keyframes tzMansionTour{
+        0%,14%{transform:translateX(22%) scale(.92) rotateY(-10deg)}
+        42%{transform:translateX(0) scale(1.08) rotateY(0deg)}
+        68%,100%{transform:translateY(-3%) scale(1.34) rotateY(0deg)}
+      }
+      @keyframes tzInteriorReveal{
+        0%,48%{opacity:0;transform:translateZ(90px) scale(1.18)}
+        60%,100%{opacity:1;transform:translateZ(170px) scale(1)}
+      }
+      @keyframes tzMansionGleam{
+        0%,38%{transform:translateX(-120%)}
+        62%,100%{transform:translateX(120%)}
+      }
+      @media(max-width:560px){
+        .tz-identity-tour-section{min-height:690px}
+        .tz-mansion-estate{top:24%;width:92%;height:235px}
+        .tz-mansion-window{width:28px;height:42px}
+        .tz-identity-tour-copy{left:18px;right:18px;bottom:18px}
+      }
+
+            /* End premium edit profile rebuild polish */
 
       
 
@@ -8067,7 +8261,7 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
-          <section class="tz-edit-section">
+          <section class="tz-edit-section tz-identity-tour-section" data-identity-tour>
 
             <div class="tz-edit-section-head">
 
@@ -8109,6 +8303,36 @@ router.get("/edit/:username", async (req, res) => {
 
               </div>
 
+            </div>
+
+            <div class="tz-identity-tour-screen" data-identity-tour-screen aria-hidden="true">
+              <div class="tz-mansion-sky" aria-hidden="true"></div>
+              <div class="tz-mansion-camera">
+                <div class="tz-mansion-estate">
+                  <span class="tz-mansion-wing tz-wing-left"></span>
+                  <span class="tz-mansion-wing tz-wing-right"></span>
+                  <span class="tz-mansion-core"></span>
+                  <span class="tz-mansion-roof"></span>
+                  <span class="tz-mansion-door"></span>
+                  <span class="tz-mansion-window w1"></span>
+                  <span class="tz-mansion-window w2"></span>
+                  <span class="tz-mansion-window w3"></span>
+                  <span class="tz-mansion-window w4"></span>
+                </div>
+                <div class="tz-mansion-drive"></div>
+                <div class="tz-mansion-interior">
+                  <span class="tz-interior-arch"></span>
+                  <span class="tz-interior-chandelier"></span>
+                  <span class="tz-interior-stair left"></span>
+                  <span class="tz-interior-stair right"></span>
+                  <span class="tz-interior-runway"></span>
+                </div>
+              </div>
+              <div class="tz-identity-tour-copy">
+                <span>Tapzy Estate Mode</span>
+                <strong>Private Identity Tour</strong>
+                <em>Triple tap to return</em>
+              </div>
             </div>
 
           </section>
@@ -10211,6 +10435,33 @@ router.get("/edit/:username", async (req, res) => {
         }
         if (doneBtn) doneBtn.onclick = saveCroppedPhotoThenClose;
         if (cancelBtn) cancelBtn.onclick = function(){ if (file) file.value = ''; if (croppedPhotoData) croppedPhotoData.value = ''; closeModal(); };
+      })();
+
+      (function(){
+        const identity = document.querySelector('[data-identity-tour]');
+        if (!identity) return;
+        const screen = identity.querySelector('[data-identity-tour-screen]');
+        let tapCount = 0;
+        let tapTimer = null;
+        const activate = () => {
+          identity.classList.add('is-tour-active');
+          if (screen) screen.setAttribute('aria-hidden', 'false');
+        };
+        const deactivate = () => {
+          identity.classList.remove('is-tour-active');
+          if (screen) screen.setAttribute('aria-hidden', 'true');
+          tapCount = 0;
+          if (tapTimer) window.clearTimeout(tapTimer);
+        };
+        window.setTimeout(activate, 5000);
+        if (screen) {
+          screen.addEventListener('pointerdown', function(){
+            tapCount += 1;
+            if (tapTimer) window.clearTimeout(tapTimer);
+            tapTimer = window.setTimeout(function(){ tapCount = 0; }, 900);
+            if (tapCount >= 3) deactivate();
+          });
+        }
       })();
     </script>
 
