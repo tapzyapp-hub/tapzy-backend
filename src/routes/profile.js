@@ -8267,9 +8267,7 @@ router.get("/edit/:username", async (req, res) => {
 
             <div class="tz-edit-actions">
 
-              <a class="tz-edit-btn" href="/u/${escapeHtml(profile.username || "")}">View Profile</a>
-
-              <a class="tz-edit-btn" href="/qr/${escapeHtml(profile.username || "")}">QR</a>
+              <button class="tz-edit-btn tz-edit-top-save" type="submit" form="tzEditProfileForm">Save Profile</button>
 
             </div>
 
@@ -8279,7 +8277,7 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
-        <form method="POST" action="/edit/${escapeHtml(profile.username || "")}${keyQuery}" enctype="multipart/form-data" class="tz-edit-form">
+        <form id="tzEditProfileForm" method="POST" action="/edit/${escapeHtml(profile.username || "")}${keyQuery}" enctype="multipart/form-data" class="tz-edit-form">
 
 
 
@@ -8642,14 +8640,6 @@ router.get("/edit/:username", async (req, res) => {
             </div>
 
           </section>
-
-
-
-          <div class="tz-edit-savebar">
-
-            <button class="tz-edit-savebtn" type="submit">Save Profile</button>
-
-          </div>
 
         </form>
 
@@ -9885,6 +9875,21 @@ router.get("/edit/:username", async (req, res) => {
         .tz-identity-tour-section .tz-identity-tour-screen{
           min-height:410px!important;
         }
+      }
+
+      .tz-edit-top-save{
+        appearance:none;
+        -webkit-appearance:none;
+        border:1px solid rgba(255,255,255,.20);
+        cursor:pointer;
+        font:inherit;
+        font-weight:950;
+      }
+      .tz-edit-savebar{
+        display:none!important;
+      }
+      @media(max-width:700px){
+        .tz-edit-actions{grid-template-columns:1fr!important;}
       }
 
       /* Final premium edit profile polish */
