@@ -9896,20 +9896,22 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-identity-story-screen.frosted-story-screen .tz-identity-story-media,
       .tz-identity-story-screen .tz-identity-story-media{
-        filter:saturate(1.08) contrast(1.04) brightness(.94) blur(1.4px)!important;
-        transform:scale(1.025)!important;
+        filter:saturate(1.08) contrast(1.04) brightness(.96)!important;
+        transform:scale(1.018)!important;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
         background:
-          linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.025) 34%, rgba(0,0,0,.08)),
-          radial-gradient(circle at 50% 0%, rgba(160,220,255,.12), transparent 44%)!important;
+          linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03) 34%, rgba(0,0,0,.1)),
+          radial-gradient(circle at 50% 0%, rgba(160,220,255,.13), transparent 44%)!important;
         backdrop-filter:blur(5px) saturate(1.12)!important;
         -webkit-backdrop-filter:blur(5px) saturate(1.12)!important;
+        -webkit-mask:radial-gradient(circle 34% at 50% 50%, transparent 0 45%, #000 46% 100%)!important;
+        mask:radial-gradient(circle 34% at 50% 50%, transparent 0 45%, #000 46% 100%)!important;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
         background:
-          linear-gradient(145deg, rgba(255,255,255,.12), transparent 38%, rgba(255,255,255,.04)),
-          radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.2) 100%)!important;
+          radial-gradient(circle 34% at 50% 50%, transparent 0 44%, rgba(255,255,255,.42) 45%, rgba(255,255,255,.12) 47%, transparent 49%),
+          radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,.22) 100%)!important;
         box-shadow:inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(255,255,255,.06)!important;
       }
 
