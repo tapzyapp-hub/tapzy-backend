@@ -9884,65 +9884,71 @@ router.get("/edit/:username", async (req, res) => {
       }
       .tz-identity-digital-face{
         object-position:center;
-        animation:tzIdentityPixelResolve 7.2s cubic-bezier(.2,.8,.2,1) infinite;
+        animation:tzIdentityPixelConstruct 8.4s steps(14,end) infinite;
       }
       .tz-identity-story-screen .tz-identity-story-embed{
         isolation:isolate;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
         background:
-          linear-gradient(90deg, rgba(255,255,255,.18) 0 1px, transparent 1px 22px),
-          linear-gradient(0deg, rgba(255,255,255,.12) 0 1px, transparent 1px 22px),
-          radial-gradient(circle at 24% 28%, rgba(255,255,255,.5) 0 2px, transparent 3px),
-          radial-gradient(circle at 32% 46%, rgba(210,235,255,.7) 0 2px, transparent 3px),
-          radial-gradient(circle at 18% 63%, rgba(255,255,255,.44) 0 2px, transparent 3px),
-          radial-gradient(circle at 48% 18%, rgba(180,220,255,.5) 0 2px, transparent 3px),
-          linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.18) 48%, rgba(0,0,0,.42))!important;
-        background-size:22px 22px,22px 22px,120px 120px,150px 150px,180px 180px,210px 210px,100% 100%!important;
-        background-position:0 0,0 0,0 0,20px 12px,-18px 30px,12px -16px,0 0!important;
+          linear-gradient(90deg, rgba(255,255,255,.22) 0 2px, transparent 2px 24px),
+          linear-gradient(0deg, rgba(255,255,255,.14) 0 2px, transparent 2px 24px),
+          radial-gradient(circle at 14% 28%, rgba(255,255,255,.72) 0 2px, transparent 3px),
+          radial-gradient(circle at 25% 44%, rgba(210,235,255,.82) 0 2px, transparent 3px),
+          radial-gradient(circle at 38% 35%, rgba(255,255,255,.58) 0 2px, transparent 3px),
+          radial-gradient(circle at 50% 58%, rgba(180,220,255,.62) 0 2px, transparent 3px),
+          linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.16) 48%, rgba(0,0,0,.46))!important;
+        background-size:24px 24px,24px 24px,112px 112px,136px 136px,164px 164px,196px 196px,100% 100%!important;
+        background-position:0 0,0 0,-28px 8px,-12px 32px,18px -10px,42px 26px,0 0!important;
         backdrop-filter:none!important;
         -webkit-backdrop-filter:none!important;
         mix-blend-mode:screen;
-        opacity:.62;
+        opacity:0;
         z-index:3!important;
-        -webkit-mask:linear-gradient(90deg, #000 0 58%, transparent 78%)!important;
-        mask:linear-gradient(90deg, #000 0 58%, transparent 78%)!important;
-        animation:tzIdentityPixelField 7.2s steps(9,end) infinite;
+        -webkit-mask:linear-gradient(90deg, #000 0 var(--identity-build, 0%), transparent calc(var(--identity-build, 0%) + 18%))!important;
+        mask:linear-gradient(90deg, #000 0 var(--identity-build, 0%), transparent calc(var(--identity-build, 0%) + 18%))!important;
+        animation:tzIdentityConstructField 8.4s steps(14,end) infinite;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
         z-index:4!important;
         background:
-          linear-gradient(90deg, transparent 0 18%, rgba(255,255,255,.2) 18% 19%, transparent 20% 100%),
-          repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 1px, transparent 1px 5px),
-          radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,.5) 100%)!important;
+          linear-gradient(90deg, transparent 0 var(--identity-scan, 0%), rgba(255,255,255,.34) var(--identity-scan, 0%) calc(var(--identity-scan, 0%) + 2%), transparent calc(var(--identity-scan, 0%) + 4%) 100%),
+          repeating-linear-gradient(0deg, rgba(255,255,255,.055) 0 1px, transparent 1px 5px),
+          radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,.54) 100%)!important;
         background-size:100% 100%,100% 10px,100% 100%!important;
-        background-position:-40% 0,0 0,0 0!important;
         box-shadow:inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(255,255,255,.04)!important;
-        animation:tzIdentityRebuildScan 7.2s ease-in-out infinite;
+        animation:tzIdentityConstructScan 8.4s steps(14,end) infinite;
       }
-      @keyframes tzIdentityPixelResolve{
-        0%{transform:scale(1.09) translate3d(-2.4%,1.2%,0);filter:saturate(.7) contrast(1.34) brightness(.62) blur(2.2px);clip-path:inset(0 28% 0 0)}
-        14%{transform:scale(1.07) translate3d(1.8%,-1.6%,0);filter:saturate(.82) contrast(1.42) brightness(.72) blur(1.4px);clip-path:inset(0 20% 0 0)}
-        28%{transform:scale(1.055) translate3d(-1.1%,.7%,0);filter:saturate(.9) contrast(1.28) brightness(.8) blur(.8px);clip-path:inset(0 12% 0 0)}
-        46%{transform:scale(1.04) translate3d(.8%,-.4%,0);filter:saturate(1) contrast(1.16) brightness(.88) blur(.25px);clip-path:inset(0 4% 0 0)}
-        60%,76%{transform:scale(1.025) translate3d(0,0,0);filter:saturate(1.05) contrast(1.12) brightness(.96) blur(0);clip-path:inset(0)}
-        82%{transform:scale(1.04) translate3d(.9%,-.6%,0);filter:saturate(.92) contrast(1.32) brightness(.78) blur(.9px);clip-path:inset(0 10% 0 0)}
-        100%{transform:scale(1.09) translate3d(-2.4%,1.2%,0);filter:saturate(.7) contrast(1.34) brightness(.62) blur(2.2px);clip-path:inset(0 28% 0 0)}
+      @keyframes tzIdentityPixelConstruct{
+        0%,6%{opacity:0;transform:scale(1.14) translate3d(-5%,2%,0);filter:saturate(.35) contrast(1.6) brightness(.28) blur(4px);clip-path:inset(0 100% 0 0)}
+        10%{opacity:.18;transform:scale(1.12) translate3d(-4%,1.8%,0);filter:saturate(.48) contrast(1.62) brightness(.38) blur(3.2px);clip-path:inset(0 86% 0 0)}
+        18%{opacity:.34;transform:scale(1.1) translate3d(-3.2%,1.4%,0);filter:saturate(.58) contrast(1.55) brightness(.46) blur(2.7px);clip-path:inset(0 72% 0 0)}
+        27%{opacity:.48;transform:scale(1.085) translate3d(-2.2%,1%,0);filter:saturate(.68) contrast(1.48) brightness(.56) blur(2px);clip-path:inset(0 58% 0 0)}
+        36%{opacity:.62;transform:scale(1.07) translate3d(-1.4%,.4%,0);filter:saturate(.78) contrast(1.4) brightness(.66) blur(1.4px);clip-path:inset(0 43% 0 0)}
+        46%{opacity:.76;transform:scale(1.055) translate3d(-.8%,0,0);filter:saturate(.9) contrast(1.3) brightness(.76) blur(.8px);clip-path:inset(0 29% 0 0)}
+        56%{opacity:.88;transform:scale(1.042) translate3d(-.2%,-.3%,0);filter:saturate(.98) contrast(1.2) brightness(.86) blur(.35px);clip-path:inset(0 14% 0 0)}
+        66%,82%{opacity:1;transform:scale(1.025) translate3d(0,0,0);filter:saturate(1.06) contrast(1.12) brightness(.96) blur(0);clip-path:inset(0)}
+        90%{opacity:.52;transform:scale(1.07) translate3d(1.8%,-1%,0);filter:saturate(.68) contrast(1.52) brightness(.48) blur(2px);clip-path:inset(0 0 0 62%)}
+        100%{opacity:0;transform:scale(1.14) translate3d(4%,-2%,0);filter:saturate(.35) contrast(1.6) brightness(.28) blur(4px);clip-path:inset(0 0 0 100%)}
       }
-      @keyframes tzIdentityPixelField{
-        0%{opacity:.9;transform:translate3d(-18px,-10px,0) scale(1.08);filter:blur(.2px)}
-        24%{opacity:.82;transform:translate3d(12px,6px,0) scale(1.03);filter:blur(.4px)}
-        48%{opacity:.42;transform:translate3d(4px,-2px,0) scale(1);filter:blur(0)}
-        66%{opacity:.18;transform:translate3d(0,0,0) scale(1)}
-        82%{opacity:.74;transform:translate3d(18px,-8px,0) scale(1.04);filter:blur(.5px)}
-        100%{opacity:.9;transform:translate3d(-18px,-10px,0) scale(1.08);filter:blur(.2px)}
+      @keyframes tzIdentityConstructField{
+        0%,5%{opacity:0;--identity-build:0%;transform:translate3d(-34px,-14px,0) scale(1.18);filter:blur(1px)}
+        12%{opacity:.9;--identity-build:14%;transform:translate3d(-24px,-8px,0) scale(1.12);filter:blur(.7px)}
+        24%{opacity:.92;--identity-build:31%;transform:translate3d(-14px,4px,0) scale(1.08);filter:blur(.45px)}
+        38%{opacity:.8;--identity-build:50%;transform:translate3d(4px,-6px,0) scale(1.04);filter:blur(.25px)}
+        52%{opacity:.62;--identity-build:72%;transform:translate3d(12px,2px,0) scale(1.02);filter:blur(0)}
+        66%,82%{opacity:.22;--identity-build:100%;transform:translate3d(0,0,0) scale(1)}
+        92%{opacity:.75;--identity-build:100%;transform:translate3d(24px,-8px,0) scale(1.06);filter:blur(.8px)}
+        100%{opacity:0;--identity-build:100%;transform:translate3d(38px,-14px,0) scale(1.14);filter:blur(1px)}
       }
-      @keyframes tzIdentityRebuildScan{
-        0%{opacity:.68;background-position:-42% 0,0 0,0 0}
-        44%{opacity:.72;background-position:88% 0,0 10px,0 0}
-        62%{opacity:.28;background-position:120% 0,0 0,0 0}
-        80%{opacity:.62;background-position:20% 0,0 -10px,0 0}
-        100%{opacity:.68;background-position:-42% 0,0 0,0 0}
+      @keyframes tzIdentityConstructScan{
+        0%,5%{opacity:.18;--identity-scan:0%}
+        18%{opacity:.72;--identity-scan:18%}
+        36%{opacity:.74;--identity-scan:43%}
+        56%{opacity:.72;--identity-scan:72%}
+        66%,82%{opacity:.28;--identity-scan:104%}
+        92%{opacity:.7;--identity-scan:42%}
+        100%{opacity:.16;--identity-scan:0%}
       }
 
       /* Final premium edit profile polish */
