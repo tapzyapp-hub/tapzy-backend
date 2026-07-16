@@ -8269,6 +8269,8 @@ router.get("/edit/:username", async (req, res) => {
 
               <button class="tz-edit-btn tz-edit-top-save" type="submit" form="tzEditProfileForm">Save Profile</button>
 
+              <a class="tz-edit-btn" href="/qr/${escapeHtml(profile.username || "")}">QR</a>
+
             </div>
 
           </div>
