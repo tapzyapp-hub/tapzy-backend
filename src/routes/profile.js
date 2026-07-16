@@ -8266,7 +8266,12 @@ router.get("/edit/:username", async (req, res) => {
 
 
 
-          <section class="tz-edit-section tz-identity-tour-section" data-identity-tour>
+          <section class="tz-edit-section tz-identity-tour-section tz-identity-live-card" data-identity-tour>
+            <div class="tz-identity-card-hologram" aria-hidden="true">
+              <div class="tz-identity-card-hologram-inner">
+                ${identityStoryEmbedHtml}
+              </div>
+            </div>
 
             <div class="tz-edit-section-head">
 
@@ -8310,7 +8315,7 @@ router.get("/edit/:username", async (req, res) => {
 
             </div>
 
-            <div class="tz-identity-tour-screen tz-identity-story-screen" data-identity-tour-screen aria-hidden="true">
+            <div class="tz-identity-tour-screen tz-identity-story-screen tz-identity-legacy-screen" data-identity-tour-screen aria-hidden="true">
               <div class="tz-identity-story-embed" aria-label="Tapzy digital identity visual">
                 ${identityStoryEmbedHtml}
               </div>
@@ -10020,6 +10025,87 @@ router.get("/edit/:username", async (req, res) => {
         76%{opacity:.72;background-position:98% 0,center,center;filter:brightness(.82)}
       }
 
+      /* identity live card start */
+      .tz-identity-live-card{
+        min-height:auto!important;
+        overflow:hidden!important;
+        isolation:isolate!important;
+        background:linear-gradient(180deg, rgba(27,45,64,.82) 0%, rgba(6,10,16,.86) 34%, rgba(2,4,8,.94) 100%)!important;
+        border:1px solid rgba(152,184,214,.2)!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(255,255,255,.035), 0 18px 48px rgba(0,0,0,.45)!important;
+        backdrop-filter:blur(18px) saturate(1.2)!important;
+        -webkit-backdrop-filter:blur(18px) saturate(1.2)!important;
+      }
+      .tz-identity-live-card::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:0;
+        pointer-events:none;
+        background:
+          linear-gradient(105deg, rgba(255,255,255,.03) 0 28%, rgba(255,255,255,.13) 40%, rgba(255,255,255,.025) 55% 100%),
+          linear-gradient(90deg, transparent 0 34px, rgba(255,255,255,.028) 34px 35px, transparent 35px 70px),
+          linear-gradient(0deg, transparent 0 34px, rgba(255,255,255,.018) 34px 35px, transparent 35px 70px),
+          radial-gradient(ellipse at 68% 34%, rgba(200,226,255,.12), transparent 34%);
+        background-size:260% 100%,70px 70px,70px 70px,100% 100%;
+        opacity:.54;
+        animation:tzIdentityCardWave 10.5s cubic-bezier(.42,0,.28,1) infinite;
+      }
+      .tz-identity-live-card::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:1;
+        pointer-events:none;
+        background:radial-gradient(ellipse at 60% 48%, transparent 0 46%, rgba(0,0,0,.32) 76%, rgba(0,0,0,.58) 100%);
+      }
+      .tz-identity-live-card .tz-edit-section-head,
+      .tz-identity-live-card .tz-edit-grid{position:relative!important;z-index:4!important;}
+      .tz-identity-live-card .tz-edit-section-head h3,
+      .tz-identity-live-card label{text-shadow:0 0 18px rgba(210,232,255,.16)!important;}
+      .tz-identity-live-card .tz-edit-section-head p{color:rgba(229,238,249,.7)!important;}
+      .tz-identity-live-card input,
+      .tz-identity-live-card textarea{
+        background:rgba(2,6,12,.58)!important;
+        border-color:rgba(190,215,238,.16)!important;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.035), 0 0 0 1px rgba(0,0,0,.15)!important;
+        color:rgba(255,255,255,.94)!important;
+        backdrop-filter:blur(12px)!important;
+        -webkit-backdrop-filter:blur(12px)!important;
+        animation:tzIdentityTextBreath 10.5s ease-in-out infinite;
+      }
+      .tz-identity-card-hologram{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;border-radius:inherit;opacity:.52;mix-blend-mode:screen;}
+      .tz-identity-card-hologram-inner{position:absolute;inset:0;transform:translate3d(16%,4%,0) scale(1.18);filter:brightness(.72) contrast(1.12);}
+      .tz-identity-card-hologram .tz-identity-pixel-face.exact-rebuild{filter:drop-shadow(0 0 26px rgba(255,255,255,.18)) drop-shadow(0 0 84px rgba(190,215,238,.12))!important;}
+      .tz-identity-card-hologram .tz-identity-pixel-face.exact-rebuild::before{opacity:.06!important;animation:none!important;}
+      .tz-identity-card-hologram .tz-identity-pixel-face.exact-rebuild::after{opacity:.1!important;animation:tzIdentityCorePulse 10.5s ease-in-out infinite!important;}
+      .tz-identity-card-hologram .tz-identity-pixel-tile{
+        opacity:.62!important;
+        mix-blend-mode:screen!important;
+        animation:tzIdentityCardPixelWave 10.5s cubic-bezier(.42,0,.28,1) infinite!important;
+        animation-delay:calc((var(--r) * -120ms) + (var(--c) * -15ms))!important;
+        will-change:auto!important;
+      }
+      .tz-identity-legacy-screen,
+      .tz-identity-tour-section.is-tour-active .tz-identity-legacy-screen{display:none!important;opacity:0!important;visibility:hidden!important;}
+      .tz-identity-tour-section.is-tour-active .tz-edit-section-head,
+      .tz-identity-tour-section.is-tour-active .tz-edit-grid{opacity:1!important;transform:none!important;pointer-events:auto!important;}
+      /* identity live card end */
+      @keyframes tzIdentityCardWave{
+        0%,100%{background-position:-150% 0,0 0,0 0,center;opacity:.48;filter:brightness(.86)}
+        44%{background-position:18% 0,0 -8px,8px 0,center;opacity:.68;filter:brightness(1.02)}
+        72%{background-position:92% 0,0 5px,-5px 0,center;opacity:.56;filter:brightness(.9)}
+      }
+      @keyframes tzIdentityCardPixelWave{
+        0%,100%{opacity:.5;filter:brightness(.78) contrast(1.14);transform:translate3d(0,0,0) scale(var(--ps))}
+        26%{opacity:.58;filter:brightness(.92) contrast(1.1);transform:translate3d(0,-1px,0) scale(calc(1.001 * var(--ps)))}
+        48%{opacity:.78;filter:brightness(1.22) contrast(1.05);transform:translate3d(0,-4px,0) scale(calc(1.006 * var(--ps)))}
+        70%{opacity:.56;filter:brightness(.94) contrast(1.1);transform:translate3d(0,1.5px,0) scale(calc(1.001 * var(--ps)))}
+      }
+      @keyframes tzIdentityTextBreath{
+        0%,100%{text-shadow:0 0 0 rgba(210,232,255,0);border-color:rgba(190,215,238,.15)}
+        48%{text-shadow:0 0 14px rgba(210,232,255,.18);border-color:rgba(210,232,255,.26)}
+      }
       /* Final premium edit profile polish */
       body{
         background:#000;
@@ -10708,28 +10794,7 @@ router.get("/edit/:username", async (req, res) => {
           const identity = document.querySelector('[data-identity-tour]');
           if (!identity || identity.dataset.tourReady === '1') return;
           identity.dataset.tourReady = '1';
-          const screen = identity.querySelector('[data-identity-tour-screen]');
-          let tapCount = 0;
-          let tapTimer = null;
-          const activate = () => {
-            identity.classList.add('is-tour-active');
-            if (screen) screen.setAttribute('aria-hidden', 'false');
-          };
-          const deactivate = () => {
-            identity.classList.remove('is-tour-active');
-            if (screen) screen.setAttribute('aria-hidden', 'true');
-            tapCount = 0;
-            if (tapTimer) window.clearTimeout(tapTimer);
-          };
-          window.setTimeout(activate, 5000);
-          if (screen) {
-            screen.addEventListener('pointerdown', function(){
-              tapCount += 1;
-              if (tapTimer) window.clearTimeout(tapTimer);
-              tapTimer = window.setTimeout(function(){ tapCount = 0; }, 900);
-              if (tapCount >= 3) deactivate();
-            });
-          }
+          identity.classList.add('is-tour-active');
         }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootIdentityTour, { once:true });
         else bootIdentityTour();
