@@ -9967,13 +9967,11 @@ router.get("/edit/:username", async (req, res) => {
       .tz-identity-story-screen .tz-identity-story-embed::after{
         z-index:4!important;
         background:
-          linear-gradient(90deg, transparent 0 36%, rgba(255,255,255,.16) 49%, transparent 62% 100%),
-          repeating-linear-gradient(0deg, rgba(255,255,255,.024) 0 1px, transparent 1px 11px),
-          radial-gradient(ellipse at 61% 44%, transparent 24%, rgba(255,255,255,.055) 26%, transparent 34%),
-          radial-gradient(ellipse at center, transparent 56%, rgba(0,0,0,.74) 100%)!important;
-        background-size:260% 100%,100% 16px,100% 100%,100% 100%!important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(255,255,255,.045), inset 0 0 62px rgba(0,0,0,.7)!important;
-        animation:none;
+          radial-gradient(ellipse 38% 48% at 58% 48%, transparent 0 58%, rgba(0,0,0,.1) 70%, rgba(0,0,0,.46) 100%),
+          radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,.34) 100%)!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(255,255,255,.035), inset 0 0 70px rgba(0,0,0,.76)!important;
+        opacity:.16;
+        animation:tzIdentityBackgroundDim 13s ease-in-out infinite;
       }
       @keyframes tzIdentityAliveTile{
         0%,100%{opacity:.96;filter:brightness(.9) contrast(1.14) blur(.03px);transform:translate3d(0,0,0) skewY(0deg) scale(var(--ps))}
@@ -10004,11 +10002,10 @@ router.get("/edit/:username", async (req, res) => {
         45%,72%{opacity:.12;transform:scale(1.01)}
         100%{background-position:24px -16px,-20px 24px,30px -22px,14px -10px,-12px 14px,center;opacity:.08;transform:scale(1.02)}
       }
-      @keyframes tzIdentityPremiumScan{
-        0%{opacity:.05;background-position:-145% 0,0 0,0 0,0 0}
-        38%{opacity:.18;background-position:18% 0,0 4px,0 0,0 0}
-        70%{opacity:.1;background-position:78% 0,0 -4px,0 0,0 0}
-        100%{opacity:.05;background-position:260% 0,0 0,0 0,0 0}
+      @keyframes tzIdentityBackgroundDim{
+        0%,100%{opacity:.12;filter:brightness(1)}
+        52%{opacity:.58;filter:brightness(.82)}
+        78%{opacity:.68;filter:brightness(.75)}
       }
 
       /* Final premium edit profile polish */
