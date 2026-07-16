@@ -9884,25 +9884,23 @@ router.get("/edit/:username", async (req, res) => {
       .tz-identity-story-screen .tz-identity-story-embed{
         isolation:isolate;
         background:
-          radial-gradient(ellipse at 62% 44%, rgba(255,255,255,.115), transparent 20%),
-          radial-gradient(ellipse at 34% 48%, rgba(135,170,205,.08), transparent 38%),
-          radial-gradient(ellipse at 50% 100%, rgba(255,255,255,.035), transparent 42%),
+          radial-gradient(ellipse at 62% 44%, rgba(255,255,255,.095), transparent 20%),
+          radial-gradient(ellipse at 34% 48%, rgba(135,170,205,.065), transparent 38%),
           #000!important;
         box-shadow:inset 0 0 0 1px rgba(255,255,255,.055), inset 0 0 110px rgba(0,0,0,.92)!important;
       }
       .tz-identity-pixel-face.exact-rebuild{
         position:absolute;
-        left:50%;
-        top:50%;
-        width:min(128%, 920px);
-        aspect-ratio:957/568;
+        inset:0;
+        width:100%;
+        height:100%;
         z-index:2;
-        overflow:visible;
-        transform:translate(-50%,-50%);
+        overflow:hidden;
+        transform:none;
         transform-style:preserve-3d;
         perspective:1200px;
-        filter:drop-shadow(0 0 30px rgba(255,255,255,.24)) drop-shadow(0 0 96px rgba(190,215,238,.16)) drop-shadow(0 34px 74px rgba(0,0,0,.72));
-        animation:tzIdentityPremiumBreath 10.8s ease-in-out infinite;
+        filter:drop-shadow(0 0 26px rgba(255,255,255,.2)) drop-shadow(0 0 92px rgba(190,215,238,.13));
+        animation:tzIdentityOceanBreath 9.8s ease-in-out infinite;
       }
       .tz-identity-pixel-face.exact-rebuild::before,
       .tz-identity-pixel-face.exact-rebuild::after{
@@ -9940,12 +9938,12 @@ router.get("/edit/:username", async (req, res) => {
         height:calc(100% / var(--rows) + 1.2px);
         background-image:url('/images/tapzy-identity-digital-face.jpg');
         background-repeat:no-repeat;
-        opacity:0;
-        transform:translate3d(var(--dx), var(--dy), var(--z)) rotate(var(--rz)) scale(calc(.06 * var(--ps)));
+        opacity:.9;
+        transform:translate3d(0,0,0) rotate(0deg) scale(1);
         transform-origin:center;
         box-shadow:0 0 9px rgba(255,255,255,.08), inset 0 0 0 .35px rgba(255,255,255,.1);
-        animation:tzIdentityPremiumTile 10.8s cubic-bezier(.14,.84,.16,1) infinite, tzIdentityPremiumFlicker 2.4s steps(4,end) infinite;
-        animation-delay:var(--d), calc(var(--d) * -1);
+        animation:tzIdentityOceanTile 6.8s cubic-bezier(.42,0,.18,1) infinite, tzIdentityPremiumFlicker 2.4s steps(4,end) infinite;
+        animation-delay:calc(var(--d) * -1), calc(var(--d) * -1);
         will-change:transform, opacity, filter, box-shadow;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
@@ -9974,24 +9972,22 @@ router.get("/edit/:username", async (req, res) => {
         box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(255,255,255,.045), inset 0 0 62px rgba(0,0,0,.7)!important;
         animation:tzIdentityPremiumScan 10.8s ease-in-out infinite;
       }
-      @keyframes tzIdentityPremiumTile{
-        0%,8%{opacity:0;filter:brightness(.12) contrast(2.05) blur(2.6px);transform:translate3d(var(--dx), var(--dy), var(--z)) rotate(var(--rz)) scale(calc(.045 * var(--ps)))}
-        19%{opacity:.46;filter:brightness(.5) contrast(1.65) blur(1px);transform:translate3d(calc(var(--dx) * .58), calc(var(--dy) * .54), calc(var(--z) * .62)) rotate(calc(var(--rz) * .55)) scale(calc(.58 * var(--ps)))}
-        32%{opacity:.9;filter:brightness(.86) contrast(1.18) blur(.18px);transform:translate3d(calc(var(--dx) * .12), calc(var(--dy) * .08), 0) rotate(calc(var(--rz) * .08)) scale(calc(.94 * var(--ps)))}
-        43%{opacity:1;filter:brightness(1.08) contrast(1.1) blur(0);transform:translate3d(calc(var(--dx) * -.026), calc(var(--dy) * .018), 0) rotate(calc(var(--rz) * .018)) scale(calc(1.022 * var(--ps)))}
-        55%{opacity:.96;filter:brightness(.88) contrast(1.2) blur(.12px);transform:translate3d(calc(var(--dx) * .035), calc(var(--dy) * -.028), 0) rotate(calc(var(--rz) * -.024)) scale(calc(.988 * var(--ps)))}
-        67%{opacity:1;filter:brightness(1.13) contrast(1.08) blur(0);transform:translate3d(calc(var(--dx) * -.02), calc(var(--dy) * .034), 0) rotate(calc(var(--rz) * .02)) scale(calc(1.018 * var(--ps)))}
-        77%{opacity:.94;filter:brightness(.98) contrast(1.15) blur(.08px);transform:translate3d(calc(var(--dx) * .018), calc(var(--dy) * -.018), 0) rotate(calc(var(--rz) * -.016)) scale(calc(1.002 * var(--ps)))}
-        88%{opacity:.58;filter:brightness(.5) contrast(1.5) blur(.85px);transform:translate3d(calc(var(--dx) * -.56), calc(var(--dy) * -.48), calc(var(--z) * .46)) rotate(calc(var(--rz) * -.52)) scale(calc(.6 * var(--ps)))}
-        100%{opacity:0;filter:brightness(.13) contrast(2.05) blur(2.6px);transform:translate3d(calc(var(--dx) * -1.18), calc(var(--dy) * -1.12), var(--z)) rotate(calc(var(--rz) * -1.08)) scale(calc(.045 * var(--ps)))}
+      @keyframes tzIdentityOceanTile{
+        0%{opacity:.9;filter:brightness(.76) contrast(1.22) blur(.14px);transform:translate3d(calc(var(--dx) * .018), calc(var(--dy) * .018 - 8px), 0) rotate(calc(var(--rz) * .012)) scale(calc(.982 * var(--ps)))}
+        16%{opacity:.96;filter:brightness(.94) contrast(1.12) blur(0);transform:translate3d(calc(var(--dx) * -.01), calc(var(--dy) * -.012 - 2px), 0) rotate(calc(var(--rz) * -.008)) scale(calc(1.006 * var(--ps)))}
+        33%{opacity:1;filter:brightness(1.16) contrast(1.08) blur(0);transform:translate3d(calc(var(--dx) * -.018), calc(var(--dy) * .014 + 7px), 0) rotate(calc(var(--rz) * .01)) scale(calc(1.026 * var(--ps)))}
+        50%{opacity:.94;filter:brightness(.88) contrast(1.18) blur(.1px);transform:translate3d(calc(var(--dx) * .012), calc(var(--dy) * -.018 + 2px), 0) rotate(calc(var(--rz) * -.012)) scale(calc(.996 * var(--ps)))}
+        67%{opacity:1;filter:brightness(1.12) contrast(1.1) blur(0);transform:translate3d(calc(var(--dx) * .02), calc(var(--dy) * .01 - 6px), 0) rotate(calc(var(--rz) * .014)) scale(calc(1.018 * var(--ps)))}
+        84%{opacity:.96;filter:brightness(.96) contrast(1.13) blur(.05px);transform:translate3d(calc(var(--dx) * -.014), calc(var(--dy) * -.008 + 4px), 0) rotate(calc(var(--rz) * -.01)) scale(calc(1.004 * var(--ps)))}
+        100%{opacity:.9;filter:brightness(.76) contrast(1.22) blur(.14px);transform:translate3d(calc(var(--dx) * .018), calc(var(--dy) * .018 - 8px), 0) rotate(calc(var(--rz) * .012)) scale(calc(.982 * var(--ps)))}
       }
       @keyframes tzIdentityPremiumFlicker{
         0%,100%{box-shadow:0 0 7px rgba(255,255,255,.055), inset 0 0 0 .32px rgba(255,255,255,.09)}
         50%{box-shadow:0 0 20px rgba(255,255,255,.18), 0 0 36px rgba(190,215,238,.09), inset 0 0 0 .46px rgba(255,255,255,.19)}
       }
-      @keyframes tzIdentityPremiumBreath{
-        0%,100%{transform:translate(-50%,-50%) scale(.982);filter:drop-shadow(0 0 16px rgba(255,255,255,.11)) drop-shadow(0 24px 52px rgba(0,0,0,.66))}
-        38%,78%{transform:translate(-50%,-50%) scale(1.035);filter:drop-shadow(0 0 38px rgba(255,255,255,.28)) drop-shadow(0 0 108px rgba(190,215,238,.19)) drop-shadow(0 36px 78px rgba(0,0,0,.72))}
+      @keyframes tzIdentityOceanBreath{
+        0%,100%{filter:drop-shadow(0 0 18px rgba(255,255,255,.14)) drop-shadow(0 0 70px rgba(190,215,238,.1))}
+        45%,70%{filter:drop-shadow(0 0 34px rgba(255,255,255,.24)) drop-shadow(0 0 116px rgba(190,215,238,.16))}
       }
       @keyframes tzIdentityGhostBloom{
         0%,100%{opacity:.03;transform:scale(.96);filter:blur(24px) brightness(1.2) contrast(1.1)}
