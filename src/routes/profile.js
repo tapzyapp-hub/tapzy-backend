@@ -9896,43 +9896,56 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-identity-story-screen.frosted-story-screen .tz-identity-story-media,
       .tz-identity-story-screen .tz-identity-story-media{
-        filter:saturate(1.02) contrast(.98) brightness(.76) blur(7px)!important;
-        transform:scale(1.08)!important;
+        filter:saturate(1.02) contrast(.98) brightness(.74) blur(8px)!important;
+        transform:scale(1.09)!important;
       }
       .tz-identity-story-focus{
         position:absolute;
         inset:0;
-        z-index:2;
+        z-index:5;
         width:100%;
         height:100%;
         object-fit:cover;
         display:block;
         pointer-events:none;
         background:#000;
-        filter:saturate(1.12) contrast(1.06) brightness(1.02)!important;
+        filter:saturate(1.14) contrast(1.07) brightness(1.03)!important;
         transform:scale(1.018)!important;
-        clip-path:circle(34% at 50% 50%);
-        -webkit-clip-path:circle(34% at 50% 50%);
+        -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='13' fill='white'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='white'/%3E%3C/svg%3E");
+        mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='13' fill='white'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='white'/%3E%3C/svg%3E");
+        -webkit-mask-repeat:no-repeat;
+        mask-repeat:no-repeat;
+        -webkit-mask-position:center;
+        mask-position:center;
+        -webkit-mask-size:52% 64%;
+        mask-size:52% 64%;
       }
       .tz-identity-tour-section.is-tour-active .tz-identity-story-focus{
         animation:tzIdentityStoryDrift 12s ease-in-out infinite alternate;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
         background:
-          linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.04) 34%, rgba(0,0,0,.2)),
+          linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.04) 34%, rgba(0,0,0,.22)),
           radial-gradient(circle at 50% 0%, rgba(160,220,255,.18), transparent 44%)!important;
         backdrop-filter:blur(6px) saturate(1.16)!important;
         -webkit-backdrop-filter:blur(6px) saturate(1.16)!important;
         z-index:3!important;
-        -webkit-mask:radial-gradient(circle at 50% 50%, transparent 0 34%, #000 35% 100%)!important;
-        mask:radial-gradient(circle at 50% 50%, transparent 0 34%, #000 35% 100%)!important;
+        -webkit-mask:none!important;
+        mask:none!important;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
-        z-index:4!important;
-        background:
-          radial-gradient(circle at 50% 50%, transparent 0 32%, rgba(255,255,255,.72) 33%, rgba(255,255,255,.24) 35%, transparent 37%),
-          radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,.22) 100%)!important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(255,255,255,.06)!important;
+        z-index:6!important;
+        background:rgba(255,255,255,.5)!important;
+        -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='14' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E");
+        mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='14' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E");
+        -webkit-mask-repeat:no-repeat;
+        mask-repeat:no-repeat;
+        -webkit-mask-position:center;
+        mask-position:center;
+        -webkit-mask-size:52% 64%;
+        mask-size:52% 64%;
+        filter:drop-shadow(0 0 12px rgba(255,255,255,.72)) drop-shadow(0 0 28px rgba(120,200,255,.36));
+        box-shadow:none!important;
       }
 
       /* Final premium edit profile polish */
