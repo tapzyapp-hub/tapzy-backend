@@ -8180,8 +8180,8 @@ router.get("/edit/:username", async (req, res) => {
     const activeIdentityStoryLabel = String(activeIdentityStory?.text || "Current story").trim() || "Current story";
     const identityStoryEmbedHtml = activeIdentityStoryUrl
       ? activeIdentityStoryIsVideo
-        ? `<video class="tz-identity-story-media" src="${escapeHtml(compatibleVideoUrl(activeIdentityStoryUrl))}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>`
-        : `<img class="tz-identity-story-media" src="${escapeHtml(activeIdentityStoryUrl)}" alt="${escapeHtml(activeIdentityStoryLabel)}" loading="eager" decoding="async" />`
+        ? `<video class="tz-identity-story-media" src="${escapeHtml(compatibleVideoUrl(activeIdentityStoryUrl))}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video><video class="tz-identity-story-focus" src="${escapeHtml(compatibleVideoUrl(activeIdentityStoryUrl))}" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>`
+        : `<img class="tz-identity-story-media" src="${escapeHtml(activeIdentityStoryUrl)}" alt="${escapeHtml(activeIdentityStoryLabel)}" loading="eager" decoding="async" /><img class="tz-identity-story-focus" src="${escapeHtml(activeIdentityStoryUrl)}" alt="" loading="eager" decoding="async" aria-hidden="true" />`
       : `<div class="tz-identity-story-empty"><span>No active story yet</span></div>`;
 
 
@@ -9896,21 +9896,41 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-identity-story-screen.frosted-story-screen .tz-identity-story-media,
       .tz-identity-story-screen .tz-identity-story-media{
-        filter:saturate(1.08) contrast(1.04) brightness(.96)!important;
+        filter:saturate(1.02) contrast(.98) brightness(.76) blur(7px)!important;
+        transform:scale(1.08)!important;
+      }
+      .tz-identity-story-focus{
+        position:absolute;
+        inset:0;
+        z-index:2;
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+        pointer-events:none;
+        background:#000;
+        filter:saturate(1.12) contrast(1.06) brightness(1.02)!important;
         transform:scale(1.018)!important;
+        clip-path:circle(34% at 50% 50%);
+        -webkit-clip-path:circle(34% at 50% 50%);
+      }
+      .tz-identity-tour-section.is-tour-active .tz-identity-story-focus{
+        animation:tzIdentityStoryDrift 12s ease-in-out infinite alternate;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
         background:
-          linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03) 34%, rgba(0,0,0,.1)),
-          radial-gradient(circle at 50% 0%, rgba(160,220,255,.13), transparent 44%)!important;
-        backdrop-filter:blur(5px) saturate(1.12)!important;
-        -webkit-backdrop-filter:blur(5px) saturate(1.12)!important;
-        -webkit-mask:radial-gradient(circle 34% at 50% 50%, transparent 0 45%, #000 46% 100%)!important;
-        mask:radial-gradient(circle 34% at 50% 50%, transparent 0 45%, #000 46% 100%)!important;
+          linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.04) 34%, rgba(0,0,0,.2)),
+          radial-gradient(circle at 50% 0%, rgba(160,220,255,.18), transparent 44%)!important;
+        backdrop-filter:blur(6px) saturate(1.16)!important;
+        -webkit-backdrop-filter:blur(6px) saturate(1.16)!important;
+        z-index:3!important;
+        -webkit-mask:radial-gradient(circle at 50% 50%, transparent 0 34%, #000 35% 100%)!important;
+        mask:radial-gradient(circle at 50% 50%, transparent 0 34%, #000 35% 100%)!important;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
+        z-index:4!important;
         background:
-          radial-gradient(circle 34% at 50% 50%, transparent 0 44%, rgba(255,255,255,.42) 45%, rgba(255,255,255,.12) 47%, transparent 49%),
+          radial-gradient(circle at 50% 50%, transparent 0 32%, rgba(255,255,255,.72) 33%, rgba(255,255,255,.24) 35%, transparent 37%),
           radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,.22) 100%)!important;
         box-shadow:inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(255,255,255,.06)!important;
       }
