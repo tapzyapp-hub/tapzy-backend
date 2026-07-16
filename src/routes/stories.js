@@ -794,10 +794,10 @@ router.get("/stories", async (req, res) => {
         border-radius:30px;
         overflow:hidden;
         border:1px solid rgba(190,224,255,.24);
-        background:rgba(10,16,26,.24);
+        background:linear-gradient(180deg, rgba(6,22,43,.96) 0%, rgba(10,36,64,.92) 44%, rgba(2,5,11,.98) 100%);
         box-shadow:inset 0 1px 0 rgba(255,255,255,.34), inset 0 0 0 1px rgba(255,255,255,.055), 0 20px 54px rgba(0,0,0,.28), 0 0 40px rgba(96,170,255,.08);
-        backdrop-filter:blur(24px) saturate(1.26);
-        -webkit-backdrop-filter:blur(24px) saturate(1.26);
+        backdrop-filter:saturate(1.18);
+        -webkit-backdrop-filter:saturate(1.18);
       }
 
       .stories-composer-top::before{
@@ -829,7 +829,10 @@ router.get("/stories", async (req, res) => {
         inset:0;
         overflow:hidden;
         border-radius:inherit;
-        background:linear-gradient(180deg, rgba(173,214,240,.34), rgba(7,13,24,.28) 42%, rgba(0,0,0,.58));
+        background:
+          radial-gradient(circle at 58% 28%, rgba(102,198,255,.34), transparent 22%),
+          radial-gradient(circle at 26% 18%, rgba(255,118,182,.20), transparent 24%),
+          linear-gradient(180deg, #06162b 0%, #0a2440 42%, #07111e 67%, #02050b 100%);
       }
 
       .stories-hero-screen::before{
@@ -838,10 +841,10 @@ router.get("/stories", async (req, res) => {
         inset:0;
         z-index:2;
         background:
-          linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.03) 32%, rgba(0,0,0,.28)),
-          radial-gradient(520px 190px at 50% 0%, rgba(225,246,255,.24), transparent 70%);
-        backdrop-filter:blur(5px) saturate(1.08);
-        -webkit-backdrop-filter:blur(5px) saturate(1.08);
+          linear-gradient(180deg, rgba(94,172,226,.10), rgba(9,28,52,.04) 32%, rgba(0,0,0,.30)),
+          radial-gradient(520px 190px at 50% 0%, rgba(96,203,255,.18), transparent 70%);
+        backdrop-filter:saturate(1.08);
+        -webkit-backdrop-filter:saturate(1.08);
         pointer-events:none;
       }
 
