@@ -9894,6 +9894,25 @@ router.get("/edit/:username", async (req, res) => {
         .tz-edit-actions{grid-template-columns:1fr!important;}
       }
 
+      .tz-identity-story-screen.frosted-story-screen .tz-identity-story-media,
+      .tz-identity-story-screen .tz-identity-story-media{
+        filter:saturate(1.06) contrast(1.03) brightness(.74) blur(5px)!important;
+        transform:scale(1.06)!important;
+      }
+      .tz-identity-story-screen .tz-identity-story-embed::before{
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.045) 34%, rgba(0,0,0,.22)),
+          radial-gradient(circle at 50% 0%, rgba(160,220,255,.22), transparent 42%)!important;
+        backdrop-filter:blur(18px) saturate(1.24)!important;
+        -webkit-backdrop-filter:blur(18px) saturate(1.24)!important;
+      }
+      .tz-identity-story-screen .tz-identity-story-embed::after{
+        background:
+          linear-gradient(145deg, rgba(255,255,255,.18), transparent 36%, rgba(255,255,255,.06)),
+          radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,.42) 100%)!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(255,255,255,.08)!important;
+      }
+
       /* Final premium edit profile polish */
       body{
         background:#000;
