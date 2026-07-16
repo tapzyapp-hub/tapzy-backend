@@ -9967,11 +9967,15 @@ router.get("/edit/:username", async (req, res) => {
       .tz-identity-story-screen .tz-identity-story-embed::after{
         z-index:4!important;
         background:
-          radial-gradient(ellipse 38% 48% at 58% 48%, transparent 0 58%, rgba(0,0,0,.1) 70%, rgba(0,0,0,.46) 100%),
-          radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,.34) 100%)!important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(255,255,255,.035), inset 0 0 70px rgba(0,0,0,.76)!important;
-        opacity:.16;
-        animation:tzIdentityBackgroundDim 13s ease-in-out infinite;
+          linear-gradient(105deg, rgba(0,0,0,.46) 0 28%, rgba(255,255,255,.105) 40%, rgba(0,0,0,.5) 54% 100%),
+          radial-gradient(ellipse 38% 48% at 58% 48%, transparent 0 58%, rgba(0,0,0,.18) 70%, rgba(0,0,0,.62) 100%),
+          radial-gradient(ellipse at center, rgba(0,0,0,.12) 0 42%, rgba(0,0,0,.62) 100%)!important;
+        background-size:240% 100%,100% 100%,100% 100%!important;
+        background-position:-150% 0,center,center!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.08), inset 0 -1px 0 rgba(255,255,255,.03), inset 0 0 86px rgba(0,0,0,.86)!important;
+        opacity:.7;
+        mix-blend-mode:normal;
+        animation:tzIdentityBackgroundDim 9.5s cubic-bezier(.42,0,.28,1) infinite;
       }
       @keyframes tzIdentityFaceScaleFlow{
         0%,100%{opacity:.98;filter:brightness(.95) contrast(1.1);transform:translate3d(0,0,0) scale(var(--ps))}
@@ -10010,9 +10014,10 @@ router.get("/edit/:username", async (req, res) => {
         100%{background-position:24px -16px,-20px 24px,30px -22px,14px -10px,-12px 14px,center;opacity:.08;transform:scale(1.02)}
       }
       @keyframes tzIdentityBackgroundDim{
-        0%,100%{opacity:.12;filter:brightness(1)}
-        52%{opacity:.58;filter:brightness(.82)}
-        78%{opacity:.68;filter:brightness(.75)}
+        0%,100%{opacity:.74;background-position:-150% 0,center,center;filter:brightness(.78)}
+        28%{opacity:.72;background-position:-64% 0,center,center;filter:brightness(.82)}
+        52%{opacity:.66;background-position:18% 0,center,center;filter:brightness(.9)}
+        76%{opacity:.72;background-position:98% 0,center,center;filter:brightness(.82)}
       }
 
       /* Final premium edit profile polish */
