@@ -2272,7 +2272,6 @@ router.get("/stories", async (req, res) => {
 
         pageType: "stories",
 
-        storiesTopNavActive: "discover",
 
       })
 
