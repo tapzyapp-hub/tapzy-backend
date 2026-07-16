@@ -8330,7 +8330,6 @@ router.get("/edit/:username", async (req, res) => {
             <div class="tz-identity-tour-screen tz-identity-story-screen" data-identity-tour-screen aria-hidden="true">
               <div class="tz-identity-story-embed" aria-label="Current story preview">
                 ${identityStoryEmbedHtml}
-                <span class="tz-identity-story-sheen" aria-hidden="true"></span>
               </div>
             </div>
             </div>
@@ -9852,17 +9851,6 @@ router.get("/edit/:username", async (req, res) => {
         pointer-events:none;
         background:radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,.46) 100%);
       }
-      .tz-identity-story-sheen{
-        position:absolute;
-        inset:0;
-        z-index:4;
-        pointer-events:none;
-        background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.12) 42%, transparent 58%);
-        transform:translateX(-125%);
-      }
-      .tz-identity-tour-section.is-tour-active .tz-identity-story-sheen{
-        animation:tzIdentityStorySheen 5.8s ease-in-out infinite;
-      }
       .tz-identity-story-empty{
         position:absolute;
         inset:0;
@@ -9879,9 +9867,24 @@ router.get("/edit/:username", async (req, res) => {
         from{transform:scale(1.015) translate3d(-1.5%,0,0)}
         to{transform:scale(1.09) translate3d(1.5%,-1%,0)}
       }
-      @keyframes tzIdentityStorySheen{
-        0%,42%{transform:translateX(-125%)}
         72%,100%{transform:translateX(125%)}
+      }
+
+      .tz-identity-tour-section{
+        min-height:430px!important;
+      }
+      .tz-identity-tour-section.is-tour-active{
+        min-height:430px!important;
+      }
+      .tz-identity-tour-section .tz-identity-tour-screen{
+        min-height:430px!important;
+      }
+      @media(max-width:560px){
+        .tz-identity-tour-section,
+        .tz-identity-tour-section.is-tour-active,
+        .tz-identity-tour-section .tz-identity-tour-screen{
+          min-height:410px!important;
+        }
       }
 
       /* Final premium edit profile polish */
