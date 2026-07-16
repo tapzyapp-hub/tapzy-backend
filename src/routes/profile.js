@@ -9904,6 +9904,36 @@ router.get("/edit/:username", async (req, res) => {
         transform-style:preserve-3d;
         perspective:1000px;
         filter:drop-shadow(0 0 22px rgba(255,255,255,.18)) drop-shadow(0 0 48px rgba(160,190,210,.12)) drop-shadow(0 24px 54px rgba(0,0,0,.58));
+        animation:tzIdentityFaceBreath 9.6s ease-in-out infinite;
+      }
+      .tz-identity-pixel-face.exact-rebuild::before,
+      .tz-identity-pixel-face.exact-rebuild::after{
+        content:"";
+        position:absolute;
+        inset:-10%;
+        pointer-events:none;
+        z-index:5;
+      }
+      .tz-identity-pixel-face.exact-rebuild::before{
+        background:
+          radial-gradient(ellipse at 64% 42%, rgba(255,255,255,.34), rgba(255,255,255,.12) 7%, transparent 18%),
+          radial-gradient(ellipse at 68% 57%, rgba(255,255,255,.16), transparent 16%),
+          linear-gradient(90deg, transparent 0 48%, rgba(255,255,255,.12) 54%, transparent 64% 100%);
+        mix-blend-mode:screen;
+        opacity:.35;
+        filter:blur(3px);
+        animation:tzIdentityEyePulse 3.8s ease-in-out infinite;
+      }
+      .tz-identity-pixel-face.exact-rebuild::after{
+        background:
+          radial-gradient(circle at 24% 31%, rgba(255,255,255,.18) 0 1px, transparent 2px),
+          radial-gradient(circle at 38% 18%, rgba(255,255,255,.16) 0 1px, transparent 2px),
+          radial-gradient(circle at 19% 62%, rgba(255,255,255,.13) 0 1px, transparent 2px),
+          radial-gradient(circle at 84% 19%, rgba(255,255,255,.12) 0 1px, transparent 2px);
+        background-size:74px 74px,96px 96px,120px 120px,156px 156px;
+        opacity:.5;
+        mix-blend-mode:screen;
+        animation:tzIdentityParticleDrift 12s linear infinite;
       }
       .tz-identity-pixel-tile{
         position:absolute;
@@ -9917,9 +9947,9 @@ router.get("/edit/:username", async (req, res) => {
         transform:translate3d(var(--dx), var(--dy), var(--z)) rotate(var(--rz)) scale(calc(.12 * var(--ps)));
         transform-origin:center;
         box-shadow:0 0 12px rgba(255,255,255,.1), inset 0 0 0 .35px rgba(255,255,255,.12);
-        animation:tzIdentityExactTileRebuild 7.8s cubic-bezier(.18,.86,.18,1) infinite;
-        animation-delay:var(--d);
-        will-change:transform, opacity, filter;
+        animation:tzIdentityExactTileRebuild 7.8s cubic-bezier(.18,.86,.18,1) infinite, tzIdentityTileAura 2.7s ease-in-out infinite;
+        animation-delay:var(--d), calc(var(--d) * -1);
+        will-change:transform, opacity, filter, box-shadow;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
         background:
@@ -9934,7 +9964,7 @@ router.get("/edit/:username", async (req, res) => {
         mix-blend-mode:screen;
         opacity:.46;
         z-index:3!important;
-        animation:tzIdentityExactGridPulse 7.8s ease-in-out infinite;
+        animation:tzIdentityExactGridPulse 7.8s ease-in-out infinite, tzIdentityBackgroundDrift 18s linear infinite;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
         z-index:4!important;
@@ -9953,6 +9983,28 @@ router.get("/edit/:username", async (req, res) => {
         43%,66%{opacity:1;filter:brightness(.94) contrast(1.08) blur(0);transform:translate3d(0,0,0) rotate(0deg) scale(var(--ps))}
         80%{opacity:.72;filter:brightness(.68) contrast(1.32) blur(.5px);transform:translate3d(calc(var(--dx) * -.42), calc(var(--dy) * -.36), calc(var(--z) * .38)) rotate(calc(var(--rz) * -.42)) scale(calc(.78 * var(--ps)))}
         100%{opacity:0;filter:brightness(.28) contrast(1.7) blur(1.8px);transform:translate3d(calc(var(--dx) * -1.12), calc(var(--dy) * -1.08), var(--z)) rotate(calc(var(--rz) * -1)) scale(calc(.1 * var(--ps)))}
+      }
+      @keyframes tzIdentityTileAura{
+        0%,100%{box-shadow:0 0 8px rgba(255,255,255,.06), inset 0 0 0 .35px rgba(255,255,255,.1)}
+        45%,62%{box-shadow:0 0 18px rgba(255,255,255,.18), 0 0 34px rgba(160,190,210,.08), inset 0 0 0 .45px rgba(255,255,255,.18)}
+      }
+      @keyframes tzIdentityFaceBreath{
+        0%,100%{transform:translate(-50%,-50%) scale(.992) rotateX(0deg);filter:drop-shadow(0 0 16px rgba(255,255,255,.12)) drop-shadow(0 20px 46px rgba(0,0,0,.56))}
+        42%,66%{transform:translate(-50%,-50%) scale(1.018) rotateX(.01deg);filter:drop-shadow(0 0 28px rgba(255,255,255,.22)) drop-shadow(0 0 62px rgba(160,190,210,.16)) drop-shadow(0 28px 58px rgba(0,0,0,.62))}
+      }
+      @keyframes tzIdentityEyePulse{
+        0%,100%{opacity:.18;transform:translate3d(-1.5%,.5%,0) scale(.96);filter:blur(5px)}
+        38%,58%{opacity:.48;transform:translate3d(.6%,-.2%,0) scale(1.04);filter:blur(2.4px)}
+        64%{opacity:.22;transform:translate3d(1.4%,0,0) scale(.98);filter:blur(4px)}
+      }
+      @keyframes tzIdentityParticleDrift{
+        0%{background-position:0 0,18px -12px,-24px 10px,0 0;opacity:.18;transform:translate3d(-6px,4px,0)}
+        45%,64%{opacity:.58;transform:translate3d(3px,-5px,0)}
+        100%{background-position:74px -44px,-80px 58px,66px -70px,-96px 42px;opacity:.18;transform:translate3d(8px,-4px,0)}
+      }
+      @keyframes tzIdentityBackgroundDrift{
+        0%{background-position:0 0,0 0,12px 18px,0 0,0 0,center}
+        100%{background-position:46px -28px,-32px 46px,76px -46px,90px -54px,-70px 88px,center}
       }
       @keyframes tzIdentityExactGridPulse{
         0%,10%{opacity:.16;transform:scale(1.06) translate3d(-10px,0,0)}
