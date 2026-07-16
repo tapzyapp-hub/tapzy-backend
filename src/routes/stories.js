@@ -2272,6 +2272,8 @@ router.get("/stories", async (req, res) => {
 
         pageType: "stories",
 
+        hideTopBar: true,
+
 
       })
 
