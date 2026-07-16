@@ -9945,8 +9945,8 @@ router.get("/edit/:username", async (req, res) => {
         transform:translate3d(0,0,0) rotate(0deg) scale(var(--ps));
         transform-origin:50% 68%;
         box-shadow:0 0 10px rgba(255,255,255,.075), inset 0 0 0 .25px rgba(255,255,255,.08);
-        animation:tzIdentityFaceScaleFlow 18s ease-in-out infinite;
-        animation-delay:calc(var(--d) * -5);
+        animation:tzIdentityFaceScaleFlow 9.5s cubic-bezier(.42,0,.28,1) infinite;
+        animation-delay:calc((var(--r) * -145ms) + (var(--c) * -18ms));
         will-change:transform, opacity, filter, box-shadow;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
@@ -9974,10 +9974,11 @@ router.get("/edit/:username", async (req, res) => {
         animation:tzIdentityBackgroundDim 13s ease-in-out infinite;
       }
       @keyframes tzIdentityFaceScaleFlow{
-        0%,100%{opacity:.98;filter:brightness(.96) contrast(1.1) blur(0);transform:translate3d(0,0,0) skewY(0deg) scale(var(--ps))}
-        24%{opacity:.985;filter:brightness(1.02) contrast(1.08) blur(0);transform:translate3d(.35px,-.45px,0) skewY(-.16deg) scale(calc(1.0015 * var(--ps)))}
-        48%{opacity:.99;filter:brightness(1.06) contrast(1.06) blur(0);transform:translate3d(-.45px,.25px,0) skewY(.2deg) scale(calc(1.003 * var(--ps)))}
-        72%{opacity:.985;filter:brightness(1) contrast(1.08) blur(0);transform:translate3d(.25px,.4px,0) skewY(-.1deg) scale(calc(1.001 * var(--ps)))}
+        0%,100%{opacity:.98;filter:brightness(.95) contrast(1.1);transform:translate3d(0,0,0) scale(var(--ps))}
+        18%{opacity:.99;filter:brightness(1) contrast(1.08);transform:translate3d(0,-1.2px,0) scale(calc(1.001 * var(--ps)))}
+        36%{opacity:1;filter:brightness(1.09) contrast(1.05);transform:translate3d(0,-3.4px,0) scale(calc(1.004 * var(--ps)))}
+        54%{opacity:.995;filter:brightness(1.03) contrast(1.07);transform:translate3d(0,.9px,0) scale(calc(1.0015 * var(--ps)))}
+        74%{opacity:.985;filter:brightness(.98) contrast(1.09);transform:translate3d(0,2.1px,0) scale(calc(.999 * var(--ps)))}
       }
       @keyframes tzIdentityAliveTile{
         0%,100%{opacity:.96;filter:brightness(.9) contrast(1.14) blur(.03px);transform:translate3d(0,0,0) skewY(0deg) scale(var(--ps))}
