@@ -724,6 +724,24 @@ router.get("/stories", async (req, res) => {
 
     <style>
 
+      html,
+      body,
+      body.stories-composer-page{
+        background:#000!important;
+      }
+
+      body.stories-composer-page::before{
+        content:"";
+        position:fixed;
+        z-index:0;
+        top:0;
+        left:0;
+        right:0;
+        height:max(22px, env(safe-area-inset-top, 0px));
+        background:#000;
+        pointer-events:none;
+      }
+
       .stories-wrap{
 
         max-width:1120px;
@@ -2264,7 +2282,8 @@ router.get("/stories", async (req, res) => {
 
     res.send(
 
-      renderShell("Stories", body, "", {
+      renderShell("Stories", body, `<meta name="theme-color" content="#000000" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />`, {
 
         currentProfile,
 
@@ -2273,6 +2292,8 @@ router.get("/stories", async (req, res) => {
         pageType: "stories",
 
         hideTopBar: true,
+
+        bodyClass: "stories-composer-page",
 
 
       })
