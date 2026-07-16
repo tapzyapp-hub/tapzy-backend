@@ -9901,7 +9901,7 @@ router.get("/edit/:username", async (req, res) => {
         transform-style:preserve-3d;
         perspective:none;
         filter:drop-shadow(0 0 22px rgba(255,255,255,.18)) drop-shadow(0 0 82px rgba(190,215,238,.11));
-        animation:tzIdentityAliveBreath 14s ease-in-out infinite;
+        animation:none;
       }
       .tz-identity-pixel-face.exact-rebuild::before,
       .tz-identity-pixel-face.exact-rebuild::after{
@@ -9941,11 +9941,11 @@ router.get("/edit/:username", async (req, res) => {
         background-repeat:no-repeat;
         border-radius:999px;
         overflow:hidden;
-        opacity:.94;
-        transform:translate3d(0,0,0) rotate(0deg) scale(1);
+        opacity:.98;
+        transform:translate3d(0,0,0) rotate(0deg) scale(var(--ps));
         transform-origin:50% 68%;
         box-shadow:0 0 10px rgba(255,255,255,.075), inset 0 0 0 .25px rgba(255,255,255,.08);
-        animation:tzIdentityAliveTile 14s ease-in-out infinite, tzIdentityPremiumFlicker 7.5s ease-in-out infinite;
+        animation:none;
         animation-delay:calc(var(--d) * -1), calc(var(--d) * -1);
         will-change:transform, opacity, filter, box-shadow;
       }
@@ -9960,9 +9960,9 @@ router.get("/edit/:username", async (req, res) => {
         background-size:96px 96px,140px 140px,170px 170px,58px 58px,58px 58px,100% 100%!important;
         background-position:0 0,0 0,0 0,0 0,0 0,center!important;
         mix-blend-mode:screen;
-        opacity:.2;
+        opacity:.1;
         z-index:3!important;
-        animation:tzIdentityPremiumField 36s linear infinite;
+        animation:none;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
         z-index:4!important;
@@ -9973,7 +9973,7 @@ router.get("/edit/:username", async (req, res) => {
           radial-gradient(ellipse at center, transparent 56%, rgba(0,0,0,.74) 100%)!important;
         background-size:260% 100%,100% 16px,100% 100%,100% 100%!important;
         box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(255,255,255,.045), inset 0 0 62px rgba(0,0,0,.7)!important;
-        animation:tzIdentityPremiumScan 30s ease-in-out infinite;
+        animation:none;
       }
       @keyframes tzIdentityAliveTile{
         0%,100%{opacity:.96;filter:brightness(.9) contrast(1.14) blur(.03px);transform:translate3d(0,0,0) skewY(0deg) scale(var(--ps))}
