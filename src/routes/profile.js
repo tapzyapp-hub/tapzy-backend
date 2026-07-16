@@ -8165,24 +8165,7 @@ router.get("/edit/:username", async (req, res) => {
     const photoPositionY = Number.isFinite(Number(profile.profilePhotoPositionY)) ? Number(profile.profilePhotoPositionY) : 50;
     const photoScale = Number.isFinite(Number(profile.profilePhotoScale)) ? Math.max(100, Math.min(180, Number(profile.profilePhotoScale))) : 100;
 
-    const activeIdentityStory = await prisma.story.findFirst({
-      where: {
-        profileId: profile.id,
-        mediaUrl: { not: null },
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: "desc" },
-      select: { mediaUrl: true, text: true, type: true },
-    });
-
-    const activeIdentityStoryUrl = String(activeIdentityStory?.mediaUrl || "").trim();
-    const activeIdentityStoryIsVideo = activeIdentityStoryUrl && isVideoUrl(activeIdentityStoryUrl);
-    const activeIdentityStoryLabel = String(activeIdentityStory?.text || "Current story").trim() || "Current story";
-    const identityStoryEmbedHtml = activeIdentityStoryUrl
-      ? activeIdentityStoryIsVideo
-        ? `<video class="tz-identity-story-media" src="${escapeHtml(compatibleVideoUrl(activeIdentityStoryUrl))}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video><video class="tz-identity-story-focus" src="${escapeHtml(compatibleVideoUrl(activeIdentityStoryUrl))}" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>`
-        : `<img class="tz-identity-story-media" src="${escapeHtml(activeIdentityStoryUrl)}" alt="${escapeHtml(activeIdentityStoryLabel)}" loading="eager" decoding="async" /><img class="tz-identity-story-focus" src="${escapeHtml(activeIdentityStoryUrl)}" alt="" loading="eager" decoding="async" aria-hidden="true" />`
-      : `<div class="tz-identity-story-empty"><span>No active story yet</span></div>`;
+    const identityStoryEmbedHtml = `<img class="tz-identity-story-media tz-identity-digital-face" src="/images/tapzy-identity-digital-face.jpg" alt="Tapzy digital identity face" loading="eager" decoding="async" />`;
 
 
 
@@ -8328,7 +8311,7 @@ router.get("/edit/:username", async (req, res) => {
             </div>
 
             <div class="tz-identity-tour-screen tz-identity-story-screen" data-identity-tour-screen aria-hidden="true">
-              <div class="tz-identity-story-embed" aria-label="Current story preview">
+              <div class="tz-identity-story-embed" aria-label="Tapzy digital identity visual">
                 ${identityStoryEmbedHtml}
               </div>
             </div>
@@ -9896,56 +9879,34 @@ router.get("/edit/:username", async (req, res) => {
 
       .tz-identity-story-screen.frosted-story-screen .tz-identity-story-media,
       .tz-identity-story-screen .tz-identity-story-media{
-        filter:saturate(1.02) contrast(.98) brightness(.74) blur(8px)!important;
-        transform:scale(1.09)!important;
+        filter:saturate(1.02) contrast(1.08) brightness(.9)!important;
+        transform:scale(1.02)!important;
       }
-      .tz-identity-story-focus{
-        position:absolute;
-        inset:0;
-        z-index:5;
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        display:block;
-        pointer-events:none;
-        background:#000;
-        filter:saturate(1.14) contrast(1.07) brightness(1.03)!important;
-        transform:scale(1.018)!important;
-        -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='13' fill='white'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='white'/%3E%3C/svg%3E");
-        mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='13' fill='white'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='white'/%3E%3C/svg%3E");
-        -webkit-mask-repeat:no-repeat;
-        mask-repeat:no-repeat;
-        -webkit-mask-position:center;
-        mask-position:center;
-        -webkit-mask-size:52% 64%;
-        mask-size:52% 64%;
-      }
-      .tz-identity-tour-section.is-tour-active .tz-identity-story-focus{
-        animation:tzIdentityStoryDrift 12s ease-in-out infinite alternate;
+      .tz-identity-digital-face{
+        object-position:center;
+        animation:tzIdentityDigitalFace 9s ease-in-out infinite alternate;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
         background:
-          linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.04) 34%, rgba(0,0,0,.22)),
-          radial-gradient(circle at 50% 0%, rgba(160,220,255,.18), transparent 44%)!important;
-        backdrop-filter:blur(6px) saturate(1.16)!important;
-        -webkit-backdrop-filter:blur(6px) saturate(1.16)!important;
+          radial-gradient(circle at 58% 42%, rgba(255,255,255,.18), transparent 20%),
+          linear-gradient(90deg, rgba(0,0,0,.42), transparent 32%, transparent 70%, rgba(0,0,0,.3)),
+          linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12) 48%, rgba(0,0,0,.34))!important;
+        backdrop-filter:none!important;
+        -webkit-backdrop-filter:none!important;
         z-index:3!important;
         -webkit-mask:none!important;
         mask:none!important;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
-        z-index:6!important;
-        background:rgba(255,255,255,.5)!important;
-        -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='14' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E");
-        mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='20' r='14' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M50 37C34 37 24 48 24 63v23h15V64h7v22h8V64h7v22h15V63C76 48 66 37 50 37Z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E");
-        -webkit-mask-repeat:no-repeat;
-        mask-repeat:no-repeat;
-        -webkit-mask-position:center;
-        mask-position:center;
-        -webkit-mask-size:52% 64%;
-        mask-size:52% 64%;
-        filter:drop-shadow(0 0 12px rgba(255,255,255,.72)) drop-shadow(0 0 28px rgba(120,200,255,.36));
-        box-shadow:none!important;
+        z-index:4!important;
+        background:
+          radial-gradient(circle at 64% 39%, rgba(255,255,255,.16), transparent 14%),
+          radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.48) 100%)!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(255,255,255,.05)!important;
+      }
+      @keyframes tzIdentityDigitalFace{
+        from{transform:scale(1.02) translate3d(-1.2%, .4%, 0); filter:saturate(1.02) contrast(1.08) brightness(.88)}
+        to{transform:scale(1.08) translate3d(1.4%, -1.2%, 0); filter:saturate(1.06) contrast(1.14) brightness(.96)}
       }
 
       /* Final premium edit profile polish */
