@@ -9945,8 +9945,8 @@ router.get("/edit/:username", async (req, res) => {
         transform:translate3d(0,0,0) rotate(0deg) scale(var(--ps));
         transform-origin:50% 68%;
         box-shadow:0 0 10px rgba(255,255,255,.075), inset 0 0 0 .25px rgba(255,255,255,.08);
-        animation:none;
-        animation-delay:calc(var(--d) * -1), calc(var(--d) * -1);
+        animation:tzIdentityFaceScaleFlow 18s ease-in-out infinite;
+        animation-delay:calc(var(--d) * -5);
         will-change:transform, opacity, filter, box-shadow;
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
@@ -9972,6 +9972,12 @@ router.get("/edit/:username", async (req, res) => {
         box-shadow:inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(255,255,255,.035), inset 0 0 70px rgba(0,0,0,.76)!important;
         opacity:.16;
         animation:tzIdentityBackgroundDim 13s ease-in-out infinite;
+      }
+      @keyframes tzIdentityFaceScaleFlow{
+        0%,100%{opacity:.98;filter:brightness(.96) contrast(1.1) blur(0);transform:translate3d(0,0,0) skewY(0deg) scale(var(--ps))}
+        24%{opacity:.985;filter:brightness(1.02) contrast(1.08) blur(0);transform:translate3d(.35px,-.45px,0) skewY(-.16deg) scale(calc(1.0015 * var(--ps)))}
+        48%{opacity:.99;filter:brightness(1.06) contrast(1.06) blur(0);transform:translate3d(-.45px,.25px,0) skewY(.2deg) scale(calc(1.003 * var(--ps)))}
+        72%{opacity:.985;filter:brightness(1) contrast(1.08) blur(0);transform:translate3d(.25px,.4px,0) skewY(-.1deg) scale(calc(1.001 * var(--ps)))}
       }
       @keyframes tzIdentityAliveTile{
         0%,100%{opacity:.96;filter:brightness(.9) contrast(1.14) blur(.03px);transform:translate3d(0,0,0) skewY(0deg) scale(var(--ps))}
