@@ -9934,15 +9934,17 @@ router.get("/edit/:username", async (req, res) => {
         position:absolute;
         left:calc(var(--c) * 100% / var(--cols));
         top:calc(var(--r) * 100% / var(--rows));
-        width:calc(100% / var(--cols) + 1.2px);
-        height:calc(100% / var(--rows) + 1.2px);
+        width:calc(100% / var(--cols) + 1.8px);
+        height:calc(100% / var(--rows) + 1.8px);
         background-image:url('/images/tapzy-identity-digital-face.jpg');
         background-repeat:no-repeat;
-        opacity:.9;
+        border-radius:999px;
+        overflow:hidden;
+        opacity:.94;
         transform:translate3d(0,0,0) rotate(0deg) scale(1);
         transform-origin:center;
-        box-shadow:0 0 9px rgba(255,255,255,.08), inset 0 0 0 .35px rgba(255,255,255,.1);
-        animation:tzIdentityOceanTile 6.8s cubic-bezier(.42,0,.18,1) infinite, tzIdentityPremiumFlicker 2.4s steps(4,end) infinite;
+        box-shadow:0 0 10px rgba(255,255,255,.075), inset 0 0 0 .25px rgba(255,255,255,.08);
+        animation:tzIdentityOceanTile 12.5s cubic-bezier(.45,0,.25,1) infinite, tzIdentityPremiumFlicker 5.6s ease-in-out infinite;
         animation-delay:calc(var(--d) * -1), calc(var(--d) * -1);
         will-change:transform, opacity, filter, box-shadow;
       }
@@ -9964,26 +9966,25 @@ router.get("/edit/:username", async (req, res) => {
       .tz-identity-story-screen .tz-identity-story-embed::after{
         z-index:4!important;
         background:
-          linear-gradient(90deg, transparent 0 34%, rgba(255,255,255,.3) 47%, transparent 60% 100%),
-          repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 8px),
+          linear-gradient(90deg, transparent 0 36%, rgba(255,255,255,.16) 49%, transparent 62% 100%),
+          repeating-linear-gradient(0deg, rgba(255,255,255,.024) 0 1px, transparent 1px 11px),
           radial-gradient(ellipse at 61% 44%, transparent 24%, rgba(255,255,255,.055) 26%, transparent 34%),
           radial-gradient(ellipse at center, transparent 56%, rgba(0,0,0,.74) 100%)!important;
         background-size:260% 100%,100% 16px,100% 100%,100% 100%!important;
         box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(255,255,255,.045), inset 0 0 62px rgba(0,0,0,.7)!important;
-        animation:tzIdentityPremiumScan 10.8s ease-in-out infinite;
+        animation:tzIdentityPremiumScan 18s ease-in-out infinite;
       }
       @keyframes tzIdentityOceanTile{
-        0%{opacity:.9;filter:brightness(.76) contrast(1.22) blur(.14px);transform:translate3d(calc(var(--dx) * .018), calc(var(--dy) * .018 - 8px), 0) rotate(calc(var(--rz) * .012)) scale(calc(.982 * var(--ps)))}
-        16%{opacity:.96;filter:brightness(.94) contrast(1.12) blur(0);transform:translate3d(calc(var(--dx) * -.01), calc(var(--dy) * -.012 - 2px), 0) rotate(calc(var(--rz) * -.008)) scale(calc(1.006 * var(--ps)))}
-        33%{opacity:1;filter:brightness(1.16) contrast(1.08) blur(0);transform:translate3d(calc(var(--dx) * -.018), calc(var(--dy) * .014 + 7px), 0) rotate(calc(var(--rz) * .01)) scale(calc(1.026 * var(--ps)))}
-        50%{opacity:.94;filter:brightness(.88) contrast(1.18) blur(.1px);transform:translate3d(calc(var(--dx) * .012), calc(var(--dy) * -.018 + 2px), 0) rotate(calc(var(--rz) * -.012)) scale(calc(.996 * var(--ps)))}
-        67%{opacity:1;filter:brightness(1.12) contrast(1.1) blur(0);transform:translate3d(calc(var(--dx) * .02), calc(var(--dy) * .01 - 6px), 0) rotate(calc(var(--rz) * .014)) scale(calc(1.018 * var(--ps)))}
-        84%{opacity:.96;filter:brightness(.96) contrast(1.13) blur(.05px);transform:translate3d(calc(var(--dx) * -.014), calc(var(--dy) * -.008 + 4px), 0) rotate(calc(var(--rz) * -.01)) scale(calc(1.004 * var(--ps)))}
-        100%{opacity:.9;filter:brightness(.76) contrast(1.22) blur(.14px);transform:translate3d(calc(var(--dx) * .018), calc(var(--dy) * .018 - 8px), 0) rotate(calc(var(--rz) * .012)) scale(calc(.982 * var(--ps)))}
+        0%{opacity:.92;filter:brightness(.84) contrast(1.15) blur(.08px);transform:translate3d(calc(var(--dx) * .01), calc(var(--dy) * .01 - 4px), 0) rotate(calc(var(--rz) * .005)) scale(calc(.992 * var(--ps)))}
+        20%{opacity:.96;filter:brightness(.94) contrast(1.1) blur(.03px);transform:translate3d(calc(var(--dx) * .004), calc(var(--dy) * -.006 - 1px), 0) rotate(calc(var(--rz) * -.004)) scale(calc(1.004 * var(--ps)))}
+        40%{opacity:1;filter:brightness(1.08) contrast(1.06) blur(0);transform:translate3d(calc(var(--dx) * -.007), calc(var(--dy) * .006 + 4px), 0) rotate(calc(var(--rz) * .004)) scale(calc(1.014 * var(--ps)))}
+        60%{opacity:.97;filter:brightness(.94) contrast(1.1) blur(.025px);transform:translate3d(calc(var(--dx) * .006), calc(var(--dy) * -.008 + 1px), 0) rotate(calc(var(--rz) * -.005)) scale(calc(1.002 * var(--ps)))}
+        80%{opacity:1;filter:brightness(1.05) contrast(1.07) blur(0);transform:translate3d(calc(var(--dx) * .008), calc(var(--dy) * .004 - 3px), 0) rotate(calc(var(--rz) * .006)) scale(calc(1.01 * var(--ps)))}
+        100%{opacity:.92;filter:brightness(.84) contrast(1.15) blur(.08px);transform:translate3d(calc(var(--dx) * .01), calc(var(--dy) * .01 - 4px), 0) rotate(calc(var(--rz) * .005)) scale(calc(.992 * var(--ps)))}
       }
       @keyframes tzIdentityPremiumFlicker{
-        0%,100%{box-shadow:0 0 7px rgba(255,255,255,.055), inset 0 0 0 .32px rgba(255,255,255,.09)}
-        50%{box-shadow:0 0 20px rgba(255,255,255,.18), 0 0 36px rgba(190,215,238,.09), inset 0 0 0 .46px rgba(255,255,255,.19)}
+        0%,100%{box-shadow:0 0 7px rgba(255,255,255,.05), inset 0 0 0 .22px rgba(255,255,255,.08)}
+        50%{box-shadow:0 0 15px rgba(255,255,255,.13), 0 0 28px rgba(190,215,238,.07), inset 0 0 0 .32px rgba(255,255,255,.14)}
       }
       @keyframes tzIdentityOceanBreath{
         0%,100%{filter:drop-shadow(0 0 18px rgba(255,255,255,.14)) drop-shadow(0 0 70px rgba(190,215,238,.1))}
