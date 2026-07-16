@@ -9884,9 +9884,13 @@ router.get("/edit/:username", async (req, res) => {
       .tz-identity-story-screen .tz-identity-story-embed{
         isolation:isolate;
         background:
-          radial-gradient(ellipse at 60% 42%, rgba(255,255,255,.045), transparent 24%),
-          radial-gradient(ellipse at 33% 44%, rgba(150,190,220,.055), transparent 38%),
-          linear-gradient(180deg, #1b1b1b, #0b0b0b 55%, #050505)!important;
+          radial-gradient(ellipse at 58% 42%, rgba(255,255,255,.07), transparent 22%),
+          radial-gradient(ellipse at 34% 48%, rgba(150,190,220,.07), transparent 36%),
+          repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.026) 0 25%, rgba(0,0,0,.18) 0 50%, rgba(255,255,255,.014) 0 75%, rgba(0,0,0,.3) 0 100%),
+          linear-gradient(180deg, #181818, #070707 58%, #020202)!important;
+        background-size:100% 100%,100% 100%,28px 28px,100% 100%!important;
+        background-position:center,center,0 0,center!important;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.035), inset 0 0 80px rgba(0,0,0,.72)!important;
       }
       .tz-identity-pixel-face.exact-rebuild{
         position:absolute;
@@ -9899,7 +9903,7 @@ router.get("/edit/:username", async (req, res) => {
         transform:translate(-50%,-50%);
         transform-style:preserve-3d;
         perspective:1000px;
-        filter:drop-shadow(0 0 18px rgba(255,255,255,.16)) drop-shadow(0 22px 46px rgba(0,0,0,.46));
+        filter:drop-shadow(0 0 22px rgba(255,255,255,.18)) drop-shadow(0 0 48px rgba(160,190,210,.12)) drop-shadow(0 24px 54px rgba(0,0,0,.58));
       }
       .tz-identity-pixel-tile{
         position:absolute;
@@ -9919,23 +9923,28 @@ router.get("/edit/:username", async (req, res) => {
       }
       .tz-identity-story-screen .tz-identity-story-embed::before{
         background:
-          radial-gradient(circle at 30% 25%, rgba(255,255,255,.12) 0 1px, transparent 2px),
-          radial-gradient(circle at 42% 61%, rgba(255,255,255,.1) 0 1px, transparent 2px),
-          radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.38) 100%)!important;
-        background-size:90px 90px,130px 130px,100% 100%!important;
+          linear-gradient(90deg, transparent 0 22px, rgba(255,255,255,.045) 22px 23px, transparent 23px 46px),
+          linear-gradient(0deg, transparent 0 22px, rgba(255,255,255,.035) 22px 23px, transparent 23px 46px),
+          repeating-conic-gradient(from 90deg, rgba(255,255,255,.04) 0 25%, rgba(0,0,0,.46) 0 50%, rgba(255,255,255,.018) 0 75%, rgba(0,0,0,.64) 0 100%),
+          radial-gradient(circle at 30% 25%, rgba(255,255,255,.13) 0 1px, transparent 2px),
+          radial-gradient(circle at 42% 61%, rgba(255,255,255,.11) 0 1px, transparent 2px),
+          radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.5) 100%)!important;
+        background-size:46px 46px,46px 46px,64px 64px,90px 90px,130px 130px,100% 100%!important;
+        background-position:0 0,0 0,12px 18px,0 0,0 0,center!important;
         mix-blend-mode:screen;
-        opacity:.34;
+        opacity:.46;
         z-index:3!important;
         animation:tzIdentityExactGridPulse 7.8s ease-in-out infinite;
       }
       .tz-identity-story-screen .tz-identity-story-embed::after{
         z-index:4!important;
         background:
-          linear-gradient(90deg, transparent 0 38%, rgba(255,255,255,.2) 48%, transparent 57% 100%),
-          radial-gradient(circle at 61% 42%, rgba(255,255,255,.14), transparent 13%),
-          radial-gradient(ellipse at center, transparent 56%, rgba(0,0,0,.5) 100%)!important;
-        background-size:210% 100%,100% 100%,100% 100%!important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(255,255,255,.04)!important;
+          linear-gradient(90deg, transparent 0 38%, rgba(255,255,255,.22) 48%, transparent 57% 100%),
+          radial-gradient(circle at 61% 42%, rgba(255,255,255,.16), transparent 13%),
+          radial-gradient(ellipse at center, transparent 54%, rgba(0,0,0,.62) 100%),
+          linear-gradient(180deg, rgba(255,255,255,.04), transparent 22%, transparent 70%, rgba(0,0,0,.28))!important;
+        background-size:210% 100%,100% 100%,100% 100%,100% 100%!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(255,255,255,.05), inset 0 0 36px rgba(0,0,0,.42)!important;
         animation:tzIdentityExactScanSweep 7.8s ease-in-out infinite;
       }
       @keyframes tzIdentityExactTileRebuild{
