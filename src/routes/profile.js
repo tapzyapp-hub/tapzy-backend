@@ -8306,28 +8306,13 @@ router.get("/edit/:username", async (req, res) => {
             </div>
 
             <div class="tz-identity-tour-screen" data-identity-tour-screen aria-hidden="true">
-              <div class="tz-mansion-sky" aria-hidden="true"></div>
-              <div class="tz-mansion-camera">
-                <div class="tz-mansion-estate">
-                  <span class="tz-mansion-wing tz-wing-left"></span>
-                  <span class="tz-mansion-wing tz-wing-right"></span>
-                  <span class="tz-mansion-core"></span>
-                  <span class="tz-mansion-roof"></span>
-                  <span class="tz-mansion-door"></span>
-                  <span class="tz-mansion-window w1"></span>
-                  <span class="tz-mansion-window w2"></span>
-                  <span class="tz-mansion-window w3"></span>
-                  <span class="tz-mansion-window w4"></span>
-                </div>
-                <div class="tz-mansion-drive"></div>
-                <div class="tz-mansion-interior">
-                  <span class="tz-interior-arch"></span>
-                  <span class="tz-interior-chandelier"></span>
-                  <span class="tz-interior-stair left"></span>
-                  <span class="tz-interior-stair right"></span>
-                  <span class="tz-interior-runway"></span>
-                </div>
+              <div class="tz-real-mansion-tour" aria-hidden="true">
+                <div class="tz-tour-photo tz-tour-exterior"></div>
+                <div class="tz-tour-photo tz-tour-arrival"></div>
+                <div class="tz-tour-photo tz-tour-interior"></div>
+                <div class="tz-tour-glass"></div>
               </div>
+            </div>
             </div>
 
           </section>
@@ -9806,6 +9791,95 @@ router.get("/edit/:username", async (req, res) => {
       @keyframes tzInteriorReveal{0%,48%{opacity:0;transform:translateZ(90px) scale(1.18)}60%,100%{opacity:1;transform:translateZ(170px) scale(1)}}
       @keyframes tzMansionGleam{0%,38%{transform:translateX(-120%)}62%,100%{transform:translateX(120%)}}
       @media(max-width:560px){.tz-identity-tour-section{min-height:690px!important}.tz-mansion-estate{top:24%;width:92%;height:235px}.tz-mansion-window{width:28px;height:42px}}
+
+      .tz-identity-tour-section .tz-mansion-camera,
+      .tz-identity-tour-section .tz-mansion-sky,
+      .tz-identity-tour-section .tz-identity-tour-copy{
+        display:none!important;
+      }
+      .tz-real-mansion-tour{
+        position:absolute;
+        inset:0;
+        overflow:hidden;
+        background:#000;
+        border-radius:inherit;
+      }
+      .tz-real-mansion-tour::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:5;
+        pointer-events:none;
+        background:
+          radial-gradient(circle at 50% 18%, rgba(255,246,212,.15), transparent 24%),
+          linear-gradient(180deg, rgba(0,0,0,.18), transparent 34%, rgba(0,0,0,.48));
+        mix-blend-mode:screen;
+      }
+      .tz-real-mansion-tour::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:6;
+        pointer-events:none;
+        background:radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,.46) 100%);
+      }
+      .tz-tour-photo{
+        position:absolute;
+        inset:-10%;
+        background-size:cover;
+        background-position:center;
+        opacity:0;
+        transform:scale(1.05);
+        filter:saturate(1.08) contrast(1.04) brightness(.92);
+        will-change:transform, opacity, filter;
+      }
+      .tz-tour-exterior{
+        background-image:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.38)),url("https://sothebys-brightspot.s3.amazonaws.com/dotcom/f2/70/fa6093f54a4d95b5cbc07ee8d05f/240913-533-leftforkhc-lifestyle-1bh9703.jpg");
+        opacity:1;
+        background-position:68% 50%;
+        animation:tzRealMansionExterior 14s cubic-bezier(.18,.74,.18,1) infinite;
+      }
+      .tz-tour-arrival{
+        background-image:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.52)),url("https://cdn.prod.website-files.com/64a6b6f40da92d30ef27a449/64c28d8dd6c45abce5b02196_hero-a07-richard-lusk-construction-inc.jpg");
+        background-position:50% 50%;
+        animation:tzRealMansionArrival 14s cubic-bezier(.18,.74,.18,1) infinite;
+      }
+      .tz-tour-interior{
+        background-image:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.34)),url("https://sothebys-brightspot.s3.amazonaws.com/dotcom/2c/6c/44825bfb4f25891d7ed4b65ab6e9/241023-533-left-fork-hc-arc-1bh1290-1.jpg");
+        background-position:50% 52%;
+        animation:tzRealMansionInterior 14s cubic-bezier(.18,.74,.18,1) infinite;
+      }
+      .tz-tour-glass{
+        position:absolute;
+        inset:0;
+        z-index:7;
+        pointer-events:none;
+        background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.13) 42%, transparent 58%);
+        transform:translateX(-120%);
+        animation:tzRealMansionShine 14s ease-in-out infinite;
+      }
+      @keyframes tzRealMansionExterior{
+        0%{opacity:1;transform:scale(1.04) translateX(8%);filter:saturate(1.04) contrast(1.02) brightness(.88)}
+        33%{opacity:1;transform:scale(1.20) translateX(0);filter:saturate(1.1) contrast(1.06) brightness(.92)}
+        45%{opacity:0;transform:scale(1.32) translateX(-3%)}
+        100%{opacity:0;transform:scale(1.32) translateX(-3%)}
+      }
+      @keyframes tzRealMansionArrival{
+        0%,27%{opacity:0;transform:scale(1.10) translateY(4%)}
+        42%{opacity:1;transform:scale(1.06) translateY(0)}
+        58%{opacity:1;transform:scale(1.18) translateY(-1%)}
+        72%,100%{opacity:0;transform:scale(1.28) translateY(-3%)}
+      }
+      @keyframes tzRealMansionInterior{
+        0%,54%{opacity:0;transform:scale(1.08) translateY(4%);filter:saturate(1.02) contrast(1.02) brightness(.94)}
+        68%{opacity:1;transform:scale(1.03) translateY(0)}
+        100%{opacity:1;transform:scale(1.18) translateY(-2%);filter:saturate(1.09) contrast(1.05) brightness(.98)}
+      }
+      @keyframes tzRealMansionShine{
+        0%,18%{transform:translateX(-125%)}
+        44%{transform:translateX(125%)}
+        100%{transform:translateX(125%)}
+      }
 
       /* Final premium edit profile polish */
       body{
