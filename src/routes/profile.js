@@ -8165,6 +8165,28 @@ router.get("/edit/:username", async (req, res) => {
     const photoPositionY = Number.isFinite(Number(profile.profilePhotoPositionY)) ? Number(profile.profilePhotoPositionY) : 50;
     const photoScale = Number.isFinite(Number(profile.profilePhotoScale)) ? Math.max(100, Math.min(180, Number(profile.profilePhotoScale))) : 100;
 
+    const activeIdentityStory = await prisma.story.findFirst({
+      where: {
+        profileId: profile.id,
+        mediaUrl: { not: null },
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+      select: { mediaUrl: true, text: true, type: true },
+    });
+
+    const activeIdentityStoryUrl = String(activeIdentityStory?.mediaUrl || "").trim();
+    const activeIdentityStoryIsVideo = activeIdentityStoryUrl && isVideoUrl(activeIdentityStoryUrl);
+    const activeIdentityStoryLabel = String(activeIdentityStory?.text || "Current story").trim() || "Current story";
+    const identityStoryEmbedHtml = activeIdentityStoryUrl
+      ? activeIdentityStoryIsVideo
+        ? `<video class="tz-identity-story-media" src="${escapeHtml(compatibleVideoUrl(activeIdentityStoryUrl))}" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>`
+        : `<img class="tz-identity-story-media" src="${escapeHtml(activeIdentityStoryUrl)}" alt="${escapeHtml(activeIdentityStoryLabel)}" loading="eager" decoding="async" />`
+      : `<div class="tz-identity-story-empty"><span>No active story yet</span></div>`;
+
+
+
+
 
 
     const currentPhotoHtml = profile.photo
@@ -8305,12 +8327,10 @@ router.get("/edit/:username", async (req, res) => {
 
             </div>
 
-            <div class="tz-identity-tour-screen" data-identity-tour-screen aria-hidden="true">
-              <div class="tz-real-mansion-tour" aria-hidden="true">
-                <div class="tz-tour-photo tz-tour-exterior"></div>
-                <div class="tz-tour-photo tz-tour-arrival"></div>
-                <div class="tz-tour-photo tz-tour-interior"></div>
-                <div class="tz-tour-glass"></div>
+            <div class="tz-identity-tour-screen tz-identity-story-screen" data-identity-tour-screen aria-hidden="true">
+              <div class="tz-identity-story-embed" aria-label="Current story preview">
+                ${identityStoryEmbedHtml}
+                <span class="tz-identity-story-sheen" aria-hidden="true"></span>
               </div>
             </div>
             </div>
@@ -9792,93 +9812,76 @@ router.get("/edit/:username", async (req, res) => {
       @keyframes tzMansionGleam{0%,38%{transform:translateX(-120%)}62%,100%{transform:translateX(120%)}}
       @media(max-width:560px){.tz-identity-tour-section{min-height:690px!important}.tz-mansion-estate{top:24%;width:92%;height:235px}.tz-mansion-window{width:28px;height:42px}}
 
-      .tz-identity-tour-section .tz-mansion-camera,
-      .tz-identity-tour-section .tz-mansion-sky,
-      .tz-identity-tour-section .tz-identity-tour-copy{
-        display:none!important;
+      .tz-identity-story-screen{
+        background:#000!important;
       }
-      .tz-real-mansion-tour{
+      .tz-identity-story-embed{
         position:absolute;
         inset:0;
         overflow:hidden;
-        background:#000;
         border-radius:inherit;
+        background:#000;
       }
-      .tz-real-mansion-tour::before{
+      .tz-identity-story-media{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+        background:#000;
+        transform:scale(1.015);
+        filter:saturate(1.08) contrast(1.04) brightness(.92);
+      }
+      .tz-identity-tour-section.is-tour-active .tz-identity-story-media{
+        animation:tzIdentityStoryDrift 12s ease-in-out infinite alternate;
+      }
+      .tz-identity-story-embed::before{
         content:"";
         position:absolute;
         inset:0;
-        z-index:5;
+        z-index:2;
         pointer-events:none;
-        background:
-          radial-gradient(circle at 50% 18%, rgba(255,246,212,.15), transparent 24%),
-          linear-gradient(180deg, rgba(0,0,0,.18), transparent 34%, rgba(0,0,0,.48));
-        mix-blend-mode:screen;
+        background:linear-gradient(180deg, rgba(0,0,0,.12), transparent 30%, rgba(0,0,0,.34));
       }
-      .tz-real-mansion-tour::after{
+      .tz-identity-story-embed::after{
         content:"";
         position:absolute;
         inset:0;
-        z-index:6;
+        z-index:3;
         pointer-events:none;
         background:radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,.46) 100%);
       }
-      .tz-tour-photo{
-        position:absolute;
-        inset:-10%;
-        background-size:cover;
-        background-position:center;
-        opacity:0;
-        transform:scale(1.05);
-        filter:saturate(1.08) contrast(1.04) brightness(.92);
-        will-change:transform, opacity, filter;
-      }
-      .tz-tour-exterior{
-        background-image:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.38)),url("https://sothebys-brightspot.s3.amazonaws.com/dotcom/f2/70/fa6093f54a4d95b5cbc07ee8d05f/240913-533-leftforkhc-lifestyle-1bh9703.jpg");
-        opacity:1;
-        background-position:68% 50%;
-        animation:tzRealMansionExterior 14s cubic-bezier(.18,.74,.18,1) infinite;
-      }
-      .tz-tour-arrival{
-        background-image:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.52)),url("https://cdn.prod.website-files.com/64a6b6f40da92d30ef27a449/64c28d8dd6c45abce5b02196_hero-a07-richard-lusk-construction-inc.jpg");
-        background-position:50% 50%;
-        animation:tzRealMansionArrival 14s cubic-bezier(.18,.74,.18,1) infinite;
-      }
-      .tz-tour-interior{
-        background-image:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.34)),url("https://sothebys-brightspot.s3.amazonaws.com/dotcom/2c/6c/44825bfb4f25891d7ed4b65ab6e9/241023-533-left-fork-hc-arc-1bh1290-1.jpg");
-        background-position:50% 52%;
-        animation:tzRealMansionInterior 14s cubic-bezier(.18,.74,.18,1) infinite;
-      }
-      .tz-tour-glass{
+      .tz-identity-story-sheen{
         position:absolute;
         inset:0;
-        z-index:7;
+        z-index:4;
         pointer-events:none;
-        background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.13) 42%, transparent 58%);
-        transform:translateX(-120%);
-        animation:tzRealMansionShine 14s ease-in-out infinite;
+        background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.12) 42%, transparent 58%);
+        transform:translateX(-125%);
       }
-      @keyframes tzRealMansionExterior{
-        0%{opacity:1;transform:scale(1.04) translateX(8%);filter:saturate(1.04) contrast(1.02) brightness(.88)}
-        33%{opacity:1;transform:scale(1.20) translateX(0);filter:saturate(1.1) contrast(1.06) brightness(.92)}
-        45%{opacity:0;transform:scale(1.32) translateX(-3%)}
-        100%{opacity:0;transform:scale(1.32) translateX(-3%)}
+      .tz-identity-tour-section.is-tour-active .tz-identity-story-sheen{
+        animation:tzIdentityStorySheen 5.8s ease-in-out infinite;
       }
-      @keyframes tzRealMansionArrival{
-        0%,27%{opacity:0;transform:scale(1.10) translateY(4%)}
-        42%{opacity:1;transform:scale(1.06) translateY(0)}
-        58%{opacity:1;transform:scale(1.18) translateY(-1%)}
-        72%,100%{opacity:0;transform:scale(1.28) translateY(-3%)}
+      .tz-identity-story-empty{
+        position:absolute;
+        inset:0;
+        display:grid;
+        place-items:center;
+        background:radial-gradient(520px 280px at 50% 0%, rgba(65,153,255,.22), transparent 62%), linear-gradient(180deg,#09111d,#02050a);
       }
-      @keyframes tzRealMansionInterior{
-        0%,54%{opacity:0;transform:scale(1.08) translateY(4%);filter:saturate(1.02) contrast(1.02) brightness(.94)}
-        68%{opacity:1;transform:scale(1.03) translateY(0)}
-        100%{opacity:1;transform:scale(1.18) translateY(-2%);filter:saturate(1.09) contrast(1.05) brightness(.98)}
+      .tz-identity-story-empty span{
+        color:rgba(255,255,255,.62);
+        font-size:13px;
+        font-weight:850;
       }
-      @keyframes tzRealMansionShine{
-        0%,18%{transform:translateX(-125%)}
-        44%{transform:translateX(125%)}
-        100%{transform:translateX(125%)}
+      @keyframes tzIdentityStoryDrift{
+        from{transform:scale(1.015) translate3d(-1.5%,0,0)}
+        to{transform:scale(1.09) translate3d(1.5%,-1%,0)}
+      }
+      @keyframes tzIdentityStorySheen{
+        0%,42%{transform:translateX(-125%)}
+        72%,100%{transform:translateX(125%)}
       }
 
       /* Final premium edit profile polish */
