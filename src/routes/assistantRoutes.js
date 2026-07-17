@@ -750,15 +750,37 @@ async function handleRealtimeCallRequest(req, res) {
       return res.status(400).type("text/plain").send("Realtime voice offer was empty. Please refresh Tapzy and try again.");
     }
 
+    const query = req.query || {};
+    const context = await buildAssistantContext({
+      ...query,
+      latitude: query.latitude,
+      longitude: query.longitude,
+      timeZone: query.timeZone,
+      includeWebContext: true,
+    });
+    const contextText = compactAssistantContext(context);
+    const location = context?.location || {};
     const realtimeUrl = "https://api.openai.com/v1/realtime/calls";
     const sessionConfig = {
       type: "realtime",
       model: OPENAI_REALTIME_MODEL,
       instructions: [
-        "You are Ask Tapzy, the live voice assistant inside Tapzy.",
-        "Keep answers short, friendly, and useful for social plans, local discovery, directions, weather, events, food, nightlife, current web context, and Tapzy features.",
-        "Only answer after the user uses the wake phrase Hey Tapzy or clearly starts with Tapzy. Ignore background voices, music, TV, accidental noise, and speech that is not directed at you. If the wake phrase is missing, stay quiet or briefly remind them to say Hey Tapzy.",
-      ].join(" "),
+        "You are Ask Tapzy, the built-in real-time voice assistant inside Tapzy.",
+        "Be warm, quick, natural, and useful. Speak like a smart local friend, not a generic chatbot.",
+        "Voice rule: only answer after the user uses the wake phrase Hey Tapzy or clearly starts with Tapzy. Ignore background voices, music, TV, accidental noise, and speech that is not directed at you. If the wake phrase is missing, stay quiet or briefly remind them to say Hey Tapzy.",
+        "Use the user's current location, weather, Tapzy events, and web context when available.",
+        "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
+        "Default behavior: answer the spoken question directly first. Do not force Tapzy events, links, tickets, or navigation into ordinary questions.",
+        "Only provide Tapzy event suggestions, website links, ticket actions, or navigation when the user clearly shows interest in a place/event/plan, asks what is nearby, asks for directions, asks for tickets, asks to open/check out a place, or asks for local recommendations.",
+        "If the user asks what is nearby, tonight, where to eat, where to go, directions, weather, or plans, answer from the local context first.",
+        "If exact live data is missing, answer from Tapzy context and general reasoning first. Only mention the missing data if it changes the answer.",
+        "Do not keep saying you do not know. If location is unavailable, give a useful general answer and ask for location only when it would materially improve the result.",
+        "Keep spoken answers concise unless the user asks for detail.",
+        "Use this durable Tapzy knowledge before saying you do not know: " + TAPZY_AI_KNOWLEDGE,
+        Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? "LOCATION CONFIRMED. The user granted browser GPS. Current location: " + [locationLabel(location), location.latitude + "," + location.longitude].filter(Boolean).join(" ") + ". Do not say you do not have location. Use this for nearby, weather, directions, and local planning." : "Location is not available yet. Answer generally and ask the user to enable location only for nearby, weather, directions, or local planning questions.",
+        query.currentPath ? "Current Tapzy path: " + asSafeString(query.currentPath, 300) + "." : "",
+        contextText ? "Current Tapzy context:\n" + contextText : "",
+      ].filter(Boolean).join("\n"),
       audio: {
         output: { voice: OPENAI_REALTIME_VOICE },
       },
