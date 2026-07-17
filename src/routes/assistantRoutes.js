@@ -12,6 +12,8 @@ const OPENAI_VECTOR_STORE_IDS = String(process.env.OPENAI_VECTOR_STORE_IDS || pr
   .map((id) => id.trim())
   .filter(Boolean);
 const OPENAI_ENABLE_WEB_SEARCH = process.env.OPENAI_ENABLE_WEB_SEARCH !== "false";
+const OPENAI_WEB_SEARCH_TOOL = process.env.OPENAI_WEB_SEARCH_TOOL || "web_search";
+const OPENAI_REALTIME_ENABLE_WEB_CONTEXT = process.env.OPENAI_REALTIME_ENABLE_WEB_CONTEXT !== "false";
 
 const router = express.Router();
 
@@ -54,12 +56,15 @@ function normalizeCountryCode(value) {
   return "CA";
 }
 
-function buildOpenAITools(context) {
+function buildOpenAITools(context, webSearchToolType = OPENAI_WEB_SEARCH_TOOL) {
   const tools = [];
   if (OPENAI_ENABLE_WEB_SEARCH) {
     const location = context?.location || {};
     const eventCountry = Array.isArray(context?.events) && context.events[0] ? context.events[0].country : "";
-    const webTool = { type: "web_search" };
+    const webTool = {
+      type: webSearchToolType || "web_search",
+      search_context_size: "medium",
+    };
     if (location.city) {
       webTool.user_location = {
         type: "approximate",
@@ -75,6 +80,24 @@ function buildOpenAITools(context) {
     tools.push({ type: "file_search", vector_store_ids: OPENAI_VECTOR_STORE_IDS });
   }
   return tools;
+}
+
+function hasWebSearchTool(tools) {
+  return Array.isArray(tools) && tools.some((tool) => String(tool?.type || "").startsWith("web_search"));
+}
+
+async function postOpenAIResponse(payload) {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + OPENAI_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined,
+  });
+  const data = await response.json().catch(() => null);
+  return { response, data };
 }
 
 function extractResponseCitations(data) {
@@ -320,7 +343,9 @@ async function buildAssistantContext(body) {
     rows = rows.concat(recentRows.filter((event) => !seenEventIds.has(String(event.id || "")))).slice(0, 400);
   }
 
-  const web = await fetchAssistantWebSearch(body.message || "", { latitude, longitude, city }, weather);
+  const requestedMessage = asSafeString(body.message || "", 500);
+  const webMessage = requestedMessage || (OPENAI_REALTIME_ENABLE_WEB_CONTEXT && asSafeBool(body.includeWebContext) ? "things to do tonight current local events restaurants weather near " + (city || "me") : "");
+  const web = await fetchAssistantWebSearch(webMessage, { latitude, longitude, city }, weather);
 
   const events = rows.map((event) => {
     const distanceKm = getDistanceKm(latitude, longitude, event.latitude, event.longitude);
@@ -489,36 +514,25 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
       ...asOpenAIMemory(memory, message),
       { role: "user", content: message },
     ];
-    const tools = buildOpenAITools(context);
+    const primaryTools = buildOpenAITools(context);
     const payload = {
       model: OPENAI_MODEL,
       input,
       max_output_tokens: 650,
     };
-    if (tools.length) payload.tools = tools;
-    let response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + OPENAI_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout ? AbortSignal.timeout(9000) : undefined,
-    });
-    let data = await response.json().catch(() => null);
-    if (!response.ok && tools.length) {
+    if (primaryTools.length) payload.tools = primaryTools;
+    let { response, data } = await postOpenAIResponse(payload);
+    if (!response.ok && hasWebSearchTool(primaryTools)) {
+      const fallbackType = primaryTools.some((tool) => tool.type === "web_search_preview") ? "web_search" : "web_search_preview";
+      const fallbackTools = buildOpenAITools(context, fallbackType);
+      console.error("OpenAI web search tool failed, retrying with " + fallbackType + ":", data?.error?.message || response.status);
+      payload.tools = fallbackTools;
+      ({ response, data } = await postOpenAIResponse(payload));
+    }
+    if (!response.ok && payload.tools && payload.tools.length) {
       console.error("OpenAI assistant tools failed, retrying without tools:", data?.error?.message || response.status);
       delete payload.tools;
-      response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + OPENAI_API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout ? AbortSignal.timeout(9000) : undefined,
-      });
-      data = await response.json().catch(() => null);
+      ({ response, data } = await postOpenAIResponse(payload));
     }
     if (!response.ok) {
       console.error("OpenAI assistant failed:", data?.error?.message || response.status);
@@ -553,7 +567,7 @@ async function handleAssistantRequest(req, res) {
       });
     }
 
-    const context = await buildAssistantContext(body);
+    const context = await buildAssistantContext({ ...body, includeWebContext: true });
 
     const conversationalReply = await fetchOpenAIConversation({
       message,
@@ -677,7 +691,7 @@ async function handleRealtimeSessionRequest(req, res) {
       return res.status(503).json({ ok: false, error: "Realtime voice needs OPENAI_API_KEY on the server." });
     }
     const body = req.body || {};
-    const context = await buildAssistantContext(body);
+    const context = await buildAssistantContext({ ...body, includeWebContext: true });
     const session = await requestRealtimeSessionFromOpenAI(context, {
       pageType: asSafeString(body.pageType || "general", 80),
       username: asSafeString(body.username || "User", 80),
@@ -712,7 +726,7 @@ async function handleRealtimeCallRequest(req, res) {
       model: OPENAI_REALTIME_MODEL,
       instructions: [
         "You are Ask Tapzy, the live voice assistant inside Tapzy.",
-        "Keep answers short, friendly, and useful for social plans, local discovery, directions, weather, events, food, nightlife, and Tapzy features.",
+        "Keep answers short, friendly, and useful for social plans, local discovery, directions, weather, events, food, nightlife, current web context, and Tapzy features.",
       ].join(" "),
       audio: {
         output: { voice: OPENAI_REALTIME_VOICE },
