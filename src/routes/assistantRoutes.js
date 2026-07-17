@@ -21,7 +21,7 @@ const TAPZY_AI_KNOWLEDGE = [
   "Core pages: /stories for social updates and live stories, /events for event assistant handoff, /events/feed for event data, /events/view/:id for detail pages, /search for finding people, /messages for conversations, /pair for phone-to-phone exchange, /u/:username for profiles, /settings for account settings.",
   "When web search is unavailable, use Tapzy event data, location, weather, current page, conversation memory, and practical reasoning. Do not apologize repeatedly. Be decisive and useful.",
   "For local planning, rank by distance, time, weather fit, price, social proof, category match, and effort. Give a best first tap plus one backup.",
-  "For events, mention title, time, place, why it fits, directions, ticket URL when available, and /events/view/:id. Never claim event data is unavailable when Current Tapzy context lists events.",
+  "For events, show a clean numbered list with title, time, place, and why it fits. Do not print raw URLs in the visible answer. If links are available, refer to them as short actions like Open on Tapzy, Tickets, or Directions. Never claim event data is unavailable when Current Tapzy context lists events.",
   "For community questions, use Tapzy attendance, stories, profiles, messages, and Going as the social layer. If nobody is marked going, say that and still suggest the closest matching event or action.",
   "For profiles, prioritize a sharp title, short bio, strong photo, useful links, QR/contact flow, and social proof. Be specific and give copy users can paste.",
   "For messaging, suggest short natural openers, follow-ups, date/event invites, and ways to move from chat to action.",
@@ -455,7 +455,7 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "If live data is missing, say so plainly and give the best next step.",
           "Do not pretend to know private user data that was not provided.",
           "Keep answers mobile-friendly, usually 1-4 short paragraphs.",
-          "When giving lists, put each numbered item on its own line with the name, time, and place. Keep directions on a separate line.",
+          "When giving lists, put each numbered item on its own line with only the name, time, place, and one short reason. Do not dump raw links or long URLs in the visible answer; use short action names only.",
           "Use this durable Tapzy knowledge before saying you do not know: " + TAPZY_AI_KNOWLEDGE,
           "When useful, suggest one clear action. Prefer concrete picks, copy, links, directions, and next taps over vague advice."
         ].join(" ")
