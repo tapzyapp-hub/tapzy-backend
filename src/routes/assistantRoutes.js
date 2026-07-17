@@ -615,10 +615,11 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
     "Use the user's current location, weather, Tapzy events, and web context when available.",
     "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
     "If the user asks what is nearby, tonight, where to eat, where to go, directions, weather, or plans, answer from the local context first.",
-    "If exact live data is missing, say that briefly and give the best next step inside Tapzy.",
+    "If exact live data is missing, answer from Tapzy context and general reasoning first. Only mention the missing data if it changes the answer.",
+    "Do not keep saying you do not know. If location is unavailable, give a useful general answer and ask for location only when it would materially improve the result.",
     "Keep spoken answers concise unless the user asks for detail.",
     "Use this durable Tapzy knowledge before saying you do not know: " + TAPZY_AI_KNOWLEDGE,
-    locationLabel(location) ? "Current location: " + [locationLabel(location), Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? location.latitude + "," + location.longitude : ""].filter(Boolean).join(" ") + "." : "Current city is unknown unless the user says it.",
+    locationLabel(location) ? "Current location: " + [locationLabel(location), Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? location.latitude + "," + location.longitude : ""].filter(Boolean).join(" ") + "." : "Location is not available yet. Answer generally and ask the user to enable location only for nearby, weather, directions, or local planning questions.",
     meta.currentPath ? "Current Tapzy path: " + meta.currentPath + "." : "",
     contextText ? "Current Tapzy context:\n" + contextText : ""
   ].filter(Boolean).join("\n");
