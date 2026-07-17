@@ -207,6 +207,11 @@ function shouldFetchWebSearch(message) {
   return true;
 }
 
+function isLiveWebQuestion(message) {
+  const text = String(message || "");
+  return /\b(today|tonight|right now|current|currently|latest|live|news|near me|nearby|around me|weather|forecast|open now|this weekend|events?|concerts?|restaurants?|directions?)\b/i.test(text);
+}
+
 function buildWebQuery(message, city, weather) {
   const text = String(message || "").trim();
   const local = isLocalWebIntent(text);
@@ -416,6 +421,22 @@ function buildDirectTapzyEventsFeed(context, limit = 80) {
   return events.map(compactEventForAssistantFeed);
 }
 
+function buildWebSnapshotReply(message, context = {}) {
+  const web = context?.web;
+  const results = Array.isArray(web?.results) ? web.results.filter((item) => item && item.title).slice(0, 4) : [];
+  if (!web || (!web.answer && !results.length)) return "";
+  const lines = [];
+  if (web.answer) lines.push(asSafeString(web.answer, 420));
+  if (results.length) {
+    lines.push(results.map((item, index) => {
+      const details = [item.title, item.snippet, item.rating ? "rating " + item.rating : ""].filter(Boolean).join(" - ");
+      return (index + 1) + ". " + asSafeString(details, 260);
+    }).join("\n"));
+  }
+  lines.push("I can narrow this or open links if you want.");
+  return asSafeString(lines.filter(Boolean).join("\n"), 1600);
+}
+
 function compactAssistantContext(context) {
   const parts = [];
   const location = context?.location || {};
@@ -486,6 +507,7 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "Be natural, warm, concise, conversational, and capable like a general AI assistant.",
           "You can answer normal questions, follow-ups, local planning questions, Tapzy questions, directions, food, weather, events, profile help, messages, search, QR/NFC sharing, and community discovery.",
           "Use the user's location, weather, Tapzy event data, web results, current page, and conversation memory before giving generic advice.",
+          "For questions about today, tonight, latest news, current facts, weather, open places, nearby places, prices, schedules, or anything that can change, use live web search/current context before answering. Do not rely on memory for current facts.",
           "The DIRECT_TAPZY_EVENTS_FEED_JSON block is the authoritative Tapzy events feed. For event questions, answer directly from that feed before using web or generic reasoning.",
           "The DIRECT_TAPZY_EVENTS_FEED_JSON block is the authoritative Tapzy events feed. For event questions, answer directly from that feed before using web or generic reasoning.",
     "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
@@ -521,21 +543,28 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
       max_output_tokens: 650,
     };
     if (primaryTools.length) payload.tools = primaryTools;
+    if (primaryTools.length && isLiveWebQuestion(message)) {
+      payload.tool_choice = "required";
+    }
     let { response, data } = await postOpenAIResponse(payload);
     if (!response.ok && hasWebSearchTool(primaryTools)) {
       const fallbackType = primaryTools.some((tool) => tool.type === "web_search_preview") ? "web_search" : "web_search_preview";
       const fallbackTools = buildOpenAITools(context, fallbackType);
       console.error("OpenAI web search tool failed, retrying with " + fallbackType + ":", data?.error?.message || response.status);
       payload.tools = fallbackTools;
+      if (payload.tool_choice) payload.tool_choice = "required";
       ({ response, data } = await postOpenAIResponse(payload));
     }
     if (!response.ok && payload.tools && payload.tools.length) {
       console.error("OpenAI assistant tools failed, retrying without tools:", data?.error?.message || response.status);
       delete payload.tools;
+      delete payload.tool_choice;
       ({ response, data } = await postOpenAIResponse(payload));
     }
     if (!response.ok) {
       console.error("OpenAI assistant failed:", data?.error?.message || response.status);
+      const webSnapshotReply = isLiveWebQuestion(message) ? buildWebSnapshotReply(message, context) : "";
+      if (webSnapshotReply) return webSnapshotReply;
       return "";
     }
     const text = asSafeString(extractResponseText(data), 5000);
