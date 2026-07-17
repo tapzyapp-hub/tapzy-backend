@@ -746,8 +746,9 @@ async function handleRealtimeCallRequest(req, res) {
 
     const rawBody = typeof req.body === "string" ? req.body : (req.body && (req.body.sdp || req.body.offer || req.body.offerSdp)) || "";
     const offerSdp = String(rawBody || "").trim();
-    if (!offerSdp) {
-      return res.status(400).type("text/plain").send("Realtime voice offer was empty. Please refresh Tapzy and try again.");
+    if (!offerSdp || !offerSdp.startsWith("v=0") || !offerSdp.includes("m=audio")) {
+      console.error("Realtime voice received invalid offer", { length: offerSdp.length, preview: offerSdp.slice(0, 80) });
+      return res.status(400).type("text/plain").send("Realtime voice offer was incomplete. Please tap Mic again.");
     }
 
     const query = req.query || {};
@@ -786,8 +787,8 @@ async function handleRealtimeCallRequest(req, res) {
       },
     };
     const form = new FormData();
-    form.set("sdp", offerSdp);
-    form.set("session", JSON.stringify(sessionConfig));
+    form.set("sdp", new Blob([offerSdp], { type: "application/sdp" }), "offer.sdp");
+    form.set("session", new Blob([JSON.stringify(sessionConfig)], { type: "application/json" }), "session.json");
 
     const response = await fetch(realtimeUrl, {
       method: "POST",
