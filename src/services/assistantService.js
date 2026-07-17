@@ -193,8 +193,7 @@ function buildDirectEventFeedAnswer(message, context = {}) {
     intro,
     events.map((event, index) => {
       const line = formatEventLine(event, index);
-      const actions = [event.id ? "Open on Tapzy" : "", event.ticketUrl || event.eventUrl ? "Tickets" : "", eventMapsLink(event) ? "Directions" : ""].filter(Boolean).join(" · ");
-      return line + (actions ? "\n   " + actions : "");
+      return line;
     }).join("\n"),
     "Ask me to narrow this by vibe, price, distance, date, city, who is going, or best first pick."
   ].join("\n");
@@ -229,8 +228,8 @@ function buildEventSuggestions(message, context = {}) {
     "Why: " + reason + ".",
     "Top options:\n" + events.slice(0, 4).map(formatEventLine).join("\n"),
     "Open: " + eventLink(best) + ".",
-    ticket ? "Tickets available." : "",
-    directions ? "Directions available." : "",
+    
+    
     Number(best.attendingCount || 0) ? "Social angle: check who is going, then message one person with: You going to " + cleanText(best.title, "this") + " tonight?" : "Social angle: tap Going or share the event in messages to pull people into the plan.",
     webSearchNote(context.web)
   ].filter(Boolean).join("\n");
