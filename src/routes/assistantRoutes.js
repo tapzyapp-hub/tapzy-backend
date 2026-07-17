@@ -786,16 +786,29 @@ async function handleRealtimeCallRequest(req, res) {
         output: { voice: OPENAI_REALTIME_VOICE },
       },
     };
-    const form = new FormData();
-    form.set("sdp", new Blob([offerSdp], { type: "application/sdp" }), "offer.sdp");
-    form.set("session", new Blob([JSON.stringify(sessionConfig)], { type: "application/json" }), "session.json");
+    const boundary = "----tapzy-realtime-" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    const multipartBody = [
+      "--" + boundary,
+      "Content-Disposition: form-data; name=\"sdp\"; filename=\"offer.sdp\"",
+      "Content-Type: application/sdp",
+      "",
+      offerSdp,
+      "--" + boundary,
+      "Content-Disposition: form-data; name=\"session\"",
+      "Content-Type: application/json",
+      "",
+      JSON.stringify(sessionConfig),
+      "--" + boundary + "--",
+      "",
+    ].join("\r\n");
 
     const response = await fetch(realtimeUrl, {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + OPENAI_API_KEY,
+        "Content-Type": "multipart/form-data; boundary=" + boundary,
       },
-      body: form,
+      body: multipartBody,
     });
 
     const text = await response.text().catch(() => "");
