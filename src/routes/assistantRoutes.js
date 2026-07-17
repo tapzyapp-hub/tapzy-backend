@@ -789,7 +789,7 @@ async function handleRealtimeCallRequest(req, res) {
     const boundary = "----tapzy-realtime-" + Date.now().toString(36) + Math.random().toString(36).slice(2);
     const multipartBody = [
       "--" + boundary,
-      "Content-Disposition: form-data; name=\"sdp\"; filename=\"offer.sdp\"",
+      "Content-Disposition: form-data; name=\"sdp\"",
       "Content-Type: application/sdp",
       "",
       offerSdp,
