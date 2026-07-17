@@ -105,57 +105,9 @@ function eventMapsLink(event) {
 
 function formatEventLine(event, index) {
   const title = cleanText(event && event.title, "Untitled event");
-  const where = cleanText((event && (event.venueName || event.address || event.city)), "location coming soon");
+  const where = cleanText((event && (event.venueName || event.city || event.address)), "location coming soon");
   const when = compactDate(event && event.startAt);
-  const price = cleanText(event && event.priceText);
-  const category = cleanText(event && event.category);
-  const attending = Number((event && event.attendingCount) || 0);
-  const distance = Number.isFinite(event && event.distanceKm) ? (Math.round(event.distanceKm * 10) / 10) + " km" : "";
-  const why = cleanText(event && event.description).slice(0, 120);
-  const parts = [String(index + 1) + ". " + title, when, where];
-  if (category) parts.push(category);
-  if (price) parts.push(price);
-  if (distance) parts.push(distance);
-  if (attending) parts.push(String(attending) + " going");
-  if (why) parts.push(why);
-  return parts.join(" - ");
-}
-
-function filterEvents(events, message) {
-  const text = normalize(message);
-  const items = Array.isArray(events) ? events : [];
-  if (!items.length) return [];
-
-  const buckets = [
-    { match: ["concert", "music", "live music", "dj", "nightlife", "bar", "club", "dance", "dances", "party"], terms: ["concert", "music", "dj", "nightlife", "bar", "club", "dance", "party", "afterparty"] },
-    { match: ["sports", "soccer", "basketball", "hockey", "baseball", "football", "game"], terms: ["sports", "sport", "soccer", "basketball", "hockey", "baseball", "football", "game"] },
-    { match: ["car meet", "cars", "car show", "meet"], terms: ["car", "cars", "auto", "vehicle", "meet"] },
-    { match: ["firework", "fireworks"], terms: ["firework", "fireworks"] },
-    { match: ["food", "food truck", "ribfest", "festival", "market"], terms: ["food", "truck", "ribfest", "festival", "market", "taste"] },
-    { match: ["study", "study group", "community"], terms: ["study", "workshop", "community", "meetup"] },
-  ];
-
-  const bucket = buckets.find((item) => includesAny(text, item.match));
-  if (!bucket) return items;
-
-  const filtered = items.filter((event) => {
-    const haystack = eventHaystack(event);
-    return includesAny(haystack, bucket.terms);
-  });
-  return filtered.length ? filtered : items;
-}
-
-function pickEvents(events, message, limit = 4) {
-  return filterEvents(events, message).slice(0, limit);
-}
-
-
-function formatWebResults(web, limit = 3) {
-  if (!web || !Array.isArray(web.results) || !web.results.length) return "";
-  return web.results.slice(0, limit).map((item, index) => {
-    const details = [cleanText(item.snippet), item.rating ? "rating " + item.rating : "", item.reviews ? item.reviews + " reviews" : ""].filter(Boolean).join(" - ");
-    return String(index + 1) + ". " + cleanText(item.title, "Result") + (details ? " - " + details : "") + (item.link ? " - " + item.link : "");
-  }).join(" ");
+  return [String(index + 1) + ". " + title, when, where].filter(Boolean).join(" - ");
 }
 
 function webSearchNote(web) {
