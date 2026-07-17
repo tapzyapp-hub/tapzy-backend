@@ -184,18 +184,18 @@ function isAskingForEventFeed(text) {
 
 function buildDirectEventFeedAnswer(message, context = {}) {
   const text = normalize(message);
-  const events = pickEvents(context.events, message, isAskingForEventFeed(text) ? 8 : 5);
+  const events = pickEvents(context.events, message, isAskingForEventFeed(text) ? 3 : 3);
   if (!events.length) return "";
   const intro = isAskingForEventFeed(text)
-    ? "Here is the direct Tapzy events feed I have loaded:"
-    : "From the Tapzy events feed, these are the strongest matches:";
+    ? "Here are the best Tapzy picks tonight:"
+    : "Best Tapzy matches:";
   return [
     intro,
     events.map((event, index) => {
       const line = formatEventLine(event, index);
       return line;
     }).join("\n"),
-    "Ask me to narrow this by vibe, price, distance, date, city, who is going, or best first pick."
+    "Ask me to narrow it by vibe, price, distance, or best first pick."
   ].join("\n");
 }
 
