@@ -398,7 +398,7 @@ function compactAssistantContext(context) {
       const directions = event.latitude !== null && event.latitude !== undefined && event.longitude !== null && event.longitude !== undefined
         ? "maps: https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(event.latitude + "," + event.longitude)
         : "";
-      return (index + 1) + ". " + [event.title, event.category, event.description, place, event.address, time, event.priceText, distance, attending, event.ticketUrl, directions, event.id ? "/events/view/" + event.id : ""].filter(Boolean).join(" | ");
+      return (index + 1) + ". " + [event.title, event.category, event.description, place, event.address, time, event.priceText, distance, attending, event.ticketUrl || event.eventUrl ? "Tickets available" : "", directions ? "Directions available" : "", event.id ? "Open on Tapzy available" : ""].filter(Boolean).join(" | ");
     }).join(" || "));
   }
   const web = context?.web;
