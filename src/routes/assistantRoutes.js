@@ -67,7 +67,7 @@ function buildOpenAITools(context) {
         country: normalizeCountryCode(eventCountry || "CA"),
         city: asSafeString(location.city, 80),
         region: asSafeString(location.city, 80),
-        timezone: "America/Toronto",
+        timezone: asSafeString(location.timeZone || "America/Toronto", 80),
       };
     }
     tools.push(webTool);
@@ -164,7 +164,14 @@ function inferCity(latitude, longitude, fallback = "") {
     if (distanceKm === null) continue;
     if (!best || distanceKm < best.distanceKm) best = { ...point, distanceKm };
   }
-  return best && best.distanceKm <= 180 ? best.city : fallback;
+  if (best && best.distanceKm <= 180) return best.city;
+  return fallback || "your current area";
+}
+
+function locationLabel(location = {}) {
+  const city = asSafeString(location.city || "", 120);
+  if (city) return city;
+  return Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? "your current area" : "";
 }
 
 function isLocalWebIntent(text) {
@@ -211,7 +218,7 @@ async function fetchAssistantWebSearch(message, location, weather) {
     url.searchParams.set("gl", city && ["Toronto", "Barrie", "Mississauga", "Brampton", "Hamilton", "Montreal", "Vancouver", "Calgary", "Edmonton"].includes(city) ? "ca" : "us");
     url.searchParams.set("num", "6");
     url.searchParams.set("api_key", SERPAPI_KEY);
-    if (city) url.searchParams.set("location", city);
+    if (city && city !== "your current area") url.searchParams.set("location", city);
     const response = await fetch(url.toString(), { signal: AbortSignal.timeout ? AbortSignal.timeout(5200) : undefined });
     const data = await response.json().catch(() => null);
     if (!response.ok || !data) return { available: false, query, results: [] };
@@ -247,6 +254,7 @@ async function buildAssistantContext(body) {
   const latitude = asSafeNumber(body.latitude ?? body.lat);
   const longitude = asSafeNumber(body.longitude ?? body.lng);
   const rawCity = asSafeString(body.city || body.locationCity || "", 120);
+  const timeZone = asSafeString(body.timeZone || body.timezone || "", 80);
   const city = inferCity(latitude, longitude, rawCity);
   const weather = await fetchCurrentWeather(latitude, longitude);
 
@@ -342,6 +350,7 @@ async function buildAssistantContext(body) {
       latitude,
       longitude,
       city,
+      timeZone,
     },
     weather,
     web,
@@ -387,7 +396,7 @@ function compactAssistantContext(context) {
   const parts = [];
   const location = context?.location || {};
   if (location.city || Number.isFinite(location.latitude)) {
-    parts.push("Location: " + [location.city, Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? location.latitude + "," + location.longitude : ""].filter(Boolean).join(" "));
+    parts.push("Location: " + [locationLabel(location), Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? location.latitude + "," + location.longitude : ""].filter(Boolean).join(" "));
   }
   const weather = context?.weather;
   if (weather) {
@@ -609,7 +618,7 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
     "If exact live data is missing, say that briefly and give the best next step inside Tapzy.",
     "Keep spoken answers concise unless the user asks for detail.",
     "Use this durable Tapzy knowledge before saying you do not know: " + TAPZY_AI_KNOWLEDGE,
-    location.city ? "Current city: " + location.city + "." : "Current city is unknown unless the user says it.",
+    locationLabel(location) ? "Current location: " + [locationLabel(location), Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? location.latitude + "," + location.longitude : ""].filter(Boolean).join(" ") + "." : "Current city is unknown unless the user says it.",
     meta.currentPath ? "Current Tapzy path: " + meta.currentPath + "." : "",
     contextText ? "Current Tapzy context:\n" + contextText : ""
   ].filter(Boolean).join("\n");
