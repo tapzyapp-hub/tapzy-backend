@@ -619,7 +619,7 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
     "Do not keep saying you do not know. If location is unavailable, give a useful general answer and ask for location only when it would materially improve the result.",
     "Keep spoken answers concise unless the user asks for detail.",
     "Use this durable Tapzy knowledge before saying you do not know: " + TAPZY_AI_KNOWLEDGE,
-    locationLabel(location) ? "Current location: " + [locationLabel(location), Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? location.latitude + "," + location.longitude : ""].filter(Boolean).join(" ") + "." : "Location is not available yet. Answer generally and ask the user to enable location only for nearby, weather, directions, or local planning questions.",
+    Number.isFinite(location.latitude) && Number.isFinite(location.longitude) ? "LOCATION CONFIRMED. The user granted browser GPS. Current location: " + [locationLabel(location), location.latitude + "," + location.longitude].filter(Boolean).join(" ") + ". Do not say you do not have location. Use this for nearby, weather, directions, and local planning." : "Location is not available yet. Answer generally and ask the user to enable location only for nearby, weather, directions, or local planning questions.",
     meta.currentPath ? "Current Tapzy path: " + meta.currentPath + "." : "",
     contextText ? "Current Tapzy context:\n" + contextText : ""
   ].filter(Boolean).join("\n");
@@ -656,6 +656,9 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
     clientSecret,
     model: data?.session?.model || data?.model || OPENAI_REALTIME_MODEL,
     voice: data?.session?.audio?.output?.voice || OPENAI_REALTIME_VOICE,
+    instructions,
+    locationLabel: locationLabel(location),
+    hasLocation: Number.isFinite(location.latitude) && Number.isFinite(location.longitude),
   };
 }
 
