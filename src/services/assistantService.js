@@ -47,17 +47,28 @@ function mapsDirectionUrl(destination) {
 }
 
 const TAPZY_OFFLINE_KNOWLEDGE = {
-  identity: "Tapzy is a premium digital identity and local action platform built around profiles, stories, messaging, events, discovery, QR/NFC sharing, Pair, and Ask Tapzy.",
-  pages: [
-    "Stories: public updates, live stories, social discovery, event-connected posts.",
-    "Events: event feed, detail pages, Going, tickets, maps, and Ask Tapzy planning.",
-    "Profiles: /u/:username with photo, title, bio, links, QR, contact actions, social proof.",
+  identity: "Tapzy is a premium digital identity and local action platform. It combines a polished public profile, stories, events, discovery, messages, QR/NFC sharing, Pair, and Ask Tapzy into one real-world social layer.",
+  mission: "Tapzy helps people move from interest to action: find what is happening, decide where to go, connect with people, share identity, message, navigate, and post the moment after.",
+  product: [
+    "Profiles: a premium identity page with name, title, bio, photo, links, QR, contact actions, and social proof.",
+    "Stories: 24-hour posts for moments, creator updates, event recaps, and social discovery.",
+    "Events: event feed, event pages, Going, tickets, maps, categories, attendance, and planning.",
+    "Discover: a place to find people, stories, events, and local intent.",
     "Messages: direct conversations that should move people from chat to plans.",
-    "Pair: phone-to-phone exchange for real-world networking.",
-    "Search and Discover: find people, places, events, stories, and intent."
+    "Pair: phone-to-phone sharing for real-world networking and quick social exchange.",
+    "Search: one surface for users, events, places, stories, and eventually local questions.",
+    "Ask Tapzy: a built-in AI concierge that answers, ranks, chooses, opens pages, suggests messages, and turns vague intent into a next tap."
   ],
-  voice: "Smart local friend: decisive, warm, concise, action-first, never stiff.",
-  ranking: "Rank plans by match to intent, distance, time, weather fit, price, social proof, and effort.",
+  assistant: [
+    "Answer like a capable AI assistant first, then add Tapzy-specific action when useful.",
+    "For local questions, use Tapzy events, location, weather, current page, attendance, and practical reasoning before generic advice.",
+    "For general questions, give a clear answer, explain simply, and offer a useful next step.",
+    "For business/product questions, think like a senior product strategist for a premium social app.",
+    "For writing requests, give paste-ready copy.",
+    "For recommendations without live web, state the limit lightly and give a strong framework or Tapzy action instead of stalling."
+  ],
+  voice: "Warm, sharp, natural, decisive, premium, concise, and useful. It should feel closer to ChatGPT plus a local Tapzy concierge, not a narrow support bot.",
+  ranking: "Rank plans by intent match, distance, time, weather fit, price, vibe, effort, social proof, and whether it creates a real-world connection.",
 };
 
 function cityLabel(context = {}) {
@@ -72,8 +83,51 @@ function eventHaystack(event) {
   return normalize([event && event.title, event && event.description, event && event.category, event && event.venueName, event && event.address, event && event.city].filter(Boolean).join(" "));
 }
 
+
+function filterEvents(events, message) {
+  const list = Array.isArray(events) ? events.filter(Boolean) : [];
+  const terms = tokenize(message).filter((term) => term.length > 2 && !["the", "and", "for", "with", "near", "tonight", "today", "event", "events", "what", "going", "happening"].includes(term));
+  if (!terms.length) return list;
+  const matched = list.filter((event) => {
+    const haystack = eventHaystack(event);
+    return terms.some((term) => haystack.includes(term));
+  });
+  return matched.length ? matched : list;
+}
+
+function eventScore(event, message) {
+  const haystack = eventHaystack(event);
+  const terms = tokenize(message).filter((term) => term.length > 2);
+  let score = 0;
+  terms.forEach((term) => {
+    if (haystack.includes(term)) score += 4;
+  });
+  const attending = Number(event && (event.attendingCount || event.goingCount || event._count?.attendees || 0));
+  if (Number.isFinite(attending)) score += Math.min(attending, 25) / 5;
+  const start = event && event.startAt ? new Date(event.startAt).getTime() : 0;
+  if (start && !Number.isNaN(start)) {
+    const deltaHours = Math.abs(start - Date.now()) / 36e5;
+    score += Math.max(0, 8 - Math.min(deltaHours, 8));
+  }
+  return score;
+}
+
+function pickEvents(events, message, limit = 3) {
+  return filterEvents(events, message)
+    .slice()
+    .sort((a, b) => eventScore(b, message) - eventScore(a, message))
+    .slice(0, Math.max(1, limit));
+}
+
 function formatTapzyKnowledge() {
-  return [TAPZY_OFFLINE_KNOWLEDGE.identity, "Key surfaces: " + TAPZY_OFFLINE_KNOWLEDGE.pages.join(" "), "Assistant style: " + TAPZY_OFFLINE_KNOWLEDGE.voice, "Planning rule: " + TAPZY_OFFLINE_KNOWLEDGE.ranking].join(" ");
+  return [
+    TAPZY_OFFLINE_KNOWLEDGE.identity,
+    "Mission: " + TAPZY_OFFLINE_KNOWLEDGE.mission,
+    "Product surfaces: " + TAPZY_OFFLINE_KNOWLEDGE.product.join(" "),
+    "Assistant behavior: " + TAPZY_OFFLINE_KNOWLEDGE.assistant.join(" "),
+    "Voice: " + TAPZY_OFFLINE_KNOWLEDGE.voice,
+    "Planning rule: " + TAPZY_OFFLINE_KNOWLEDGE.ranking
+  ].join(" ");
 }
 
 function buildSmartUnknownAnswer(message, pageType, context = {}) {
@@ -128,6 +182,34 @@ function buildGeneralWebAnswer(message, context = {}) {
     ? "Yes. "
     : "Here is the answer I found. ";
   return intro + webSearchNote(web);
+}
+
+function buildGeneralKnowledgeAnswer(message, context = {}) {
+  const text = normalize(message);
+  const city = cityLabel(context);
+  if (!text) return "";
+  if (includesAny(text, ["what is ai", "what is artificial intelligence", "explain ai"])) {
+    return "AI is software that can understand patterns, language, images, and data well enough to help people think, create, decide, and automate work. For Tapzy, the useful version is not just answering questions. It should help users pick plans, write messages, find events, improve profiles, and move from idea to action.";
+  }
+  if (includesAny(text, ["what is quantum computing", "explain quantum computing", "quantum computer"])) {
+    return "Quantum computing is a way of computing that uses quantum bits, or qubits, instead of normal bits. A normal bit is 0 or 1. A qubit can behave like a mix of states until measured, which lets certain algorithms explore possibilities differently. It will not replace normal computers for everyday apps soon, but it could become powerful for chemistry, optimization, security research, and some advanced simulations.";
+  }
+  if (includesAny(text, ["what can you do", "what do you know", "how smart", "like chatgpt", "chat gpt", "chatgpt"])) {
+    return "I can answer general questions, explain ideas, write copy, brainstorm features, coach messages, plan dates, suggest food or nightlife, help with Tapzy profiles, reason from events and location, and turn vague plans into a next move. Live web is extra; the core brain should still be useful from Tapzy context and general reasoning.";
+  }
+  if (includesAny(text, ["business", "startup", "make money", "revenue", "monetize", "growth", "marketing"])) {
+    return "For Tapzy, the strongest business direction is premium local utility: identity, events, messaging, and AI planning in one app. Monetization can come from promoted events, creator tools, venue dashboards, premium profiles, Tapzy Pro, business cards, ticket/booking affiliate links, and local discovery placements. The key is making Tapzy useful before asking users or venues to pay.";
+  }
+  if (includesAny(text, ["date idea", "date ideas", "with my girl", "girlfriend", "boyfriend", "romantic"])) {
+    return "A strong date plan has three parts: an easy opener, one memorable activity, and a low-pressure second stop. Near " + city + ", I would choose a good food spot or cafe first, then an event/walk/view, then dessert or a lounge if the vibe is good. Tapzy should turn that into cards with directions, budget, time, and a shareable plan.";
+  }
+  if (includesAny(text, ["restaurant", "food", "eat", "coffee", "snack", "lunch", "dinner"])) {
+    return "Without live restaurant search, I would decide by vibe first: quick and casual, date-night, late-night, healthy, cheap, or premium. Then Tapzy should rank by distance, price, hours, photos, and whether it pairs with an event nearby. Tell me the vibe and budget and I will narrow it into a plan.";
+  }
+  if (includesAny(text, ["explain", "what is", "how does", "why does", "should i", "can you", "help me understand"])) {
+    return "Here is the simple version: I can reason through that and make it practical. Give me the exact topic or decision, and I will break it into what matters, what I would do first, and the Tapzy-style next step if it connects to people, places, events, or your profile.";
+  }
+  return "";
 }
 
 function isAskingForEventFeed(text) {
@@ -230,7 +312,7 @@ function buildFoodAnswer(message, context = {}) {
     "I would search for " + titleCase(cuisine) + " " + (budget ? "under " + budget : "nearby") + " and rank by distance, rating, photos, and whether it fits the moment.",
     lateNight ? "For late-night snacks, I would prioritize places still open, quick pickup, and short travel time." : "",
     webSearchNote(context.web),
-    "One-tap map search: " + mapsSearchUrl(query) + ".",
+    "Next step: open a nearby map search and compare distance, photos, and hours.",
     context.location && context.location.city ? "I would bias the results around " + context.location.city + "." : "If location is enabled, Tapzy can make this precise instead of generic."
   ].filter(Boolean).join(" ");
 }
@@ -246,7 +328,7 @@ function buildDatePlan(message, context = {}) {
     "3. Finish with something low-pressure like a waterfront walk, live music, an arcade, bowling, or a night market.",
     "4. Keep travel tight so the night feels easy.",
     webSearchNote(context.web),
-    "Open a dinner search: " + mapsSearchUrl("restaurants for date night " + ((context.location && context.location.city) || "near me")) + ".",
+    "Next step: open a date-night dinner search nearby, then pick the place with the easiest second stop within walking distance.",
     "Tapzy should eventually turn this into cards with directions, photos, travel time, and one-tap sharing to the person you are going with."
   ].join(" ");
 }
@@ -408,7 +490,7 @@ function buildOfflineConciergeAnswer(message, context = {}) {
 
 function buildFeatureSuggestion(message) {
   const text = normalize(message);
-  if (includesAny(text, ["ai", "assistant", "ask tapzy", "concierge"])) return "The strongest AI direction is not a separate chatbot. Make Ask Tapzy available on every core page and let it produce actions: show events, open maps, suggest food, message people, plan dates, and connect users nearby.";
+  if (includesAny(text, ["tapzy ai", "tapzy assistant", "ask tapzy", "concierge"])) return "The strongest AI direction is not a separate chatbot. Make Ask Tapzy available on every core page and let it produce actions: show events, open maps, suggest food, message people, plan dates, and connect users nearby.";
   if (includesAny(text, ["message", "chat", "dm"])) return "The next strong upgrade for Tapzy messages is live inbox refresh, unread status, seen state, image preview before send, and clean loading transitions.";
   if (includesAny(text, ["search", "find users", "discover"])) return "The next strong upgrade for Tapzy search is instant results while typing, smarter ranking, suggested users, nearby context, and direct message actions in results.";
   if (includesAny(text, ["profile", "bio", "title"])) return "The next strong upgrade for Tapzy profiles is stronger hierarchy, cleaner typography, better social cards, and smart profile improvement suggestions.";
@@ -439,7 +521,7 @@ function extractCommandIntent(msg) {
   if (includesAny(text, ["who are you"])) return "who";
   if (includesAny(text, ["weather", "temperature", "forecast", "how cold", "how hot"])) return "weather";
   if (includesAny(text, ["navigate", "directions", "take me to", "get me to"])) return "directions";
-  if (includesAny(text, ["first date", "date night", "plan me a date", "with my girl", "girlfriend"])) return "date-plan";
+  if (includesAny(text, ["first date", "date night", "date idea", "date ideas", "plan me a date", "with my girl", "girlfriend", "boyfriend", "romantic"])) return "date-plan";
   if (includesAny(text, ["rain", "raining", "rainy"])) return "rain";
   if (includesAny(text, ["relax", "quiet", "chill", "calm"])) return "relax";
   if (includesAny(text, ["free", "hours free", "hour free", "three hours", "3 hours"])) return "time-free";
@@ -460,7 +542,7 @@ function extractCommandIntent(msg) {
   if (includesAny(text, ["nfc", "card", "tap card", "tap phones", "tap phone"])) return "card";
   if (includesAny(text, ["qr", "show my qr", "open qr"])) return "qr";
   if (includesAny(text, ["founder"])) return "founder";
-  if (includesAny(text, ["suggest", "idea", "feature", "improve tapzy", "assistant", "ai"])) return "suggestion";
+  if (includesAny(text, ["suggest a tapzy", "tapzy idea", "feature", "improve tapzy", "tapzy assistant", "ask tapzy feature"])) return "suggestion";
   if (includesAny(text, ["open home", "go home", "home"])) return "nav-home";
   if (includesAny(text, ["open search"])) return "nav-search";
   if (includesAny(text, ["open messages"])) return "nav-messages";
@@ -512,6 +594,8 @@ async function buildAssistantReply({ message, pageType = "general", isAuthPage =
   if (intent === "suggestion") return buildFeatureSuggestion(message);
   const generalWebAnswer = buildGeneralWebAnswer(message, context);
   if (generalWebAnswer) return generalWebAnswer;
+  const generalKnowledgeAnswer = buildGeneralKnowledgeAnswer(message, context);
+  if (generalKnowledgeAnswer) return generalKnowledgeAnswer;
   if (isAuthPage) {
     if (includesAny(msg, ["sign in", "login"])) return "You can sign in using your Tapzy email and password. If you do not have an account yet, create one first.";
     if (includesAny(msg, ["create account", "sign up"])) return "To create your Tapzy account, choose a clean username, enter an email you control, and use a password with at least 8 characters.";
