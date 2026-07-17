@@ -5,8 +5,9 @@ const { buildAssistantReply } = require("../services/assistantService");
 const SERPAPI_KEY = process.env.SERPAPI_KEY || "";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.4-mini";
-const OPENAI_REALTIME_MODEL = process.env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1";
-const OPENAI_REALTIME_VOICE = process.env.OPENAI_REALTIME_VOICE || "marin";
+const OPENAI_REALTIME_MODEL = process.env.OPENAI_REALTIME_MODEL || "gpt-realtime";
+const OPENAI_REALTIME_VOICE = process.env.OPENAI_REALTIME_VOICE || "cedar";
+const OPENAI_REALTIME_SPEED = Math.min(1.5, Math.max(0.25, Number(process.env.OPENAI_REALTIME_SPEED || 0.92)));
 const OPENAI_VECTOR_STORE_IDS = String(process.env.OPENAI_VECTOR_STORE_IDS || process.env.OPENAI_FILE_SEARCH_VECTOR_STORE_IDS || "")
   .split(",")
   .map((id) => id.trim())
@@ -662,6 +663,7 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
   const instructions = [
     "You are Ask Tapzy, the built-in real-time voice assistant inside Tapzy.",
     "Be warm, quick, natural, and useful. Speak like a smart local friend, not a generic chatbot.",
+    "Voice style: calm, smooth, grounded, premium, and slightly lower in tone. Do not sound squeaky, rushed, chirpy, or overly excited.",
     "Voice rule: only answer after the user uses the wake phrase Hey Tapzy or clearly starts with Tapzy. Ignore background voices, music, TV, accidental noise, and speech that is not directed at you. If the wake phrase is missing, stay quiet or briefly remind them to say Hey Tapzy.",
     "Use the user's current location, weather, Tapzy events, and web context when available.",
     "The Tapzy events listed in Current Tapzy context are real app data available to you. Do not say you cannot access event data when that list is present.",
@@ -689,7 +691,7 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
         model: OPENAI_REALTIME_MODEL,
         instructions,
         audio: {
-          output: { voice: OPENAI_REALTIME_VOICE }
+          output: { voice: OPENAI_REALTIME_VOICE, speed: OPENAI_REALTIME_SPEED }
         }
       }
     }),
@@ -709,6 +711,7 @@ async function requestRealtimeSessionFromOpenAI(context = {}, meta = {}) {
     clientSecret,
     model: data?.session?.model || data?.model || OPENAI_REALTIME_MODEL,
     voice: data?.session?.audio?.output?.voice || OPENAI_REALTIME_VOICE,
+    speed: data?.session?.audio?.output?.speed || OPENAI_REALTIME_SPEED,
     instructions,
     locationLabel: locationLabel(location),
     hasLocation: Number.isFinite(location.latitude) && Number.isFinite(location.longitude),

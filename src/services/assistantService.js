@@ -83,6 +83,68 @@ const TAPZY_OFFLINE_KNOWLEDGE = {
     "Tapzy should not dump huge links. It should summarize, then offer small actions like Open on Tapzy, Tickets, Directions, or Website.",
     "The strongest Tapzy experience is local action: ask, choose, go, connect, post."
   ],
+  canadaFood: {
+    rule: "For Canada-wide food, dessert, coffee, cocktail, and bar questions, treat ratings as live-changing. Never claim this is every five-star spot. Say these are strong known picks and ask for city, budget, vibe, cuisine, distance, or occasion to narrow it.",
+    cities: ["Barrie", "Toronto", "Montreal", "Vancouver", "Calgary", "Ottawa", "Edmonton", "Quebec City", "Halifax", "Winnipeg", "Victoria", "Saskatoon", "St. John's"],
+    restaurants: [
+      "Toronto: Alo, Edulis, Canoe, Don Alfonso 1890, Giulietta, Bar Isabel, Grey Gardens, Miku Toronto, Pai, Richmond Station, Quetzal, Osteria Giulia, Dreyfus, Rasa, Sushi Masaki Saito.",
+      "Montreal: Toque!, Joe Beef, Mon Lapin, Vin Mon Lapin, Beba, Liverpool House, L'Express, Schwartz's, Damas, Le Mousso, Elena, Bouillon Bilk, Au Pied de Cochon, Nora Gray.",
+      "Vancouver: Published on Main, Kissa Tanto, St. Lawrence, AnnaLena, Botanist, Miku Vancouver, Tojo's, Masayoshi, Phnom Penh, Savio Volpe, L'Abattoir, Bao Bei, Hawksworth.",
+      "Calgary: River Cafe, Major Tom, Ten Foot Henry, Bridgette Bar, Pigeonhole, Model Milk, Shokunin, Eight, Lonely Mouth, Lulu Bar.",
+      "Ottawa: Atelier, Riviera, North & Navy, Supply and Demand, Whalesbone, Fairouz Cafe, Beckta, Arlo.",
+      "Quebec City: Laurie Raphael, Le Saint-Amour, Chez Boulay, Taniere3, Arvi, Battuto.",
+      "Halifax: The Bicycle Thief, Bar Kismet, Edna, Drift, Highwayman, The Press Gang.",
+      "Edmonton: Rge Rd, Uccellino, Biera, Bar Bricco, Bündok, Sabor.",
+      "Winnipeg: Deer + Almond, Clementine, Enoteca, Nola, Passero, Sous Sol.",
+      "Victoria: Agrius, Marilena Cafe and Raw Bar, Little Jumbo, Il Terrazzo, Wind Cries Mary."
+    ],
+    desserts: [
+      "Toronto: Bang Bang Ice Cream, Roselle, Nadège, Delysees, Butter Baker, Craig's Cookies, Daan Go Cake Lab, Uncle Tetsu, Soma Chocolatemaker.",
+      "Montreal: Kem CoBa, Patrice Patissier, Kouign-Amann, Juliette & Chocolat, Havre aux Glaces, Cheskie's, Patisserie Rhubarbe.",
+      "Vancouver: Thierry, Beta5 Chocolates, Earnest Ice Cream, Beaucoup Bakery, Thomas Haas, Purebread, Mello Donuts.",
+      "Calgary: Made By Marcus, Yann Haute Patisserie, Manuel Latruwe, Glamorgan Bakery, Pie Junkie.",
+      "Ottawa: Moo Shu Ice Cream, SuzyQ Doughnuts, Art-Is-In Bakery, Stella Luna Gelato.",
+      "Halifax: Dee Dee's Ice Cream, The Old Apothecary, LF Bakery, Rousseau Chocolatier.",
+      "Victoria: Chocolats Favoris, Crust Bakery, Cold Comfort, Roger's Chocolates."
+    ],
+    bars: [
+      "Toronto: Bar Pompette, Civil Liberties, Mother Cocktail Bar, Bar Raval, Bar Isabel, Paris Paris, Cocktail Bar, Mahjong Bar.",
+      "Montreal: Cloakroom Bar, Atwater Cocktail Club, Coldroom, El Pequeño Bar, Bar Henrietta, Milky Way, Big in Japan Bar.",
+      "Vancouver: Botanist Bar, The Keefer Bar, Laowai, Clough Club, L'Abattoir, The Diamond, Published on Main bar program.",
+      "Calgary: Proof, Shelter, Major Tom, Bridgette Bar, Pigeonhole, Prickett Richard.",
+      "Ottawa: Riviera, Charlotte, Stolen Goods, Moonroom, Arlo.",
+      "Halifax: Bar Kismet, Highwayman, Lot Six, The Narrows Public House.",
+      "Edmonton: Clementine, Bar Bricco, Fu's Repair Shop, Baijiu.",
+      "Winnipeg: Patent 5, Langside Grocery, Nonsuch Brewing, The Roost.",
+      "Victoria: Clive's Classic Lounge, Little Jumbo, Wind Cries Mary, Citrus & Cane."
+    ],
+    cuisines: ["Canadian fine dining", "sushi", "Italian", "French", "Middle Eastern", "Thai", "Indian", "Korean", "Chinese", "Vietnamese", "Mexican", "steakhouse", "seafood", "brunch", "coffee", "bakeries", "ice cream", "cocktail bars", "wine bars", "sports bars", "date-night lounges"],
+    answerStyle: "When asked for food in Canada, give 3 to 7 picks max, grouped by city or cuisine. Include why each pick fits. Offer to narrow by city, budget, food type, vibe, distance, or date-night/nightlife/dessert.",
+    targetMarkets: {
+      Barrie: {
+        coordinates: { latitude: 44.3894, longitude: -79.6903 },
+        positioning: "Tapzy's first strong test city: waterfront, college/student life, nightlife, casual food, late-night cravings, date spots, events, and fast drives from nearby Simcoe towns.",
+        fastFoodChains: ["McDonald's", "Tim Hortons", "A&W", "Wendy's", "Burger King", "Harvey's", "KFC", "Popeyes", "Mary Brown's", "Pizza Pizza", "Domino's", "Pizza Hut", "Subway", "Firehouse Subs", "Freshii", "Chipotle-style burrito shops", "Osmow's", "Mucho Burrito", "Starbucks", "Dairy Queen"],
+        restaurants: ["The North Restaurant", "Urban Dish", "Il Buco", "Bacio Trattoria", "147", "Michael & Marion's", "Painters Hall", "The Farmhouse", "Donaleigh's Irish Public House", "Kenzington Burger Bar", "Flying Monkeys Brewery", "Mexhico", "Sakana House", "Cocina Mexicana", "Dunlop Street Diner"],
+        dessertsCoffee: ["Homestead Artisan Bakery + Cafe", "Bohemia", "Williams Fresh Cafe", "D Spot Dessert Cafe if available nearby", "Kawartha Dairy nearby", "Dairy Queen", "local bakeries and ice cream near waterfront"],
+        lateNight: ["Donaleigh's", "Flying Monkeys Brewery", "The Ranch 2.0", "Queens Hotel", "Malones Pint House", "Pizza Pizza", "Domino's", "McDonald's", "A&W", "Popeyes or chicken spots where open"],
+        barsNightlife: ["Flying Monkeys Brewery", "Donaleigh's", "The Ranch 2.0", "Queens Hotel", "Malones Pint House", "Kenzington Burger Bar", "waterfront pubs and Dunlop Street bars"],
+        travelZones: ["Barrie Waterfront", "Downtown Barrie", "Dunlop Street", "Georgian College area", "Park Place", "Bayfield Street", "Innisfil", "Orillia", "Wasaga Beach day trips"],
+        hoursRule: "Hours in Barrie change by day and season. Backup Tapzy can estimate categories, but live Tapzy Search should verify open/closed, kitchen close, delivery, phone, menu, and distance."
+      },
+      Toronto: {
+        coordinates: { latitude: 43.6532, longitude: -79.3832 },
+        positioning: "Tapzy's biggest early market: dense restaurants, nightlife, events, creators, students, tourists, dates, late-night food, and transit-friendly discovery.",
+        fastFoodChains: ["McDonald's", "Tim Hortons", "A&W", "Wendy's", "Burger King", "Harvey's", "KFC", "Popeyes", "Mary Brown's", "Pizza Pizza", "Domino's", "Pizza Hut", "Subway", "Firehouse Subs", "Chipotle", "Freshii", "Osmow's", "Paramount", "Mucho Burrito", "Starbucks", "Dairy Queen", "Jollibee"],
+        restaurants: ["Alo", "Edulis", "Canoe", "Don Alfonso 1890", "Giulietta", "Bar Isabel", "Grey Gardens", "Miku Toronto", "Pai", "Richmond Station", "Quetzal", "Osteria Giulia", "Dreyfus", "Rasa", "Sushi Masaki Saito", "Khao San Road", "Sugo", "La Palma", "Gusto 101", "Terroni"],
+        dessertsCoffee: ["Bang Bang Ice Cream", "Roselle", "Nadège", "Delysees", "Butter Baker", "Craig's Cookies", "Daan Go Cake Lab", "Uncle Tetsu", "Soma Chocolatemaker", "Sweet Jesus", "SanRemo Bakery", "Neo Coffee Bar"],
+        lateNight: ["7 West Cafe", "Fran's", "Sneaky Dee's", "The Lakeview", "King Slice", "Pizza Pizza", "Rol San area late-night Chinese", "Osmow's", "Popeyes", "McDonald's", "A&W", "street food and shawarma around entertainment districts"],
+        barsNightlife: ["Bar Pompette", "Civil Liberties", "Mother Cocktail Bar", "Bar Raval", "Bar Isabel", "Paris Paris", "Cocktail Bar", "Mahjong Bar", "The Drake Hotel", "BarChef", "King West lounges", "Ossington bars", "College Street bars"],
+        travelZones: ["King West", "Queen West", "Ossington", "Kensington Market", "Yorkville", "Distillery District", "Harbourfront", "The Annex", "Little Italy", "Chinatown", "Leslieville", "Riverside", "Liberty Village", "Scarborough food corridors"],
+        hoursRule: "Toronto hours change constantly. Backup Tapzy should know likely late-night categories, but live Tapzy Search must verify open/closed, kitchen close, reservations, menu, transit, and travel time."
+      }
+    },
+  },
   voice: "Warm, sharp, natural, decisive, premium, concise, and useful. It should feel close to ChatGPT plus a local Tapzy concierge.",
   ranking: "Rank plans by intent match, distance, time, weather fit, price, vibe, effort, social proof, and whether it creates a real-world connection.",
 };
@@ -216,6 +278,90 @@ function buildGeneralWebAnswer(message, context = {}) {
   return intro + webSearchNote(web);
 }
 
+function approxKmBetween(a, b) {
+  const lat1 = Number(a && a.latitude);
+  const lon1 = Number(a && a.longitude);
+  const lat2 = Number(b && b.latitude);
+  const lon2 = Number(b && b.longitude);
+  if (![lat1, lon1, lat2, lon2].every(Number.isFinite)) return null;
+  const rad = Math.PI / 180;
+  const dLat = (lat2 - lat1) * rad;
+  const dLon = (lon2 - lon1) * rad;
+  const s1 = Math.sin(dLat / 2);
+  const s2 = Math.sin(dLon / 2);
+  const h = s1 * s1 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * s2 * s2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+function localCoordsFromContext(context = {}) {
+  const loc = context.location || context || {};
+  const latitude = Number(loc.latitude ?? loc.lat);
+  const longitude = Number(loc.longitude ?? loc.lng);
+  return Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null;
+}
+
+function formatLocalDistanceLine(market, context = {}) {
+  const from = localCoordsFromContext(context);
+  const to = market && market.coordinates;
+  const km = approxKmBetween(from, to);
+  if (!Number.isFinite(km)) return "Enable location and Tapzy can estimate how far it is from you.";
+  const drive = Math.max(5, Math.round((km / 55) * 60));
+  return "Roughly " + Math.round(km) + " km away, about " + drive + " min by car before traffic.";
+}
+
+function buildTargetMarketFoodAnswer(message, context = {}) {
+  const text = normalize(message);
+  const pack = TAPZY_OFFLINE_KNOWLEDGE.canadaFood || {};
+  const markets = pack.targetMarkets || {};
+  const cityName = Object.keys(markets).find((name) => text.includes(name.toLowerCase())) || "";
+  if (!cityName) return "";
+  const foodIntent = includesAny(text, ["food", "restaurant", "restaurants", "eat", "dinner", "lunch", "dessert", "coffee", "bar", "bars", "nightlife", "late night", "fast food", "travel", "go", "place", "places"]);
+  if (!foodIntent) return "";
+  const market = markets[cityName];
+  const wantsFast = includesAny(text, ["fast food", "chain", "chains", "cheap", "quick"]);
+  const wantsLate = includesAny(text, ["late", "late night", "open late", "after hours", "night"]);
+  const wantsDessert = includesAny(text, ["dessert", "ice cream", "bakery", "cake", "coffee", "sweet"]);
+  const wantsBars = includesAny(text, ["bar", "bars", "drinks", "cocktail", "nightlife", "club", "lounge"]);
+  const lists = [];
+  if (wantsFast) lists.push(["Fast food chains", market.fastFoodChains]);
+  if (wantsLate) lists.push(["Late-night food", market.lateNight]);
+  if (wantsDessert) lists.push(["Dessert and coffee", market.dessertsCoffee]);
+  if (wantsBars) lists.push(["Bars and nightlife", market.barsNightlife]);
+  if (!lists.length) lists.push(["Top restaurants", market.restaurants], ["Best areas", market.travelZones]);
+  const lines = [cityName + " Tapzy local brain:", formatLocalDistanceLine(market, context), market.positioning];
+  lists.slice(0, 3).forEach(([label, values]) => {
+    lines.push(label + ": " + (values || []).slice(0, 10).join(", ") + ".");
+  });
+  lines.push(market.hoursRule || "Hours change live, so Tapzy Search should verify open/closed before sending users there.");
+  lines.push("Next Tapzy Search layer: query by open now, closes late, distance, cuisine, vibe, price, rating, photos, menu, reservation, delivery, tickets/events nearby, and directions.");
+  return lines.join("\n");
+}
+
+function buildCanadaFoodAnswer(message, context = {}) {
+  const text = normalize(message);
+  const foodIntent = includesAny(text, ["restaurant", "restaurants", "food", "eat", "dinner", "lunch", "dessert", "desserts", "bar", "bars", "cocktail", "coffee", "brunch", "date night"]);
+  if (!foodIntent) return "";
+  const canadaIntent = includesAny(text, ["canada", "canadian", "toronto", "montreal", "vancouver", "calgary", "ottawa", "edmonton", "quebec", "halifax", "winnipeg", "victoria", "saskatoon", "st john", "st. john"]);
+  const bestIntent = includesAny(text, ["best", "top", "five star", "5 star", "rated", "premium", "fancy", "must try", "recommend", "spots"]);
+  if (!canadaIntent && !bestIntent) return "";
+  const pack = TAPZY_OFFLINE_KNOWLEDGE.canadaFood || {};
+  const rows = [];
+  const wantsDessert = includesAny(text, ["dessert", "desserts", "ice cream", "bakery", "bakeries", "cake", "cookies", "pastry", "sweet"]);
+  const wantsBars = includesAny(text, ["bar", "bars", "cocktail", "cocktails", "drinks", "nightlife", "lounge", "wine"]);
+  const wantsFood = !wantsDessert && !wantsBars;
+  const cityNames = pack.cities || [];
+  const cityHit = cityNames.find((city) => text.includes(city.toLowerCase()) || (city === "Quebec City" && text.includes("quebec")) || (city === "St. John's" && (text.includes("st john") || text.includes("st. john"))));
+  const source = wantsDessert ? pack.desserts : wantsBars ? pack.bars : pack.restaurants;
+  const label = wantsDessert ? "dessert spots" : wantsBars ? "bars" : "restaurants";
+  const filtered = cityHit ? (source || []).filter((line) => line.toLowerCase().startsWith(cityHit.toLowerCase().replace("st. john's", "st. john")) || line.toLowerCase().includes(cityHit.toLowerCase() + ":")) : (source || []);
+  const picks = (filtered.length ? filtered : source || []).slice(0, cityHit ? 2 : 5);
+  if (!picks.length) return "";
+  rows.push("Strong Canada-wide " + label + " to know: ");
+  picks.forEach((line, index) => rows.push((index + 1) + ". " + line));
+  rows.push("Ratings change live, so I would treat these as known strong picks, not every five-star spot in Canada. Tell me the city, vibe, budget, food type, or date-night/nightlife/dessert mood and I will narrow it cleanly.");
+  return rows.join("\n");
+}
+
 function buildGeneralKnowledgeAnswer(message, context = {}) {
   const text = normalize(message);
   const city = cityLabel(context);
@@ -253,6 +399,8 @@ function buildGeneralKnowledgeAnswer(message, context = {}) {
   if (includesAny(text, ["date idea", "date ideas", "with my girl", "girlfriend", "boyfriend", "romantic"])) {
     return "A strong date plan has three parts: an easy opener, one memorable activity, and a low-pressure second stop. Near " + city + ", I would choose a good food spot or cafe first, then an event, walk, view, dessert, or lounge if the vibe is good. If you want, say the vibe or budget and I can switch into Tapzy mode with places, events, links, or navigation.";
   }
+  const canadaFoodAnswer = buildCanadaFoodAnswer(message, context);
+  if (canadaFoodAnswer) return canadaFoodAnswer;
   if (includesAny(text, ["restaurant", "food", "eat", "coffee", "snack", "lunch", "dinner"])) {
     return "I would decide by vibe first: quick and casual, date-night, late-night, healthy, cheap, or premium. If you say the vibe, budget, or area, I can switch into Tapzy mode and give you places, links, or directions.";
   }
@@ -610,6 +758,10 @@ async function buildAssistantReply({ message, pageType = "general", isAuthPage =
   const lastIntent = getLastUserIntent(memory);
   const intent = extractCommandIntent(msg);
   if (!msg) return "I did not catch that. Try again.";
+  const targetMarketFoodAnswer = buildTargetMarketFoodAnswer(message, context);
+  if (targetMarketFoodAnswer) return targetMarketFoodAnswer;
+  const canadaFoodAnswerImmediate = buildCanadaFoodAnswer(message, context);
+  if (canadaFoodAnswerImmediate) return canadaFoodAnswerImmediate;
   const fallbackFollowUp = buildFallbackFollowUp(message, memory);
   if (fallbackFollowUp) return fallbackFollowUp;
   if (intent === "help") return "Ask Tapzy can answer normal questions, explain ideas, write copy, brainstorm, help with Tapzy, and reason through decisions. If you say you are interested in a place, event, food spot, tickets, or directions, I can switch into Tapzy mode and give you an event to check out, a website link, or navigation.";
@@ -621,6 +773,8 @@ async function buildAssistantReply({ message, pageType = "general", isAuthPage =
   if (intent === "community") return buildCommunityAnswer(message, context);
   if (intent === "message-coach") return buildMessageCoachAnswer(message, context);
   if (intent === "tapzy-strategy") return buildTapzyStrategyAnswer(message, context);
+  const canadaFoodAnswerEarly = buildCanadaFoodAnswer(message, context);
+  if (canadaFoodAnswerEarly) return canadaFoodAnswerEarly;
   if (intent === "offline-concierge") return buildOfflineConciergeAnswer(message, context);
   if (intent === "food") return buildFoodAnswer(message, context);
   if (intent === "date-plan") return buildDatePlan(message, context);
