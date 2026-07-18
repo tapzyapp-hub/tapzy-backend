@@ -16,6 +16,7 @@ const profileRoutes = require("./routes/profile");
 const shareRoutes = require("./routes/share");
 const messagesRoutes = require("./routes/messages");
 const searchRoutes = require("./routes/search");
+const tapzySearchRoutes = require("./routes/tapzySearch");
 const adminRoutes = require("./routes/admin");
 const miscRoutes = require("./routes/misc");
 const discoveryRoutes = require("./routes/discovery");
@@ -179,6 +180,7 @@ app.use("/uploads", express.static(uploadsDir, uploadsCache));
 app.use(sessionMiddleware);
 
 app.use("/api/assistant", assistantRoutes);
+app.use("/api/tapzy-search", tapzySearchRoutes);
 
 app.use("/", authRoutes);
 app.use("/", cardsRoutes);

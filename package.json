@@ -8,14 +8,17 @@
     "dev": "nodemon server.js",
     "encoder:windows": "node scripts/windows-nfc-encoder.js",
     "start": "node server.js",
-    "test": "npm run check && npx prisma validate"
+    "test": "npm run check && npx prisma validate",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@prisma/client": "^6.19.2",
+    "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
@@ -28,10 +31,12 @@
     "qrcode": "^1.5.4",
     "resend": "^6.9.3",
     "socket.io": "^4.8.3",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "@prisma/adapter-pg": "^7.8.0",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
-    "prisma": "^6.19.2"
+    "prisma": "^7.8.0"
   }
 }

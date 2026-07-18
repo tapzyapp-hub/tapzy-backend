@@ -498,6 +498,61 @@ function buildCommunityAnswer(message, context = {}) {
   return "Tapzy can connect this to your community by using Going, check-ins, public stories, and nearby profiles. That turns a normal search into who is actually around and ready to do something.";
 }
 
+function buildTapzyStoredPlacesAnswer(message, context = {}) {
+  const brain = context && context.tapzyBrain;
+  const places = Array.isArray(brain && brain.places) ? brain.places : [];
+  if (!places.length) return "";
+  const text = normalize(message);
+  if (!includesAny(text, ["food", "restaurant", "eat", "dessert", "coffee", "bar", "late", "night", "date", "place", "places", "travel", "go", "near", "nearby", "barrie", "toronto"])) return "";
+  const city = brain.city || (context.location && context.location.city) || "your area";
+  const lines = places.slice(0, 5).map((place, index) => {
+    const details = [
+      place.category || "",
+      place.rating ? "rating " + place.rating : "",
+      place.reviews ? place.reviews + " reviews" : "",
+      place.price || "",
+      place.hours || "hours need live check",
+      place.address || "",
+    ].filter(Boolean).join("; ");
+    return (index + 1) + ". " + cleanText(place.title, "Place") + (details ? " - " + details : "");
+  });
+  return [
+    "From Tapzy Brain, these are stored picks for " + city + ":",
+    lines.join("\n"),
+    "These are learned snapshots, so Tapzy should still refresh hours, distance, and open status before sending you there."
+  ].join("\n");
+}
+
+function buildTapzySearchAnswer(message, context = {}) {
+  const search = context && context.tapzySearch;
+  const results = Array.isArray(search && search.results) ? search.results : [];
+  const cards = Array.isArray(search && search.cards) ? search.cards : [];
+  if (!results.length && !cards.length) return "";
+  const kind = search.kind || "places";
+  const label = kind === "dessert" ? "dessert spots" : kind === "bars" ? "bars" : kind === "fast-food" ? "fast food" : kind === "coffee" ? "coffee spots" : "food spots";
+  const intro = "Here are the strongest Tapzy Search picks for " + label + (search.city ? " in " + search.city : " near you") + ":";
+  const visibleCards = cards.length ? cards : results.slice(0, 5).map((place, index) => ({
+    rank: index + 1,
+    title: cleanText(place.title, "Place"),
+    detail: [
+      place.rating ? "rating " + place.rating : "",
+      place.reviews ? place.reviews + " reviews" : "",
+      place.price ? place.price : "",
+      place.hours ? place.hours : "hours need live check",
+      Number.isFinite(place.distanceKm) ? "about " + place.distanceKm + " km away" : "",
+      place.address || place.snippet || place.type || ""
+    ].filter(Boolean).join("; "),
+  }));
+  const lines = visibleCards.slice(0, 5).map((card, index) => {
+    const rank = Number.isFinite(card.rank) ? card.rank : index + 1;
+    return rank + ". " + cleanText(card.title, "Place") + (card.detail ? " - " + cleanText(card.detail, "", 260) : "");
+  });
+  const firstActions = Array.isArray(visibleCards[0] && visibleCards[0].actions) ? visibleCards[0].actions.map((item) => item.label).filter(Boolean).slice(0, 3) : [];
+  const actionLine = firstActions.length ? "Actions available for the top pick: " + firstActions.join(", ") + "." : "Actions available: Directions and Website when live data provides them.";
+  const note = search.filters && search.filters.openNow ? "I weighted open-now and late-night fit. Tapzy should still verify hours before finalizing." : "I ranked these by rating, relevance, distance, and actionability.";
+  return [intro, lines.join("\\n"), note, actionLine].filter(Boolean).join("\\n");
+}
+
 function buildFoodAnswer(message, context = {}) {
   const text = normalize(message);
   const budgetMatch = text.match(/\$?\b(\d{2,4})\b/);
@@ -506,6 +561,10 @@ function buildFoodAnswer(message, context = {}) {
   const lateNight = includesAny(text, ["late", "night", "snack", "snacks", "after hours"]);
   const qualifier = [lateNight ? "late night" : "", budget ? "under " + budget : "", "near me"].filter(Boolean).join(" ");
   const query = (cuisine + " " + qualifier).trim();
+  const tapzySearchAnswer = buildTapzySearchAnswer(message, context);
+  if (tapzySearchAnswer) return tapzySearchAnswer;
+  const storedPlacesAnswer = buildTapzyStoredPlacesAnswer(message, context);
+  if (storedPlacesAnswer) return storedPlacesAnswer;
   return [
     "I would search for " + titleCase(cuisine) + " " + (budget ? "under " + budget : "nearby") + " and rank by distance, rating, photos, and whether it fits the moment.",
     lateNight ? "For late-night snacks, I would prioritize places still open, quick pickup, and short travel time." : "",
@@ -758,6 +817,8 @@ async function buildAssistantReply({ message, pageType = "general", isAuthPage =
   const lastIntent = getLastUserIntent(memory);
   const intent = extractCommandIntent(msg);
   if (!msg) return "I did not catch that. Try again.";
+  const tapzySearchAnswer = buildTapzySearchAnswer(message, context);
+  if (tapzySearchAnswer) return tapzySearchAnswer;
   const targetMarketFoodAnswer = buildTargetMarketFoodAnswer(message, context);
   if (targetMarketFoodAnswer) return targetMarketFoodAnswer;
   const canadaFoodAnswerImmediate = buildCanadaFoodAnswer(message, context);

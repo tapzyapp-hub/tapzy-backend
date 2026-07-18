@@ -1,10 +1,10 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model ActivationCode {
@@ -120,6 +120,7 @@ model UserProfile {
   posts            Post[]
   postLikes        PostLike[]
   postComments     PostComment[]
+  tapzyMemories    TapzyUserMemory[]
 
   @@index([createdAt], map: "userprofile_createdAt_idx")
   @@index([connections], map: "userprofile_connections_idx")
@@ -657,4 +658,59 @@ model PostComment {
   @@index([profileId], map: "postcomment_profileId_idx")
   @@index([parentId], map: "postcomment_parentId_idx")
   @@index([createdAt], map: "postcomment_createdAt_idx")
+}
+
+
+model TapzyPlaceSnapshot {
+  id                String   @id @default(cuid())
+  source            String   @default("tapzy_search")
+  sourceExternalKey String   @unique
+  title             String
+  category          String?
+  city              String?
+  region            String?
+  country           String?  @default("CA")
+  address           String?
+  latitude          Float?
+  longitude         Float?
+  rating            Float?
+  reviews           Int?
+  price             String?
+  hours             String?
+  website           String?
+  directions        String?
+  phone             String?
+  tags              String[] @default([])
+  raw               Json?
+  confidence        Float    @default(0)
+  seenCount         Int      @default(1)
+  lastSeenAt        DateTime @default(now())
+  lastVerifiedAt    DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([city, category], map: "tapzyplace_city_category_idx")
+  @@index([rating], map: "tapzyplace_rating_idx")
+  @@index([lastSeenAt], map: "tapzyplace_lastSeenAt_idx")
+  @@index([tags], map: "tapzyplace_tags_idx", type: Gin)
+}
+
+model TapzyUserMemory {
+  id        String       @id @default(cuid())
+  profileId String?
+  profile   UserProfile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  scope     String       @default("preference")
+  key       String
+  value     String
+  weight    Float        @default(1)
+  source    String       @default("assistant")
+  metadata  Json?
+  lastUsedAt DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([profileId, scope, key, value], map: "tapzyusermemory_profile_scope_key_value_key")
+  @@index([profileId, scope], map: "tapzyusermemory_profile_scope_idx")
+  @@index([key, value], map: "tapzyusermemory_key_value_idx")
+  @@index([updatedAt], map: "tapzyusermemory_updatedAt_idx")
 }

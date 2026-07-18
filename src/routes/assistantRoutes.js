@@ -1,6 +1,8 @@
 const express = require("express");
 const prisma = require("../prisma");
 const { buildAssistantReply } = require("../services/assistantService");
+const { tapzySearchPlaces, hasPlaceIntent: hasTapzySearchIntent } = require("../services/tapzySearchService");
+const { absorbTapzyBrain, loadTapzyBrainContext, formatTapzyBrainContext } = require("../services/tapzyBrainService");
 
 const SERPAPI_KEY = process.env.SERPAPI_KEY || "";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
@@ -225,19 +227,119 @@ function buildWebQuery(message, city, weather) {
 }
 
 function compactWebItem(item) {
-  const title = asSafeString(item?.title || item?.name || "", 160);
-  const link = asSafeString(item?.link || item?.website || item?.directions || "", 500);
-  const snippet = asSafeString(item?.snippet || item?.description || item?.address || item?.type || "", 260);
+  const title = asSafeString(item?.title || item?.name || item?.place_name || "", 180);
+  const link = asSafeString(item?.link || item?.website || item?.directions || item?.maps_url || "", 700);
+  const snippet = asSafeString(item?.snippet || item?.description || item?.address || item?.type || item?.types || "", 320);
   const rating = asSafeString(item?.rating || "", 40);
-  const reviews = asSafeString(item?.reviews || "", 40);
+  const reviews = asSafeString(item?.reviews || item?.reviews_original || "", 80);
+  const price = asSafeString(item?.price || item?.price_level || "", 40);
+  const type = asSafeString(item?.type || item?.types || item?.category || "", 120);
+  const address = asSafeString(item?.address || item?.place_address || "", 220);
+  const phone = asSafeString(item?.phone || "", 80);
+  const website = asSafeString(item?.website || item?.link || "", 700);
+  const directions = asSafeString(item?.directions || item?.directions_link || "", 700);
+  const hours = asSafeString(item?.hours || item?.operating_hours || item?.open_state || item?.hours_text || "", 180);
+  const gps = item?.gps_coordinates || item?.coordinates || {};
+  const latitude = asSafeNumber(gps.latitude ?? gps.lat);
+  const longitude = asSafeNumber(gps.longitude ?? gps.lng);
   if (!title) return null;
-  return { title, link, snippet, rating, reviews };
+  return { title, link, snippet, rating, reviews, price, type, address, phone, website, directions, hours, latitude, longitude };
+}
+
+function isTapzyPlaceSearch(message) {
+  const text = asSafeString(message, 500).toLowerCase();
+  return /\b(food|restaurant|restaurants|eat|dinner|lunch|breakfast|brunch|dessert|coffee|bar|bars|nightlife|late night|open now|open late|fast food|pizza|burger|sushi|italian|indian|thai|chinese|shawarma|tacos|travel|places to go|best places|date spot|date night)\b/.test(text);
+}
+
+function inferTapzySearchKind(message) {
+  const text = asSafeString(message, 500).toLowerCase();
+  if (/\b(dessert|ice cream|bakery|cake|cookie|pastry|sweet)\b/.test(text)) return "dessert";
+  if (/\b(bar|bars|cocktail|drinks|nightlife|club|lounge)\b/.test(text)) return "bars";
+  if (/\b(coffee|cafe|study|quiet)\b/.test(text)) return "coffee";
+  if (/\b(fast food|quick|cheap|chain)\b/.test(text)) return "fast-food";
+  if (/\b(travel|places to go|best places|tourist|visit)\b/.test(text)) return "travel";
+  return "food";
+}
+
+function buildTapzyPlaceQuery(message, city, weather) {
+  const text = asSafeString(message, 500).toLowerCase();
+  const parts = [];
+  if (/\b(open now|open late|late night|after hours)\b/.test(text)) parts.push("open now");
+  if (/\b(best|top|popular|rated|five star|5 star)\b/.test(text)) parts.push("best rated popular");
+  if (/\b(cheap|under|budget)\b/.test(text)) parts.push("affordable");
+  if (/\b(date|romantic|girl|boyfriend|girlfriend)\b/.test(text)) parts.push("date night");
+  const cuisine = ["italian", "sushi", "pizza", "burger", "thai", "indian", "chinese", "shawarma", "tacos", "mexican", "vegan", "steak", "seafood", "dessert", "coffee", "brunch", "bar", "fast food"].find((word) => text.includes(word));
+  if (cuisine) parts.push(cuisine);
+  parts.push(inferTapzySearchKind(message).replace("-", " "));
+  parts.push(city || "near me");
+  if (weather && /\b(rain|raining|cold|hot)\b/.test(text)) parts.push("weather friendly");
+  return parts.filter(Boolean).join(" ");
+}
+
+function tapzyPlaceScore(place, message, location) {
+  const text = asSafeString(message, 500).toLowerCase();
+  let score = 0;
+  const rating = Number(place.rating);
+  if (Number.isFinite(rating)) score += rating * 12;
+  const reviews = Number(String(place.reviews || "").replace(/[^0-9.]/g, ""));
+  if (Number.isFinite(reviews)) score += Math.min(reviews, 2000) / 100;
+  if (place.hours && /open/i.test(place.hours)) score += 8;
+  if (/\b(open now|late night|open late|after hours)\b/.test(text) && place.hours && /open/i.test(place.hours)) score += 14;
+  if (place.price && /\$/.test(place.price)) score += 3;
+  if (place.website) score += 2;
+  if (place.directions) score += 2;
+  const distanceKm = getDistanceKm(location?.latitude, location?.longitude, place.latitude, place.longitude);
+  if (Number.isFinite(distanceKm)) score += Math.max(0, 20 - distanceKm);
+  const haystack = [place.title, place.type, place.snippet, place.address].join(" ").toLowerCase();
+  tokenize(message).forEach((term) => { if (term.length > 2 && haystack.includes(term)) score += 4; });
+  return { ...place, distanceKm: Number.isFinite(distanceKm) ? Math.round(distanceKm * 10) / 10 : null, tapzyScore: Math.round(score * 10) / 10 };
+}
+
+function buildTapzySearchSummary(results, query, kind) {
+  const list = Array.isArray(results) ? results.slice(0, 5) : [];
+  if (!list.length) return "";
+  return "Tapzy Search results for " + query + ":\n" + list.map((p, index) => {
+    const bits = [
+      (index + 1) + ". " + p.title,
+      p.rating ? "rating " + p.rating : "",
+      p.reviews ? p.reviews + " reviews" : "",
+      p.price ? p.price : "",
+      p.hours ? p.hours : "hours need live check",
+      p.distanceKm !== null && p.distanceKm !== undefined ? "about " + p.distanceKm + " km away" : "",
+      p.address || p.snippet || p.type || ""
+    ].filter(Boolean);
+    return bits.join(" - ");
+  }).join("\n");
 }
 
 async function fetchAssistantWebSearch(message, location, weather) {
   if (!shouldFetchWebSearch(message)) return null;
   const city = location?.city || "";
-  const query = buildWebQuery(message, city, weather);
+  const placeIntent = hasTapzySearchIntent(message);
+  const query = placeIntent ? buildTapzyPlaceQuery(message, city, weather) : buildWebQuery(message, city, weather);
+
+  if (placeIntent) {
+    const tapzySearch = await tapzySearchPlaces({
+      query: message,
+      city,
+      latitude: location?.latitude,
+      longitude: location?.longitude,
+      weather,
+      limit: 8,
+    });
+    const top = [
+      ...(Array.isArray(tapzySearch.results) ? tapzySearch.results : []),
+      ...(Array.isArray(tapzySearch.webResults) ? tapzySearch.webResults : []),
+    ].filter(Boolean).slice(0, 8);
+    return {
+      available: tapzySearch.available === true,
+      query: tapzySearch.query || query,
+      answer: "",
+      results: top,
+      tapzySearch,
+    };
+  }
+
   try {
     const url = new URL("https://serpapi.com/search.json");
     url.searchParams.set("engine", "google");
@@ -249,19 +351,19 @@ async function fetchAssistantWebSearch(message, location, weather) {
     if (city && city !== "your current area") url.searchParams.set("location", city);
     const response = await fetch(url.toString(), { signal: AbortSignal.timeout ? AbortSignal.timeout(5200) : undefined });
     const data = await response.json().catch(() => null);
-    if (!response.ok || !data) return { available: false, query, results: [] };
+    if (!response.ok || !data) return { available: false, query, results: [], tapzySearch: null };
     const organic = Array.isArray(data.organic_results) ? data.organic_results : [];
-    const local = Array.isArray(data.local_results?.places) ? data.local_results.places : [];
-    const top = [...local, ...organic].map(compactWebItem).filter(Boolean).slice(0, 5);
+    const top = organic.map(compactWebItem).filter(Boolean).slice(0, 5);
     return {
       available: true,
       query,
       answer: asSafeString(data.answer_box?.answer || data.answer_box?.snippet || data.knowledge_graph?.description || "", 420),
       results: top,
+      tapzySearch: null,
     };
   } catch (error) {
     console.error("Assistant web search failed:", error?.message || error);
-    return { available: false, query, results: [] };
+    return { available: false, query, results: [], tapzySearch: null };
   }
 }
 
@@ -352,6 +454,22 @@ async function buildAssistantContext(body) {
   const requestedMessage = asSafeString(body.message || "", 500);
   const webMessage = requestedMessage || (OPENAI_REALTIME_ENABLE_WEB_CONTEXT && asSafeBool(body.includeWebContext) ? "things to do tonight current local events restaurants weather near " + (city || "me") : "");
   const web = await fetchAssistantWebSearch(webMessage, { latitude, longitude, city }, weather);
+  if (web && web.tapzySearch) {
+    await absorbTapzyBrain({
+      message: requestedMessage || webMessage,
+      username: body.username,
+      profileId: body.profileId,
+      city,
+      tapzySearch: web.tapzySearch,
+    });
+  }
+  const tapzyBrain = await loadTapzyBrainContext({
+    message: requestedMessage || webMessage,
+    username: body.username,
+    profileId: body.profileId,
+    city,
+    limit: 8,
+  });
 
   const events = rows.map((event) => {
     const distanceKm = getDistanceKm(latitude, longitude, event.latitude, event.longitude);
@@ -384,6 +502,8 @@ async function buildAssistantContext(body) {
     },
     weather,
     web,
+    tapzySearch: web && web.tapzySearch ? web.tapzySearch : null,
+    tapzyBrain,
     events,
   };
 }
@@ -448,6 +568,8 @@ function compactAssistantContext(context) {
   if (weather) {
     parts.push("Weather: " + [weather.temperatureC !== null && weather.temperatureC !== undefined ? weather.temperatureC + " C" : "", weather.condition, weather.windKph !== null && weather.windKph !== undefined ? "wind " + weather.windKph + " km/h" : ""].filter(Boolean).join(", "));
   }
+  const brainText = formatTapzyBrainContext(context?.tapzyBrain || {});
+  if (brainText) parts.push(brainText);
   const events = Array.isArray(context?.events) ? context.events.slice(0, 40) : [];
   if (events.length) {
     parts.push("Tapzy events: " + events.map((event, index) => {
@@ -459,6 +581,12 @@ function compactAssistantContext(context) {
         ? "maps: https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(event.latitude + "," + event.longitude)
         : "";
       return (index + 1) + ". " + [event.title, event.category, event.description, place, event.address, time, event.priceText, distance, attending, event.ticketUrl || event.eventUrl ? "Tickets available" : "", directions ? "Directions available" : "", event.id ? "Open on Tapzy available" : ""].filter(Boolean).join(" | ");
+    }).join(" || "));
+  }
+  const tapzySearch = context?.tapzySearch;
+  if (tapzySearch && Array.isArray(tapzySearch.results) && tapzySearch.results.length) {
+    parts.push("Tapzy Search places: " + tapzySearch.results.slice(0, 8).map((place, index) => {
+      return (index + 1) + ". " + [place.title, place.type, place.address || place.snippet, place.rating ? "rating " + place.rating : "", place.reviews ? place.reviews + " reviews" : "", place.price, place.hours || "hours need live check", Number.isFinite(place.distanceKm) ? place.distanceKm + " km away" : "", place.website ? "Website available" : "", place.directions ? "Directions available" : ""].filter(Boolean).join(" | ");
     }).join(" || "));
   }
   const web = context?.web;
@@ -609,7 +737,7 @@ async function handleAssistantRequest(req, res) {
     });
 
     if (conversationalReply) {
-      return res.json({ ok: true, reply: conversationalReply });
+      return res.json({ ok: true, reply: conversationalReply, tapzySearch: context.tapzySearch || null });
     }
 
     const reply = await buildAssistantReply({
@@ -630,6 +758,7 @@ async function handleAssistantRequest(req, res) {
         typeof reply === "string" && reply.trim()
           ? reply.trim()
           : "Tapzy Assistant is temporarily unavailable.",
+      tapzySearch: context.tapzySearch || null,
     });
   } catch (error) {
     console.error("Assistant route error:", error);
