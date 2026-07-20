@@ -3,11 +3,11 @@ const { buildTapzyAiReply, getBrainScore } = require("../services/tapzyAi");
 
 const router = express.Router();
 
-router.get("/health", (req, res) => {
+router.get("/health", async (req, res) => {
   res.json({
     ok: true,
     name: "Tapzy AI",
-    brainScore: getBrainScore(req.sessionID || "guest"),
+    brainScore: await getBrainScore(req.sessionID || "guest"),
   });
 });
 

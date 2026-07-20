@@ -658,3 +658,17 @@ model PostComment {
   @@index([parentId], map: "postcomment_parentId_idx")
   @@index([createdAt], map: "postcomment_createdAt_idx")
 }
+
+model TapzyBrainMemory {
+  id        String   @id
+  sessionId String   @default("global")
+  role      String
+  kind      String   @default("turn")
+  content   String
+  weight    Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId, createdAt], map: "tapzybrain_session_created_idx")
+  @@index([kind, createdAt], map: "tapzybrain_kind_created_idx")
+}

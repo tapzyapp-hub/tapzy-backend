@@ -1,6 +1,10 @@
+const crypto = require("crypto");
+const prisma = require("../prisma");
 const { searchTapzyKnowledge } = require("./tapzyKnowledgeSearch");
 
-const brainMemory = new Map();
+const fallbackMemory = new Map();
+let brainTableReady = false;
+let brainTablePromise = null;
 
 function cleanText(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
@@ -15,19 +19,118 @@ function getSessionId(input = {}) {
   return cleanText(input.sessionId || input.userId || input.username || "guest", 120) || "guest";
 }
 
-function remember(sessionId, role, content) {
+function fallbackRemember(sessionId, role, content, kind = "turn") {
   const key = getSessionId({ sessionId });
-  const list = brainMemory.get(key) || [];
-  list.push({ role, content: cleanText(content, 1600), at: Date.now() });
-  brainMemory.set(key, list.slice(-30));
+  const list = fallbackMemory.get(key) || [];
+  list.push({ role, content: cleanText(content, 1600), kind, at: Date.now() });
+  fallbackMemory.set(key, list.slice(-60));
 }
 
-function getMemory(sessionId) {
-  return (brainMemory.get(getSessionId({ sessionId })) || []).slice(-12);
+function fallbackGetMemory(sessionId) {
+  return (fallbackMemory.get(getSessionId({ sessionId })) || []).slice(-18);
 }
 
-function getBrainScore(sessionId) {
-  const learned = getMemory(sessionId).filter((item) => item.role === "assistant").length;
+async function ensureBrainTable() {
+  if (brainTableReady) return true;
+  if (brainTablePromise) return brainTablePromise;
+  brainTablePromise = prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "TapzyBrainMemory" (
+      "id" TEXT PRIMARY KEY,
+      "sessionId" TEXT NOT NULL DEFAULT 'global',
+      "role" TEXT NOT NULL,
+      "kind" TEXT NOT NULL DEFAULT 'turn',
+      "content" TEXT NOT NULL,
+      "weight" INTEGER NOT NULL DEFAULT 1,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS "tapzybrain_session_created_idx" ON "TapzyBrainMemory" ("sessionId", "createdAt");
+    CREATE INDEX IF NOT EXISTS "tapzybrain_kind_created_idx" ON "TapzyBrainMemory" ("kind", "createdAt");
+  `).then(() => {
+    brainTableReady = true;
+    return true;
+  }).catch((error) => {
+    console.error("Tapzy brain table unavailable:", error?.message || error);
+    return false;
+  });
+  return brainTablePromise;
+}
+
+async function recordBrainTurn(input = {}) {
+  const sessionId = getSessionId(input);
+  const role = cleanText(input.role || "assistant", 40) || "assistant";
+  const content = cleanText(input.content, 2200);
+  const kind = cleanText(input.kind || "turn", 40) || "turn";
+  if (!content) return false;
+  fallbackRemember(sessionId, role, content, kind);
+  if (!(await ensureBrainTable())) return false;
+  try {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "TapzyBrainMemory" ("id", "sessionId", "role", "kind", "content", "weight") VALUES ($1, $2, $3, $4, $5, $6)`,
+      crypto.randomUUID(),
+      sessionId,
+      role,
+      kind,
+      content,
+      Number.isFinite(Number(input.weight)) ? Number(input.weight) : 1
+    );
+    return true;
+  } catch (error) {
+    console.error("Tapzy brain save failed:", error?.message || error);
+    return false;
+  }
+}
+
+async function getMemory(sessionId, limit = 18) {
+  const safeSession = getSessionId({ sessionId });
+  const safeLimit = Math.max(1, Math.min(60, Number(limit) || 18));
+  if (await ensureBrainTable()) {
+    try {
+      const rows = await prisma.$queryRawUnsafe(
+        `SELECT "role", "kind", "content", "createdAt" FROM "TapzyBrainMemory" WHERE "sessionId" = $1 OR "sessionId" = 'global' ORDER BY "createdAt" DESC LIMIT $2`,
+        safeSession,
+        safeLimit
+      );
+      return Array.isArray(rows) ? rows.reverse() : [];
+    } catch (error) {
+      console.error("Tapzy brain read failed:", error?.message || error);
+    }
+  }
+  return fallbackGetMemory(safeSession).slice(-safeLimit);
+}
+
+async function getBrainContext(input = {}) {
+  const sessionId = getSessionId(input);
+  const message = cleanText(input.message, 300).toLowerCase();
+  const memory = await getMemory(sessionId, 24);
+  const useful = memory
+    .filter((item) => item && item.content && (item.role === "assistant" || item.kind === "lesson"))
+    .filter((item) => {
+      if (!message) return true;
+      const content = String(item.content || "").toLowerCase();
+      const words = message.split(/\W+/).filter((word) => word.length >= 4).slice(0, 8);
+      return !words.length || words.some((word) => content.includes(word));
+    })
+    .slice(-10)
+    .map((item, index) => (index + 1) + ". " + cleanText(item.content, 420));
+  return useful.length ? useful.join("\n") : "";
+}
+
+async function getBrainScore(sessionId) {
+  const safeSession = getSessionId({ sessionId });
+  if (await ensureBrainTable()) {
+    try {
+      const rows = await prisma.$queryRawUnsafe(
+        `SELECT COUNT(*)::int AS count FROM "TapzyBrainMemory" WHERE "sessionId" = $1 OR "sessionId" = 'global'`,
+        safeSession
+      );
+      const learned = Number(rows?.[0]?.count || 0);
+      return Math.max(8, Math.min(100, 8 + Math.floor(learned / 2)));
+    } catch (error) {
+      console.error("Tapzy brain score failed:", error?.message || error);
+    }
+  }
+  const learned = fallbackGetMemory(safeSession).filter((item) => item.role === "assistant").length;
   return Math.max(8, Math.min(100, 8 + learned * 3));
 }
 
@@ -96,7 +199,7 @@ function cleanVisibleReply(reply, allowLinks = false) {
   return text || "I found some options. I can show the website or directions if you want.";
 }
 
-function buildIndependentReply(message, context = {}, knowledge = {}) {
+function buildIndependentReply(message, context = {}, knowledge = {}, brainContext = "") {
   const text = cleanText(message, 1000);
   const tone = inferTone(text);
   const events = Array.isArray(knowledge.events) ? knowledge.events : [];
@@ -105,6 +208,10 @@ function buildIndependentReply(message, context = {}, knowledge = {}) {
   const posts = Array.isArray(knowledge.posts) ? knowledge.posts : [];
   const mathAnswer = safeArithmetic(text);
   if (mathAnswer) return mathAnswer;
+
+  if (brainContext && /\b(remember|learn|what do you know|tapzy brain|brain|same as before)\b/i.test(text)) {
+    return "Here is what my Tapzy brain remembers:\n" + brainContext;
+  }
 
   if (/^(hi|hey|hello|yo|sup)$/i.test(text)) {
     return "Hey, I am here. Ask me anything: a plan for tonight, food nearby, a quick answer, a joke, a Bible question, math help, or what to do next on Tapzy.";
@@ -168,6 +275,10 @@ function buildIndependentReply(message, context = {}, knowledge = {}) {
     return "I am seeing fresh Tapzy activity. " + [stories[0]?.title, posts[0]?.title].filter(Boolean).slice(0, 2).join(" Also: ") + ". Ask me for events, people, food, quiet spots, or a plan and I will narrow it down.";
   }
 
+  if (brainContext) {
+    return "I can help with that. Based on what Tapzy has learned, the useful next move is to connect your question to events, places, people, or a clear plan. Give me one more detail and I will narrow it down.";
+  }
+
   return "I can help with that. Give me one more detail and I will use Tapzy's own data to make it useful: are you asking for a quick answer, a plan, something local, something funny, or help with Tapzy?";
 }
 
@@ -191,20 +302,21 @@ async function buildTapzyAiReply(input = {}) {
       ok: true,
       reply: "Ask me anything and I will answer here.",
       source: "tapzy-ai",
-      brainScore: getBrainScore(sessionId),
+      brainScore: await getBrainScore(sessionId),
     };
   }
 
-  remember(sessionId, "user", message);
+  await recordBrainTurn({ sessionId, role: "user", content: message, kind: "turn" });
   const knowledge = await searchTapzyKnowledge({ ...context, message });
-  const reply = cleanVisibleReply(buildIndependentReply(message, context, knowledge), context.allowLinks);
-  remember(sessionId, "assistant", reply);
+  const brainContext = await getBrainContext({ sessionId, message });
+  const reply = cleanVisibleReply(buildIndependentReply(message, context, knowledge, brainContext), context.allowLinks);
+  await recordBrainTurn({ sessionId, role: "assistant", content: reply, kind: "turn" });
 
   return {
     ok: true,
     reply,
     source: "tapzy-independent",
-    brainScore: getBrainScore(sessionId),
+    brainScore: await getBrainScore(sessionId),
     learned: true,
     eventsUsed: Array.isArray(knowledge.events) ? knowledge.events.length : 0,
     results: {
@@ -219,5 +331,7 @@ async function buildTapzyAiReply(input = {}) {
 
 module.exports = {
   buildTapzyAiReply,
+  getBrainContext,
   getBrainScore,
+  recordBrainTurn,
 };

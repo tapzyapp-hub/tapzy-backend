@@ -1,6 +1,7 @@
 const express = require("express");
 const prisma = require("../prisma");
 const { buildAssistantReply } = require("../services/assistantService");
+const { getBrainContext, recordBrainTurn } = require("../services/tapzyAi");
 
 const SERPAPI_KEY = process.env.SERPAPI_KEY || "";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
@@ -460,6 +461,8 @@ function compactAssistantContext(context) {
       return (index + 1) + ". " + [event.title, event.category, event.description, place, event.address, time, event.priceText, distance, attending, event.ticketUrl || event.eventUrl ? "Tickets available" : "", directions ? "Directions available" : "", event.id ? "Open on Tapzy available" : ""].filter(Boolean).join(" | ");
     }).join(" || "));
   }
+  const brain = asSafeString(context?.brain || "", 2400);
+  if (brain) parts.push("Tapzy persistent brain memory:\n" + brain);
   const web = context?.web;
   if (web) {
     if (web.answer) parts.push("Web answer: " + web.answer);
@@ -614,6 +617,9 @@ async function handleAssistantRequest(req, res) {
     }
 
     const context = await buildAssistantContext({ ...body, includeWebContext: true });
+    const sessionId = req.sessionID || username || "guest";
+    context.brain = await getBrainContext({ sessionId, message });
+    await recordBrainTurn({ sessionId, role: "user", content: message, kind: "openai_turn" });
 
     const conversationalReply = await fetchOpenAIConversation({
       message,
@@ -625,7 +631,9 @@ async function handleAssistantRequest(req, res) {
     });
 
     if (conversationalReply) {
-      return res.json({ ok: true, reply: wantsVisibleAssistantLinks(message) ? conversationalReply : stripVisibleAssistantLinks(conversationalReply) });
+      const visibleReply = wantsVisibleAssistantLinks(message) ? conversationalReply : stripVisibleAssistantLinks(conversationalReply);
+      await recordBrainTurn({ sessionId, role: "assistant", content: visibleReply, kind: "openai_turn" });
+      return res.json({ ok: true, reply: visibleReply });
     }
 
     const reply = await buildAssistantReply({
@@ -640,12 +648,13 @@ async function handleAssistantRequest(req, res) {
       context,
     });
 
+    const visibleReply = typeof reply === "string" && reply.trim()
+      ? (wantsVisibleAssistantLinks(message) ? reply.trim() : stripVisibleAssistantLinks(reply))
+      : "Tapzy Assistant is temporarily unavailable.";
+    await recordBrainTurn({ sessionId, role: "assistant", content: visibleReply, kind: "built_in_turn" });
     return res.json({
       ok: true,
-      reply:
-        typeof reply === "string" && reply.trim()
-          ? (wantsVisibleAssistantLinks(message) ? reply.trim() : stripVisibleAssistantLinks(reply))
-          : "Tapzy Assistant is temporarily unavailable.",
+      reply: visibleReply,
     });
   } catch (error) {
     console.error("Assistant route error:", error);
@@ -739,6 +748,8 @@ async function handleRealtimeSessionRequest(req, res) {
     }
     const body = req.body || {};
     const context = await buildAssistantContext({ ...body, includeWebContext: true });
+    const sessionId = req.sessionID || asSafeString(body.username || "User", 80) || "guest";
+    context.brain = await getBrainContext({ sessionId, message: "" });
     const session = await requestRealtimeSessionFromOpenAI(context, {
       pageType: asSafeString(body.pageType || "general", 80),
       username: asSafeString(body.username || "User", 80),
