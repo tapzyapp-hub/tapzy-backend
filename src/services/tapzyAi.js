@@ -36,6 +36,10 @@ function wantsLocalHelp(message) {
   return /\b(near me|nearby|around me|around here|tonight|today|tomorrow|weekend|food|restaurant|dessert|coffee|date|event|concert|festival|club|bar|quiet|busy|open|close|closing|hours|directions|navigate|weather|rain|raining)\b/i.test(message);
 }
 
+function wantsLinks(message) {
+  return /\b(website|web site|link|url|directions|direction|navigate|navigation|map|maps|ticket|tickets|open page|open it|address|phone number)\b/i.test(message);
+}
+
 function wantsMath(message) {
   return /\b(math|calculate|solve|plus|minus|times|divided|percent|percentage|equation|what is \d)/i.test(message) || /^[\d\s+*/().%-]+$/.test(message);
 }
@@ -97,6 +101,9 @@ async function getTapzyEvents({ latitude, longitude } = {}) {
 
 function buildSystemPrompt(context = {}) {
   const locationText = context.city || context.locationLabel || (context.latitude && context.longitude ? "the user's current area" : "unknown");
+  const linkRule = context.allowLinks
+    ? "The user asked for links, websites, tickets, maps, addresses, or directions, so you may include clean action text and a link only when helpful."
+    : "Do not show raw URLs, route code, query strings, API-looking text, slugs, IDs, or markdown links. For events and places, show clean names, times, areas, and reasons only. If a link would help, say 'I can open directions or the website if you want.'";
   return [
     "You are Tapzy AI, the new clean brain for Tapzy.",
     "OpenAI is the strongest live model right now, but Tapzy AI is learning to become the main brain over time.",
@@ -105,16 +112,49 @@ function buildSystemPrompt(context = {}) {
     "For local recommendations, ask for location only if you do not have enough location context. If location exists, give a concrete plan.",
     "Use Tapzy context when relevant: Tapzy has profiles, stories, messages, events, discovery, QR/NFC identity sharing, search, and the Hey Tapzy AI room.",
     "Do not pretend to have live business hours or live crowd levels unless live data was provided. Say what to check next and give a smart plan.",
+    linkRule,
     "Current location context: " + locationText + ".",
   ].join("\n");
 }
 
-function formatEvents(events = []) {
+function formatEvents(events = [], allowLinks = false) {
   if (!events.length) return "No live Tapzy event rows were provided.";
   return events.map((event, index) => {
     const when = event.startsAt ? new Date(event.startsAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "time TBA";
-    return `${index + 1}. ${event.title} | ${when} | ${event.venue || event.city || "location TBA"} | ${event.url || "no link"}`;
+    const parts = [
+      `${index + 1}. ${event.title}`,
+      when,
+      event.venue || event.city || "location TBA",
+      event.category || "",
+    ].filter(Boolean);
+    if (allowLinks && event.url) parts.push(event.url);
+    return parts.join(" | ");
   }).join("\n");
+}
+
+function cleanVisibleReply(reply, allowLinks = false) {
+  let text = cleanText(reply, 5000);
+  if (allowLinks) return text.trim();
+
+  text = text
+    .replace(/\[([^\]]+)\]\((?:https?:\/\/|\/)[^)]+\)/gi, "$1")
+    .replace(/https?:\/\/[^\s)]+/gi, "")
+    .replace(/\bwww\.[^\s)]+/gi, "")
+    .replace(/\/events\/view\/[a-z0-9_-]+/gi, "")
+    .replace(/\/events\/[a-z0-9_/?=&.-]+/gi, "")
+    .replace(/\/search[^\s)]*/gi, "")
+    .replace(/\/u\/[a-z0-9_.-]+/gi, "")
+    .replace(/\b(?:url|link|href|slug|id)\s*:\s*[^\n]+/gi, "");
+
+  text = text
+    .split("\n")
+    .map((line) => line.replace(/\s+\|\s*$/g, "").replace(/\s{2,}/g, " ").trim())
+    .filter((line) => line && !/^[/?=&._a-z0-9-]{8,}$/i.test(line))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  return text || "I found some options. I can show the website or directions if you want.";
 }
 
 function buildFallbackReply(message, context = {}, events = []) {
@@ -177,7 +217,7 @@ async function askOpenAI(message, context, events, memory) {
     model: OPENAI_MODEL,
     input: [
       { role: "system", content: buildSystemPrompt(context) },
-      { role: "system", content: "Recent Tapzy events:\n" + formatEvents(events) },
+      { role: "system", content: "Recent Tapzy events:\n" + formatEvents(events, context.allowLinks) },
       { role: "system", content: "Recent Tapzy AI memory:\n" + memory.map((item) => `${item.role}: ${item.content}`).join("\n") },
       { role: "user", content: message },
     ],
@@ -212,6 +252,7 @@ async function buildTapzyAiReply(input = {}) {
     currentPath: cleanText(input.currentPath, 300),
     currentUrl: cleanText(input.currentUrl, 600),
     timeZone: cleanText(input.timeZone, 80),
+    allowLinks: wantsLinks(message),
   };
 
   if (!message) {
@@ -227,7 +268,7 @@ async function buildTapzyAiReply(input = {}) {
   const events = await getTapzyEvents(context);
   const memory = getMemory(sessionId);
   const openAiReply = await askOpenAI(message, context, events, memory);
-  const reply = openAiReply || buildFallbackReply(message, context, events);
+  const reply = cleanVisibleReply(openAiReply || buildFallbackReply(message, context, events), context.allowLinks);
   remember(sessionId, "assistant", reply);
 
   return {
