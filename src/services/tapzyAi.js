@@ -110,6 +110,19 @@ function buildIndependentReply(message, context = {}, knowledge = {}) {
     return "Hey, I am here. Ask me anything: a plan for tonight, food nearby, a quick answer, a joke, a Bible question, math help, or what to do next on Tapzy.";
   }
 
+  if (events.length && /\b(what|where|go|do|tonight|today|near|nearby|around|area|event|events|happening|place|places|concert|food|date|quiet|busy)\b/i.test(text)) {
+    const city = cleanText(context.city || context.locationLabel || "", 80);
+    const top = events.slice(0, 4).map((event, index) => {
+      const detail = [event.when, event.where, event.category].filter(Boolean).join(" - ");
+      return `${index + 1}. ${event.title}${detail ? ": " + detail : ""}`;
+    }).join("\n");
+    const opener = city ? `Here is what Tapzy found around ${city}:` : "Here is what Tapzy found near you:";
+    const nextStep = context.allowLinks
+      ? "\n\nTell me which one and I can help with directions, tickets, or the event page."
+      : "\n\nPick one and I can help with food nearby, directions, or who to invite.";
+    return opener + "\n" + top + nextStep;
+  }
+
   if (tone === "playful") {
     return "Why did the coffee file a police report? Because it got mugged. Want a cute joke, a clean roast, or a Tapzy-style one?";
   }
@@ -149,11 +162,6 @@ function buildIndependentReply(message, context = {}, knowledge = {}) {
     if (posts[0]) liveBits.push("new posts");
     if (profiles[0]) liveBits.push("active profiles");
     return "Tapzy AI is learning from Tapzy itself: " + (liveBits.length ? liveBits.join(", ") : "profiles, stories, posts, events, messages, discovery, QR/NFC sharing, and search") + ". The goal is to help people find what is happening, decide where to go, connect, message, navigate, and post the moment.";
-  }
-
-  return "I can help with that. Give me one more detail and I will make it useful: are you asking for a quick answer, a plan, something local, something funny, or help with Tapzy?";
-  if (events.length && /\b(what|where|go|do|tonight|today|near|around|event|events|place|places)\b/i.test(text)) {
-    return "I found these Tapzy options:\n" + events.slice(0, 3).map((event, index) => `${index + 1}. ${event.title}: ${[event.when, event.where].filter(Boolean).join(" - ")}`).join("\n");
   }
 
   if (stories.length || posts.length) {
@@ -199,7 +207,13 @@ async function buildTapzyAiReply(input = {}) {
     brainScore: getBrainScore(sessionId),
     learned: true,
     eventsUsed: Array.isArray(knowledge.events) ? knowledge.events.length : 0,
-    knowledge,
+    results: {
+      events: Array.isArray(knowledge.events) ? knowledge.events.length : 0,
+      profiles: Array.isArray(knowledge.profiles) ? knowledge.profiles.length : 0,
+      stories: Array.isArray(knowledge.stories) ? knowledge.stories.length : 0,
+      posts: Array.isArray(knowledge.posts) ? knowledge.posts.length : 0,
+      hasLocation: Boolean(knowledge.hasLocation),
+    },
   };
 }
 
