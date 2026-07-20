@@ -495,6 +495,22 @@ function extractResponseText(data) {
   return "";
 }
 
+function wantsVisibleAssistantLinks(message) {
+  return /\b(website|web site|link|url|tickets?|directions?|navigate|navigation|map|maps|address|open it|source|sources|cite|citation)\b/i.test(String(message || ""));
+}
+
+function stripVisibleAssistantLinks(text) {
+  return asSafeString(String(text || "")
+    .replace(/\n\s*Sources:[\s\S]*$/i, "")
+    .replace(/https?:\/\/\S+/gi, "")
+    .replace(/www\.\S+/gi, "")
+    .replace(/\b[a-z0-9.-]+\.(?:com|ca|org|net|io|app|dev)(?:\/\S*)?/gi, "")
+    .replace(/\b(?:tickets available|directions available|open on tapzy available)\b/gi, "")
+    .replace(/\s*(?:Tickets|Directions|Open on Tapzy|Open link|Website|Sources?)\s*:?\s*$/gim, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim(), 6000);
+}
 async function fetchOpenAIConversation({ message, pageType, username, currentPath, memory, context }) {
   if (!OPENAI_API_KEY || typeof fetch !== "function") return "";
   try {
@@ -517,7 +533,7 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "If live data is missing, do not stall. Give the best general answer or Tapzy-context answer first, then mention the live-data limit only if it matters.",
           "Do not pretend to know private user data that was not provided.",
           "Keep answers mobile-friendly, usually 1-4 short paragraphs, but answer fully when the user asks for detail.",
-          "When giving lists, put each numbered item on its own line with only the name, time, place, and one short reason. Do not dump raw links or long URLs in the visible answer; use short action names only.",
+          "When giving event or place lists, put each numbered item on its own line with only the event/place name, time, place, and one short reason. Do not include websites, raw URLs, source links, ticket links, map links, or action links unless the user explicitly asks for links, websites, tickets, directions, maps, or sources.",
           "Use this durable Tapzy knowledge before saying you do not know: " + TAPZY_AI_KNOWLEDGE,
           "When useful, suggest one clear action. For ordinary Q&A, the action can simply be a short follow-up question. Save concrete Tapzy links, tickets, directions, and next taps for place/event/plan interest."
         ].join(" ")
@@ -569,8 +585,9 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
     }
     const text = asSafeString(extractResponseText(data), 5000);
     const citations = extractResponseCitations(data);
-    const sourceText = citations.length ? "\n\nSources:\n" + citations.map((item, index) => (index + 1) + ". " + item.title + " - " + item.url).join("\n") : "";
-    return asSafeString(text + sourceText, 6000);
+    const sourceText = wantsVisibleAssistantLinks(message) && citations.length ? "\n\nSources:\n" + citations.map((item, index) => (index + 1) + ". " + item.title + " - " + item.url).join("\n") : "";
+    const visibleText = wantsVisibleAssistantLinks(message) ? text + sourceText : stripVisibleAssistantLinks(text);
+    return asSafeString(visibleText, 6000);
   } catch (error) {
     console.error("OpenAI assistant error:", error?.message || error);
     return "";
@@ -608,7 +625,7 @@ async function handleAssistantRequest(req, res) {
     });
 
     if (conversationalReply) {
-      return res.json({ ok: true, reply: conversationalReply });
+      return res.json({ ok: true, reply: wantsVisibleAssistantLinks(message) ? conversationalReply : stripVisibleAssistantLinks(conversationalReply) });
     }
 
     const reply = await buildAssistantReply({
@@ -627,7 +644,7 @@ async function handleAssistantRequest(req, res) {
       ok: true,
       reply:
         typeof reply === "string" && reply.trim()
-          ? reply.trim()
+          ? (wantsVisibleAssistantLinks(message) ? reply.trim() : stripVisibleAssistantLinks(reply))
           : "Tapzy Assistant is temporarily unavailable.",
     });
   } catch (error) {
