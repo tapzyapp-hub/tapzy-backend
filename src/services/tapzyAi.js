@@ -1,5 +1,4 @@
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.4-mini";
+const { searchTapzyKnowledge } = require("./tapzyKnowledgeSearch");
 
 const brainMemory = new Map();
 
@@ -72,66 +71,6 @@ function inferTone(message) {
   return "general";
 }
 
-async function getTapzyEvents({ latitude, longitude } = {}) {
-  try {
-    const prisma = require("../prisma");
-    if (!prisma?.eventFinderItem) return [];
-    const now = new Date();
-    const events = await prisma.eventFinderItem.findMany({
-      where: {
-        OR: [{ startAt: { gte: now } }, { startAt: null }],
-      },
-      orderBy: [{ startAt: "asc" }],
-      take: 8,
-    }).catch(() => []);
-    return events.map((event) => ({
-      title: cleanText(event.title || event.name, 120),
-      venue: cleanText(event.venueName || event.location || event.address, 120),
-      city: cleanText(event.city, 80),
-      startsAt: event.startAt || null,
-      category: cleanText(event.category || event.type, 80),
-      url: event.id ? "/events/view/" + event.id : "",
-      latitude: asNumber(event.latitude),
-      longitude: asNumber(event.longitude),
-    })).filter((event) => event.title);
-  } catch (_) {
-    return [];
-  }
-}
-
-function buildSystemPrompt(context = {}) {
-  const locationText = context.city || context.locationLabel || (context.latitude && context.longitude ? "the user's current area" : "unknown");
-  const linkRule = context.allowLinks
-    ? "The user asked for links, websites, tickets, maps, addresses, or directions, so you may include clean action text and a link only when helpful."
-    : "Do not show raw URLs, route code, query strings, API-looking text, slugs, IDs, or markdown links. For events and places, show clean names, times, areas, and reasons only. If a link would help, say 'I can open directions or the website if you want.'";
-  return [
-    "You are Tapzy AI, the new clean brain for Tapzy.",
-    "OpenAI is the strongest live model right now, but Tapzy AI is learning to become the main brain over time.",
-    "Speak naturally, warmly, and clearly. Be useful first. Keep answers mobile-friendly.",
-    "You can handle normal conversation, practical questions, math, science, Bible questions, jokes, cute replies, writing help, date ideas, food plans, directions, events, quiet spots, busy spots, opening hours, and Tapzy product help.",
-    "For local recommendations, ask for location only if you do not have enough location context. If location exists, give a concrete plan.",
-    "Use Tapzy context when relevant: Tapzy has profiles, stories, messages, events, discovery, QR/NFC identity sharing, search, and the Hey Tapzy AI room.",
-    "Do not pretend to have live business hours or live crowd levels unless live data was provided. Say what to check next and give a smart plan.",
-    linkRule,
-    "Current location context: " + locationText + ".",
-  ].join("\n");
-}
-
-function formatEvents(events = [], allowLinks = false) {
-  if (!events.length) return "No live Tapzy event rows were provided.";
-  return events.map((event, index) => {
-    const when = event.startsAt ? new Date(event.startsAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "time TBA";
-    const parts = [
-      `${index + 1}. ${event.title}`,
-      when,
-      event.venue || event.city || "location TBA",
-      event.category || "",
-    ].filter(Boolean);
-    if (allowLinks && event.url) parts.push(event.url);
-    return parts.join(" | ");
-  }).join("\n");
-}
-
 function cleanVisibleReply(reply, allowLinks = false) {
   let text = cleanText(reply, 5000);
   if (allowLinks) return text.trim();
@@ -157,9 +96,13 @@ function cleanVisibleReply(reply, allowLinks = false) {
   return text || "I found some options. I can show the website or directions if you want.";
 }
 
-function buildFallbackReply(message, context = {}, events = []) {
+function buildIndependentReply(message, context = {}, knowledge = {}) {
   const text = cleanText(message, 1000);
   const tone = inferTone(text);
+  const events = Array.isArray(knowledge.events) ? knowledge.events : [];
+  const profiles = Array.isArray(knowledge.profiles) ? knowledge.profiles : [];
+  const stories = Array.isArray(knowledge.stories) ? knowledge.stories : [];
+  const posts = Array.isArray(knowledge.posts) ? knowledge.posts : [];
   const mathAnswer = safeArithmetic(text);
   if (mathAnswer) return mathAnswer;
 
@@ -168,7 +111,7 @@ function buildFallbackReply(message, context = {}, events = []) {
   }
 
   if (tone === "playful") {
-    return "Here is one: I told my calendar I needed space, and it booked me a night out. Want a clean joke, a cute one, or a Tapzy-style roast?";
+    return "Why did the coffee file a police report? Because it got mugged. Want a cute joke, a clean roast, or a Tapzy-style one?";
   }
 
   if (tone === "cute") {
@@ -181,11 +124,18 @@ function buildFallbackReply(message, context = {}, events = []) {
 
   if (tone === "local") {
     const city = cleanText(context.city || context.locationLabel || "", 80);
-    const eventLine = events[0] ? `Tapzy has ${events[0].title}${events[0].venue ? " at " + events[0].venue : ""} as a good first option. ` : "";
     if (!city && !context.latitude) {
       return "I can help with that. Tell me your city or allow location, then I can suggest food, events, quiet spots, busy places, hours to check, and the best next move.";
     }
-    return eventLine + "For " + (city || "your area") + ", I would build the plan like this: pick one main activity, choose food within 10-15 minutes of it, check if the place is open now, then use Tapzy for the event page, directions, and messaging anyone you want to invite.";
+    if (events.length) {
+      const top = events.slice(0, 3).map((event, index) => {
+        const detail = [event.when, event.where, event.category].filter(Boolean).join(" - ");
+        return `${index + 1}. ${event.title}${detail ? ": " + detail : ""}`;
+      }).join("\n");
+      const ending = context.allowLinks ? "\n\nI can open directions or the event page when you pick one." : "\n\nPick one and I can help with food nearby, directions, or who to invite.";
+      return "Here are the strongest Tapzy matches around " + (city || "your area") + ":\n" + top + ending;
+    }
+    return "For " + (city || "your area") + ", I would build the plan like this: pick one main activity, choose food within 10-15 minutes of it, check if the place is open now, then use Tapzy for directions and messaging anyone you want to invite.";
   }
 
   if (tone === "math") {
@@ -193,51 +143,24 @@ function buildFallbackReply(message, context = {}, events = []) {
   }
 
   if (/\b(tapzy|profile|story|stories|message|messages|event|events|discover|discovery|qr|nfc)\b/i.test(text)) {
-    return "Tapzy should help people turn interest into action: find what is happening, decide where to go, connect with people, share a profile, message, navigate, and post the moment. Tell me which part you want to improve and I will give you the clean next steps.";
+    const liveBits = [];
+    if (events[0]) liveBits.push("events like " + events[0].title);
+    if (stories[0]) liveBits.push("recent stories");
+    if (posts[0]) liveBits.push("new posts");
+    if (profiles[0]) liveBits.push("active profiles");
+    return "Tapzy AI is learning from Tapzy itself: " + (liveBits.length ? liveBits.join(", ") : "profiles, stories, posts, events, messages, discovery, QR/NFC sharing, and search") + ". The goal is to help people find what is happening, decide where to go, connect, message, navigate, and post the moment.";
   }
 
   return "I can help with that. Give me one more detail and I will make it useful: are you asking for a quick answer, a plan, something local, something funny, or help with Tapzy?";
-}
-
-function extractOpenAIText(data) {
-  if (typeof data?.output_text === "string" && data.output_text.trim()) return data.output_text.trim();
-  const output = Array.isArray(data?.output) ? data.output : [];
-  const parts = [];
-  for (const item of output) {
-    for (const content of Array.isArray(item?.content) ? item.content : []) {
-      if (typeof content?.text === "string") parts.push(content.text);
-    }
+  if (events.length && /\b(what|where|go|do|tonight|today|near|around|event|events|place|places)\b/i.test(text)) {
+    return "I found these Tapzy options:\n" + events.slice(0, 3).map((event, index) => `${index + 1}. ${event.title}: ${[event.when, event.where].filter(Boolean).join(" - ")}`).join("\n");
   }
-  return parts.join("\n").trim();
-}
 
-async function askOpenAI(message, context, events, memory) {
-  if (!OPENAI_API_KEY || typeof fetch !== "function") return "";
-  const payload = {
-    model: OPENAI_MODEL,
-    input: [
-      { role: "system", content: buildSystemPrompt(context) },
-      { role: "system", content: "Recent Tapzy events:\n" + formatEvents(events, context.allowLinks) },
-      { role: "system", content: "Recent Tapzy AI memory:\n" + memory.map((item) => `${item.role}: ${item.content}`).join("\n") },
-      { role: "user", content: message },
-    ],
-  };
-  try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + OPENAI_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout ? AbortSignal.timeout(14000) : undefined,
-    });
-    const data = await response.json().catch(() => null);
-    if (!response.ok) return "";
-    return extractOpenAIText(data);
-  } catch (_) {
-    return "";
+  if (stories.length || posts.length) {
+    return "I am seeing fresh Tapzy activity. " + [stories[0]?.title, posts[0]?.title].filter(Boolean).slice(0, 2).join(" Also: ") + ". Ask me for events, people, food, quiet spots, or a plan and I will narrow it down.";
   }
+
+  return "I can help with that. Give me one more detail and I will use Tapzy's own data to make it useful: are you asking for a quick answer, a plan, something local, something funny, or help with Tapzy?";
 }
 
 async function buildTapzyAiReply(input = {}) {
@@ -265,19 +188,18 @@ async function buildTapzyAiReply(input = {}) {
   }
 
   remember(sessionId, "user", message);
-  const events = await getTapzyEvents(context);
-  const memory = getMemory(sessionId);
-  const openAiReply = await askOpenAI(message, context, events, memory);
-  const reply = cleanVisibleReply(openAiReply || buildFallbackReply(message, context, events), context.allowLinks);
+  const knowledge = await searchTapzyKnowledge({ ...context, message });
+  const reply = cleanVisibleReply(buildIndependentReply(message, context, knowledge), context.allowLinks);
   remember(sessionId, "assistant", reply);
 
   return {
     ok: true,
     reply,
-    source: openAiReply ? "openai-attached" : "tapzy-brain",
+    source: "tapzy-independent",
     brainScore: getBrainScore(sessionId),
-    learned: Boolean(openAiReply),
-    eventsUsed: events.length,
+    learned: true,
+    eventsUsed: Array.isArray(knowledge.events) ? knowledge.events.length : 0,
+    knowledge,
   };
 }
 
