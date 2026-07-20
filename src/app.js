@@ -20,6 +20,8 @@ const adminRoutes = require("./routes/admin");
 const miscRoutes = require("./routes/misc");
 const discoveryRoutes = require("./routes/discovery");
 const assistantRoutes = require("./routes/assistantRoutes");
+const tapzyAiRoutes = require("./routes/tapzyAiRoutes");
+const tapzyAiPageRoutes = require("./routes/tapzyAiPageRoutes");
 const pairRoutes = require("./routes/pair");
 const eventsRoutes = require("./routes/events");
 const storiesRoutes = require("./routes/stories");
@@ -179,6 +181,8 @@ app.use("/uploads", express.static(uploadsDir, uploadsCache));
 app.use(sessionMiddleware);
 
 app.use("/api/assistant", assistantRoutes);
+app.use("/api/tapzy-ai", tapzyAiRoutes);
+app.use("/", tapzyAiPageRoutes);
 
 app.use("/", authRoutes);
 app.use("/", cardsRoutes);
