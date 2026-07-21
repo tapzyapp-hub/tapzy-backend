@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const ignoreDirs = new Set([".git", "node_modules", "uploads"]);
+const ignoreDirs = new Set([".git", "node_modules", "uploads", "generated", "tmp"]);
 const jsFiles = [];
 
 function walk(dir) {

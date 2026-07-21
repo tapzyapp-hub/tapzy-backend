@@ -80,7 +80,7 @@ async function recordBrainTurn(input = {}) {
        VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT ("id") DO UPDATE SET
          "content" = EXCLUDED."content",
-         "weight" = GREATEST("TapzyBrainMemory"."weight", EXCLUDED."weight"),
+         "weight" = CASE WHEN "TapzyBrainMemory"."weight" > EXCLUDED."weight" THEN "TapzyBrainMemory"."weight" ELSE EXCLUDED."weight" END,
          "updatedAt" = CURRENT_TIMESTAMP`,
       id,
       sessionId,
@@ -180,7 +180,7 @@ async function getBrainScore(sessionId) {
   if (await ensureBrainTable()) {
     try {
       const rows = await prisma.$queryRawUnsafe(
-        `SELECT COUNT(*)::int AS count FROM "TapzyBrainMemory" WHERE "sessionId" = $1 OR "sessionId" = 'global'`,
+        `SELECT COUNT(*) AS count FROM "TapzyBrainMemory" WHERE "sessionId" = $1 OR "sessionId" = 'global'`,
         safeSession
       );
       const learned = Number(rows?.[0]?.count || 0);

@@ -2,5 +2,8 @@ node_modules/
 .env
 uploads/
 /generated/prisma
+src/generated/prisma/
 dev.db
-
+tmp/
+public/uploads/
+_cleanup_backup_*/
