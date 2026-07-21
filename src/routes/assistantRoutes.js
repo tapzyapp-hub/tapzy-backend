@@ -1,7 +1,7 @@
 const express = require("express");
 const prisma = require("../prisma");
 const { buildAssistantReply } = require("../services/assistantService");
-const { getBrainContext, recordBrainTurn } = require("../services/tapzyAi");
+const { getBrainContext, getBrainScore, recordBrainTurn } = require("../services/tapzyAi");
 
 const SERPAPI_KEY = process.env.SERPAPI_KEY || "";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
@@ -633,7 +633,18 @@ async function handleAssistantRequest(req, res) {
     if (conversationalReply) {
       const visibleReply = wantsVisibleAssistantLinks(message) ? conversationalReply : stripVisibleAssistantLinks(conversationalReply);
       await recordBrainTurn({ sessionId, role: "assistant", content: visibleReply, kind: "openai_turn" });
-      return res.json({ ok: true, reply: visibleReply });
+      return res.json({
+        ok: true,
+        reply: visibleReply,
+        brainDebug: {
+          source: "OpenAI + Tapzy Brain",
+          memoryUsed: Boolean(context.brain),
+          learned: true,
+          learnedFacts: 0,
+          eventsUsed: Array.isArray(context.events) ? context.events.length : 0,
+          brainScore: await getBrainScore(sessionId),
+        },
+      });
     }
 
     const reply = await buildAssistantReply({
@@ -655,6 +666,14 @@ async function handleAssistantRequest(req, res) {
     return res.json({
       ok: true,
       reply: visibleReply,
+      brainDebug: {
+        source: "Tapzy Built-In Brain",
+        memoryUsed: Boolean(context.brain),
+        learned: true,
+        learnedFacts: 0,
+        eventsUsed: Array.isArray(context.events) ? context.events.length : 0,
+        brainScore: await getBrainScore(sessionId),
+      },
     });
   } catch (error) {
     console.error("Assistant route error:", error);
