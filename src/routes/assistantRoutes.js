@@ -536,7 +536,7 @@ async function fetchOpenAIConversation({ message, pageType, username, currentPat
           "If live data is missing, do not stall. Give the best general answer or Tapzy-context answer first, then mention the live-data limit only if it matters.",
           "Do not pretend to know private user data that was not provided.",
           "Keep answers mobile-friendly, usually 1-4 short paragraphs, but answer fully when the user asks for detail.",
-          "When giving event or place lists, put each numbered item on its own line with only the event/place name, time, place, and one short reason. Do not include websites, raw URLs, source links, ticket links, map links, or action links unless the user explicitly asks for links, websites, tickets, directions, maps, or sources.",
+          "When giving event or place lists, use plain text only, no markdown, no bold stars, no brackets, no tables. Format each item like: 1. Event Name - 7:30 PM - Venue, City - one short reason. Put a blank line between items. Do not include websites, raw URLs, source links, ticket links, map links, or action links unless the user explicitly asks for links, websites, tickets, directions, maps, or sources.",
           "Use this durable Tapzy knowledge before saying you do not know: " + TAPZY_AI_KNOWLEDGE,
           "When useful, suggest one clear action. For ordinary Q&A, the action can simply be a short follow-up question. Save concrete Tapzy links, tickets, directions, and next taps for place/event/plan interest."
         ].join(" ")
