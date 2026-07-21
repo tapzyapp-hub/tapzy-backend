@@ -9847,8 +9847,6 @@ router.get("/edit/:username", async (req, res) => {
         from{transform:scale(1.015) translate3d(-1.5%,0,0)}
         to{transform:scale(1.09) translate3d(1.5%,-1%,0)}
       }
-        72%,100%{transform:translateX(125%)}
-      }
 
       .tz-identity-tour-section{
         min-height:430px!important;
@@ -10479,6 +10477,61 @@ router.get("/edit/:username", async (req, res) => {
           border-radius:24px;
         }
       }
+
+      /* Edit profile stability pass: black top, no shared top nav, no scroll repaint flicker. */
+      html,
+      body,
+      body.tz-edit-profile-page{
+        background:#000!important;
+        min-height:100%;
+      }
+
+      body.tz-edit-profile-page .tz-story-top-nav,
+      body.tz-edit-profile-page .topbar,
+      body.tz-edit-profile-page .navbar,
+      body.tz-edit-profile-page header:not(.tz-edit-section-head){
+        display:none!important;
+      }
+
+      body.tz-edit-profile-page.tz-has-stories-top-nav > .wrap,
+      body.tz-edit-profile-page > .wrap.tz-edit-wrap{
+        padding-top:18px!important;
+      }
+
+      body.tz-edit-profile-page .tz-edit-wrap{
+        background:#000!important;
+        transform:translateZ(0);
+        -webkit-transform:translateZ(0);
+        backface-visibility:hidden;
+        -webkit-backface-visibility:hidden;
+        contain:layout paint style;
+      }
+
+      body.tz-edit-profile-page .tz-edit-hero,
+      body.tz-edit-profile-page .tz-edit-section,
+      body.tz-edit-profile-page .tz-edit-photo-card,
+      body.tz-edit-profile-page .tz-edit-upload-box{
+        background-color:#050811!important;
+        background-blend-mode:normal!important;
+        transform:translateZ(0);
+        -webkit-transform:translateZ(0);
+        backface-visibility:hidden;
+        -webkit-backface-visibility:hidden;
+        will-change:transform;
+      }
+
+      body.tz-edit-profile-page .tz-edit-hero{
+        background:
+          radial-gradient(620px 330px at 76% 15%, rgba(93,180,255,.16), transparent 56%),
+          radial-gradient(420px 240px at 18% 6%, rgba(255,255,255,.055), transparent 54%),
+          linear-gradient(180deg, rgba(13,17,26,.98), rgba(2,3,7,1))!important;
+      }
+
+      body.tz-edit-profile-page .tz-edit-section{
+        background:
+          radial-gradient(480px 230px at 82% 0%, rgba(78,168,255,.105), transparent 58%),
+          linear-gradient(180deg, rgba(17,22,32,.96), rgba(4,6,10,1))!important;
+      }
 </style>
 
     <script>
@@ -10817,7 +10870,9 @@ router.get("/edit/:username", async (req, res) => {
 
         storiesBottomNav: true,
 
-        storiesTopNavActive: "profile",
+        hideTopBar: true,
+
+        bodyClass: "tz-edit-profile-page",
 
         metaDescription: `Edit ${profile.username}'s Tapzy Network™ profile, quick share settings, contact details, and social links.`,
 
