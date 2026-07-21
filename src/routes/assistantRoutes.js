@@ -15,6 +15,9 @@ const OPENAI_VECTOR_STORE_IDS = String(process.env.OPENAI_VECTOR_STORE_IDS || pr
 const OPENAI_ENABLE_WEB_SEARCH = process.env.OPENAI_ENABLE_WEB_SEARCH !== "false";
 const OPENAI_WEB_SEARCH_TOOL = process.env.OPENAI_WEB_SEARCH_TOOL || "web_search";
 const OPENAI_REALTIME_ENABLE_WEB_CONTEXT = process.env.OPENAI_REALTIME_ENABLE_WEB_CONTEXT !== "false";
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || process.env.ELEVEN_API_KEY || "";
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || process.env.ELEVEN_VOICE_ID || "EXAVITQu4vr4xnSDxMaL";
+const ELEVENLABS_MODEL_ID = process.env.ELEVENLABS_MODEL_ID || "eleven_multilingual_v2";
 
 const router = express.Router();
 
@@ -919,9 +922,64 @@ async function handleRealtimeCallRequest(req, res) {
   }
 }
 
+async function handleElevenLabsTtsRequest(req, res) {
+  try {
+    if (!ELEVENLABS_API_KEY || typeof fetch !== "function") {
+      return res.status(503).json({ ok: false, error: "ElevenLabs voice needs ELEVENLABS_API_KEY on the server." });
+    }
+
+    const text = asSafeString(req.body?.text || req.body?.message || "", 1200)
+      .replace(/https?:\/\/\S+/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!text) {
+      return res.status(400).json({ ok: false, error: "Text is required." });
+    }
+
+    const voiceId = asSafeString(req.body?.voiceId || ELEVENLABS_VOICE_ID, 120) || ELEVENLABS_VOICE_ID;
+    const response = await fetch(
+      "https://api.elevenlabs.io/v1/text-to-speech/" + encodeURIComponent(voiceId) + "?output_format=mp3_44100_128",
+      {
+        method: "POST",
+        headers: {
+          "xi-api-key": ELEVENLABS_API_KEY,
+          "Content-Type": "application/json",
+          "Accept": "audio/mpeg",
+        },
+        body: JSON.stringify({
+          text,
+          model_id: ELEVENLABS_MODEL_ID,
+          voice_settings: {
+            stability: 0.58,
+            similarity_boost: 0.82,
+            style: 0.18,
+            use_speaker_boost: true,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
+      console.error("ElevenLabs TTS failed", response.status, errorText.slice(0, 500));
+      return res.status(response.status).json({ ok: false, error: "ElevenLabs voice is temporarily unavailable." });
+    }
+
+    const audio = Buffer.from(await response.arrayBuffer());
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(200).send(audio);
+  } catch (error) {
+    console.error("ElevenLabs TTS error:", error?.message || error);
+    return res.status(500).json({ ok: false, error: "ElevenLabs voice is temporarily unavailable." });
+  }
+}
+
 
 router.post("/chat", handleAssistantRequest);
 router.post("/reply", handleAssistantRequest);
+router.post("/tts", handleElevenLabsTtsRequest);
 router.post("/realtime-session", handleRealtimeSessionRequest);
 router.post("/realtime-call", express.text({ type: "*/*", limit: "2mb" }), handleRealtimeCallRequest);
 
