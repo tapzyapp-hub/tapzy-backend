@@ -6816,6 +6816,189 @@ router.get("/u/:username", async (req, res) => {
           font-size:12px!important;
         }
       }
+      /* Premium weather scenes: sharper rain, thunder, snow, fog, and night modes. */
+      .profile-showcase.is-weather-live .profile-showcase-bg{
+        opacity:1!important;
+        transition:background 850ms ease,filter 850ms ease,opacity 850ms ease!important;
+        will-change:background,filter;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene{
+        opacity:1!important;
+      }
+
+      .profile-showcase.is-weather-live .profile-weather-scene::before,
+      .profile-showcase.is-weather-live .profile-weather-scene::after{
+        content:""!important;
+        position:absolute!important;
+        inset:-18%!important;
+        pointer-events:none!important;
+        transform:translateZ(0);
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-clear .profile-showcase-bg,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-sunny .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 72% 16%,rgba(255,245,205,.60) 0 8%,rgba(255,202,105,.24) 18%,transparent 36%),
+          radial-gradient(circle at 28% 18%,rgba(140,220,255,.38),transparent 42%),
+          linear-gradient(180deg,#2c8fd1 0%,#0f3968 54%,#030814 100%)!important;
+        filter:saturate(1.18) contrast(1.04)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-cloudy .profile-showcase-bg,
+      .profile-showcase.is-weather-live:not(.weather-night).weather-fog .profile-showcase-bg{
+        background:
+          radial-gradient(ellipse at 34% 14%,rgba(245,250,255,.32),transparent 34%),
+          radial-gradient(ellipse at 82% 34%,rgba(180,208,232,.26),transparent 40%),
+          linear-gradient(180deg,#597795 0%,#1a314c 56%,#050a14 100%)!important;
+        filter:saturate(1.04) contrast(1.04)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-rain .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 72% 14%,rgba(118,190,255,.26),transparent 28%),
+          linear-gradient(112deg,rgba(172,222,255,.12) 0 1px,transparent 1px 12px),
+          linear-gradient(180deg,#18385d 0%,#07172d 56%,#01040c 100%)!important;
+        background-size:100% 100%,19px 44px,100% 100%!important;
+        filter:saturate(1.12) contrast(1.08)!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-storm .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 82% 14%,rgba(218,232,255,.54),transparent 9%),
+          radial-gradient(circle at 34% 26%,rgba(118,92,255,.30),transparent 34%),
+          linear-gradient(180deg,#151638 0%,#071026 55%,#00030a 100%)!important;
+        animation:profileStormPulsePremium 5.6s ease-in-out infinite!important;
+        filter:saturate(1.18) contrast(1.10)!important;
+      }
+
+      .profile-showcase.is-weather-live:not(.weather-night).weather-snow .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 28% 14%,rgba(235,250,255,.38),transparent 30%),
+          radial-gradient(circle at 76% 24%,rgba(150,224,255,.24),transparent 36%),
+          linear-gradient(180deg,#315f82 0%,#102d49 56%,#030a16 100%)!important;
+        filter:saturate(1.08) contrast(1.05)!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-night .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 76% 18%,rgba(213,230,255,.44) 0 5%,rgba(135,170,255,.13) 14%,transparent 30%),
+          radial-gradient(circle at 22% 22%,rgba(76,120,255,.20),transparent 38%),
+          radial-gradient(circle at 55% 7%,rgba(255,255,255,.20) .8px,transparent 1.6px),
+          linear-gradient(180deg,#050b22 0%,#020616 58%,#000004 100%)!important;
+        background-size:100% 100%,100% 100%,34px 34px,100% 100%!important;
+        filter:saturate(1.15) contrast(1.08)!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-night.weather-rain .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 78% 18%,rgba(166,205,255,.30),transparent 28%),
+          linear-gradient(112deg,rgba(145,205,255,.11) 0 1px,transparent 1px 12px),
+          radial-gradient(circle at 55% 7%,rgba(255,255,255,.16) .8px,transparent 1.6px),
+          linear-gradient(180deg,#07112b 0%,#020817 58%,#000004 100%)!important;
+        background-size:100% 100%,19px 44px,34px 34px,100% 100%!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-night.weather-storm .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 82% 14%,rgba(225,238,255,.48),transparent 10%),
+          radial-gradient(circle at 34% 28%,rgba(112,94,255,.28),transparent 36%),
+          radial-gradient(circle at 55% 7%,rgba(255,255,255,.14) .8px,transparent 1.6px),
+          linear-gradient(180deg,#070821 0%,#020615 60%,#000003 100%)!important;
+        background-size:100% 100%,100% 100%,34px 34px,100% 100%!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-night.weather-snow .profile-showcase-bg{
+        background:
+          radial-gradient(circle at 74% 18%,rgba(218,236,255,.34),transparent 28%),
+          radial-gradient(circle at 28% 22%,rgba(122,190,255,.22),transparent 38%),
+          radial-gradient(circle at 55% 7%,rgba(255,255,255,.18) .8px,transparent 1.6px),
+          linear-gradient(180deg,#07152b 0%,#031021 58%,#000006 100%)!important;
+        background-size:100% 100%,100% 100%,34px 34px,100% 100%!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-rain .profile-weather-rain,
+      .profile-showcase.is-weather-live.weather-storm .profile-weather-rain{
+        opacity:.84!important;
+        background:
+          repeating-linear-gradient(112deg,rgba(190,232,255,.62) 0 1px,transparent 1px 12px),
+          repeating-linear-gradient(112deg,rgba(92,174,255,.30) 0 1px,transparent 1px 21px)!important;
+        background-size:28px 76px,42px 118px!important;
+        animation:profileRainFallPremium .58s linear infinite!important;
+        filter:drop-shadow(0 0 8px rgba(170,220,255,.34))!important;
+        mix-blend-mode:screen!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-storm .profile-weather-scene::after{
+        opacity:0;
+        z-index:4!important;
+        background:
+          linear-gradient(132deg,transparent 0 42%,rgba(230,242,255,.98) 43% 44%,transparent 45%),
+          linear-gradient(24deg,transparent 0 58%,rgba(150,190,255,.76) 59% 60%,transparent 61%),
+          radial-gradient(circle at 78% 18%,rgba(255,255,255,.74),transparent 24%)!important;
+        animation:profileLightningPremium 5.8s steps(1,end) infinite!important;
+        filter:drop-shadow(0 0 30px rgba(170,210,255,.70))!important;
+        mix-blend-mode:screen!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-snow .profile-weather-snow{
+        opacity:.90!important;
+        background-image:
+          radial-gradient(circle,rgba(255,255,255,.98) 0 1.2px,transparent 1.7px),
+          radial-gradient(circle,rgba(210,238,255,.74) 0 1px,transparent 1.4px),
+          radial-gradient(circle,rgba(255,255,255,.58) 0 .7px,transparent 1.2px)!important;
+        background-size:34px 34px,52px 52px,24px 24px!important;
+        animation:profileSnowFallPremium 9s linear infinite!important;
+        filter:drop-shadow(0 0 8px rgba(220,245,255,.36))!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-cloudy .profile-weather-cloud,
+      .profile-showcase.is-weather-live.weather-fog .profile-weather-cloud{
+        opacity:.82!important;
+        filter:blur(16px) saturate(1.05)!important;
+        background:radial-gradient(ellipse at center,rgba(226,240,255,.34),rgba(160,190,218,.22) 48%,transparent 70%)!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-fog .profile-weather-wisp{
+        opacity:.82!important;
+        height:96px!important;
+        background:linear-gradient(90deg,transparent,rgba(225,240,255,.30),rgba(255,255,255,.16),transparent)!important;
+        filter:blur(18px)!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-night .profile-weather-lens-a{
+        opacity:.46!important;
+        width:120px!important;
+        height:120px!important;
+        left:70%!important;
+        top:14%!important;
+        background:radial-gradient(circle,rgba(220,235,255,.54),rgba(120,162,255,.12) 42%,transparent 70%)!important;
+      }
+
+      @keyframes profileRainFallPremium{to{background-position:0 76px,0 118px;}}
+      @keyframes profileSnowFallPremium{to{background-position:18px 96px,-20px 140px,12px 80px;}}
+      @keyframes profileLightningPremium{
+        0%,77%,84%,100%{opacity:0;}
+        78%{opacity:.92;}
+        80%{opacity:.12;}
+        82%{opacity:.76;}
+      }
+      @keyframes profileStormPulsePremium{
+        0%,74%,100%{filter:saturate(1.18) contrast(1.10) brightness(1);}
+        79%{filter:saturate(1.28) contrast(1.15) brightness(1.28);}
+        82%{filter:saturate(1.20) contrast(1.12) brightness(1.06);}
+      }
+
+      @media (prefers-reduced-motion:reduce){
+        .profile-showcase.is-weather-live.weather-rain .profile-weather-rain,
+        .profile-showcase.is-weather-live.weather-storm .profile-weather-rain,
+        .profile-showcase.is-weather-live.weather-snow .profile-weather-snow,
+        .profile-showcase.is-weather-live.weather-storm .profile-showcase-bg,
+        .profile-showcase.is-weather-live.weather-storm .profile-weather-scene::after{
+          animation:none!important;
+        }
+      }
+      /* End premium weather scenes */
       /* End final compact profile strip goes black when weather is unavailable */
 /* Desktop-only profile event title rollback. Mobile rules below 700px stay untouched. */
       @media(min-width:701px){
