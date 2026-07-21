@@ -7634,7 +7634,60 @@ router.get("/u/:username", async (req, res) => {
             const n = Number(value);
             return Number.isFinite(n) ? n : 0;
           }
-          function conditionFromCurrent(current){
+          function conditionFromHourly(data, current){
+            const hourly = data && data.hourly;
+            const times = hourly && Array.isArray(hourly.time) ? hourly.time : [];
+            if (!hourly || !times.length) return null;
+            const nowMs = current && current.time ? new Date(current.time).getTime() : Date.now();
+            let bestIndex = -1;
+            let bestDistance = Infinity;
+            times.forEach(function(time, index){
+              const ms = new Date(time).getTime();
+              if (!Number.isFinite(ms)) return;
+              const distance = Math.abs(ms - nowMs);
+              if (distance < bestDistance) {
+                bestDistance = distance;
+                bestIndex = index;
+              }
+            });
+            if (bestIndex < 0 || bestDistance > 10800000) return null;
+            const start = Math.max(0, bestIndex - 1);
+            const end = Math.min(times.length - 1, bestIndex + 2);
+            let maxWet = 0;
+            let maxSnow = 0;
+            let maxWind = 0;
+            let maxGust = 0;
+            let maxRainChance = 0;
+            let stormNearby = false;
+            let heavyCodeNearby = false;
+            for (let i = start; i <= end; i += 1) {
+              const code = Number(hourly.weather_code && hourly.weather_code[i]);
+              stormNearby = stormNearby || code === 95 || code === 96 || code === 99;
+              heavyCodeNearby = heavyCodeNearby || code === 65 || code === 82 || code === 75 || code === 86;
+              maxWet = Math.max(
+                maxWet,
+                weatherNumber(hourly.precipitation && hourly.precipitation[i]),
+                weatherNumber(hourly.rain && hourly.rain[i]),
+                weatherNumber(hourly.showers && hourly.showers[i])
+              );
+              maxSnow = Math.max(maxSnow, weatherNumber(hourly.snowfall && hourly.snowfall[i]));
+              maxWind = Math.max(maxWind, weatherNumber(hourly.wind_speed_10m && hourly.wind_speed_10m[i]));
+              maxGust = Math.max(maxGust, weatherNumber(hourly.wind_gusts_10m && hourly.wind_gusts_10m[i]));
+              maxRainChance = Math.max(maxRainChance, weatherNumber(hourly.precipitation_probability && hourly.precipitation_probability[i]));
+            }
+            if (stormNearby) return { key:'storm', text:'Thunderstorm', heavy:true };
+            if (maxSnow > 0) return { key:'snow', text:'Snow', heavy:maxSnow >= 0.8 || heavyCodeNearby };
+            if (maxWet > 0 || maxRainChance >= 72) {
+              const stormyRain = heavyCodeNearby || maxWet >= 1 || maxGust >= 36 || (maxWet >= 0.3 && maxWind >= 22);
+              return {
+                key: stormyRain ? 'storm' : 'rain',
+                text: stormyRain ? 'Stormy Rain' : (maxRainChance >= 72 && maxWet <= 0 ? 'Rain Nearby' : 'Rain'),
+                heavy: stormyRain || maxWet >= 0.5
+              };
+            }
+            return null;
+          }
+          function conditionFromCurrent(current, data){
             const code = Number(current && current.weather_code);
             const base = conditionFromCode(code);
             const precipitation = weatherNumber(current && current.precipitation);
@@ -7648,6 +7701,10 @@ router.get("/u/:username", async (req, res) => {
             const stormCode = code === 95 || code === 96 || code === 99;
             const heavyRainCode = code === 65 || code === 82;
             if (stormCode) return { key:'storm', text:'Thunderstorm', heavy:true };
+            const nearbyCondition = conditionFromHourly(data, current);
+            if (nearbyCondition && (base.key === 'cloudy' || base.key === 'fog' || wetAmount <= 0)) {
+              return nearbyCondition;
+            }
             if (snow > 0 || base.key === 'snow') {
               return { key:'snow', text:base.key === 'snow' ? base.text : 'Snow', heavy:code === 75 || code === 86 || snow >= 0.8 };
             }
@@ -7667,7 +7724,7 @@ router.get("/u/:username", async (req, res) => {
           function applyWeather(data){
             const current = data && data.current;
             if (!current) return;
-            const condition = conditionFromCurrent(current);
+            const condition = conditionFromCurrent(current, data);
             const apiSaysDay = Number(current.is_day) !== 0;
             const localHour = new Date().getHours();
             const localLooksNight = localHour >= 20 || localHour < 6;
@@ -7688,7 +7745,7 @@ router.get("/u/:username", async (req, res) => {
             label.textContent = (Number.isFinite(temp) ? Math.round(temp) + String.fromCharCode(176) : '') + (conditionText ? ' ' + conditionText : '');
           }
           function loadWeather(lat, lng){
-            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day,precipitation,rain,showers,snowfall,cloud_cover,wind_speed_10m,wind_gusts_10m&timezone=auto';
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day,precipitation,rain,showers,snowfall,cloud_cover,wind_speed_10m,wind_gusts_10m&hourly=weather_code,precipitation,precipitation_probability,rain,showers,snowfall,wind_speed_10m,wind_gusts_10m&forecast_days=1&timezone=auto';
             fetch(url, { cache:'no-store' })
               .then(function(res){ return res.ok ? res.json() : null; })
               .then(applyWeather)
@@ -7698,7 +7755,7 @@ router.get("/u/:username", async (req, res) => {
             navigator.geolocation.getCurrentPosition(function(pos){
               if (!pos || !pos.coords) return;
               loadWeather(pos.coords.latitude, pos.coords.longitude);
-            }, function(){}, { enableHighAccuracy:false, timeout:7000, maximumAge:900000 });
+            }, function(){}, { enableHighAccuracy:true, timeout:9000, maximumAge:60000 });
           }
           if (navigator.permissions && navigator.permissions.query) {
             navigator.permissions.query({ name:'geolocation' }).then(function(result){
@@ -7707,7 +7764,7 @@ router.get("/u/:username", async (req, res) => {
           } else {
             requestWeather();
           }
-          window.setInterval(requestWeather, 360000);
+          window.setInterval(requestWeather, 120000);
         }
 
         function initProfileShowcaseFade(){
