@@ -18,6 +18,16 @@ const OPENAI_REALTIME_ENABLE_WEB_CONTEXT = process.env.OPENAI_REALTIME_ENABLE_WE
 
 const router = express.Router();
 
+function stableBrainSessionId(req, body = {}) {
+  const bodySession = asSafeString(body.sessionId || body.brainSessionId || "", 160);
+  if (bodySession && bodySession !== "guest" && bodySession !== "User") return bodySession;
+  const profileId = asSafeString(req.currentProfile?.id || "", 160);
+  if (profileId) return "profile:" + profileId;
+  const username = asSafeString(req.currentProfile?.username || req.session?.user?.username || body.username || "", 120);
+  if (username && username !== "User") return "user:" + username.toLowerCase();
+  return req.sessionID || "guest";
+}
+
 const TAPZY_AI_KNOWLEDGE = [
   "Tapzy is a premium digital identity and local action platform: profiles, stories, messaging, events, discovery, QR/NFC sharing, search, and Ask Tapzy.",
   "Mission: help people move from interest to action: discover what is happening, choose where to go, connect with people, share identity, message, navigate, and post the moment after.",
@@ -617,7 +627,7 @@ async function handleAssistantRequest(req, res) {
     }
 
     const context = await buildAssistantContext({ ...body, includeWebContext: true });
-    const sessionId = req.sessionID || username || "guest";
+    const sessionId = stableBrainSessionId(req, body);
     context.brain = await getBrainContext({ sessionId, message });
     await recordBrainTurn({ sessionId, role: "user", content: message, kind: "openai_turn" });
 
@@ -767,7 +777,7 @@ async function handleRealtimeSessionRequest(req, res) {
     }
     const body = req.body || {};
     const context = await buildAssistantContext({ ...body, includeWebContext: true });
-    const sessionId = req.sessionID || asSafeString(body.username || "User", 80) || "guest";
+    const sessionId = stableBrainSessionId(req, body);
     context.brain = await getBrainContext({ sessionId, message: "" });
     const session = await requestRealtimeSessionFromOpenAI(context, {
       pageType: asSafeString(body.pageType || "general", 80),
