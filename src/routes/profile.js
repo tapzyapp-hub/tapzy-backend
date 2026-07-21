@@ -6929,6 +6929,18 @@ router.get("/u/:username", async (req, res) => {
         mix-blend-mode:screen!important;
       }
 
+      .profile-showcase.is-weather-live.weather-heavy.weather-rain .profile-weather-rain,
+      .profile-showcase.is-weather-live.weather-heavy.weather-storm .profile-weather-rain{
+        opacity:.98!important;
+        background-size:20px 62px,32px 96px!important;
+        animation-duration:.34s!important;
+      }
+
+      .profile-showcase.is-weather-live.weather-heavy.weather-rain .profile-showcase-bg,
+      .profile-showcase.is-weather-live.weather-heavy.weather-storm .profile-showcase-bg{
+        filter:saturate(1.24) contrast(1.14) brightness(.92)!important;
+      }
+
       .profile-showcase.is-weather-live.weather-storm .profile-weather-scene::after{
         opacity:0;
         z-index:4!important;
@@ -7576,7 +7588,7 @@ router.get("/u/:username", async (req, res) => {
         function initProfileWeatherBackground(){
           const shell = document.getElementById('tapzyProfileShell');
           if (!shell || !navigator.geolocation || !window.fetch) return;
-          const weatherClasses = ['is-weather-live','weather-clear','weather-sunny','weather-cloudy','weather-fog','weather-rain','weather-storm','weather-snow','weather-night'];
+          const weatherClasses = ['is-weather-live','weather-clear','weather-sunny','weather-cloudy','weather-fog','weather-rain','weather-storm','weather-snow','weather-night','weather-heavy'];
           let label = shell.querySelector('.profile-weather-label');
           if (!label) {
             label = document.createElement('div');
@@ -7618,10 +7630,44 @@ router.get("/u/:username", async (req, res) => {
             };
             return map[n] || { key:'clear', text:'Sunny' };
           }
+          function weatherNumber(value){
+            const n = Number(value);
+            return Number.isFinite(n) ? n : 0;
+          }
+          function conditionFromCurrent(current){
+            const code = Number(current && current.weather_code);
+            const base = conditionFromCode(code);
+            const precipitation = weatherNumber(current && current.precipitation);
+            const rain = weatherNumber(current && current.rain);
+            const showers = weatherNumber(current && current.showers);
+            const snow = weatherNumber(current && current.snowfall);
+            const wind = weatherNumber(current && current.wind_speed_10m);
+            const gusts = weatherNumber(current && current.wind_gusts_10m);
+            const cloudCover = weatherNumber(current && current.cloud_cover);
+            const wetAmount = Math.max(precipitation, rain, showers);
+            const stormCode = code === 95 || code === 96 || code === 99;
+            const heavyRainCode = code === 65 || code === 82;
+            if (stormCode) return { key:'storm', text:'Thunderstorm', heavy:true };
+            if (snow > 0 || base.key === 'snow') {
+              return { key:'snow', text:base.key === 'snow' ? base.text : 'Snow', heavy:code === 75 || code === 86 || snow >= 0.8 };
+            }
+            if (wetAmount > 0) {
+              const stormyRain = heavyRainCode || wetAmount >= 1.2 || gusts >= 38 || (wetAmount >= 0.35 && wind >= 24);
+              return {
+                key: stormyRain ? 'storm' : 'rain',
+                text: stormyRain ? 'Stormy Rain' : (showers > rain ? 'Showers' : 'Rain'),
+                heavy: stormyRain || wetAmount >= 0.6
+              };
+            }
+            if ((base.key === 'clear' || base.key === 'sunny') && cloudCover >= 78) {
+              return { key:'cloudy', text:'Cloudy', heavy:false };
+            }
+            return Object.assign({ heavy:false }, base);
+          }
           function applyWeather(data){
             const current = data && data.current;
             if (!current) return;
-            const condition = conditionFromCode(current.weather_code);
+            const condition = conditionFromCurrent(current);
             const apiSaysDay = Number(current.is_day) !== 0;
             const localHour = new Date().getHours();
             const localLooksNight = localHour >= 20 || localHour < 6;
@@ -7630,6 +7676,7 @@ router.get("/u/:username", async (req, res) => {
             shell.classList.remove.apply(shell.classList, weatherClasses);
             shell.classList.add('is-weather-live', 'weather-' + condition.key);
             if (!isDay) shell.classList.add('weather-night');
+            if (condition.heavy) shell.classList.add('weather-heavy');
             requestAnimationFrame(function(){
               requestAnimationFrame(function(){ shell.classList.remove('is-profile-weather-swapping', 'is-profile-booting'); });
             });
@@ -7641,7 +7688,7 @@ router.get("/u/:username", async (req, res) => {
             label.textContent = (Number.isFinite(temp) ? Math.round(temp) + String.fromCharCode(176) : '') + (conditionText ? ' ' + conditionText : '');
           }
           function loadWeather(lat, lng){
-            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day,precipitation,wind_speed_10m&timezone=auto';
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&current=temperature_2m,weather_code,is_day,precipitation,rain,showers,snowfall,cloud_cover,wind_speed_10m,wind_gusts_10m&timezone=auto';
             fetch(url, { cache:'no-store' })
               .then(function(res){ return res.ok ? res.json() : null; })
               .then(applyWeather)
@@ -7660,6 +7707,7 @@ router.get("/u/:username", async (req, res) => {
           } else {
             requestWeather();
           }
+          window.setInterval(requestWeather, 360000);
         }
 
         function initProfileShowcaseFade(){
