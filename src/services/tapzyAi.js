@@ -26,6 +26,15 @@ function fallbackRemember(sessionId, role, content, kind = "turn") {
   fallbackMemory.set(key, list.slice(-60));
 }
 
+function stableMemoryId(sessionId, kind, content) {
+  const hash = crypto
+    .createHash("sha256")
+    .update([getSessionId({ sessionId }), cleanText(kind, 80), cleanText(content, 2000)].join("|"))
+    .digest("hex")
+    .slice(0, 40);
+  return `brain_${hash}`;
+}
+
 function fallbackGetMemory(sessionId) {
   return (fallbackMemory.get(getSessionId({ sessionId })) || []).slice(-18);
 }
@@ -61,13 +70,19 @@ async function recordBrainTurn(input = {}) {
   const role = cleanText(input.role || "assistant", 40) || "assistant";
   const content = cleanText(input.content, 2200);
   const kind = cleanText(input.kind || "turn", 40) || "turn";
+  const id = cleanText(input.id, 120) || (kind.endsWith("_fact") || kind === "lesson" ? stableMemoryId(sessionId, kind, content) : crypto.randomUUID());
   if (!content) return false;
   fallbackRemember(sessionId, role, content, kind);
   if (!(await ensureBrainTable())) return false;
   try {
     await prisma.$executeRawUnsafe(
-      `INSERT INTO "TapzyBrainMemory" ("id", "sessionId", "role", "kind", "content", "weight") VALUES ($1, $2, $3, $4, $5, $6)`,
-      crypto.randomUUID(),
+      `INSERT INTO "TapzyBrainMemory" ("id", "sessionId", "role", "kind", "content", "weight")
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT ("id") DO UPDATE SET
+         "content" = EXCLUDED."content",
+         "weight" = GREATEST("TapzyBrainMemory"."weight", EXCLUDED."weight"),
+         "updatedAt" = CURRENT_TIMESTAMP`,
+      id,
       sessionId,
       role,
       kind,
@@ -79,6 +94,50 @@ async function recordBrainTurn(input = {}) {
     console.error("Tapzy brain save failed:", error?.message || error);
     return false;
   }
+}
+
+function buildTapzyKnowledgeLessons(knowledge = {}) {
+  const lessons = [];
+  const events = Array.isArray(knowledge.events) ? knowledge.events : [];
+  const stories = Array.isArray(knowledge.stories) ? knowledge.stories : [];
+  const posts = Array.isArray(knowledge.posts) ? knowledge.posts : [];
+
+  for (const event of events.slice(0, 8)) {
+    const details = [
+      event.title,
+      event.when ? "time: " + event.when : "",
+      event.where ? "place: " + event.where : "",
+      event.city ? "city: " + event.city : "",
+      event.category ? "category: " + event.category : "",
+      event.reason ? "why it matters: " + event.reason : "",
+      event.distance ? "distance: " + event.distance.replace(/^,\s*/, "") : "",
+    ].filter(Boolean).join(" | ");
+    if (details) lessons.push({ kind: "event_fact", content: "Tapzy event: " + details, weight: 3 });
+  }
+
+  for (const item of stories.slice(0, 3)) {
+    const content = [item.title, item.when, item.reason].filter(Boolean).join(" | ");
+    if (content) lessons.push({ kind: "story_fact", content: "Tapzy story: " + content, weight: 1 });
+  }
+
+  for (const item of posts.slice(0, 3)) {
+    const content = [item.title, item.when, item.reason].filter(Boolean).join(" | ");
+    if (content) lessons.push({ kind: "post_fact", content: "Tapzy post: " + content, weight: 1 });
+  }
+
+  return lessons;
+}
+
+async function learnTapzyKnowledge(knowledge = {}) {
+  const lessons = buildTapzyKnowledgeLessons(knowledge);
+  await Promise.all(lessons.map((lesson) => recordBrainTurn({
+    sessionId: "global",
+    role: "system",
+    content: lesson.content,
+    kind: lesson.kind,
+    weight: lesson.weight,
+  })));
+  return lessons.length;
 }
 
 async function getMemory(sessionId, limit = 18) {
@@ -104,7 +163,7 @@ async function getBrainContext(input = {}) {
   const message = cleanText(input.message, 300).toLowerCase();
   const memory = await getMemory(sessionId, 24);
   const useful = memory
-    .filter((item) => item && item.content && (item.role === "assistant" || item.kind === "lesson"))
+    .filter((item) => item && item.content && (item.role === "assistant" || item.role === "system" || item.kind === "lesson" || String(item.kind || "").endsWith("_fact")))
     .filter((item) => {
       if (!message) return true;
       const content = String(item.content || "").toLowerCase();
@@ -220,7 +279,7 @@ function buildIndependentReply(message, context = {}, knowledge = {}, brainConte
   if (events.length && /\b(what|where|go|do|tonight|today|near|nearby|around|area|event|events|happening|place|places|concert|food|date|quiet|busy)\b/i.test(text)) {
     const city = cleanText(context.city || context.locationLabel || "", 80);
     const top = events.slice(0, 4).map((event, index) => {
-      const detail = [event.when, event.where, event.category].filter(Boolean).join(" - ");
+      const detail = [event.when, event.where, event.category, event.distance ? event.distance.replace(/^,\s*/, "") : ""].filter(Boolean).join(" - ");
       return `${index + 1}. ${event.title}${detail ? ": " + detail : ""}`;
     }).join("\n");
     const opener = city ? `Here is what Tapzy found around ${city}:` : "Here is what Tapzy found near you:";
@@ -249,7 +308,7 @@ function buildIndependentReply(message, context = {}, knowledge = {}, brainConte
     }
     if (events.length) {
       const top = events.slice(0, 3).map((event, index) => {
-        const detail = [event.when, event.where, event.category].filter(Boolean).join(" - ");
+        const detail = [event.when, event.where, event.category, event.distance ? event.distance.replace(/^,\s*/, "") : ""].filter(Boolean).join(" - ");
         return `${index + 1}. ${event.title}${detail ? ": " + detail : ""}`;
       }).join("\n");
       const ending = context.allowLinks ? "\n\nI can open directions or the event page when you pick one." : "\n\nPick one and I can help with food nearby, directions, or who to invite.";
@@ -308,6 +367,7 @@ async function buildTapzyAiReply(input = {}) {
 
   await recordBrainTurn({ sessionId, role: "user", content: message, kind: "turn" });
   const knowledge = await searchTapzyKnowledge({ ...context, message });
+  const learnedFacts = await learnTapzyKnowledge(knowledge);
   const brainContext = await getBrainContext({ sessionId, message });
   const reply = cleanVisibleReply(buildIndependentReply(message, context, knowledge, brainContext), context.allowLinks);
   await recordBrainTurn({ sessionId, role: "assistant", content: reply, kind: "turn" });
@@ -318,6 +378,7 @@ async function buildTapzyAiReply(input = {}) {
     source: "tapzy-independent",
     brainScore: await getBrainScore(sessionId),
     learned: true,
+    learnedFacts,
     eventsUsed: Array.isArray(knowledge.events) ? knowledge.events.length : 0,
     results: {
       events: Array.isArray(knowledge.events) ? knowledge.events.length : 0,
@@ -334,4 +395,5 @@ module.exports = {
   getBrainContext,
   getBrainScore,
   recordBrainTurn,
+  learnTapzyKnowledge,
 };
