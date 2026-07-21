@@ -287,6 +287,43 @@ function asSafeMemory(value) {
     .slice(-12);
 }
 
+function stableBrainFactId(prefix, value) {
+  return asSafeString(prefix + "_" + String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""), 120);
+}
+
+function buildAssistantEventFact(event) {
+  const details = [
+    event?.title,
+    event?.startAt ? "time: " + new Date(event.startAt).toISOString() : "",
+    event?.venueName ? "place: " + event.venueName : "",
+    event?.city ? "city: " + event.city : "",
+    event?.category ? "category: " + event.category : "",
+    event?.description ? "details: " + asSafeString(event.description, 180) : "",
+    Number.isFinite(event?.distanceKm) ? "distance: " + Math.round(event.distanceKm * 10) / 10 + " km" : "",
+  ].filter(Boolean).join(" | ");
+  return details ? "Tapzy event: " + details : "";
+}
+
+async function learnAssistantContextFacts(context = {}) {
+  const events = Array.isArray(context.events) ? context.events.slice(0, 50) : [];
+  if (!events.length) return 0;
+  const writes = events.map((event, index) => {
+    const content = buildAssistantEventFact(event);
+    if (!content) return null;
+    const idSeed = event.id || [event.title, event.startAt, event.venueName, event.city, index].filter(Boolean).join("_");
+    return recordBrainTurn({
+      sessionId: "global",
+      role: "system",
+      content,
+      kind: "event_fact",
+      id: stableBrainFactId("tapzy_event", idSeed),
+      weight: 3,
+    });
+  }).filter(Boolean);
+  const results = await Promise.all(writes);
+  return results.filter(Boolean).length;
+}
+
 async function buildAssistantContext(body) {
   const now = new Date(Date.now() - 6 * 60 * 60 * 1000);
   const latitude = asSafeNumber(body.latitude ?? body.lat);
@@ -628,6 +665,7 @@ async function handleAssistantRequest(req, res) {
 
     const context = await buildAssistantContext({ ...body, includeWebContext: true });
     const sessionId = stableBrainSessionId(req, body);
+    const learnedFacts = await learnAssistantContextFacts(context);
     context.brain = await getBrainContext({ sessionId, message });
     await recordBrainTurn({ sessionId, role: "user", content: message, kind: "openai_turn" });
 
@@ -650,7 +688,7 @@ async function handleAssistantRequest(req, res) {
           source: "OpenAI + Tapzy Brain",
           memoryUsed: Boolean(context.brain),
           learned: true,
-          learnedFacts: 0,
+          learnedFacts,
           eventsUsed: Array.isArray(context.events) ? context.events.length : 0,
           brainScore: await getBrainScore(sessionId),
         },
@@ -680,7 +718,7 @@ async function handleAssistantRequest(req, res) {
         source: "Tapzy Built-In Brain",
         memoryUsed: Boolean(context.brain),
         learned: true,
-        learnedFacts: 0,
+        learnedFacts,
         eventsUsed: Array.isArray(context.events) ? context.events.length : 0,
         brainScore: await getBrainScore(sessionId),
       },
